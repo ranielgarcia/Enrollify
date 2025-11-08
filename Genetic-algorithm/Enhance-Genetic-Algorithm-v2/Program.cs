@@ -29,6 +29,7 @@ Console.WriteLine("Select Configuration:");
 Console.WriteLine("1. Default (Balanced)");
 Console.WriteLine("2. Fast Convergence");
 Console.WriteLine("3. High Quality");
+Console.WriteLine("4. Real World University");
 Console.Write("\nChoice (1-3, default=1): ");
 
 GAConfiguration config;
@@ -41,6 +42,10 @@ switch (choice)
         break;
     case "3":
         config = GAConfiguration.HighQuality;
+        Console.WriteLine("Using High Quality configuration");
+        break;
+    case "4":
+        config = GAConfiguration.RealWorldUniversity;
         Console.WriteLine("Using High Quality configuration");
         break;
     default:

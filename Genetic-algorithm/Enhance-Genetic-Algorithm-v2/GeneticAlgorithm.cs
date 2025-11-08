@@ -109,7 +109,7 @@ public class GeneticAlgorithm
 
         for (int i = 0; i < _config.PopulationSize; i++)
         {
-            var schedule = new Schedule();
+            var schedule = new Schedule(_config);
 
             foreach (var section in _data.Sections)
             {
@@ -242,7 +242,7 @@ public class GeneticAlgorithm
     private Schedule Crossover(Schedule parent1, Schedule parent2)
     {
         // Section-based crossover: take complete sections from each parent
-        var offspring = new Schedule();
+        var offspring = new Schedule(_config);
         var sectionsUsed = new HashSet<string>();
 
         // Randomly decide which sections come from which parent

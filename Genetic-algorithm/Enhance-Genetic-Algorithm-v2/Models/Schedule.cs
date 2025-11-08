@@ -2,17 +2,20 @@
 
 public class Schedule
 {
+    private readonly GAConfiguration _config;
     public List<Gene> Genes { get; set; }
     private double? _cachedFitness;
 
-    public Schedule()
+    public Schedule(GAConfiguration config = null)
     {
         Genes = new List<Gene>();
+        _config = config ?? GAConfiguration.Default;
     }
 
-    public Schedule(List<Gene> genes)
+    public Schedule(List<Gene> genes, GAConfiguration config = null)
     {
         Genes = genes;
+        _config = config ?? GAConfiguration.Default;
     }
 
     public double CalculateFitness(ScheduleData data)
@@ -33,7 +36,7 @@ public class Schedule
         foreach (var gene in Genes)
         {
             if (!gene.Room.IsCompatibleWith(gene.Subject))
-                penalty += 150;
+                penalty += _config.RoomTypePenalty;
         }
 
         // Hard Constraint 3: No section conflicts (same section, different subjects, same time)
@@ -44,7 +47,7 @@ public class Schedule
             foreach (var timeGroup in timeGroups)
             {
                 if (timeGroup.Count() > 1)
-                    penalty += 200 * (timeGroup.Count() - 1);  // Critical violation
+                    penalty += _config.SectionConflictPenalty * (timeGroup.Count() - 1);  // Critical violation
             }
         }
 
@@ -56,7 +59,7 @@ public class Schedule
             foreach (var timeGroup in timeGroups)
             {
                 if (timeGroup.Count() > 1)
-                    penalty += 100 * (timeGroup.Count() - 1);
+                    penalty += _config.ProfessorConflictPenalty * (timeGroup.Count() - 1);
             }
         }
 
@@ -65,14 +68,14 @@ public class Schedule
         foreach (var group in roomSchedule)
         {
             if (group.Count() > 1)
-                penalty += 100 * (group.Count() - 1);
+                penalty += _config.RoomConflictPenalty * (group.Count() - 1);
         }
 
         // Hard Constraint 6: Professor can only teach subjects they're qualified for
         foreach (var gene in Genes)
         {
             if (!gene.Subject.ProfessorIds.Contains(gene.ProfessorId))
-                penalty += 150;
+                penalty += _config.QualificationPenalty;
         }
 
         // Hard Constraint 7: Subject must be scheduled DaysPerWeek times
@@ -84,7 +87,7 @@ public class Schedule
 
             if (actualDays != subject.DaysPerWeek)
             {
-                penalty += 200 * Math.Abs(actualDays - subject.DaysPerWeek); // Critical violation
+                penalty += _config.DaysPerWeekPenalty * Math.Abs(actualDays - subject.DaysPerWeek); // Critical violation
             }
         }
 
@@ -96,7 +99,7 @@ public class Schedule
 
             if (Math.Abs(slotDuration - requiredDuration) > 0.1) // Allow small tolerance
             {
-                penalty += 150; // Heavy penalty for time mismatch
+                penalty += _config.HoursPerDayPenalty; // Heavy penalty for time mismatch
             }
         }
 
@@ -108,7 +111,7 @@ public class Schedule
                 var times = group.Select(g => g.TimeSlot.GetTimePattern()).Distinct().ToList();
                 if (times.Count > 1)
                 {
-                    penalty += 20; // Prefer consistent times (e.g., always at 9:00-10:30)
+                    penalty += _config.TimePatternPenalty; // Prefer consistent times (e.g., always at 9:00-10:30)
                 }
             }
         }
@@ -118,7 +121,7 @@ public class Schedule
         {
             bool matchesPattern = CheckDayPattern(gene, Genes);
             if (!matchesPattern)
-                penalty += 10;
+                penalty += _config.DayPatternPenalty;
         }
 
         // Soft Constraint 3: Minimize gaps in professor schedules per day
@@ -133,7 +136,7 @@ public class Schedule
                     // Check for gaps between consecutive classes
                     for (int i = 0; i < slots.Count - 1; i++)
                     {
-                        penalty += 3;  // Small penalty for each gap
+                        penalty += _config.ProfessorGapPenalty;  // Small penalty for each gap
                     }
                 }
             }
@@ -143,7 +146,7 @@ public class Schedule
         foreach (var gene in Genes)
         {
             if (string.Compare(gene.TimeSlot.StartTime, "13:00") >= 0)
-                penalty += 2;
+                penalty += _config.AfternoonPenalty;
         }
 
         // Soft Constraint 5: Same section should have classes in nearby rooms
@@ -151,7 +154,7 @@ public class Schedule
         {
             var rooms = sectionGroup.Select(g => g.Room.Id).Distinct().ToList();
             if (rooms.Count > 5)  // Too many different rooms
-                penalty += 5;
+                penalty += _config.RoomProximityPenalty;
         }
 
         // Normalized fitness (0-1000 range)
@@ -283,7 +286,7 @@ public class Schedule
     public Schedule Clone()
     {
         var newGenes = Genes.Select(g => g.Clone()).ToList();
-        return new Schedule(newGenes);
+        return new Schedule(newGenes, _config);
     }
 
     public void Display()
