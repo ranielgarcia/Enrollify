@@ -96,7 +96,7 @@ foreach (var profGroup in professorLoad.OrderByDescending(g => g.Count()))
 {
     var prof = data.Professors.First(p => p.Id == profGroup.Key);
     var uniqueSubjects = profGroup.Select(g => g.Subject.Id).Distinct().Count();
-    Console.WriteLine($"  {prof.Name,-20}: {profGroup.Count()} classes, {uniqueSubjects} subjects");
+    Console.WriteLine($"{prof.Id} - {prof.Name,-20}: {profGroup.Count()} classes, {uniqueSubjects} subjects");
 }
 
 var roomUtilization = bestSchedule.Genes.GroupBy(g => g.Room.Id);

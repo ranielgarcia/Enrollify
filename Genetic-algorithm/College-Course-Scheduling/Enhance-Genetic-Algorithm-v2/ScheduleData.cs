@@ -325,91 +325,119 @@ public class ScheduleData
 
     private void AssignProfessorsToSubjects()
     {
+        // ========== COMPUTER SCIENCE SUBJECTS ==========
+        // CCS Professors: P1-P8, P41-P44 (12 total)
+
         // CS Subjects
-        Subjects.First(s => s.Code == "CS101").ProfessorIds.AddRange(new[] { "P1", "P2", "P3" });
-        Subjects.First(s => s.Code == "CS102").ProfessorIds.AddRange(new[] { "P1", "P2", "P4" });
-        Subjects.First(s => s.Code == "CS201").ProfessorIds.AddRange(new[] { "P3", "P4", "P5" });
-        Subjects.First(s => s.Code == "CS202").ProfessorIds.AddRange(new[] { "P2", "P5", "P6" });
-        Subjects.First(s => s.Code == "CS301").ProfessorIds.AddRange(new[] { "P4", "P7" });
-        Subjects.First(s => s.Code == "CS302").ProfessorIds.AddRange(new[] { "P5", "P6", "P8" });
-        Subjects.First(s => s.Code == "CS401").ProfessorIds.AddRange(new[] { "P6", "P7" });
-        Subjects.First(s => s.Code == "CS402").ProfessorIds.AddRange(new[] { "P7", "P8" });
+        Subjects.First(s => s.Code == "CS101").ProfessorIds.AddRange(new[] { "P1", "P2", "P41" });
+        Subjects.First(s => s.Code == "CS102").ProfessorIds.AddRange(new[] { "P3", "P4", "P42" });
+        Subjects.First(s => s.Code == "CS201").ProfessorIds.AddRange(new[] { "P5", "P6", "P43" });
+        Subjects.First(s => s.Code == "CS202").ProfessorIds.AddRange(new[] { "P7", "P8", "P44" });
+        Subjects.First(s => s.Code == "CS301").ProfessorIds.AddRange(new[] { "P1", "P41", "P42" });
+        Subjects.First(s => s.Code == "CS302").ProfessorIds.AddRange(new[] { "P2", "P3", "P43" });
+        Subjects.First(s => s.Code == "CS401").ProfessorIds.AddRange(new[] { "P4", "P5", "P44" });
+        Subjects.First(s => s.Code == "CS402").ProfessorIds.AddRange(new[] { "P6", "P7", "P8" });
 
         // IT Subjects
-        Subjects.First(s => s.Code == "IT101").ProfessorIds.AddRange(new[] { "P1", "P2" });
-        Subjects.First(s => s.Code == "IT201").ProfessorIds.AddRange(new[] { "P3", "P4", "P8" });
-        Subjects.First(s => s.Code == "IT301").ProfessorIds.AddRange(new[] { "P5", "P6" });
-        Subjects.First(s => s.Code == "IT401").ProfessorIds.AddRange(new[] { "P7", "P8" });
+        Subjects.First(s => s.Code == "IT101").ProfessorIds.AddRange(new[] { "P1", "P2", "P41" });
+        Subjects.First(s => s.Code == "IT201").ProfessorIds.AddRange(new[] { "P3", "P4", "P42" });
+        Subjects.First(s => s.Code == "IT301").ProfessorIds.AddRange(new[] { "P5", "P6", "P43" });
+        Subjects.First(s => s.Code == "IT401").ProfessorIds.AddRange(new[] { "P7", "P8", "P44" });
 
         // IS Subjects
-        Subjects.First(s => s.Code == "IS101").ProfessorIds.AddRange(new[] { "P2", "P3" });
-        Subjects.First(s => s.Code == "IS201").ProfessorIds.AddRange(new[] { "P4", "P5" });
-        Subjects.First(s => s.Code == "IS301").ProfessorIds.AddRange(new[] { "P6", "P7" });
+        Subjects.First(s => s.Code == "IS101").ProfessorIds.AddRange(new[] { "P2", "P3", "P41" });
+        Subjects.First(s => s.Code == "IS201").ProfessorIds.AddRange(new[] { "P4", "P5", "P42" });
+        Subjects.First(s => s.Code == "IS301").ProfessorIds.AddRange(new[] { "P6", "P7", "P43" });
 
-        // Math Subjects
-        Subjects.First(s => s.Code == "MATH101").ProfessorIds.AddRange(new[] { "P9", "P10", "P11" });
-        Subjects.First(s => s.Code == "MATH102").ProfessorIds.AddRange(new[] { "P9", "P10", "P12" });
-        Subjects.First(s => s.Code == "MATH201").ProfessorIds.AddRange(new[] { "P10", "P11" });
-        Subjects.First(s => s.Code == "MATH202").ProfessorIds.AddRange(new[] { "P11", "P12" });
-        Subjects.First(s => s.Code == "MATH301").ProfessorIds.AddRange(new[] { "P9", "P12" });
-        Subjects.First(s => s.Code == "MATH302").ProfessorIds.AddRange(new[] { "P10", "P11" });
-        Subjects.First(s => s.Code == "MATH401").ProfessorIds.AddRange(new[] { "P11", "P12" });
-        Subjects.First(s => s.Code == "MATH402").ProfessorIds.AddRange(new[] { "P9", "P10" });
+        // ========== MATHEMATICS SUBJECTS ==========
+        // CAS Math Professors: P9-P12, P45-P48 (8 total)
 
-        // Physics Subjects
-        Subjects.First(s => s.Code == "PHY101").ProfessorIds.AddRange(new[] { "P13", "P14" });
-        Subjects.First(s => s.Code == "PHY102").ProfessorIds.AddRange(new[] { "P13", "P15" });
-        Subjects.First(s => s.Code == "PHY201").ProfessorIds.AddRange(new[] { "P14", "P15" });
-        Subjects.First(s => s.Code == "PHY202").ProfessorIds.AddRange(new[] { "P13", "P14" });
-        Subjects.First(s => s.Code == "PHY301").ProfessorIds.AddRange(new[] { "P15" });
-        Subjects.First(s => s.Code == "PHY302").ProfessorIds.AddRange(new[] { "P14", "P15" });
+        Subjects.First(s => s.Code == "MATH101").ProfessorIds.AddRange(new[] { "P9", "P10", "P45" });
+        Subjects.First(s => s.Code == "MATH102").ProfessorIds.AddRange(new[] { "P11", "P12", "P46" });
+        Subjects.First(s => s.Code == "MATH201").ProfessorIds.AddRange(new[] { "P9", "P10", "P47" });
+        Subjects.First(s => s.Code == "MATH202").ProfessorIds.AddRange(new[] { "P11", "P12", "P48" });
+        Subjects.First(s => s.Code == "MATH301").ProfessorIds.AddRange(new[] { "P9", "P45", "P46" });
+        Subjects.First(s => s.Code == "MATH302").ProfessorIds.AddRange(new[] { "P10", "P11", "P47" });
+        Subjects.First(s => s.Code == "MATH401").ProfessorIds.AddRange(new[] { "P12", "P45", "P48" });
+        Subjects.First(s => s.Code == "MATH402").ProfessorIds.AddRange(new[] { "P9", "P46", "P47" });
 
-        // Biology Subjects
-        Subjects.First(s => s.Code == "BIO101").ProfessorIds.AddRange(new[] { "P16", "P17" });
-        Subjects.First(s => s.Code == "BIO102").ProfessorIds.AddRange(new[] { "P16", "P18" });
-        Subjects.First(s => s.Code == "BIO201").ProfessorIds.AddRange(new[] { "P17", "P18" });
-        Subjects.First(s => s.Code == "BIO202").ProfessorIds.AddRange(new[] { "P16", "P17" });
-        Subjects.First(s => s.Code == "BIO301").ProfessorIds.AddRange(new[] { "P17", "P18" });
-        Subjects.First(s => s.Code == "BIO302").ProfessorIds.AddRange(new[] { "P16", "P18" });
+        // ========== PHYSICS SUBJECTS ==========
+        // CAS Physics Professors: P13-P15, P45-P48 (can share with Math for general courses)
+
+        Subjects.First(s => s.Code == "PHY101").ProfessorIds.AddRange(new[] { "P13", "P14", "P45" });
+        Subjects.First(s => s.Code == "PHY102").ProfessorIds.AddRange(new[] { "P13", "P15", "P46" });
+        Subjects.First(s => s.Code == "PHY201").ProfessorIds.AddRange(new[] { "P14", "P15", "P47" });
+        Subjects.First(s => s.Code == "PHY202").ProfessorIds.AddRange(new[] { "P13", "P14", "P48" });
+        Subjects.First(s => s.Code == "PHY301").ProfessorIds.AddRange(new[] { "P15", "P45" });
+        Subjects.First(s => s.Code == "PHY302").ProfessorIds.AddRange(new[] { "P14", "P15", "P46" });
+
+        // ========== BIOLOGY SUBJECTS ==========
+        // CAS Biology Professors: P16-P18, P47-P48 (can share some CAS faculty)
+
+        Subjects.First(s => s.Code == "BIO101").ProfessorIds.AddRange(new[] { "P16", "P17", "P47" });
+        Subjects.First(s => s.Code == "BIO102").ProfessorIds.AddRange(new[] { "P16", "P18", "P48" });
+        Subjects.First(s => s.Code == "BIO201").ProfessorIds.AddRange(new[] { "P17", "P18", "P47" });
+        Subjects.First(s => s.Code == "BIO202").ProfessorIds.AddRange(new[] { "P16", "P17", "P48" });
+        Subjects.First(s => s.Code == "BIO301").ProfessorIds.AddRange(new[] { "P17", "P18", "P45" });
+        Subjects.First(s => s.Code == "BIO302").ProfessorIds.AddRange(new[] { "P16", "P18", "P46" });
+
+        // ========== ENGINEERING SUBJECTS ==========
+        // COE Professors: P19-P24, P49-P52 (10 total)
 
         // Civil Engineering
-        Subjects.First(s => s.Code == "CE101").ProfessorIds.AddRange(new[] { "P19", "P20" });
-        Subjects.First(s => s.Code == "CE201").ProfessorIds.AddRange(new[] { "P19", "P21" });
-        Subjects.First(s => s.Code == "CE301").ProfessorIds.AddRange(new[] { "P20", "P21" });
-        Subjects.First(s => s.Code == "CE401").ProfessorIds.AddRange(new[] { "P21" });
+        Subjects.First(s => s.Code == "CE101").ProfessorIds.AddRange(new[] { "P19", "P20", "P49" });
+        Subjects.First(s => s.Code == "CE201").ProfessorIds.AddRange(new[] { "P19", "P21", "P50" });
+        Subjects.First(s => s.Code == "CE301").ProfessorIds.AddRange(new[] { "P20", "P21", "P49" });
+        Subjects.First(s => s.Code == "CE401").ProfessorIds.AddRange(new[] { "P21", "P49", "P50" });
 
         // Electrical Engineering
-        Subjects.First(s => s.Code == "EE101").ProfessorIds.AddRange(new[] { "P22", "P23" });
-        Subjects.First(s => s.Code == "EE201").ProfessorIds.AddRange(new[] { "P22", "P24" });
-        Subjects.First(s => s.Code == "EE301").ProfessorIds.AddRange(new[] { "P23", "P24" });
-        Subjects.First(s => s.Code == "EE401").ProfessorIds.AddRange(new[] { "P23" });
+        Subjects.First(s => s.Code == "EE101").ProfessorIds.AddRange(new[] { "P22", "P23", "P51" });
+        Subjects.First(s => s.Code == "EE201").ProfessorIds.AddRange(new[] { "P22", "P24", "P52" });
+        Subjects.First(s => s.Code == "EE301").ProfessorIds.AddRange(new[] { "P23", "P24", "P51" });
+        Subjects.First(s => s.Code == "EE401").ProfessorIds.AddRange(new[] { "P23", "P51", "P52" });
 
         // Mechanical Engineering
-        Subjects.First(s => s.Code == "ME101").ProfessorIds.AddRange(new[] { "P19", "P24" });
-        Subjects.First(s => s.Code == "ME201").ProfessorIds.AddRange(new[] { "P20", "P21" });
-        Subjects.First(s => s.Code == "ME301").ProfessorIds.AddRange(new[] { "P22", "P23" });
-        Subjects.First(s => s.Code == "ME401").ProfessorIds.AddRange(new[] { "P24" });
+        Subjects.First(s => s.Code == "ME101").ProfessorIds.AddRange(new[] { "P19", "P24", "P50" });
+        Subjects.First(s => s.Code == "ME201").ProfessorIds.AddRange(new[] { "P20", "P21", "P52" });
+        Subjects.First(s => s.Code == "ME301").ProfessorIds.AddRange(new[] { "P22", "P23", "P49" });
+        Subjects.First(s => s.Code == "ME401").ProfessorIds.AddRange(new[] { "P24", "P50", "P51" });
 
-        // Business Subjects
-        Subjects.First(s => s.Code == "BUS101").ProfessorIds.AddRange(new[] { "P25", "P26", "P27" });
-        Subjects.First(s => s.Code == "BUS201").ProfessorIds.AddRange(new[] { "P26", "P27" });
-        Subjects.First(s => s.Code == "BUS301").ProfessorIds.AddRange(new[] { "P27", "P28" });
-        Subjects.First(s => s.Code == "BUS401").ProfessorIds.AddRange(new[] { "P28", "P29" });
+        // ========== BUSINESS SUBJECTS ==========
+        // COB Professors: P25-P30, P53-P56 (10 total)
+
+        // General Business Subjects
+        Subjects.First(s => s.Code == "BUS101").ProfessorIds.AddRange(new[] { "P25", "P26", "P53" });
+        Subjects.First(s => s.Code == "BUS201").ProfessorIds.AddRange(new[] { "P26", "P27", "P54" });
+        Subjects.First(s => s.Code == "BUS301").ProfessorIds.AddRange(new[] { "P27", "P28", "P55" });
+        Subjects.First(s => s.Code == "BUS401").ProfessorIds.AddRange(new[] { "P28", "P29", "P56" });
 
         // Accountancy Subjects
         Subjects.First(s => s.Code == "ACC101").ProfessorIds.AddRange(new[] { "P28", "P29", "P30" });
-        Subjects.First(s => s.Code == "ACC102").ProfessorIds.AddRange(new[] { "P29", "P30" });
-        Subjects.First(s => s.Code == "ACC201").ProfessorIds.AddRange(new[] { "P28", "P30" });
-        Subjects.First(s => s.Code == "ACC301").ProfessorIds.AddRange(new[] { "P30" });
+        Subjects.First(s => s.Code == "ACC102").ProfessorIds.AddRange(new[] { "P29", "P30", "P53" });
+        Subjects.First(s => s.Code == "ACC201").ProfessorIds.AddRange(new[] { "P28", "P30", "P54" });
+        Subjects.First(s => s.Code == "ACC301").ProfessorIds.AddRange(new[] { "P30", "P55", "P56" });
 
-        // General Education
-        Subjects.First(s => s.Code == "ENG101").ProfessorIds.AddRange(new[] { "P31", "P32", "P33" });
-        Subjects.First(s => s.Code == "ENG102").ProfessorIds.AddRange(new[] { "P31", "P32" });
-        Subjects.First(s => s.Code == "FIL101").ProfessorIds.AddRange(new[] { "P33", "P34" });
-        Subjects.First(s => s.Code == "HIST101").ProfessorIds.AddRange(new[] { "P34", "P35" });
-        Subjects.First(s => s.Code == "SOC101").ProfessorIds.AddRange(new[] { "P33", "P35" });
-        Subjects.First(s => s.Code == "PE101").ProfessorIds.AddRange(new[] { "P35" });
-        Subjects.First(s => s.Code == "NSTP101").ProfessorIds.AddRange(new[] { "P35" });
+        // ========== GENERAL EDUCATION SUBJECTS ==========
+        // GEN Professors: P31-P40, P57-P60 (14 total)
+
+        // English Subjects
+        Subjects.First(s => s.Code == "ENG101").ProfessorIds.AddRange(new[] { "P31", "P32", "P33", "P57" });
+        Subjects.First(s => s.Code == "ENG102").ProfessorIds.AddRange(new[] { "P31", "P32", "P58", "P59" });
+
+        // Filipino Subject
+        Subjects.First(s => s.Code == "FIL101").ProfessorIds.AddRange(new[] { "P33", "P34", "P57", "P58" });
+
+        // History Subject
+        Subjects.First(s => s.Code == "HIST101").ProfessorIds.AddRange(new[] { "P34", "P35", "P59", "P60" });
+
+        // Social Science Subject
+        Subjects.First(s => s.Code == "SOC101").ProfessorIds.AddRange(new[] { "P33", "P35", "P36", "P57" });
+
+        // Physical Education
+        Subjects.First(s => s.Code == "PE101").ProfessorIds.AddRange(new[] { "P35", "P37", "P38", "P60" });
+
+        // NSTP
+        Subjects.First(s => s.Code == "NSTP101").ProfessorIds.AddRange(new[] { "P36", "P39", "P40", "P58" });
     }
 
     private void InitializeRooms()
