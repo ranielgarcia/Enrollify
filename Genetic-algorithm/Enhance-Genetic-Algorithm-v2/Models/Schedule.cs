@@ -29,7 +29,7 @@ public class Schedule
         foreach (var gene in Genes)
         {
             if (gene.Room.Capacity < gene.Section.StudentCount)
-                penalty += 100;
+                penalty += _config.RoomCapacityPenalty;
         }
 
         // Hard Constraint 2: Room type compatibility with subject
@@ -103,6 +103,24 @@ public class Schedule
             }
         }
 
+        // Hard Constraint: No overlapping timeslots within same section
+        var sectionOverlaps = Genes.GroupBy(g => g.Section.Id);
+        foreach (var sectionGroup in sectionOverlaps)
+        {
+            var genesList = sectionGroup.ToList();
+            for (int i = 0; i < genesList.Count; i++)
+            {
+                for (int j = i + 1; j < genesList.Count; j++)
+                {
+                    if (genesList[i].TimeSlot.OverlapsWith(genesList[j].TimeSlot))
+                    {
+                        penalty += _config.OverlapPenalty; // CRITICAL - overlapping times in same section
+                    }
+                }
+            }
+        }
+
+
         // Soft Constraint 1: Same subject should have same time across different days
         foreach (var group in subjectSectionSchedule)
         {
@@ -157,6 +175,16 @@ public class Schedule
                 penalty += _config.RoomProximityPenalty;
         }
 
+        // Soft Constraint 6: Subject time preferences (e.g., only 7am-6pm)
+        foreach (var gene in Genes)
+        {
+            if (!gene.Subject.TimePreference.IsWithinPreference(gene.TimeSlot))
+            {
+                penalty += _config.TimePreferencePenalty; // Penalty for scheduling outside preferred time
+            }
+        }
+
+
         // Normalized fitness (0-1000 range)
         double maxPenalty = CalculateMaxPossiblePenalty(data);
         _cachedFitness = 1000 * (1 - (penalty / maxPenalty));
@@ -207,16 +235,21 @@ public class Schedule
                 data.Subjects.First(sub => sub.Id == subId).DaysPerWeek));
 
         double maxPenalty = 0;
-        maxPenalty += totalSessions * 100;   // Room capacity
-        maxPenalty += totalSessions * 150;   // Room type compatibility
-        maxPenalty += totalSessions * 200;   // Section conflicts
-        maxPenalty += totalSessions * 100;   // Professor conflicts
-        maxPenalty += totalSessions * 100;   // Room conflicts
-        maxPenalty += totalSessions * 150;   // Professor qualification
-        maxPenalty += totalSessions * 200;   // DaysPerWeek violation
-        maxPenalty += totalSessions * 150;   // HoursPerDay mismatch
-        maxPenalty += totalSessions * 20;    // Time consistency
-        maxPenalty += totalSessions * 15;    // Time pattern consistency
+        maxPenalty += totalSessions * _config.RoomCapacityPenalty;   // Room capacity
+        maxPenalty += totalSessions * _config.RoomTypePenalty;   // Room type compatibility
+        maxPenalty += totalSessions * _config.SectionConflictPenalty;   // Section conflicts
+        maxPenalty += totalSessions * _config.OverlapPenalty;   // Overlapping timeslots (NEW)
+        maxPenalty += totalSessions * _config.ProfessorConflictPenalty;   // Professor conflicts
+        maxPenalty += totalSessions * _config.RoomConflictPenalty;   // Room conflicts
+        maxPenalty += totalSessions * _config.QualificationPenalty;   // Professor qualification
+        maxPenalty += totalSessions * _config.DaysPerWeekPenalty;   // DaysPerWeek violation
+        maxPenalty += totalSessions * _config.HoursPerDayPenalty;   // HoursPerDay mismatch
+        maxPenalty += totalSessions * _config.TimePreferencePenalty;    // Time preference violation (NEW)
+        maxPenalty += totalSessions * _config.TimePatternPenalty;    // Time Pattern Consistency
+        maxPenalty += totalSessions * _config.DayPatternPenalty;    // Day pattern consistency
+        maxPenalty += totalSessions * _config.ProfessorGapPenalty;    // Professor Gap
+        maxPenalty += totalSessions * _config.AfternoonPenalty;
+        maxPenalty += totalSessions * _config.RoomProximityPenalty;
         maxPenalty += totalSessions * 10;    // Day pattern preference
         maxPenalty += data.Sections.Count * 5;
 

@@ -49,60 +49,104 @@ public class ScheduleData
     private void InitializeProfessors()
     {
         Professors = new List<Professor>
-            {
-                // Computer Science Faculty
-                new Professor("P1", "Dr. Maria Santos", "CCS"),
-                new Professor("P2", "Prof. John Reyes", "CCS"),
-                new Professor("P3", "Dr. Ana Garcia", "CCS"),
-                new Professor("P4", "Prof. Robert Cruz", "CCS"),
-                new Professor("P5", "Dr. Sofia Mendoza", "CCS"),
-                new Professor("P6", "Prof. Michael Tan", "CCS"),
-                new Professor("P7", "Dr. Patricia Ramos", "CCS"),
-                new Professor("P8", "Prof. Daniel Flores", "CCS"),
-                
-                // Mathematics Faculty
-                new Professor("P9", "Dr. Elizabeth Torres", "CAS"),
-                new Professor("P10", "Prof. James Rivera", "CAS"),
-                new Professor("P11", "Dr. Carmen Lopez", "CAS"),
-                new Professor("P12", "Prof. David Gonzales", "CAS"),
-                
-                // Physics Faculty
-                new Professor("P13", "Dr. Rachel Sanchez", "CAS"),
-                new Professor("P14", "Prof. Steven Perez", "CAS"),
-                new Professor("P15", "Dr. Linda Martinez", "CAS"),
-                
-                // Biology Faculty
-                new Professor("P16", "Dr. Margaret Castillo", "CAS"),
-                new Professor("P17", "Prof. Thomas Morales", "CAS"),
-                new Professor("P18", "Dr. Jennifer Herrera", "CAS"),
-                
-                // Engineering Faculty
-                new Professor("P19", "Engr. Carlos Diaz", "COE"),
-                new Professor("P20", "Engr. Angela Ruiz", "COE"),
-                new Professor("P21", "Dr. Francisco Valdez", "COE"),
-                new Professor("P22", "Engr. Sarah Navarro", "COE"),
-                new Professor("P23", "Dr. Joseph Cruz", "COE"),
-                new Professor("P24", "Engr. Emily Jimenez", "COE"),
-                
-                // Business Faculty
-                new Professor("P25", "Prof. Amanda Salazar", "COB"),
-                new Professor("P26", "Dr. Christopher Ortiz", "COB"),
-                new Professor("P27", "Prof. Michelle Gutierrez", "COB"),
-                new Professor("P28", "Dr. Andrew Rojas", "COB"),
-                new Professor("P29", "Prof. Nicole Medina", "COB"),
-                new Professor("P30", "Dr. Kevin Romero", "COB"),
-                
-                // General Education Faculty
-                new Professor("P31", "Prof. Sandra Aguilar", "GEN"),
-                new Professor("P32", "Dr. William Fernandez", "GEN"),
-                new Professor("P33", "Prof. Laura Vargas", "GEN"),
-                new Professor("P34", "Dr. Richard Soto", "GEN"),
-                new Professor("P35", "Prof. Diana Castro", "GEN")
-            };
+        {
+            // Computer Science Faculty
+            new Professor("P1", "Dr. Maria Santos", "CCS"),
+            new Professor("P2", "Prof. John Reyes", "CCS"),
+            new Professor("P3", "Dr. Ana Garcia", "CCS"),
+            new Professor("P4", "Prof. Robert Cruz", "CCS"),
+            new Professor("P5", "Dr. Sofia Mendoza", "CCS"),
+            new Professor("P6", "Prof. Michael Tan", "CCS"),
+            new Professor("P7", "Dr. Patricia Ramos", "CCS"),
+            new Professor("P8", "Prof. Daniel Flores", "CCS"),
+
+            // Mathematics Faculty
+            new Professor("P9", "Dr. Elizabeth Torres", "CAS"),
+            new Professor("P10", "Prof. James Rivera", "CAS"),
+            new Professor("P11", "Dr. Carmen Lopez", "CAS"),
+            new Professor("P12", "Prof. David Gonzales", "CAS"),
+
+            // Physics Faculty
+            new Professor("P13", "Dr. Rachel Sanchez", "CAS"),
+            new Professor("P14", "Prof. Steven Perez", "CAS"),
+            new Professor("P15", "Dr. Linda Martinez", "CAS"),
+
+            // Biology Faculty
+            new Professor("P16", "Dr. Margaret Castillo", "CAS"),
+            new Professor("P17", "Prof. Thomas Morales", "CAS"),
+            new Professor("P18", "Dr. Jennifer Herrera", "CAS"),
+
+            // Engineering Faculty
+            new Professor("P19", "Engr. Carlos Diaz", "COE"),
+            new Professor("P20", "Engr. Angela Ruiz", "COE"),
+            new Professor("P21", "Dr. Francisco Valdez", "COE"),
+            new Professor("P22", "Engr. Sarah Navarro", "COE"),
+            new Professor("P23", "Dr. Joseph Cruz", "COE"),
+            new Professor("P24", "Engr. Emily Jimenez", "COE"),
+
+            // Business Faculty
+            new Professor("P25", "Prof. Amanda Salazar", "COB"),
+            new Professor("P26", "Dr. Christopher Ortiz", "COB"),
+            new Professor("P27", "Prof. Michelle Gutierrez", "COB"),
+            new Professor("P28", "Dr. Andrew Rojas", "COB"),
+            new Professor("P29", "Prof. Nicole Medina", "COB"),
+            new Professor("P30", "Dr. Kevin Romero", "COB"),
+
+            // General Education Faculty
+            new Professor("P31", "Prof. Sandra Aguilar", "GEN"),
+            new Professor("P32", "Dr. William Fernandez", "GEN"),
+            new Professor("P33", "Prof. Laura Vargas", "GEN"),
+            new Professor("P34", "Dr. Richard Soto", "GEN"),
+            new Professor("P35", "Prof. Diana Castro", "GEN"),
+            new Professor("P36", "Prof. Sample 1", "GEN"),
+            new Professor("P37", "Dr. Sample 2", "GEN"),
+            new Professor("P38", "Prof. Sample 3", "GEN"),
+            new Professor("P39", "Dr. Sample 4", "GEN"),
+            new Professor("P40", "Prof. Sample 5", "GEN"),
+
+            // ✅ Added 20 More Professors Below
+
+            // Additional CCS
+            new Professor("P41", "Prof. Vincent Dela Rosa", "CCS"),
+            new Professor("P42", "Dr. Hannah Bautista", "CCS"),
+            new Professor("P43", "Prof. Joshua Lim", "CCS"),
+            new Professor("P44", "Dr. Melissa Uy", "CCS"),
+
+            // Additional CAS
+            new Professor("P45", "Prof. Gabriel Santos", "CAS"),
+            new Professor("P46", "Dr. Irene Ponce", "CAS"),
+            new Professor("P47", "Prof. Oliver Estrada", "CAS"),
+            new Professor("P48", "Dr. Grace Evangelista", "CAS"),
+
+            // Additional COE
+            new Professor("P49", "Engr. Anthony dela Cruz", "COE"),
+            new Professor("P50", "Dr. Katherine Soriano", "COE"),
+            new Professor("P51", "Engr. Paolo Villanueva", "COE"),
+            new Professor("P52", "Dr. Michelle Reyes", "COE"),
+
+            // Additional COB
+            new Professor("P53", "Prof. Stephanie Manalo", "COB"),
+            new Professor("P54", "Dr. Victor Santiago", "COB"),
+            new Professor("P55", "Prof. Janine Panganiban", "COB"),
+            new Professor("P56", "Dr. Ernest Robles", "COB"),
+
+            // Additional GEN
+            new Professor("P57", "Prof. Helen Bautista", "GEN"),
+            new Professor("P58", "Prof. Carlo Manzano", "GEN"),
+            new Professor("P59", "Dr. Beatriz Estrada", "GEN"),
+            new Professor("P60", "Prof. Marco De Leon", "GEN"),
+        };
     }
 
     private void InitializeSubjects()
     {
+        var saturdayTimepreference = new TimePreference
+        {
+            StartTime = "08:30",
+            EndTime = "10:30",
+            AllowedDays = ["Saturday"]
+        };
+
         Subjects = new List<Subject>();
 
         // ========== COMPUTER SCIENCE SUBJECTS ==========
@@ -261,19 +305,19 @@ public class ScheduleData
 
         // ========== GENERAL EDUCATION SUBJECTS ==========
         Subjects.Add(new Subject("ENG101", "ENG101", "English Communication", SubjectType.English,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1, 2.0, DayPattern.Single, saturdayTimepreference));
         Subjects.Add(new Subject("ENG102", "ENG102", "Technical Writing", SubjectType.English,
             3, 2, 1.5, DayPattern.TTh));
         Subjects.Add(new Subject("FIL101", "FIL101", "Komunikasyon sa Filipino", SubjectType.General,
             3, 2, 1.5, DayPattern.MW));
         Subjects.Add(new Subject("HIST101", "HIST101", "Philippine History", SubjectType.SocialScience,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 2, 1.5, DayPattern.Single, saturdayTimepreference));
         Subjects.Add(new Subject("SOC101", "SOC101", "Understanding the Self", SubjectType.SocialScience,
-            3, 2, 1.5, DayPattern.MW));
+            3, 2, 1.5, DayPattern.Single, saturdayTimepreference));
         Subjects.Add(new Subject("PE101", "PE101", "Physical Education 1", SubjectType.General,
             2, 1, 2, DayPattern.Single));
         Subjects.Add(new Subject("NSTP101", "NSTP101", "National Service Training Program 1", SubjectType.General,
-            3, 1, 3, DayPattern.Single));
+            3, 1, 3, DayPattern.Single, saturdayTimepreference));
 
         // Assign professors to subjects (multiple professors per subject)
         AssignProfessorsToSubjects();
@@ -457,7 +501,7 @@ public class ScheduleData
     {
         TimeSlots = new List<TimeSlot>();
 
-        string[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
+        string[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
 
         // Time slots with different durations
         var timeSchedule = new[]
@@ -474,18 +518,35 @@ public class ScheduleData
                 ("08:00", "10:30", 2.5),
                 ("08:00", "11:00", 3.0),
 
+                // 08:30 ..., allows scheduling 1.5 hrs after the very first slot
+                ("08:30", "09:30", 1.0),
+                ("08:30", "10:00", 1.5),
+                ("08:30", "10:30", 2.0),
+                ("08:30", "11:00", 2.5),
+                ("08:30", "11:30", 3.0),
+
                 ("09:00", "10:00", 1.0),
                 ("09:00", "10:30", 1.5),
                 ("09:00", "11:00", 2.0),
                 ("09:00", "11:30", 2.5),
                 ("09:00", "12:00", 3.0),
 
+
+                ("09:30", "10:30", 1.0),
+                ("09:30", "11:00", 1.5),
+                ("09:30", "11:30", 2.0),
+                ("09:30", "12:00", 2.5),
+
+                // 12:00 to 13:00 // lunch - no time slot for it
+
                 ("10:00", "11:00", 1.0),
                 ("10:00", "11:30", 1.5),
                 ("10:00", "12:00", 2.0),
 
+                ("10:30", "11:30", 1.0),
+                ("10:30", "12:00", 1.5),
+
                 ("11:00", "12:00", 1.0),
-                ("11:00", "12:30", 1.5),
 
                 ("13:00", "14:00", 1.0),
                 ("13:00", "14:30", 1.5),
@@ -493,11 +554,23 @@ public class ScheduleData
                 ("13:00", "15:30", 2.5),
                 ("13:00", "16:00", 3.0),
 
+                ("13:30", "14:30", 1.0),
+                ("13:30", "15:00", 1.5),
+                ("13:30", "15:30", 2.0),
+                ("13:30", "16:00", 2.5),
+                ("13:30", "16:30", 3.0),
+
                 ("14:00", "15:00", 1.0),
                 ("14:00", "15:30", 1.5),
                 ("14:00", "16:00", 2.0),
                 ("14:00", "16:30", 2.5),
                 ("14:00", "17:00", 3.0),
+
+                ("14:30", "15:30", 1.0),
+                ("14:30", "16:00", 1.5),
+                ("14:30", "16:30", 2.0),
+                ("14:30", "17:00", 2.5),
+                ("14:30", "17:30", 3.0),
 
                 ("15:00", "16:00", 1.0),
                 ("15:00", "16:30", 1.5),
@@ -505,17 +578,41 @@ public class ScheduleData
                 ("15:00", "17:30", 2.5),
                 ("15:00", "18:00", 3.0),
 
+                ("15:30", "16:30", 1.0),
+                ("15:30", "17:00", 1.5),
+                ("15:30", "17:30", 2.0),
+                ("15:30", "18:00", 2.5),
+                ("15:30", "18:30", 3.0),
+
                 ("16:00", "17:00", 1.0),
                 ("16:00", "17:30", 1.5),
                 ("16:00", "18:00", 2.0),
                 ("16:00", "18:30", 2.5),
                 ("16:00", "19:00", 3.0),
 
+                ("16:30", "17:30", 1.0),
+                ("16:30", "18:00", 1.5),
+                ("16:30", "18:30", 2.0),
+                ("16:30", "19:00", 2.5),
+                ("16:30", "19:30", 3.0),
+
                 ("17:00", "18:00", 1.0),
                 ("17:00", "18:30", 1.5),
                 ("17:00", "19:00", 2.0),
                 ("17:00", "19:30", 2.5),
                 ("17:00", "20:00", 3.0),
+
+                ("17:30", "18:30", 1.0),
+                ("17:30", "19:00", 1.5),
+                ("17:30", "19:30", 2.0),
+                ("17:30", "20:00", 2.5),
+                ("17:30", "20:30", 3.0),
+
+                ("18:00", "19:00", 1.0),
+                ("18:00", "19:30", 1.5),
+                ("18:00", "20:00", 2.0),
+                ("18:00", "20:30", 2.5),
+                ("18:00", "21:00", 3.0),
             };
 
         int id = 1;

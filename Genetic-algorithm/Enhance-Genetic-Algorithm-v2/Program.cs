@@ -75,12 +75,12 @@ var conflicts = ConflictDetector.DetectAllConflicts(bestSchedule, data);
 if (conflicts.Count > 0)
 {
     Console.WriteLine("\n⚠ CONFLICTS DETECTED:");
-    foreach (var conflict in conflicts.Take(10))
+    foreach (var conflict in conflicts)//.Take(10)
     {
         Console.WriteLine($"  • {conflict}");
     }
-    if (conflicts.Count > 10)
-        Console.WriteLine($"  ... and {conflicts.Count - 10} more");
+    //if (conflicts.Count > 10)
+    //    Console.WriteLine($"  ... and {conflicts.Count - 10} more");
 }
 else
 {

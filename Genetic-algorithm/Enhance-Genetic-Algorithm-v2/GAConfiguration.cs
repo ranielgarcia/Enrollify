@@ -27,6 +27,9 @@ public class GAConfiguration
     public double DaysPerWeekPenalty { get; set; } = 250;
     public double HoursPerDayPenalty { get; set; } = 200;
 
+    public double OverlapPenalty { get; set; } = 300;
+    public double TimePreferencePenalty { get; set; } = 20;
+
     public static GAConfiguration Default => new GAConfiguration();
 
     public static GAConfiguration FastConvergence => new GAConfiguration
@@ -49,33 +52,35 @@ public class GAConfiguration
 
     public static GAConfiguration RealWorldUniversity => new GAConfiguration
     {
-        // Population & Generations
-        PopulationSize = 300,              // Large population for complex search space
-        MaxGenerations = 3000,             // More generations for convergence
+        // Core Parameters - OPTIMIZED for 42 sections, 240+ sessions
+        PopulationSize = 400,              // INCREASED - more diversity needed
+        MaxGenerations = 4000,             // INCREASED - complex constraints
 
-        // Genetic Operators
-        CrossoverRate = 0.90,              // High crossover to combine good solutions
-        MutationRate = 0.25,               // Higher mutation for exploration
-        TournamentSize = 10,               // Stronger selection pressure
+        // Genetic Operators - TUNED for section conflicts
+        CrossoverRate = 0.88,              // Slightly reduced for stability
+        MutationRate = 0.18,               // REDUCED - too much was causing conflicts
+        TournamentSize = 12,               // INCREASED - stronger selection
 
         // Elitism & Adaptation
-        EliteCount = 30,                   // Keep more best solutions (10% of population)
+        EliteCount = 40,                   // 10% of population
         UseAdaptiveMutation = true,
-        AdaptiveMutationThreshold = 150,   // Increase mutation after 150 stagnant gens
+        AdaptiveMutationThreshold = 200,   // Be patient before increasing mutation
 
-        // Target
-        TargetFitness = 920,               // Realistic target (not 950) for this complexity
+        // Target - realistic for this complexity
+        TargetFitness = 900,               // Lowered from 920
 
-        // Penalty Weights (calibrated for your constraints)
+        // Penalty Weights - BALANCED for your constraints
         RoomCapacityPenalty = 100,
         RoomTypePenalty = 150,
-        SectionConflictPenalty = 250,      // INCREASED - most critical
-        ProfessorConflictPenalty = 200,    // INCREASED - very important
-        RoomConflictPenalty = 200,         // INCREASED - very important
+        SectionConflictPenalty = 300,      // HIGHEST PRIORITY
+        OverlapPenalty = 350,              // NEW - CRITICAL
+        ProfessorConflictPenalty = 250,    // INCREASED
+        RoomConflictPenalty = 200,
         QualificationPenalty = 150,
-        DaysPerWeekPenalty = 250,          // NEW - critical for V4
-        HoursPerDayPenalty = 200,          // NEW - critical for V4
-        TimePatternPenalty = 25,
+        DaysPerWeekPenalty = 280,          // INCREASED
+        HoursPerDayPenalty = 220,          // INCREASED
+        TimePreferencePenalty = 25,        // NEW - soft constraint
+        TimePatternPenalty = 15,
         DayPatternPenalty = 10,
         ProfessorGapPenalty = 3,
         AfternoonPenalty = 2,
