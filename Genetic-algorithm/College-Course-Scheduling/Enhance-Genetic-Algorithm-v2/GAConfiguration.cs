@@ -55,16 +55,16 @@ public class GAConfiguration
     public static GAConfiguration RealWorldUniversity => new GAConfiguration
     {
         // Core Parameters - OPTIMIZED for 42 sections, 240+ sessions
-        PopulationSize = 400,              // INCREASED - more diversity needed
-        MaxGenerations = 4000,             // INCREASED - complex constraints
+        PopulationSize = 600,              // INCREASED - more diversity needed
+        MaxGenerations = 5000,             // INCREASED - complex constraints
 
         // Genetic Operators - TUNED for section conflicts
-        CrossoverRate = 0.88,              // Slightly reduced for stability
-        MutationRate = 0.18,               // REDUCED - too much was causing conflicts
-        TournamentSize = 12,               // INCREASED - stronger selection
+        CrossoverRate = 0.90,              // Slightly reduced for stability
+        MutationRate = 0.15,               // REDUCED - too much was causing conflicts
+        TournamentSize = 15,               // INCREASED - stronger selection
 
         // Elitism & Adaptation
-        EliteCount = 40,                   // 10% of population
+        EliteCount = 60,                   // 10% of population
         UseAdaptiveMutation = true,
         AdaptiveMutationThreshold = 200,   // Be patient before increasing mutation
 
@@ -75,7 +75,7 @@ public class GAConfiguration
         RoomCapacityPenalty = 100,
         RoomTypePenalty = 150,
         SectionConflictPenalty = 300,      // HIGHEST PRIORITY
-        OverlapPenalty = 450,              // NEW - CRITICAL
+        OverlapPenalty = 550,              // NEW - CRITICAL
         ProfessorConflictPenalty = 250,    // INCREASED
         RoomConflictPenalty = 200,
         QualificationPenalty = 150,

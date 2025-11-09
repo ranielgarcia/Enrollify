@@ -93,7 +93,7 @@ public class Schedule
         // Normalized fitness (0-1000 range)
         double maxPenalty = CalculateMaxPossiblePenalty(data);
         _cachedFitness = 1000 * (1 - (penalty / maxPenalty));
-        return Math.Max(_cachedFitness.Value, 0);
+         return Math.Max(_cachedFitness.Value, 0);
     }
 
     private double CalculateMaxPossiblePenalty(ScheduleData data)
@@ -129,58 +129,24 @@ public class Schedule
     {
         int violations = 0;
 
-        // Room capacity
-        foreach (var gene in Genes)
-        {
-            if (gene.Room.Capacity < gene.Section.StudentCount)
-                violations++;
-        }
-
-        // Room type compatibility
-        foreach (var gene in Genes)
-        {
-            if (!gene.Room.IsCompatibleWith(gene.Subject))
-                violations++;
-        }
-
-        // Section conflicts
-        var sectionSchedule = Genes.GroupBy(g => g.Section.Id);
-        foreach (var sectionGroup in sectionSchedule)
-        {
-            var timeGroups = sectionGroup.GroupBy(g => g.TimeSlot.Id);
-            foreach (var timeGroup in timeGroups)
-            {
-                if (timeGroup.Count() > 1)
-                    violations += timeGroup.Count() - 1;
-            }
-        }
-
-        // Professor conflicts
-        var professorSchedule = Genes.GroupBy(g => g.ProfessorId);
-        foreach (var profGroup in professorSchedule)
-        {
-            var timeGroups = profGroup.GroupBy(g => g.TimeSlot.Id);
-            foreach (var timeGroup in timeGroups)
-            {
-                if (timeGroup.Count() > 1)
-                    violations += timeGroup.Count() - 1;
-            }
-        }
-
-        // Room conflicts
-        var roomSchedule = Genes.GroupBy(g => new { roomId = g.Room.Id, timeSlotId = g.TimeSlot.Id });
-        foreach (var group in roomSchedule)
-        {
-            if (group.Count() > 1)
-                violations += group.Count() - 1;
-        }
-
-        // Professor qualification
-        foreach (var gene in Genes)
-        {
-            if (!gene.Subject.ProfessorIds.Contains(gene.ProfessorId))
-                violations++;
-        }
+        Constraints.RoomCapacityMustFitSectionSize(Genes, (Gene _) => violations += 1);
+        Constraints.RoomTypeCompatibilityWithSubject(Genes, (Gene _) => violations += 1);
+        Constraints.NoSectionConflicts(Genes, (IGrouping<string, Gene> timeGroup) => violations += 1);
+        Constraints.NoProfessorConflicts(Genes, (IGrouping<string, Gene> timeGroup) => violations += 1);
+        Constraints.RoomCannotBeUsedByMultipleSectionsAtTheSameTime(Genes, (IGrouping<RoomTimeSlot, Gene> group) => violations += 1);
+        Constraints.ProfessorCanOnlyTeachSubjectsTheyAreQualifiedFor(Genes, (Gene _) => violations += 1);
+        Constraints.SubjectMustBeScheduledDaysPerWeekTimes(Genes, (Subject subject, int actualDays) => violations += 1);
+        Constraints.TimeSlotMustAccomodateSubjectsRequiredHoursPerDay(Genes, (Gene _, double _, double _) => violations += 1);
+        Constraints.NoOverlappingTimeSlotsWithinSameSection(Genes, (Gene _, Gene _) => violations += 1);
+        Constraints.SameSubjectShouldHaveSameTimeAcrossDifferentDays(Genes,
+            (IGrouping<SubjectSectionMap, Gene> _, int _) => violations += 1);
+        Constraints.RespectPreferredDayPatterns(Genes, (List<Gene> _) => violations += 1);
+        Constraints.MinimizeGapsInProfessorSchedulesPerDay(Genes, () => violations += 1);
+        Constraints.SameSectionShouldHaveClassesInNearbyRooms(Genes, () => violations += 1);
+        Constraints.SubjectTimeSlotShouldBeWithinSubjectTimePreference(Genes, () => violations += 1);
+        Constraints.NoExceedingProfessorMaxTimeSlotsPerDay(Genes,
+            (string professorId) => data.Professors.First(x => x.Id == professorId).MaxTimeSlotsPerDay,
+            (string _, IGrouping<string, Gene> _) => violations += 1);
 
         return violations;
     }
