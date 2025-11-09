@@ -1,4 +1,6 @@
-﻿namespace Enhance_Genetic_Algorithm_v2.Models;
+﻿using static Enhance_Genetic_Algorithm_v2.Constraints;
+
+namespace Enhance_Genetic_Algorithm_v2.Models;
 
 public class Schedule
 {
@@ -25,207 +27,68 @@ public class Schedule
 
         double penalty = 0;
 
-        // Hard Constraint 1: Room capacity must fit section size
-        foreach (var gene in Genes)
+        Constraints.RoomCapacityMustFitSectionSize(Genes, (Gene _) => penalty += _config.RoomCapacityPenalty);
+        Constraints.RoomTypeCompatibilityWithSubject(Genes, (Gene _) => penalty += _config.RoomTypePenalty);
+        Constraints.NoSectionConflicts(Genes, (IGrouping<string, Gene> timeGroup) =>
         {
-            if (gene.Room.Capacity < gene.Section.StudentCount)
-                penalty += _config.RoomCapacityPenalty;
-        }
-
-        // Hard Constraint 2: Room type compatibility with subject
-        foreach (var gene in Genes)
+            penalty += _config.SectionConflictPenalty * (timeGroup.Count() - 1);  // Critical violation
+        });
+        Constraints.NoProfessorConflicts(Genes, (IGrouping<string, Gene> timeGroup) =>
         {
-            if (!gene.Room.IsCompatibleWith(gene.Subject))
-                penalty += _config.RoomTypePenalty;
-        }
-
-        // Hard Constraint 3: No section conflicts (same section, different subjects, same time)
-        var sectionSchedule = Genes.GroupBy(g => g.Section.Id);
-        foreach (var sectionGroup in sectionSchedule)
+            penalty += _config.ProfessorConflictPenalty * (timeGroup.Count() - 1);
+        });
+        Constraints.RoomCannotBeUsedByMultipleSectionsAtTheSameTime(Genes, (IGrouping<RoomTimeSlot, Gene> group) =>
         {
-            var timeGroups = sectionGroup.GroupBy(g => g.TimeSlot.Id);
-            foreach (var timeGroup in timeGroups)
-            {
-                if (timeGroup.Count() > 1)
-                    penalty += _config.SectionConflictPenalty * (timeGroup.Count() - 1);  // Critical violation
-            }
-        }
-
-        // Hard Constraint 4: Professor cannot teach multiple classes at same time
-        var professorSchedule = Genes.GroupBy(g => g.ProfessorId);
-        foreach (var profGroup in professorSchedule)
+            penalty += _config.RoomConflictPenalty * (group.Count() - 1);
+        });
+        Constraints.ProfessorCanOnlyTeachSubjectsTheyAreQualifiedFor(Genes, (Gene _) =>
         {
-            var timeGroups = profGroup.GroupBy(g => g.TimeSlot.Id);
-            foreach (var timeGroup in timeGroups)
-            {
-                if (timeGroup.Count() > 1)
-                    penalty += _config.ProfessorConflictPenalty * (timeGroup.Count() - 1);
-            }
-        }
-
-        // Hard Constraint 5: Room cannot be used by multiple sections at same time
-        var roomSchedule = Genes.GroupBy(g => new { roomId = g.Room.Id, timeSlotId = g.TimeSlot.Id });
-        foreach (var group in roomSchedule)
+            penalty += _config.QualificationPenalty;
+        });
+        Constraints.SubjectMustBeScheduledDaysPerWeekTimes(Genes, (Subject subject, int actualDays) =>
         {
-            if (group.Count() > 1)
-                penalty += _config.RoomConflictPenalty * (group.Count() - 1);
-        }
-
-        // Hard Constraint 6: Professor can only teach subjects they're qualified for
-        foreach (var gene in Genes)
+            penalty += _config.DaysPerWeekPenalty * Math.Abs(actualDays - subject.DaysPerWeek); // Critical violation
+        });
+        Constraints.TimeSlotMustAccomodateSubjectsRequiredHoursPerDay(Genes, (Gene _, double _, double _) => {
+            penalty += _config.HoursPerDayPenalty; // Heavy penalty for time mismatch
+        });
+        Constraints.NoOverlappingTimeSlotsWithinSameSection(Genes, (Gene _, Gene _) =>
         {
-            if (!gene.Subject.ProfessorIds.Contains(gene.ProfessorId))
-                penalty += _config.QualificationPenalty;
-        }
-
-        // Hard Constraint 7: Subject must be scheduled DaysPerWeek times
-        var subjectSectionSchedule = Genes.GroupBy(g => new { subjectId = g.Subject.Id, sectionId = g.Section.Id });
-        foreach (var group in subjectSectionSchedule)
+            penalty += _config.OverlapPenalty; // CRITICAL - overlapping times in same section
+        });
+        Constraints.SameSubjectShouldHaveSameTimeAcrossDifferentDays(Genes, 
+            (IGrouping<SubjectSectionMap, Gene> _, int _) =>
         {
-            var subject = group.First().Subject;
-            var actualDays = group.Select(g => g.TimeSlot.Day).Distinct().Count();
-
-            if (actualDays != subject.DaysPerWeek)
-            {
-                penalty += _config.DaysPerWeekPenalty * Math.Abs(actualDays - subject.DaysPerWeek); // Critical violation
-            }
-        }
-
-        // Hard Constraint 8: TimeSlot must accommodate HoursPerDay
-        foreach (var gene in Genes)
+            penalty += _config.TimePatternPenalty; // Prefer consistent times (e.g., always at 9:00-10:30)
+        });
+        Constraints.RespectPreferredDayPatterns(Genes, (List<Gene> _) =>
         {
-            var slotDuration = gene.TimeSlot.GetDurationHours();
-            var requiredDuration = gene.Subject.HoursPerDay;
-
-            if (Math.Abs(slotDuration - requiredDuration) > 0.1) // Allow small tolerance
-            {
-                penalty += _config.HoursPerDayPenalty; // Heavy penalty for time mismatch
-            }
-        }
-
-        // Hard Constraint: No overlapping timeslots within same section
-        var sectionOverlaps = Genes.GroupBy(g => g.Section.Id);
-        foreach (var sectionGroup in sectionOverlaps)
+            penalty += _config.DayPatternPenalty;
+        });
+        Constraints.MinimizeGapsInProfessorSchedulesPerDay(Genes, () =>
         {
-            var genesList = sectionGroup.ToList();
-            for (int i = 0; i < genesList.Count; i++)
-            {
-                for (int j = i + 1; j < genesList.Count; j++)
-                {
-                    if (genesList[i].TimeSlot.OverlapsWith(genesList[j].TimeSlot))
-                    {
-                        penalty += _config.OverlapPenalty; // CRITICAL - overlapping times in same section
-                    }
-                }
-            }
-        }
+            penalty += _config.ProfessorGapPenalty;  // Small penalty for each gap
+        });
+        // Disabled
+        //Constraints.PreferMorningClasses(Genes, () =>
+        //{
+        //    penalty += _config.AfternoonPenalty;
+        //});
 
-
-        // Soft Constraint 1: Same subject should have same time across different days
-        foreach (var group in subjectSectionSchedule)
+        Constraints.SameSectionShouldHaveClassesInNearbyRooms(Genes, () =>
         {
-            if (group.Count() > 1)
-            {
-                var times = group.Select(g => g.TimeSlot.GetTimePattern()).Distinct().ToList();
-                if (times.Count > 1)
-                {
-                    penalty += _config.TimePatternPenalty; // Prefer consistent times (e.g., always at 9:00-10:30)
-                }
-            }
-        }
+            penalty += _config.RoomProximityPenalty;
+        });
 
-        // Soft Constraint 2: Respect preferred day patterns (MW, TTh, etc.)
-        foreach (var gene in Genes)
+        Constraints.SubjectTimeSlotShouldBeWithinSubjectTimePreference(Genes, () =>
         {
-            bool matchesPattern = CheckDayPattern(gene, Genes);
-            if (!matchesPattern)
-                penalty += _config.DayPatternPenalty;
-        }
-
-        // Soft Constraint 3: Minimize gaps in professor schedules per day
-        foreach (var profGroup in professorSchedule)
-        {
-            var dayGroups = profGroup.GroupBy(g => g.TimeSlot.Day);
-            foreach (var dayGroup in dayGroups)
-            {
-                if (dayGroup.Count() > 1)
-                {
-                    var slots = dayGroup.OrderBy(g => g.TimeSlot.StartTime).ToList();
-                    // Check for gaps between consecutive classes
-                    for (int i = 0; i < slots.Count - 1; i++)
-                    {
-                        penalty += _config.ProfessorGapPenalty;  // Small penalty for each gap
-                    }
-                }
-            }
-        }
-
-        // Soft Constraint 4: Prefer morning classes (before 13:00)
-        foreach (var gene in Genes)
-        {
-            if (string.Compare(gene.TimeSlot.StartTime, "13:00") >= 0)
-                penalty += _config.AfternoonPenalty;
-        }
-
-        // Soft Constraint 5: Same section should have classes in nearby rooms
-        foreach (var sectionGroup in sectionSchedule)
-        {
-            var rooms = sectionGroup.Select(g => g.Room.Id).Distinct().ToList();
-            if (rooms.Count > 5)  // Too many different rooms
-                penalty += _config.RoomProximityPenalty;
-        }
-
-        // Soft Constraint 6: Subject time preferences (e.g., only 7am-6pm)
-        foreach (var gene in Genes)
-        {
-            if (!gene.Subject.TimePreference.IsWithinPreference(gene.TimeSlot))
-            {
-                penalty += _config.TimePreferencePenalty; // Penalty for scheduling outside preferred time
-            }
-        }
-
+            penalty += _config.TimePreferencePenalty; // Penalty for scheduling outside preferred time
+        });
 
         // Normalized fitness (0-1000 range)
         double maxPenalty = CalculateMaxPossiblePenalty(data);
         _cachedFitness = 1000 * (1 - (penalty / maxPenalty));
         return Math.Max(_cachedFitness.Value, 0);
-    }
-
-    private bool CheckDayPattern(Gene gene, List<Gene> allGenes)
-    {
-        var subject = gene.Subject;
-        var section = gene.Section;
-
-        // Get all genes for same subject-section combination
-        var relatedGenes = allGenes.Where(g =>
-            g.Subject.Id == subject.Id &&
-            g.Section.Id == section.Id).ToList();
-
-        if (relatedGenes.Count <= 1)
-            return true;  // Single session, no pattern to check
-
-        var days = relatedGenes.Select(g => g.TimeSlot.Day).ToList();
-
-        switch (subject.PreferredDayPattern)
-        {
-            case DayPattern.MW:
-                return days.All(d => d == "Monday" || d == "Wednesday");
-
-            case DayPattern.TTh:
-                return days.All(d => d == "Tuesday" || d == "Thursday");
-
-            case DayPattern.MWF:
-                return days.All(d => d == "Monday" || d == "Wednesday" || d == "Friday");
-
-            case DayPattern.Daily:
-                return true;  // Any day is fine
-
-            case DayPattern.Single:
-                return days.Distinct().Count() == 1;
-
-            default:
-                return true;
-        }
     }
 
     private double CalculateMaxPossiblePenalty(ScheduleData data)
@@ -322,18 +185,18 @@ public class Schedule
         return new Schedule(newGenes, _config);
     }
 
-    public void Display()
-    {
-        Console.WriteLine($"{"Subject",-10} | {"Section",-12} | {"Room",-15} | {"Time Slot",-20} | Professor");
-        Console.WriteLine(new string('-', 95));
+    //public void Display()
+    //{
+    //    Console.WriteLine($"{"Subject",-10} | {"Section",-12} | {"Room",-15} | {"Time Slot",-20} | Professor");
+    //    Console.WriteLine(new string('-', 95));
 
-        foreach (var gene in Genes.OrderBy(g => g.Section.Name)
-                                  .ThenBy(g => g.TimeSlot.Day)
-                                  .ThenBy(g => g.TimeSlot.StartTime))
-        {
-            Console.WriteLine(gene.ToString());
-        }
-    }
+    //    foreach (var gene in Genes.OrderBy(g => g.Section.Name)
+    //                              .ThenBy(g => g.TimeSlot.Day)
+    //                              .ThenBy(g => g.TimeSlot.StartTime))
+    //    {
+    //        Console.WriteLine(gene.ToString());
+    //    }
+    //}
 
     public void DisplayBySection(ScheduleData data)
     {

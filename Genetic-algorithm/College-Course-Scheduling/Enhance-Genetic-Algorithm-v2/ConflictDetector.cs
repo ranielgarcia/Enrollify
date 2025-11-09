@@ -1,4 +1,5 @@
 ﻿using Enhance_Genetic_Algorithm_v2.Models;
+using static Enhance_Genetic_Algorithm_v2.Constraints;
 
 namespace Enhance_Genetic_Algorithm_v2;
 public class ConflictDetector
@@ -7,9 +8,18 @@ public class ConflictDetector
     {
         var conflicts = new List<string>();
 
-        // Section conflicts
+
+        var capacityViolations = DetectRoomCapacityViolations(schedule);
+        conflicts.AddRange(capacityViolations);
+
+        var roomTypeViolations = DetectRoomTypeViolations(schedule);
+        conflicts.AddRange(roomTypeViolations);
+
         var sectionConflicts = DetectSectionConflicts(schedule);
         conflicts.AddRange(sectionConflicts);
+
+        var professorConflicts = DetectProfessorConflicts(schedule);
+        conflicts.AddRange(professorConflicts);
 
         var lessOrMoreThanSubjectSchedules = DetectSubjectsScheduledLessOrMoreThanDaysPerWeek(schedule);
         conflicts.AddRange(lessOrMoreThanSubjectSchedules);
@@ -17,168 +27,166 @@ public class ConflictDetector
         var invalidTimeSlots = DetectTimeSlotInvalid(schedule);
         conflicts.AddRange(invalidTimeSlots);
 
-        // Professor conflicts
-        var professorConflicts = DetectProfessorConflicts(schedule);
-        conflicts.AddRange(professorConflicts);
 
-        // Room conflicts
         var roomConflicts = DetectRoomConflicts(schedule);
         conflicts.AddRange(roomConflicts);
 
-        // Room capacity violations
-        var capacityViolations = DetectCapacityViolations(schedule);
-        conflicts.AddRange(capacityViolations);
+        var qualificationViolations = DetectQualificationViolations(schedule);
+        conflicts.AddRange(qualificationViolations);
 
-        // Room type incompatibility
-        var roomTypeViolations = DetectRoomTypeViolations(schedule);
-        conflicts.AddRange(roomTypeViolations);
+        var overlappingViolations = DetectOverlappingTimeSlotsWithinSameSection(schedule);
+        conflicts.AddRange(overlappingViolations);
 
-        // Professor qualification issues
-        var qualificationIssues = DetectQualificationIssues(schedule);
-        conflicts.AddRange(qualificationIssues);
+        var inconsistentSubjectTimesViolations = DetectInconsistentSubjectTimes(schedule);
+        conflicts.AddRange(inconsistentSubjectTimesViolations);
+
+        var subjectPreferredDaysViolations = DetectUnsatisfiedSubjectPreferredDayPattern(schedule);
+        conflicts.AddRange(subjectPreferredDaysViolations);
 
         return conflicts;
     }
 
     private static List<string> DetectSectionConflicts(Schedule schedule)
     {
+        // (same section, different subjects, same time)
         var conflicts = new List<string>();
-        var sectionSchedule = schedule.Genes.GroupBy(g => g.Section.Id);
-
-        foreach (var sectionGroup in sectionSchedule)
+        Constraints.NoSectionConflicts(schedule.Genes, (IGrouping<string, Gene> timeGroup) =>
         {
-            var timeGroups = sectionGroup.GroupBy(g => g.TimeSlot.Id);
-            foreach (var timeGroup in timeGroups)
-            {
-                if (timeGroup.Count() > 1)
-                {
-                    var section = timeGroup.First().Section;
-                    var subjects = string.Join(", ", timeGroup.Select(g => g.Subject.Code));
-                    var time = timeGroup.First().TimeSlot;
-                    conflicts.Add($"SECTION CONFLICT: {section.Name} has {timeGroup.Count()} subjects at {time}: {subjects}");
-                }
-            }
-        }
-
+            var section = timeGroup.First().Section;
+            var subjects = string.Join(", ", timeGroup.Select(g => g.Subject.Code));
+            var time = timeGroup.First().TimeSlot;
+            conflicts.Add($"SECTION CONFLICT: {section.Name} has {timeGroup.Count()} subjects at {time}: {subjects}");
+        });
         return conflicts;
     }
 
     private static List<string> DetectSubjectsScheduledLessOrMoreThanDaysPerWeek(Schedule schedule)
     {
         var conflicts = new List<string>();
-        var subjectSectionSchedule = schedule.Genes.GroupBy(g => new { subjectId = g.Subject.Id, sectionId = g.Section.Id });
-        foreach (var group in subjectSectionSchedule)
-        {
-            var subject = group.First().Subject;
-            var actualDays = group.Select(g => g.TimeSlot.Day).Distinct().Count();
 
-            if (actualDays != subject.DaysPerWeek)
-            {
-                conflicts.Add($"SUBJECT SCHEDULED LESS/MORE THAN DaysPerWeek: {subject.Name} has {actualDays} days scheduled versus {subject.DaysPerWeek} required days");
-            }
-        }
+        Constraints.SubjectMustBeScheduledDaysPerWeekTimes(schedule.Genes, (Subject subject, int actualDays) =>
+        {
+            conflicts.Add($"SUBJECT SCHEDULED LESS/MORE THAN DaysPerWeek: {subject.Name} has {actualDays} days scheduled versus {subject.DaysPerWeek} required days");
+        });
         return conflicts;
     }
 
     private static List<string> DetectTimeSlotInvalid(Schedule schedule)
     {
         var conflicts = new List<string>();
-        foreach (var gene in schedule.Genes)
+        Constraints.TimeSlotMustAccomodateSubjectsRequiredHoursPerDay(schedule.Genes, (Gene gene, double slotDuration, double requiredDuration) =>
         {
-            var slotDuration = gene.TimeSlot.GetDurationHours();
-            var requiredDuration = gene.Subject.HoursPerDay;
+            conflicts.Add($"TimeSlot Invalid: {gene.Subject.Name} has {slotDuration} timeslot scheduled versus {requiredDuration} required timeslot");
+        });
 
-            if (Math.Abs(slotDuration - requiredDuration) > 0.1) // Allow small tolerance
-            {
-                conflicts.Add($"TimeSlot Invalid: {gene.Subject.Name} has {slotDuration} timeslot scheduled versus {requiredDuration} required timeslot");
-            }
-        }
         return conflicts;
     }
 
     private static List<string> DetectProfessorConflicts(Schedule schedule)
     {
         var conflicts = new List<string>();
-        var professorSchedule = schedule.Genes.GroupBy(g => g.ProfessorId);
 
-        foreach (var profGroup in professorSchedule)
+        Constraints.NoProfessorConflicts(schedule.Genes, (IGrouping<string, Gene> timeGroup) =>
         {
-            var timeGroups = profGroup.GroupBy(g => g.TimeSlot.Id);
-            foreach (var timeGroup in timeGroups)
-            {
-                if (timeGroup.Count() > 1)
-                {
-                    var classes = string.Join(", ", timeGroup.Select(g => $"{g.Subject.Code}({g.Section.Name})"));
-                    var time = timeGroup.First().TimeSlot;
-                    conflicts.Add($"PROFESSOR CONFLICT: Prof. {profGroup.Key} teaches {timeGroup.Count()} classes at {time}: {classes}");
-                }
-            }
-        }
+            var classes = string.Join(", ", timeGroup.Select(g => $"{g.Subject.Code}({g.Section.Name})"));
+            var time = timeGroup.First().TimeSlot;
+            conflicts.Add($"PROFESSOR CONFLICT: Prof. {timeGroup.First().ProfessorId} teaches {timeGroup.Count()} classes at {time}: {classes}");
+        });
 
         return conflicts;
     }
 
     private static List<string> DetectRoomConflicts(Schedule schedule)
     {
+        // Room cannot be used by multiple sections at same time
         var conflicts = new List<string>();
-        var roomSchedule = schedule.Genes.GroupBy(g => new { roomId = g.Room.Id, timeSlotId = g.TimeSlot.Id });
 
-        foreach (var group in roomSchedule)
+        Constraints.RoomCannotBeUsedByMultipleSectionsAtTheSameTime(schedule.Genes, (IGrouping<RoomTimeSlot, Gene> schedule) =>
         {
-            if (group.Count() > 1)
-            {
-                var room = group.First().Room;
-                var classes = string.Join(", ", group.Select(g => $"{g.Subject.Code}({g.Section.Name})"));
-                var time = group.First().TimeSlot;
-                conflicts.Add($"ROOM CONFLICT: {room.Name} has {group.Count()} classes at {time}: {classes}");
-            }
-        }
+            var room = schedule.First().Room;
+            var classes = string.Join(", ", schedule.Select(g => $"{g.Subject.Code}({g.Section.Name})"));
+            var time = schedule.First().TimeSlot;
+            conflicts.Add($"ROOM CONFLICT: {room.Name} has {schedule.Count()} classes at {time}: {classes}");
+        });
 
         return conflicts;
     }
 
-    private static List<string> DetectCapacityViolations(Schedule schedule)
+    private static List<string> DetectRoomCapacityViolations(Schedule schedule)
     {
         var violations = new List<string>();
-
-        foreach (var gene in schedule.Genes)
+        Constraints.RoomCapacityMustFitSectionSize(schedule.Genes, (Gene gene) =>
         {
-            if (gene.Room.Capacity < gene.Section.StudentCount)
-            {
-                violations.Add($"CAPACITY: {gene.Subject.Code}({gene.Section.Name}) has {gene.Section.StudentCount} students but room {gene.Room.Name} only fits {gene.Room.Capacity}");
-            }
-        }
-
+            violations.Add($"CAPACITY: {gene.Subject.Code}({gene.Section.Name}) has {gene.Section.StudentCount} students but room {gene.Room.Name} only fits {gene.Room.Capacity}");
+        });
         return violations;
     }
 
     private static List<string> DetectRoomTypeViolations(Schedule schedule)
     {
         var violations = new List<string>();
-
-        foreach (var gene in schedule.Genes)
+        Constraints.RoomTypeCompatibilityWithSubject(schedule.Genes, (Gene gene) =>
         {
-            if (!gene.Room.IsCompatibleWith(gene.Subject))
-            {
-                violations.Add($"ROOM TYPE: {gene.Subject.Code} ({gene.Subject.Type}) assigned to incompatible room {gene.Room.Name} ({gene.Room.Type})");
-            }
-        }
+            violations.Add($"ROOM TYPE: {gene.Subject.Code} ({gene.Subject.Type}) assigned to incompatible room {gene.Room.Name} ({gene.Room.Type})");
+        });
+        return violations;
+    }
+
+    private static List<string> DetectQualificationViolations(Schedule schedule)
+    {
+        var violations = new List<string>();
+
+        Constraints.ProfessorCanOnlyTeachSubjectsTheyAreQualifiedFor(schedule.Genes, (Gene gene) =>
+        {
+            violations.Add($"QUALIFICATION: Prof. {gene.ProfessorId} is not qualified to teach {gene.Subject.Code}");
+        });
 
         return violations;
     }
 
-    private static List<string> DetectQualificationIssues(Schedule schedule)
+    private static List<string> DetectOverlappingTimeSlotsWithinSameSection(Schedule schedule)
     {
-        var issues = new List<string>();
+        var violations = new List<string>();
 
-        foreach (var gene in schedule.Genes)
+        Constraints.NoOverlappingTimeSlotsWithinSameSection(schedule.Genes, (Gene gene1, Gene gene2) =>
         {
-            if (!gene.Subject.ProfessorIds.Contains(gene.ProfessorId))
-            {
-                issues.Add($"QUALIFICATION: Prof. {gene.ProfessorId} is not qualified to teach {gene.Subject.Code}");
-            }
-        }
+            violations.Add($"OVERLAPPING SCHEDULE: Subject {gene1.Subject.Name} ({gene1.TimeSlot.StartTime}-{gene1.TimeSlot.EndTime}) overlapped with Subject {gene2.Subject.Name} ({gene2.TimeSlot.StartTime}-{gene2.TimeSlot.EndTime})");
+        });
 
-        return issues;
+        return violations;
+    }
+
+    private static List<string> DetectInconsistentSubjectTimes(Schedule schedule)
+    {
+        var violations = new List<string>();
+
+        Constraints.SameSubjectShouldHaveSameTimeAcrossDifferentDays(schedule.Genes, 
+            (IGrouping<SubjectSectionMap, Gene> schedules, int count) =>
+        {
+            var subject = schedules.First().Subject;
+            var section = schedules.First().Section;
+            var timeDetails = string.Join(", ", schedules.Select(g => $"{g.TimeSlot.Day} {g.TimeSlot.GetTimePattern()}"));
+
+            violations.Add($"(Soft constraint) INCONSISTENT TIME: {subject.Code} for {section.Name} has {count} different time patterns: {timeDetails}");
+        });
+
+        return violations;
+    }
+
+    private static List<string> DetectUnsatisfiedSubjectPreferredDayPattern(Schedule schedule)
+    {
+        var violations = new List<string>();
+
+        Constraints.RespectPreferredDayPatterns(schedule.Genes, (List<Gene> subjectSectionGenes) =>
+        {
+            var subject = subjectSectionGenes.First().Subject;
+            var section = subjectSectionGenes.First().Section;
+            var days = subjectSectionGenes.Select(g => g.TimeSlot.Day).ToList();
+            var actualDays = string.Join(", ", days.Distinct());
+            
+            violations.Add($"(Soft constraint) PREFERRED DAY PATTERN: {subject.Code} for {section.Name} prefers {subject.PreferredDayPattern} but is scheduled on: {actualDays}");
+        });
+
+        return violations;
     }
 }
