@@ -30,6 +30,8 @@ public class GAConfiguration
     public double OverlapPenalty { get; set; } = 300;
     public double TimePreferencePenalty { get; set; } = 20;
 
+    public double ExceedingProfessorMaxTimeSlotsPerDayPenalty { get; set; } = 150;
+
     public static GAConfiguration Default => new GAConfiguration();
 
     public static GAConfiguration FastConvergence => new GAConfiguration
@@ -73,7 +75,7 @@ public class GAConfiguration
         RoomCapacityPenalty = 100,
         RoomTypePenalty = 150,
         SectionConflictPenalty = 300,      // HIGHEST PRIORITY
-        OverlapPenalty = 350,              // NEW - CRITICAL
+        OverlapPenalty = 450,              // NEW - CRITICAL
         ProfessorConflictPenalty = 250,    // INCREASED
         RoomConflictPenalty = 200,
         QualificationPenalty = 150,
@@ -84,6 +86,7 @@ public class GAConfiguration
         DayPatternPenalty = 10,
         ProfessorGapPenalty = 3,
         AfternoonPenalty = 2,
-        RoomProximityPenalty = 5
+        RoomProximityPenalty = 5,
+        ExceedingProfessorMaxTimeSlotsPerDayPenalty = 150,
     };
 }

@@ -53,6 +53,26 @@ public static class Constraints
         }
     }//
 
+    public static void NoExceedingProfessorMaxTimeSlotsPerDay(
+        List<Gene> genes, 
+        Func<string, int> getProfessorMaxTimeSlotsPerDay, 
+        Action<string, IGrouping<string, Gene>> action)
+    {
+        // Hard Constraint 4: Professor cannot teach classes more than its MaxTimeSlotsPerDay
+        var professorSchedule = genes.GroupBy(g => g.ProfessorId);
+        foreach (var profGroup in professorSchedule)
+        {
+            var timeGroups = profGroup.GroupBy(g => g.TimeSlot.Day);
+            foreach (var timeGroup in timeGroups)
+            {
+                var professorMaxTimeSlotsPerDay = getProfessorMaxTimeSlotsPerDay(profGroup.First().ProfessorId);
+
+                if (timeGroup.Count() > professorMaxTimeSlotsPerDay)
+                    action(profGroup.First().ProfessorId, timeGroup);
+            }
+        }
+    }//
+
 
     public record RoomTimeSlot(string roomId, string timeSlotId);
     public static void RoomCannotBeUsedByMultipleSectionsAtTheSameTime(List<Gene> genes, Action<IGrouping<RoomTimeSlot, Gene>> action)
@@ -85,7 +105,7 @@ public static class Constraints
             var subject = group.First().Subject;
             var actualDays = group.Select(g => g.TimeSlot.Day).Distinct().Count();
 
-            if (subject != null && actualDays != subject.DaysPerWeek)
+            if (subject != null && actualDays != subject.DayAndTimePreference.DaysPerWeek)
             {
                 action(subject, actualDays);
             }
@@ -212,7 +232,7 @@ public static class Constraints
         // Soft Constraint 6: Subject time preferences (e.g., only 7am-6pm)
         foreach (var gene in genes)
         {
-            if (!gene.Subject.TimePreference.IsWithinPreference(gene.TimeSlot))
+            if (!gene.Subject.DayAndTimePreference.IsWithinPreference(gene.TimeSlot))
             {
                 action();
             }
@@ -234,7 +254,7 @@ public static class Constraints
         if (relatedGenes.Count <= 1)
             return (true, relatedGenes);  // Single session, no pattern to check
 
-        switch (subject.PreferredDayPattern)
+        switch (subject.DayAndTimePreference.PreferredDayPattern)
         {
             case DayPattern.MW:
                 return (days.All(d => d == "Monday" || d == "Wednesday"), relatedGenes);

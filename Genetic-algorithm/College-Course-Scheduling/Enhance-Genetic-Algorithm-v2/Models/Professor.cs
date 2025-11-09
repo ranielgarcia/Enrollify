@@ -6,12 +6,15 @@ public class Professor
     public string Department { get; set; }
     public List<string> SubjectIds { get; set; }  // Subjects they can teach
 
-    public Professor(string id, string name, string department)
+    public int MaxTimeSlotsPerDay { get; set; }
+
+    public Professor(string id, string name, string department, int maxTimeSlotsPerDay = 6)
     {
         Id = id;
         Name = name;
         Department = department;
         SubjectIds = new List<string>();
+        MaxTimeSlotsPerDay = maxTimeSlotsPerDay;
     }
 
     public override string ToString() => Name;

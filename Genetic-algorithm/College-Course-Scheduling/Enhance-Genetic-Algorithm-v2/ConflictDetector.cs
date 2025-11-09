@@ -43,6 +43,9 @@ public class ConflictDetector
         var subjectPreferredDaysViolations = DetectUnsatisfiedSubjectPreferredDayPattern(schedule);
         conflicts.AddRange(subjectPreferredDaysViolations);
 
+        var exceededProfessorMaxTimeSlotsPerDayViolations = DetectExceededProfessorMaxTimeSlotsPerDay(schedule, (string professorId) => data.Professors.First(p => p.Id == professorId).MaxTimeSlotsPerDay);
+        conflicts.AddRange(exceededProfessorMaxTimeSlotsPerDayViolations);
+
         return conflicts;
     }
 
@@ -66,7 +69,7 @@ public class ConflictDetector
 
         Constraints.SubjectMustBeScheduledDaysPerWeekTimes(schedule.Genes, (Subject subject, int actualDays) =>
         {
-            conflicts.Add($"SUBJECT SCHEDULED LESS/MORE THAN DaysPerWeek: {subject.Name} has {actualDays} days scheduled versus {subject.DaysPerWeek} required days");
+            conflicts.Add($"SUBJECT SCHEDULED LESS/MORE THAN DaysPerWeek: {subject.Name} has {actualDays} days scheduled versus {subject.DayAndTimePreference.DaysPerWeek} required days");
         });
         return conflicts;
     }
@@ -184,8 +187,25 @@ public class ConflictDetector
             var days = subjectSectionGenes.Select(g => g.TimeSlot.Day).ToList();
             var actualDays = string.Join(", ", days.Distinct());
             
-            violations.Add($"(Soft constraint) PREFERRED DAY PATTERN: {subject.Code} for {section.Name} prefers {subject.PreferredDayPattern} but is scheduled on: {actualDays}");
+            violations.Add($"(Soft constraint) PREFERRED DAY PATTERN: {subject.Code} for {section.Name} prefers {subject.DayAndTimePreference.PreferredDayPattern} but is scheduled on: {actualDays}");
         });
+
+        return violations;
+    }
+
+    private static List<string> DetectExceededProfessorMaxTimeSlotsPerDay(Schedule schedule, Func<string, int> getProfessorMaxTimeSlotsPerDay)
+    {
+        var violations = new List<string>();
+
+        Constraints.NoExceedingProfessorMaxTimeSlotsPerDay(schedule.Genes, getProfessorMaxTimeSlotsPerDay, 
+            (string professorId, IGrouping<string, Gene> genes) =>
+            {
+                var professorMaxTimeSlotsPerDay = getProfessorMaxTimeSlotsPerDay(professorId);
+                var timeSlotCount = genes.Count();
+                var day = genes.First().TimeSlot.Day;
+
+                violations.Add($"PROFESSOR MAX TIMESLOTS PER DAY EXCEEDED: {professorId} with MaxTimeSlotsPerDay of {professorMaxTimeSlotsPerDay} has {timeSlotCount} alloted slots in {day}");
+            });
 
         return violations;
     }

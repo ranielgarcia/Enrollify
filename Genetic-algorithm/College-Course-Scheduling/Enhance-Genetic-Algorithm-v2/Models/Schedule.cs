@@ -47,7 +47,7 @@ public class Schedule
         });
         Constraints.SubjectMustBeScheduledDaysPerWeekTimes(Genes, (Subject subject, int actualDays) =>
         {
-            penalty += _config.DaysPerWeekPenalty * Math.Abs(actualDays - subject.DaysPerWeek); // Critical violation
+            penalty += _config.DaysPerWeekPenalty * Math.Abs(actualDays - subject.DayAndTimePreference.DaysPerWeek); // Critical violation
         });
         Constraints.TimeSlotMustAccomodateSubjectsRequiredHoursPerDay(Genes, (Gene _, double _, double _) => {
             penalty += _config.HoursPerDayPenalty; // Heavy penalty for time mismatch
@@ -85,6 +85,11 @@ public class Schedule
             penalty += _config.TimePreferencePenalty; // Penalty for scheduling outside preferred time
         });
 
+        Constraints.NoExceedingProfessorMaxTimeSlotsPerDay(Genes, 
+            (string professorId) => data.Professors.First(x => x.Id ==  professorId).MaxTimeSlotsPerDay, 
+            (string _, IGrouping<string, Gene> _) => 
+                { penalty += _config.ExceedingProfessorMaxTimeSlotsPerDayPenalty;});
+
         // Normalized fitness (0-1000 range)
         double maxPenalty = CalculateMaxPossiblePenalty(data);
         _cachedFitness = 1000 * (1 - (penalty / maxPenalty));
@@ -95,7 +100,7 @@ public class Schedule
     {
         int totalSessions = data.Sections.Sum(s =>
             s.SubjectIds.Sum(subId =>
-                data.Subjects.First(sub => sub.Id == subId).DaysPerWeek));
+                data.Subjects.First(sub => sub.Id == subId).DayAndTimePreference.DaysPerWeek));
 
         double maxPenalty = 0;
         maxPenalty += totalSessions * _config.RoomCapacityPenalty;   // Room capacity
@@ -113,6 +118,7 @@ public class Schedule
         maxPenalty += totalSessions * _config.ProfessorGapPenalty;    // Professor Gap
         maxPenalty += totalSessions * _config.AfternoonPenalty;
         maxPenalty += totalSessions * _config.RoomProximityPenalty;
+        maxPenalty += totalSessions * _config.ExceedingProfessorMaxTimeSlotsPerDayPenalty;
         maxPenalty += totalSessions * 10;    // Day pattern preference
         maxPenalty += data.Sections.Count * 5;
 

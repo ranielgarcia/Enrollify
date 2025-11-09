@@ -140,10 +140,10 @@ public class ScheduleData
 
     private void InitializeSubjects()
     {
-        var saturdayTimepreference = new TimePreference
+        var saturdayPreference = new DayAndTimePreference (DayPattern.Single)
         {
-            StartTime = "08:30",
-            EndTime = "10:30",
+            TimeWindowStart = "07:30",
+            TimeWindowEnd = "12:00",
             AllowedDays = ["Saturday"]
         };
 
@@ -152,172 +152,173 @@ public class ScheduleData
         // ========== COMPUTER SCIENCE SUBJECTS ==========
         // Programming subjects (3 days/week, 1.5 hours/day = 4.5 hours total)
         Subjects.Add(new Subject("CS101", "CS101", "Introduction to Programming", SubjectType.ComputerScience,
-            3, 3, 1.5, DayPattern.MWF)
+            3, 1.5, new DayAndTimePreference(DayPattern.MWF))
+
         { RequiresLab = true });
         Subjects.Add(new Subject("CS102", "CS102", "Object-Oriented Programming", SubjectType.ComputerScience,
-            3, 3, 1.5, DayPattern.MWF)
+            3, 1.5, new DayAndTimePreference(DayPattern.MWF))
         { RequiresLab = true });
         Subjects.Add(new Subject("CS201", "CS201", "Data Structures and Algorithms", SubjectType.ComputerScience,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.TTh))
         { RequiresLab = true });
         Subjects.Add(new Subject("CS202", "CS202", "Database Management Systems", SubjectType.ComputerScience,
-            3, 2, 2, DayPattern.MW)
+            3, 2, new DayAndTimePreference(DayPattern.MW))
         { RequiresLab = true });
         Subjects.Add(new Subject("CS301", "CS301", "Software Engineering", SubjectType.ComputerScience,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
         Subjects.Add(new Subject("CS302", "CS302", "Computer Networks", SubjectType.ComputerScience,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("CS401", "CS401", "Artificial Intelligence", SubjectType.ComputerScience,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.TTh))
         { RequiresLab = true });
         Subjects.Add(new Subject("CS402", "CS402", "Machine Learning", SubjectType.ComputerScience,
-            3, 2, 2, DayPattern.MW)
+            3, 2, new DayAndTimePreference(DayPattern.MW))
         { RequiresLab = true });
 
         // IT Subjects
         Subjects.Add(new Subject("IT101", "IT101", "Fundamentals of IT", SubjectType.ComputerScience,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("IT201", "IT201", "Web Development", SubjectType.ComputerScience,
-            3, 3, 1.5, DayPattern.MWF)
+            3, 1.5, new DayAndTimePreference(DayPattern.MWF))
         { RequiresLab = true });
         Subjects.Add(new Subject("IT301", "IT301", "System Administration", SubjectType.ComputerScience,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.TTh))
         { RequiresLab = true });
         Subjects.Add(new Subject("IT401", "IT401", "Cybersecurity", SubjectType.ComputerScience,
-            3, 2, 2, DayPattern.MW)
+            3, 2, new DayAndTimePreference(DayPattern.MW))
         { RequiresLab = true });
 
         // IS Subjects
         Subjects.Add(new Subject("IS101", "IS101", "Information Systems Fundamentals", SubjectType.ComputerScience,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
         Subjects.Add(new Subject("IS201", "IS201", "Systems Analysis and Design", SubjectType.ComputerScience,
-            3, 2, 2, DayPattern.MW));
+            3, 2, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("IS301", "IS301", "Enterprise Systems", SubjectType.ComputerScience,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
 
         // ========== MATHEMATICS SUBJECTS ==========
         Subjects.Add(new Subject("MATH101", "MATH101", "Calculus I", SubjectType.Mathematics,
-            3, 3, 1, DayPattern.MWF));
+            3, 1, new DayAndTimePreference(DayPattern.MWF)));
         Subjects.Add(new Subject("MATH102", "MATH102", "Calculus II", SubjectType.Mathematics,
-            3, 3, 1, DayPattern.MWF));
+            3, 1, new DayAndTimePreference(DayPattern.MWF)));
         Subjects.Add(new Subject("MATH201", "MATH201", "Linear Algebra", SubjectType.Mathematics,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
         Subjects.Add(new Subject("MATH202", "MATH202", "Discrete Mathematics", SubjectType.Mathematics,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("MATH301", "MATH301", "Differential Equations", SubjectType.Mathematics,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
         Subjects.Add(new Subject("MATH302", "MATH302", "Probability and Statistics", SubjectType.Mathematics,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("MATH401", "MATH401", "Abstract Algebra", SubjectType.Mathematics,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
         Subjects.Add(new Subject("MATH402", "MATH402", "Real Analysis", SubjectType.Mathematics,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
 
         // ========== PHYSICS SUBJECTS ==========
         Subjects.Add(new Subject("PHY101", "PHY101", "Physics I (Mechanics)", SubjectType.Physics,
-            3, 2, 2, DayPattern.MW)
+            3, 2, new DayAndTimePreference(DayPattern.MW))
         { RequiresLab = true });
         Subjects.Add(new Subject("PHY102", "PHY102", "Physics II (Electricity & Magnetism)", SubjectType.Physics,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.TTh))
         { RequiresLab = true });
         Subjects.Add(new Subject("PHY201", "PHY201", "Modern Physics", SubjectType.Physics,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("PHY202", "PHY202", "Thermodynamics", SubjectType.Physics,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
         Subjects.Add(new Subject("PHY301", "PHY301", "Quantum Mechanics", SubjectType.Physics,
-            3, 2, 2, DayPattern.MW));
+            3, 2, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("PHY302", "PHY302", "Optics", SubjectType.Physics,
-            3, 2, 1.5, DayPattern.TTh)
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh))
         { RequiresLab = true });
 
         // ========== BIOLOGY SUBJECTS ==========
         Subjects.Add(new Subject("BIO101", "BIO101", "General Biology I", SubjectType.Biology,
-            3, 2, 2, DayPattern.MW)
+            3, 2, new DayAndTimePreference(DayPattern.MW))
         { RequiresLab = true });
         Subjects.Add(new Subject("BIO102", "BIO102", "General Biology II", SubjectType.Biology,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.TTh))
         { RequiresLab = true });
         Subjects.Add(new Subject("BIO201", "BIO201", "Genetics", SubjectType.Biology,
-            3, 2, 2, DayPattern.MW)
+            3, 2, new DayAndTimePreference(DayPattern.MW))
         { RequiresLab = true });
         Subjects.Add(new Subject("BIO202", "BIO202", "Microbiology", SubjectType.Biology,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.TTh))
         { RequiresLab = true });
         Subjects.Add(new Subject("BIO301", "BIO301", "Ecology", SubjectType.Biology,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("BIO302", "BIO302", "Cell Biology", SubjectType.Biology,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.TTh))
         { RequiresLab = true });
 
         // ========== ENGINEERING SUBJECTS ==========
         // Civil Engineering
         Subjects.Add(new Subject("CE101", "CE101", "Engineering Drawing", SubjectType.Engineering,
-            3, 2, 2, DayPattern.MW));
+            3, 2, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("CE201", "CE201", "Statics of Rigid Bodies", SubjectType.Engineering,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
         Subjects.Add(new Subject("CE301", "CE301", "Structural Analysis", SubjectType.Engineering,
-            3, 2, 2, DayPattern.MW));
+            3, 2, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("CE401", "CE401", "Highway Engineering", SubjectType.Engineering,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
 
         // Electrical Engineering
         Subjects.Add(new Subject("EE101", "EE101", "Circuit Theory", SubjectType.Engineering,
-            3, 2, 2, DayPattern.MW)
+            3, 2, new DayAndTimePreference(DayPattern.MW))
         { RequiresLab = true });
         Subjects.Add(new Subject("EE201", "EE201", "Electronics", SubjectType.Engineering,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.TTh))
         { RequiresLab = true });
         Subjects.Add(new Subject("EE301", "EE301", "Power Systems", SubjectType.Engineering,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("EE401", "EE401", "Control Systems", SubjectType.Engineering,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.TTh))
         { RequiresLab = true });
 
         // Mechanical Engineering
         Subjects.Add(new Subject("ME101", "ME101", "Engineering Mechanics", SubjectType.Engineering,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("ME201", "ME201", "Thermodynamics", SubjectType.Engineering,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
         Subjects.Add(new Subject("ME301", "ME301", "Fluid Mechanics", SubjectType.Engineering,
-            3, 2, 2, DayPattern.MW));
+            3, 2, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("ME401", "ME401", "Machine Design", SubjectType.Engineering,
-            3, 2, 2, DayPattern.TTh));
+            3, 2, new DayAndTimePreference(DayPattern.TTh)));
 
         // ========== BUSINESS SUBJECTS ==========
         Subjects.Add(new Subject("BUS101", "BUS101", "Introduction to Business", SubjectType.Business,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("BUS201", "BUS201", "Principles of Marketing", SubjectType.Business,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
         Subjects.Add(new Subject("BUS301", "BUS301", "Financial Management", SubjectType.Business,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("BUS401", "BUS401", "Strategic Management", SubjectType.Business,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
 
         // Accountancy
         Subjects.Add(new Subject("ACC101", "ACC101", "Principles of Accounting I", SubjectType.Business,
-            3, 2, 2, DayPattern.MW));
+            3, 2, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("ACC102", "ACC102", "Principles of Accounting II", SubjectType.Business,
-            3, 2, 2, DayPattern.TTh));
+            3, 2, new DayAndTimePreference(DayPattern.TTh)));
         Subjects.Add(new Subject("ACC201", "ACC201", "Cost Accounting", SubjectType.Business,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("ACC301", "ACC301", "Auditing", SubjectType.Business,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
 
         // ========== GENERAL EDUCATION SUBJECTS ==========
         Subjects.Add(new Subject("ENG101", "ENG101", "English Communication", SubjectType.English,
-            3, 1, 2.0, DayPattern.Single, saturdayTimepreference));
+            3, 2.0, saturdayPreference));
         Subjects.Add(new Subject("ENG102", "ENG102", "Technical Writing", SubjectType.English,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
         Subjects.Add(new Subject("FIL101", "FIL101", "Komunikasyon sa Filipino", SubjectType.General,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
         Subjects.Add(new Subject("HIST101", "HIST101", "Philippine History", SubjectType.SocialScience,
-            3, 2, 1.5, DayPattern.Single, saturdayTimepreference));
+            3, 1.5, saturdayPreference));
         Subjects.Add(new Subject("SOC101", "SOC101", "Understanding the Self", SubjectType.SocialScience,
-            3, 2, 1.5, DayPattern.Single, saturdayTimepreference));
+            3, 1.5, saturdayPreference));
         Subjects.Add(new Subject("PE101", "PE101", "Physical Education 1", SubjectType.General,
-            2, 1, 2, DayPattern.Single));
+            2, 2, new DayAndTimePreference(DayPattern.TTh)));
         Subjects.Add(new Subject("NSTP101", "NSTP101", "National Service Training Program 1", SubjectType.General,
-            3, 1, 3, DayPattern.Single, saturdayTimepreference));
+            3, 3, saturdayPreference));
 
         // Assign professors to subjects (multiple professors per subject)
         AssignProfessorsToSubjects();
