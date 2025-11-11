@@ -22,6 +22,21 @@ public class TimeSlot
         return (end - start).TotalHours;
     }
 
+    // NEW: Check if two timeslots overlap
+    public bool OverlapsWith(TimeSlot other)
+    {
+        if (Day != other.Day)
+            return false;
+
+        var thisStart = TimeSpan.Parse(StartTime);
+        var thisEnd = TimeSpan.Parse(EndTime);
+        var otherStart = TimeSpan.Parse(other.StartTime);
+        var otherEnd = TimeSpan.Parse(other.EndTime);
+
+        // Check for overlap: start1 < end2 AND start2 < end1
+        return thisStart < otherEnd && otherStart < thisEnd;
+    }
+
     public string GetTimePattern()
     {
         return $"{StartTime}-{EndTime}";

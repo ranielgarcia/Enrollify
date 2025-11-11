@@ -16,7 +16,7 @@ public class ScheduleExporter
             var selectedSlotNumberOfHours = CalculateHours(gene.TimeSlot.StartTime, gene.TimeSlot.EndTime);
 
             var professor = data.Professors.FirstOrDefault(p => p.Id == gene.ProfessorId);
-            csv.AppendLine($"{gene.Section.Name},{gene.Subject.Code},{gene.Subject.Name},{gene.Subject.DaysPerWeek},{gene.Subject.HoursPerDay}," +
+            csv.AppendLine($"{gene.Section.Name},{gene.Subject.Code},{gene.Subject.Name},{gene.Subject.DayAndTimePreference.DaysPerWeek},{gene.Subject.HoursPerDay}," +
                           $"{gene.Room.Name},{gene.TimeSlot.Day},{gene.TimeSlot.StartTime}," +
                           $"{gene.TimeSlot.EndTime}, {selectedSlotNumberOfHours},{professor?.Name ?? gene.ProfessorId}," +
                           $"{gene.Section.StudentCount}");

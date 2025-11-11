@@ -109,7 +109,7 @@ public class GeneticAlgorithm
 
         for (int i = 0; i < _config.PopulationSize; i++)
         {
-            var schedule = new Schedule();
+            var schedule = new Schedule(_config);
 
             foreach (var section in _data.Sections)
             {
@@ -147,13 +147,13 @@ public class GeneticAlgorithm
                     }
 
                     // Filter by day pattern
-                    var patternSlots = FilterSlotsByPattern(appropriateSlots, subject.PreferredDayPattern);
+                    var patternSlots = FilterSlotsByPattern(appropriateSlots, subject.DayAndTimePreference.PreferredDayPattern);
 
                     // NEW: Schedule for DaysPerWeek
                     var selectedDays = new HashSet<string>();
                     var professor = qualifiedProfs[_random.Next(qualifiedProfs.Count)];
 
-                    for (int day = 0; day < subject.DaysPerWeek; day++)
+                    for (int day = 0; day < subject.DayAndTimePreference.DaysPerWeek; day++)
                     {
                         // Find slots on days not yet used
                         var availableSlots = patternSlots
@@ -242,7 +242,7 @@ public class GeneticAlgorithm
     private Schedule Crossover(Schedule parent1, Schedule parent2)
     {
         // Section-based crossover: take complete sections from each parent
-        var offspring = new Schedule();
+        var offspring = new Schedule(_config);
         var sectionsUsed = new HashSet<string>();
 
         // Randomly decide which sections come from which parent
@@ -287,7 +287,7 @@ public class GeneticAlgorithm
                     break;
 
                 case 1: // Change timeslot (respect day pattern)
-                    var appropriateSlots = GetTimeSlotsForPattern(gene.Subject.PreferredDayPattern);
+                    var appropriateSlots = GetTimeSlotsForPattern(gene.Subject.DayAndTimePreference.PreferredDayPattern);
                     if (appropriateSlots.Count > 0)
                         gene.TimeSlot = appropriateSlots[_random.Next(appropriateSlots.Count)];
                     break;

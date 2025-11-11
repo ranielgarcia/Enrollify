@@ -49,231 +49,330 @@ public class ScheduleData
     private void InitializeProfessors()
     {
         Professors = new List<Professor>
-            {
-                // Computer Science Faculty
-                new Professor("P1", "Dr. Maria Santos", "CCS"),
-                new Professor("P2", "Prof. John Reyes", "CCS"),
-                new Professor("P3", "Dr. Ana Garcia", "CCS"),
-                new Professor("P4", "Prof. Robert Cruz", "CCS"),
-                new Professor("P5", "Dr. Sofia Mendoza", "CCS"),
-                new Professor("P6", "Prof. Michael Tan", "CCS"),
-                new Professor("P7", "Dr. Patricia Ramos", "CCS"),
-                new Professor("P8", "Prof. Daniel Flores", "CCS"),
-                
-                // Mathematics Faculty
-                new Professor("P9", "Dr. Elizabeth Torres", "CAS"),
-                new Professor("P10", "Prof. James Rivera", "CAS"),
-                new Professor("P11", "Dr. Carmen Lopez", "CAS"),
-                new Professor("P12", "Prof. David Gonzales", "CAS"),
-                
-                // Physics Faculty
-                new Professor("P13", "Dr. Rachel Sanchez", "CAS"),
-                new Professor("P14", "Prof. Steven Perez", "CAS"),
-                new Professor("P15", "Dr. Linda Martinez", "CAS"),
-                
-                // Biology Faculty
-                new Professor("P16", "Dr. Margaret Castillo", "CAS"),
-                new Professor("P17", "Prof. Thomas Morales", "CAS"),
-                new Professor("P18", "Dr. Jennifer Herrera", "CAS"),
-                
-                // Engineering Faculty
-                new Professor("P19", "Engr. Carlos Diaz", "COE"),
-                new Professor("P20", "Engr. Angela Ruiz", "COE"),
-                new Professor("P21", "Dr. Francisco Valdez", "COE"),
-                new Professor("P22", "Engr. Sarah Navarro", "COE"),
-                new Professor("P23", "Dr. Joseph Cruz", "COE"),
-                new Professor("P24", "Engr. Emily Jimenez", "COE"),
-                
-                // Business Faculty
-                new Professor("P25", "Prof. Amanda Salazar", "COB"),
-                new Professor("P26", "Dr. Christopher Ortiz", "COB"),
-                new Professor("P27", "Prof. Michelle Gutierrez", "COB"),
-                new Professor("P28", "Dr. Andrew Rojas", "COB"),
-                new Professor("P29", "Prof. Nicole Medina", "COB"),
-                new Professor("P30", "Dr. Kevin Romero", "COB"),
-                
-                // General Education Faculty
-                new Professor("P31", "Prof. Sandra Aguilar", "GEN"),
-                new Professor("P32", "Dr. William Fernandez", "GEN"),
-                new Professor("P33", "Prof. Laura Vargas", "GEN"),
-                new Professor("P34", "Dr. Richard Soto", "GEN"),
-                new Professor("P35", "Prof. Diana Castro", "GEN")
-            };
+        {
+            // Computer Science Faculty
+            new Professor("P1", "Dr. Maria Santos", "CCS"),
+            new Professor("P2", "Prof. John Reyes", "CCS"),
+            new Professor("P3", "Dr. Ana Garcia", "CCS"),
+            new Professor("P4", "Prof. Robert Cruz", "CCS"),
+            new Professor("P5", "Dr. Sofia Mendoza", "CCS"),
+            new Professor("P6", "Prof. Michael Tan", "CCS"),
+            new Professor("P7", "Dr. Patricia Ramos", "CCS"),
+            new Professor("P8", "Prof. Daniel Flores", "CCS"),
+
+            // Mathematics Faculty
+            new Professor("P9", "Dr. Elizabeth Torres", "CAS"),
+            new Professor("P10", "Prof. James Rivera", "CAS"),
+            new Professor("P11", "Dr. Carmen Lopez", "CAS"),
+            new Professor("P12", "Prof. David Gonzales", "CAS"),
+
+            // Physics Faculty
+            new Professor("P13", "Dr. Rachel Sanchez", "CAS"),
+            new Professor("P14", "Prof. Steven Perez", "CAS"),
+            new Professor("P15", "Dr. Linda Martinez", "CAS"),
+
+            // Biology Faculty
+            new Professor("P16", "Dr. Margaret Castillo", "CAS"),
+            new Professor("P17", "Prof. Thomas Morales", "CAS"),
+            new Professor("P18", "Dr. Jennifer Herrera", "CAS"),
+
+            // Engineering Faculty
+            new Professor("P19", "Engr. Carlos Diaz", "COE"),
+            new Professor("P20", "Engr. Angela Ruiz", "COE"),
+            new Professor("P21", "Dr. Francisco Valdez", "COE"),
+            new Professor("P22", "Engr. Sarah Navarro", "COE"),
+            new Professor("P23", "Dr. Joseph Cruz", "COE"),
+            new Professor("P24", "Engr. Emily Jimenez", "COE"),
+
+            // Business Faculty
+            new Professor("P25", "Prof. Amanda Salazar", "COB"),
+            new Professor("P26", "Dr. Christopher Ortiz", "COB"),
+            new Professor("P27", "Prof. Michelle Gutierrez", "COB"),
+            new Professor("P28", "Dr. Andrew Rojas", "COB"),
+            new Professor("P29", "Prof. Nicole Medina", "COB"),
+            new Professor("P30", "Dr. Kevin Romero", "COB"),
+
+            // General Education Faculty
+            new Professor("P31", "Prof. Sandra Aguilar", "GEN"),
+            new Professor("P32", "Dr. William Fernandez", "GEN"),
+            new Professor("P33", "Prof. Laura Vargas", "GEN"),
+            new Professor("P34", "Dr. Richard Soto", "GEN"),
+            new Professor("P35", "Prof. Diana Castro", "GEN"),
+            new Professor("P36", "Prof. Sample 1", "GEN"),
+            new Professor("P37", "Dr. Sample 2", "GEN"),
+            new Professor("P38", "Prof. Sample 3", "GEN"),
+            new Professor("P39", "Dr. Sample 4", "GEN"),
+            new Professor("P40", "Prof. Sample 5", "GEN"),
+
+            // ✅ Added 20 More Professors Below
+
+            // Additional CCS
+            new Professor("P41", "Prof. Vincent Dela Rosa", "CCS"),
+            new Professor("P42", "Dr. Hannah Bautista", "CCS"),
+            new Professor("P43", "Prof. Joshua Lim", "CCS"),
+            new Professor("P44", "Dr. Melissa Uy", "CCS"),
+
+            // Additional CAS
+            new Professor("P45", "Prof. Gabriel Santos", "CAS"),
+            new Professor("P46", "Dr. Irene Ponce", "CAS"),
+            new Professor("P47", "Prof. Oliver Estrada", "CAS"),
+            new Professor("P48", "Dr. Grace Evangelista", "CAS"),
+
+            // Additional COE
+            new Professor("P49", "Engr. Anthony dela Cruz", "COE"),
+            new Professor("P50", "Dr. Katherine Soriano", "COE"),
+            new Professor("P51", "Engr. Paolo Villanueva", "COE"),
+            new Professor("P52", "Dr. Michelle Reyes", "COE"),
+
+            // Additional COB
+            new Professor("P53", "Prof. Stephanie Manalo", "COB"),
+            new Professor("P54", "Dr. Victor Santiago", "COB"),
+            new Professor("P55", "Prof. Janine Panganiban", "COB"),
+            new Professor("P56", "Dr. Ernest Robles", "COB"),
+
+            // Additional GEN
+            new Professor("P57", "Prof. Helen Bautista", "GEN"),
+            new Professor("P58", "Prof. Carlo Manzano", "GEN"),
+            new Professor("P59", "Dr. Beatriz Estrada", "GEN"),
+            new Professor("P60", "Prof. Marco De Leon", "GEN"),
+        };
     }
 
     private void InitializeSubjects()
     {
+        var saturdayPreference = new DayAndTimePreference (DayPattern.Single)
+        {
+            TimeWindowStart = "07:30",
+            TimeWindowEnd = "12:00",
+            AllowedDays = ["Saturday"]
+        };
+
         Subjects = new List<Subject>();
 
         // ========== COMPUTER SCIENCE SUBJECTS ==========
-        // Programming subjects (3 days/week, 1.5 hours/day = 4.5 hours total)
+        // Programming subjects - distributed across different patterns
         Subjects.Add(new Subject("CS101", "CS101", "Introduction to Programming", SubjectType.ComputerScience,
-            3, 3, 1.5, DayPattern.MWF)
+            3, 1.5, new DayAndTimePreference(DayPattern.MWF))
         { RequiresLab = true });
+
         Subjects.Add(new Subject("CS102", "CS102", "Object-Oriented Programming", SubjectType.ComputerScience,
-            3, 3, 1.5, DayPattern.MWF)
+            3, 1.5, new DayAndTimePreference(DayPattern.TuWTh))
         { RequiresLab = true });
+
         Subjects.Add(new Subject("CS201", "CS201", "Data Structures and Algorithms", SubjectType.ComputerScience,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.TTh))
         { RequiresLab = true });
+
         Subjects.Add(new Subject("CS202", "CS202", "Database Management Systems", SubjectType.ComputerScience,
-            3, 2, 2, DayPattern.MW)
+            3, 2, new DayAndTimePreference(DayPattern.MW))
         { RequiresLab = true });
+
         Subjects.Add(new Subject("CS301", "CS301", "Software Engineering", SubjectType.ComputerScience,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.MWTh)));
+
         Subjects.Add(new Subject("CS302", "CS302", "Computer Networks", SubjectType.ComputerScience,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.TuWF)));
+
         Subjects.Add(new Subject("CS401", "CS401", "Artificial Intelligence", SubjectType.ComputerScience,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.MTh))
         { RequiresLab = true });
+
         Subjects.Add(new Subject("CS402", "CS402", "Machine Learning", SubjectType.ComputerScience,
-            3, 2, 2, DayPattern.MW)
+            3, 2, new DayAndTimePreference(DayPattern.TF))
         { RequiresLab = true });
 
-        // IT Subjects
+        // IT Subjects - varied patterns
         Subjects.Add(new Subject("IT101", "IT101", "Fundamentals of IT", SubjectType.ComputerScience,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.WF)));
+
         Subjects.Add(new Subject("IT201", "IT201", "Web Development", SubjectType.ComputerScience,
-            3, 3, 1.5, DayPattern.MWF)
-        { RequiresLab = true });
-        Subjects.Add(new Subject("IT301", "IT301", "System Administration", SubjectType.ComputerScience,
-            3, 2, 2, DayPattern.TTh)
-        { RequiresLab = true });
-        Subjects.Add(new Subject("IT401", "IT401", "Cybersecurity", SubjectType.ComputerScience,
-            3, 2, 2, DayPattern.MW)
+            3, 1.5, new DayAndTimePreference(DayPattern.MTuTh))
         { RequiresLab = true });
 
-        // IS Subjects
+        Subjects.Add(new Subject("IT301", "IT301", "System Administration", SubjectType.ComputerScience,
+            3, 2, new DayAndTimePreference(DayPattern.WThF))
+        { RequiresLab = true });
+
+        Subjects.Add(new Subject("IT401", "IT401", "Cybersecurity", SubjectType.ComputerScience,
+            3, 2, new DayAndTimePreference(DayPattern.MW))
+        { RequiresLab = true });
+
+        // IS Subjects - distributed patterns
         Subjects.Add(new Subject("IS101", "IS101", "Information Systems Fundamentals", SubjectType.ComputerScience,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
+
         Subjects.Add(new Subject("IS201", "IS201", "Systems Analysis and Design", SubjectType.ComputerScience,
-            3, 2, 2, DayPattern.MW));
+            3, 2, new DayAndTimePreference(DayPattern.MTuWTh)));
+
         Subjects.Add(new Subject("IS301", "IS301", "Enterprise Systems", SubjectType.ComputerScience,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.MWF)));
 
         // ========== MATHEMATICS SUBJECTS ==========
+        // Math subjects typically benefit from frequent meetings - using 3-day patterns
         Subjects.Add(new Subject("MATH101", "MATH101", "Calculus I", SubjectType.Mathematics,
-            3, 3, 1, DayPattern.MWF));
+            3, 1, new DayAndTimePreference(DayPattern.MWF)));
+
         Subjects.Add(new Subject("MATH102", "MATH102", "Calculus II", SubjectType.Mathematics,
-            3, 3, 1, DayPattern.MWF));
+            3, 1, new DayAndTimePreference(DayPattern.TuWTh)));
+
         Subjects.Add(new Subject("MATH201", "MATH201", "Linear Algebra", SubjectType.Mathematics,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
+
         Subjects.Add(new Subject("MATH202", "MATH202", "Discrete Mathematics", SubjectType.Mathematics,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
+
         Subjects.Add(new Subject("MATH301", "MATH301", "Differential Equations", SubjectType.Mathematics,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.MWF)));
+
         Subjects.Add(new Subject("MATH302", "MATH302", "Probability and Statistics", SubjectType.Mathematics,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.TuWF)));
+
         Subjects.Add(new Subject("MATH401", "MATH401", "Abstract Algebra", SubjectType.Mathematics,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.MTh)));
+
         Subjects.Add(new Subject("MATH402", "MATH402", "Real Analysis", SubjectType.Mathematics,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.WThF)));
 
         // ========== PHYSICS SUBJECTS ==========
+        // Physics with labs - use 2-day patterns for lecture+lab combo
         Subjects.Add(new Subject("PHY101", "PHY101", "Physics I (Mechanics)", SubjectType.Physics,
-            3, 2, 2, DayPattern.MW)
+            3, 2, new DayAndTimePreference(DayPattern.MW))
         { RequiresLab = true });
+
         Subjects.Add(new Subject("PHY102", "PHY102", "Physics II (Electricity & Magnetism)", SubjectType.Physics,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.TTh))
         { RequiresLab = true });
+
         Subjects.Add(new Subject("PHY201", "PHY201", "Modern Physics", SubjectType.Physics,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MWF)));
+
         Subjects.Add(new Subject("PHY202", "PHY202", "Thermodynamics", SubjectType.Physics,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TuWTh)));
+
         Subjects.Add(new Subject("PHY301", "PHY301", "Quantum Mechanics", SubjectType.Physics,
-            3, 2, 2, DayPattern.MW));
+            3, 2, new DayAndTimePreference(DayPattern.MTh)));
+
         Subjects.Add(new Subject("PHY302", "PHY302", "Optics", SubjectType.Physics,
-            3, 2, 1.5, DayPattern.TTh)
+            3, 1.5, new DayAndTimePreference(DayPattern.WF))
         { RequiresLab = true });
 
         // ========== BIOLOGY SUBJECTS ==========
+        // Biology with labs - varied patterns
         Subjects.Add(new Subject("BIO101", "BIO101", "General Biology I", SubjectType.Biology,
-            3, 2, 2, DayPattern.MW)
+            3, 2, new DayAndTimePreference(DayPattern.MW))
         { RequiresLab = true });
+
         Subjects.Add(new Subject("BIO102", "BIO102", "General Biology II", SubjectType.Biology,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.TTh))
         { RequiresLab = true });
+
         Subjects.Add(new Subject("BIO201", "BIO201", "Genetics", SubjectType.Biology,
-            3, 2, 2, DayPattern.MW)
+            3, 2, new DayAndTimePreference(DayPattern.TF))
         { RequiresLab = true });
+
         Subjects.Add(new Subject("BIO202", "BIO202", "Microbiology", SubjectType.Biology,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.MTh))
         { RequiresLab = true });
+
         Subjects.Add(new Subject("BIO301", "BIO301", "Ecology", SubjectType.Biology,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MWF)));
+
         Subjects.Add(new Subject("BIO302", "BIO302", "Cell Biology", SubjectType.Biology,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.WF))
         { RequiresLab = true });
 
         // ========== ENGINEERING SUBJECTS ==========
-        // Civil Engineering
+        // Civil Engineering - distributed patterns
         Subjects.Add(new Subject("CE101", "CE101", "Engineering Drawing", SubjectType.Engineering,
-            3, 2, 2, DayPattern.MW));
+            3, 2, new DayAndTimePreference(DayPattern.MW)));
+
         Subjects.Add(new Subject("CE201", "CE201", "Statics of Rigid Bodies", SubjectType.Engineering,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TuWTh)));
+
         Subjects.Add(new Subject("CE301", "CE301", "Structural Analysis", SubjectType.Engineering,
-            3, 2, 2, DayPattern.MW));
+            3, 2, new DayAndTimePreference(DayPattern.TTh)));
+
         Subjects.Add(new Subject("CE401", "CE401", "Highway Engineering", SubjectType.Engineering,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.MWF)));
 
-        // Electrical Engineering
+        // Electrical Engineering - varied patterns
         Subjects.Add(new Subject("EE101", "EE101", "Circuit Theory", SubjectType.Engineering,
-            3, 2, 2, DayPattern.MW)
-        { RequiresLab = true });
-        Subjects.Add(new Subject("EE201", "EE201", "Electronics", SubjectType.Engineering,
-            3, 2, 2, DayPattern.TTh)
-        { RequiresLab = true });
-        Subjects.Add(new Subject("EE301", "EE301", "Power Systems", SubjectType.Engineering,
-            3, 2, 1.5, DayPattern.MW));
-        Subjects.Add(new Subject("EE401", "EE401", "Control Systems", SubjectType.Engineering,
-            3, 2, 2, DayPattern.TTh)
+            3, 2, new DayAndTimePreference(DayPattern.MTh))
         { RequiresLab = true });
 
-        // Mechanical Engineering
+        Subjects.Add(new Subject("EE201", "EE201", "Electronics", SubjectType.Engineering,
+            3, 2, new DayAndTimePreference(DayPattern.TF))
+        { RequiresLab = true });
+
+        Subjects.Add(new Subject("EE301", "EE301", "Power Systems", SubjectType.Engineering,
+            3, 1.5, new DayAndTimePreference(DayPattern.WThF)));
+
+        Subjects.Add(new Subject("EE401", "EE401", "Control Systems", SubjectType.Engineering,
+            3, 2, new DayAndTimePreference(DayPattern.MW))
+        { RequiresLab = true });
+
+        // Mechanical Engineering - distributed patterns
         Subjects.Add(new Subject("ME101", "ME101", "Engineering Mechanics", SubjectType.Engineering,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
+
         Subjects.Add(new Subject("ME201", "ME201", "Thermodynamics", SubjectType.Engineering,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.MWTh)));
+
         Subjects.Add(new Subject("ME301", "ME301", "Fluid Mechanics", SubjectType.Engineering,
-            3, 2, 2, DayPattern.MW));
+            3, 2, new DayAndTimePreference(DayPattern.TuWF)));
+
         Subjects.Add(new Subject("ME401", "ME401", "Machine Design", SubjectType.Engineering,
-            3, 2, 2, DayPattern.TTh));
+            3, 2, new DayAndTimePreference(DayPattern.WF)));
 
         // ========== BUSINESS SUBJECTS ==========
+        // Business subjects - flexible patterns suitable for discussion-based classes
         Subjects.Add(new Subject("BUS101", "BUS101", "Introduction to Business", SubjectType.Business,
-            3, 2, 1.5, DayPattern.MW));
-        Subjects.Add(new Subject("BUS201", "BUS201", "Principles of Marketing", SubjectType.Business,
-            3, 2, 1.5, DayPattern.TTh));
-        Subjects.Add(new Subject("BUS301", "BUS301", "Financial Management", SubjectType.Business,
-            3, 2, 1.5, DayPattern.MW));
-        Subjects.Add(new Subject("BUS401", "BUS401", "Strategic Management", SubjectType.Business,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.MW)));
 
-        // Accountancy
+        Subjects.Add(new Subject("BUS201", "BUS201", "Principles of Marketing", SubjectType.Business,
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
+
+        Subjects.Add(new Subject("BUS301", "BUS301", "Financial Management", SubjectType.Business,
+            3, 1.5, new DayAndTimePreference(DayPattern.MWF)));
+
+        Subjects.Add(new Subject("BUS401", "BUS401", "Strategic Management", SubjectType.Business,
+            3, 1.5, new DayAndTimePreference(DayPattern.TuWTh)));
+
+        // Accountancy - varied patterns for different accounting courses
         Subjects.Add(new Subject("ACC101", "ACC101", "Principles of Accounting I", SubjectType.Business,
-            3, 2, 2, DayPattern.MW));
+            3, 2, new DayAndTimePreference(DayPattern.MW)));
+
         Subjects.Add(new Subject("ACC102", "ACC102", "Principles of Accounting II", SubjectType.Business,
-            3, 2, 2, DayPattern.TTh));
+            3, 2, new DayAndTimePreference(DayPattern.TTh)));
+
         Subjects.Add(new Subject("ACC201", "ACC201", "Cost Accounting", SubjectType.Business,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MTuTh)));
+
         Subjects.Add(new Subject("ACC301", "ACC301", "Auditing", SubjectType.Business,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.WThF)));
 
         // ========== GENERAL EDUCATION SUBJECTS ==========
+        // GE subjects with flexible scheduling, some on Saturday for convenience
         Subjects.Add(new Subject("ENG101", "ENG101", "English Communication", SubjectType.English,
-            3, 2, 1.5, DayPattern.MW));
+            3, 2.0, saturdayPreference));
+
         Subjects.Add(new Subject("ENG102", "ENG102", "Technical Writing", SubjectType.English,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, new DayAndTimePreference(DayPattern.TTh)));
+
         Subjects.Add(new Subject("FIL101", "FIL101", "Komunikasyon sa Filipino", SubjectType.General,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, new DayAndTimePreference(DayPattern.MWF)));
+
         Subjects.Add(new Subject("HIST101", "HIST101", "Philippine History", SubjectType.SocialScience,
-            3, 2, 1.5, DayPattern.TTh));
+            3, 1.5, saturdayPreference));
+
         Subjects.Add(new Subject("SOC101", "SOC101", "Understanding the Self", SubjectType.SocialScience,
-            3, 2, 1.5, DayPattern.MW));
+            3, 1.5, saturdayPreference));
+
         Subjects.Add(new Subject("PE101", "PE101", "Physical Education 1", SubjectType.General,
-            2, 1, 2, DayPattern.Single));
+            2, 2, new DayAndTimePreference(DayPattern.TTh)));
+
         Subjects.Add(new Subject("NSTP101", "NSTP101", "National Service Training Program 1", SubjectType.General,
-            3, 1, 3, DayPattern.Single));
+            3, 3, saturdayPreference));
 
         // Assign professors to subjects (multiple professors per subject)
         AssignProfessorsToSubjects();
@@ -281,91 +380,119 @@ public class ScheduleData
 
     private void AssignProfessorsToSubjects()
     {
+        // ========== COMPUTER SCIENCE SUBJECTS ==========
+        // CCS Professors: P1-P8, P41-P44 (12 total)
+
         // CS Subjects
-        Subjects.First(s => s.Code == "CS101").ProfessorIds.AddRange(new[] { "P1", "P2", "P3" });
-        Subjects.First(s => s.Code == "CS102").ProfessorIds.AddRange(new[] { "P1", "P2", "P4" });
-        Subjects.First(s => s.Code == "CS201").ProfessorIds.AddRange(new[] { "P3", "P4", "P5" });
-        Subjects.First(s => s.Code == "CS202").ProfessorIds.AddRange(new[] { "P2", "P5", "P6" });
-        Subjects.First(s => s.Code == "CS301").ProfessorIds.AddRange(new[] { "P4", "P7" });
-        Subjects.First(s => s.Code == "CS302").ProfessorIds.AddRange(new[] { "P5", "P6", "P8" });
-        Subjects.First(s => s.Code == "CS401").ProfessorIds.AddRange(new[] { "P6", "P7" });
-        Subjects.First(s => s.Code == "CS402").ProfessorIds.AddRange(new[] { "P7", "P8" });
+        Subjects.First(s => s.Code == "CS101").ProfessorIds.AddRange(new[] { "P1", "P2", "P41" });
+        Subjects.First(s => s.Code == "CS102").ProfessorIds.AddRange(new[] { "P3", "P4", "P42" });
+        Subjects.First(s => s.Code == "CS201").ProfessorIds.AddRange(new[] { "P5", "P6", "P43" });
+        Subjects.First(s => s.Code == "CS202").ProfessorIds.AddRange(new[] { "P7", "P8", "P44" });
+        Subjects.First(s => s.Code == "CS301").ProfessorIds.AddRange(new[] { "P1", "P41", "P42" });
+        Subjects.First(s => s.Code == "CS302").ProfessorIds.AddRange(new[] { "P2", "P3", "P43" });
+        Subjects.First(s => s.Code == "CS401").ProfessorIds.AddRange(new[] { "P4", "P5", "P44" });
+        Subjects.First(s => s.Code == "CS402").ProfessorIds.AddRange(new[] { "P6", "P7", "P8" });
 
         // IT Subjects
-        Subjects.First(s => s.Code == "IT101").ProfessorIds.AddRange(new[] { "P1", "P2" });
-        Subjects.First(s => s.Code == "IT201").ProfessorIds.AddRange(new[] { "P3", "P4", "P8" });
-        Subjects.First(s => s.Code == "IT301").ProfessorIds.AddRange(new[] { "P5", "P6" });
-        Subjects.First(s => s.Code == "IT401").ProfessorIds.AddRange(new[] { "P7", "P8" });
+        Subjects.First(s => s.Code == "IT101").ProfessorIds.AddRange(new[] { "P1", "P2", "P41" });
+        Subjects.First(s => s.Code == "IT201").ProfessorIds.AddRange(new[] { "P3", "P4", "P42" });
+        Subjects.First(s => s.Code == "IT301").ProfessorIds.AddRange(new[] { "P5", "P6", "P43" });
+        Subjects.First(s => s.Code == "IT401").ProfessorIds.AddRange(new[] { "P7", "P8", "P44" });
 
         // IS Subjects
-        Subjects.First(s => s.Code == "IS101").ProfessorIds.AddRange(new[] { "P2", "P3" });
-        Subjects.First(s => s.Code == "IS201").ProfessorIds.AddRange(new[] { "P4", "P5" });
-        Subjects.First(s => s.Code == "IS301").ProfessorIds.AddRange(new[] { "P6", "P7" });
+        Subjects.First(s => s.Code == "IS101").ProfessorIds.AddRange(new[] { "P2", "P3", "P41" });
+        Subjects.First(s => s.Code == "IS201").ProfessorIds.AddRange(new[] { "P4", "P5", "P42" });
+        Subjects.First(s => s.Code == "IS301").ProfessorIds.AddRange(new[] { "P6", "P7", "P43" });
 
-        // Math Subjects
-        Subjects.First(s => s.Code == "MATH101").ProfessorIds.AddRange(new[] { "P9", "P10", "P11" });
-        Subjects.First(s => s.Code == "MATH102").ProfessorIds.AddRange(new[] { "P9", "P10", "P12" });
-        Subjects.First(s => s.Code == "MATH201").ProfessorIds.AddRange(new[] { "P10", "P11" });
-        Subjects.First(s => s.Code == "MATH202").ProfessorIds.AddRange(new[] { "P11", "P12" });
-        Subjects.First(s => s.Code == "MATH301").ProfessorIds.AddRange(new[] { "P9", "P12" });
-        Subjects.First(s => s.Code == "MATH302").ProfessorIds.AddRange(new[] { "P10", "P11" });
-        Subjects.First(s => s.Code == "MATH401").ProfessorIds.AddRange(new[] { "P11", "P12" });
-        Subjects.First(s => s.Code == "MATH402").ProfessorIds.AddRange(new[] { "P9", "P10" });
+        // ========== MATHEMATICS SUBJECTS ==========
+        // CAS Math Professors: P9-P12, P45-P48 (8 total)
 
-        // Physics Subjects
-        Subjects.First(s => s.Code == "PHY101").ProfessorIds.AddRange(new[] { "P13", "P14" });
-        Subjects.First(s => s.Code == "PHY102").ProfessorIds.AddRange(new[] { "P13", "P15" });
-        Subjects.First(s => s.Code == "PHY201").ProfessorIds.AddRange(new[] { "P14", "P15" });
-        Subjects.First(s => s.Code == "PHY202").ProfessorIds.AddRange(new[] { "P13", "P14" });
-        Subjects.First(s => s.Code == "PHY301").ProfessorIds.AddRange(new[] { "P15" });
-        Subjects.First(s => s.Code == "PHY302").ProfessorIds.AddRange(new[] { "P14", "P15" });
+        Subjects.First(s => s.Code == "MATH101").ProfessorIds.AddRange(new[] { "P9", "P10", "P45" });
+        Subjects.First(s => s.Code == "MATH102").ProfessorIds.AddRange(new[] { "P11", "P12", "P46" });
+        Subjects.First(s => s.Code == "MATH201").ProfessorIds.AddRange(new[] { "P9", "P10", "P47" });
+        Subjects.First(s => s.Code == "MATH202").ProfessorIds.AddRange(new[] { "P11", "P12", "P48" });
+        Subjects.First(s => s.Code == "MATH301").ProfessorIds.AddRange(new[] { "P9", "P45", "P46" });
+        Subjects.First(s => s.Code == "MATH302").ProfessorIds.AddRange(new[] { "P10", "P11", "P47" });
+        Subjects.First(s => s.Code == "MATH401").ProfessorIds.AddRange(new[] { "P12", "P45", "P48" });
+        Subjects.First(s => s.Code == "MATH402").ProfessorIds.AddRange(new[] { "P9", "P46", "P47" });
 
-        // Biology Subjects
-        Subjects.First(s => s.Code == "BIO101").ProfessorIds.AddRange(new[] { "P16", "P17" });
-        Subjects.First(s => s.Code == "BIO102").ProfessorIds.AddRange(new[] { "P16", "P18" });
-        Subjects.First(s => s.Code == "BIO201").ProfessorIds.AddRange(new[] { "P17", "P18" });
-        Subjects.First(s => s.Code == "BIO202").ProfessorIds.AddRange(new[] { "P16", "P17" });
-        Subjects.First(s => s.Code == "BIO301").ProfessorIds.AddRange(new[] { "P17", "P18" });
-        Subjects.First(s => s.Code == "BIO302").ProfessorIds.AddRange(new[] { "P16", "P18" });
+        // ========== PHYSICS SUBJECTS ==========
+        // CAS Physics Professors: P13-P15, P45-P48 (can share with Math for general courses)
+
+        Subjects.First(s => s.Code == "PHY101").ProfessorIds.AddRange(new[] { "P13", "P14", "P45" });
+        Subjects.First(s => s.Code == "PHY102").ProfessorIds.AddRange(new[] { "P13", "P15", "P46" });
+        Subjects.First(s => s.Code == "PHY201").ProfessorIds.AddRange(new[] { "P14", "P15", "P47" });
+        Subjects.First(s => s.Code == "PHY202").ProfessorIds.AddRange(new[] { "P13", "P14", "P48" });
+        Subjects.First(s => s.Code == "PHY301").ProfessorIds.AddRange(new[] { "P15", "P45" });
+        Subjects.First(s => s.Code == "PHY302").ProfessorIds.AddRange(new[] { "P14", "P15", "P46" });
+
+        // ========== BIOLOGY SUBJECTS ==========
+        // CAS Biology Professors: P16-P18, P47-P48 (can share some CAS faculty)
+
+        Subjects.First(s => s.Code == "BIO101").ProfessorIds.AddRange(new[] { "P16", "P17", "P47" });
+        Subjects.First(s => s.Code == "BIO102").ProfessorIds.AddRange(new[] { "P16", "P18", "P48" });
+        Subjects.First(s => s.Code == "BIO201").ProfessorIds.AddRange(new[] { "P17", "P18", "P47" });
+        Subjects.First(s => s.Code == "BIO202").ProfessorIds.AddRange(new[] { "P16", "P17", "P48" });
+        Subjects.First(s => s.Code == "BIO301").ProfessorIds.AddRange(new[] { "P17", "P18", "P45" });
+        Subjects.First(s => s.Code == "BIO302").ProfessorIds.AddRange(new[] { "P16", "P18", "P46" });
+
+        // ========== ENGINEERING SUBJECTS ==========
+        // COE Professors: P19-P24, P49-P52 (10 total)
 
         // Civil Engineering
-        Subjects.First(s => s.Code == "CE101").ProfessorIds.AddRange(new[] { "P19", "P20" });
-        Subjects.First(s => s.Code == "CE201").ProfessorIds.AddRange(new[] { "P19", "P21" });
-        Subjects.First(s => s.Code == "CE301").ProfessorIds.AddRange(new[] { "P20", "P21" });
-        Subjects.First(s => s.Code == "CE401").ProfessorIds.AddRange(new[] { "P21" });
+        Subjects.First(s => s.Code == "CE101").ProfessorIds.AddRange(new[] { "P19", "P20", "P49" });
+        Subjects.First(s => s.Code == "CE201").ProfessorIds.AddRange(new[] { "P19", "P21", "P50" });
+        Subjects.First(s => s.Code == "CE301").ProfessorIds.AddRange(new[] { "P20", "P21", "P49" });
+        Subjects.First(s => s.Code == "CE401").ProfessorIds.AddRange(new[] { "P21", "P49", "P50" });
 
         // Electrical Engineering
-        Subjects.First(s => s.Code == "EE101").ProfessorIds.AddRange(new[] { "P22", "P23" });
-        Subjects.First(s => s.Code == "EE201").ProfessorIds.AddRange(new[] { "P22", "P24" });
-        Subjects.First(s => s.Code == "EE301").ProfessorIds.AddRange(new[] { "P23", "P24" });
-        Subjects.First(s => s.Code == "EE401").ProfessorIds.AddRange(new[] { "P23" });
+        Subjects.First(s => s.Code == "EE101").ProfessorIds.AddRange(new[] { "P22", "P23", "P51" });
+        Subjects.First(s => s.Code == "EE201").ProfessorIds.AddRange(new[] { "P22", "P24", "P52" });
+        Subjects.First(s => s.Code == "EE301").ProfessorIds.AddRange(new[] { "P23", "P24", "P51" });
+        Subjects.First(s => s.Code == "EE401").ProfessorIds.AddRange(new[] { "P23", "P51", "P52" });
 
         // Mechanical Engineering
-        Subjects.First(s => s.Code == "ME101").ProfessorIds.AddRange(new[] { "P19", "P24" });
-        Subjects.First(s => s.Code == "ME201").ProfessorIds.AddRange(new[] { "P20", "P21" });
-        Subjects.First(s => s.Code == "ME301").ProfessorIds.AddRange(new[] { "P22", "P23" });
-        Subjects.First(s => s.Code == "ME401").ProfessorIds.AddRange(new[] { "P24" });
+        Subjects.First(s => s.Code == "ME101").ProfessorIds.AddRange(new[] { "P19", "P24", "P50" });
+        Subjects.First(s => s.Code == "ME201").ProfessorIds.AddRange(new[] { "P20", "P21", "P52" });
+        Subjects.First(s => s.Code == "ME301").ProfessorIds.AddRange(new[] { "P22", "P23", "P49" });
+        Subjects.First(s => s.Code == "ME401").ProfessorIds.AddRange(new[] { "P24", "P50", "P51" });
 
-        // Business Subjects
-        Subjects.First(s => s.Code == "BUS101").ProfessorIds.AddRange(new[] { "P25", "P26", "P27" });
-        Subjects.First(s => s.Code == "BUS201").ProfessorIds.AddRange(new[] { "P26", "P27" });
-        Subjects.First(s => s.Code == "BUS301").ProfessorIds.AddRange(new[] { "P27", "P28" });
-        Subjects.First(s => s.Code == "BUS401").ProfessorIds.AddRange(new[] { "P28", "P29" });
+        // ========== BUSINESS SUBJECTS ==========
+        // COB Professors: P25-P30, P53-P56 (10 total)
+
+        // General Business Subjects
+        Subjects.First(s => s.Code == "BUS101").ProfessorIds.AddRange(new[] { "P25", "P26", "P53" });
+        Subjects.First(s => s.Code == "BUS201").ProfessorIds.AddRange(new[] { "P26", "P27", "P54" });
+        Subjects.First(s => s.Code == "BUS301").ProfessorIds.AddRange(new[] { "P27", "P28", "P55" });
+        Subjects.First(s => s.Code == "BUS401").ProfessorIds.AddRange(new[] { "P28", "P29", "P56" });
 
         // Accountancy Subjects
         Subjects.First(s => s.Code == "ACC101").ProfessorIds.AddRange(new[] { "P28", "P29", "P30" });
-        Subjects.First(s => s.Code == "ACC102").ProfessorIds.AddRange(new[] { "P29", "P30" });
-        Subjects.First(s => s.Code == "ACC201").ProfessorIds.AddRange(new[] { "P28", "P30" });
-        Subjects.First(s => s.Code == "ACC301").ProfessorIds.AddRange(new[] { "P30" });
+        Subjects.First(s => s.Code == "ACC102").ProfessorIds.AddRange(new[] { "P29", "P30", "P53" });
+        Subjects.First(s => s.Code == "ACC201").ProfessorIds.AddRange(new[] { "P28", "P30", "P54" });
+        Subjects.First(s => s.Code == "ACC301").ProfessorIds.AddRange(new[] { "P30", "P55", "P56" });
 
-        // General Education
-        Subjects.First(s => s.Code == "ENG101").ProfessorIds.AddRange(new[] { "P31", "P32", "P33" });
-        Subjects.First(s => s.Code == "ENG102").ProfessorIds.AddRange(new[] { "P31", "P32" });
-        Subjects.First(s => s.Code == "FIL101").ProfessorIds.AddRange(new[] { "P33", "P34" });
-        Subjects.First(s => s.Code == "HIST101").ProfessorIds.AddRange(new[] { "P34", "P35" });
-        Subjects.First(s => s.Code == "SOC101").ProfessorIds.AddRange(new[] { "P33", "P35" });
-        Subjects.First(s => s.Code == "PE101").ProfessorIds.AddRange(new[] { "P35" });
-        Subjects.First(s => s.Code == "NSTP101").ProfessorIds.AddRange(new[] { "P35" });
+        // ========== GENERAL EDUCATION SUBJECTS ==========
+        // GEN Professors: P31-P40, P57-P60 (14 total)
+
+        // English Subjects
+        Subjects.First(s => s.Code == "ENG101").ProfessorIds.AddRange(new[] { "P31", "P32", "P33", "P57" });
+        Subjects.First(s => s.Code == "ENG102").ProfessorIds.AddRange(new[] { "P31", "P32", "P58", "P59" });
+
+        // Filipino Subject
+        Subjects.First(s => s.Code == "FIL101").ProfessorIds.AddRange(new[] { "P33", "P34", "P57", "P58" });
+
+        // History Subject
+        Subjects.First(s => s.Code == "HIST101").ProfessorIds.AddRange(new[] { "P34", "P35", "P59", "P60" });
+
+        // Social Science Subject
+        Subjects.First(s => s.Code == "SOC101").ProfessorIds.AddRange(new[] { "P33", "P35", "P36", "P57" });
+
+        // Physical Education
+        Subjects.First(s => s.Code == "PE101").ProfessorIds.AddRange(new[] { "P35", "P37", "P38", "P60" });
+
+        // NSTP
+        Subjects.First(s => s.Code == "NSTP101").ProfessorIds.AddRange(new[] { "P36", "P39", "P40", "P58" });
     }
 
     private void InitializeRooms()
@@ -457,7 +584,7 @@ public class ScheduleData
     {
         TimeSlots = new List<TimeSlot>();
 
-        string[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
+        string[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
 
         // Time slots with different durations
         var timeSchedule = new[]
@@ -465,42 +592,110 @@ public class ScheduleData
                 ("07:00", "08:00", 1.0),   // 1 hour
                 ("07:00", "08:30", 1.5),   // 1.5 hours
                 ("07:00", "09:00", 2.0),   // 2 hours
+                ("07:00", "09:30", 2.5),   // 2.5 hours
                 ("07:00", "10:00", 3.0),   // 3 hours
                 
                 ("08:00", "09:00", 1.0),
                 ("08:00", "09:30", 1.5),
                 ("08:00", "10:00", 2.0),
+                ("08:00", "10:30", 2.5),
+                ("08:00", "11:00", 3.0),
+
+                // 08:30 ..., allows scheduling 1.5 hrs after the very first slot
+                ("08:30", "09:30", 1.0),
+                ("08:30", "10:00", 1.5),
+                ("08:30", "10:30", 2.0),
+                ("08:30", "11:00", 2.5),
+                ("08:30", "11:30", 3.0),
 
                 ("09:00", "10:00", 1.0),
                 ("09:00", "10:30", 1.5),
                 ("09:00", "11:00", 2.0),
+                ("09:00", "11:30", 2.5),
+                ("09:00", "12:00", 3.0),
+
+
+                ("09:30", "10:30", 1.0),
+                ("09:30", "11:00", 1.5),
+                ("09:30", "11:30", 2.0),
+                ("09:30", "12:00", 2.5),
+
+                // 12:00 to 13:00 // lunch - no time slot for it
 
                 ("10:00", "11:00", 1.0),
                 ("10:00", "11:30", 1.5),
                 ("10:00", "12:00", 2.0),
 
+                ("10:30", "11:30", 1.0),
+                ("10:30", "12:00", 1.5),
+
                 ("11:00", "12:00", 1.0),
-                ("11:00", "12:30", 1.5),
 
                 ("13:00", "14:00", 1.0),
                 ("13:00", "14:30", 1.5),
                 ("13:00", "15:00", 2.0),
+                ("13:00", "15:30", 2.5),
                 ("13:00", "16:00", 3.0),
+
+                ("13:30", "14:30", 1.0),
+                ("13:30", "15:00", 1.5),
+                ("13:30", "15:30", 2.0),
+                ("13:30", "16:00", 2.5),
+                ("13:30", "16:30", 3.0),
 
                 ("14:00", "15:00", 1.0),
                 ("14:00", "15:30", 1.5),
                 ("14:00", "16:00", 2.0),
+                ("14:00", "16:30", 2.5),
+                ("14:00", "17:00", 3.0),
+
+                ("14:30", "15:30", 1.0),
+                ("14:30", "16:00", 1.5),
+                ("14:30", "16:30", 2.0),
+                ("14:30", "17:00", 2.5),
+                ("14:30", "17:30", 3.0),
 
                 ("15:00", "16:00", 1.0),
                 ("15:00", "16:30", 1.5),
                 ("15:00", "17:00", 2.0),
+                ("15:00", "17:30", 2.5),
+                ("15:00", "18:00", 3.0),
+
+                ("15:30", "16:30", 1.0),
+                ("15:30", "17:00", 1.5),
+                ("15:30", "17:30", 2.0),
+                ("15:30", "18:00", 2.5),
+                ("15:30", "18:30", 3.0),
 
                 ("16:00", "17:00", 1.0),
                 ("16:00", "17:30", 1.5),
                 ("16:00", "18:00", 2.0),
+                ("16:00", "18:30", 2.5),
+                ("16:00", "19:00", 3.0),
+
+                ("16:30", "17:30", 1.0),
+                ("16:30", "18:00", 1.5),
+                ("16:30", "18:30", 2.0),
+                ("16:30", "19:00", 2.5),
+                ("16:30", "19:30", 3.0),
 
                 ("17:00", "18:00", 1.0),
-                ("17:00", "18:30", 1.5)
+                ("17:00", "18:30", 1.5),
+                ("17:00", "19:00", 2.0),
+                ("17:00", "19:30", 2.5),
+                ("17:00", "20:00", 3.0),
+
+                ("17:30", "18:30", 1.0),
+                ("17:30", "19:00", 1.5),
+                ("17:30", "19:30", 2.0),
+                ("17:30", "20:00", 2.5),
+                ("17:30", "20:30", 3.0),
+
+                ("18:00", "19:00", 1.0),
+                ("18:00", "19:30", 1.5),
+                ("18:00", "20:00", 2.0),
+                ("18:00", "20:30", 2.5),
+                ("18:00", "21:00", 3.0),
             };
 
         int id = 1;

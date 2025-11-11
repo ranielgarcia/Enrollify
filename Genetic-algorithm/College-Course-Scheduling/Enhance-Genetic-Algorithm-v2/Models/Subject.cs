@@ -6,26 +6,23 @@ public class Subject
     public string Name { get; set; }
     public SubjectType Type { get; set; }
     public int Units { get; set; }
-    public int DaysPerWeek { get; set; }
-    public double HoursPerDay { get; set; }
+    public double HoursPerDay { get; set; }     // NEW: Hours per session (1.5, 2, 3, etc.)
     public List<string> ProfessorIds { get; set; }
-    public DayPattern PreferredDayPattern { get; set; }
     public bool RequiresLab { get; set; }
+    public DayAndTimePreference DayAndTimePreference { get; set; }
 
     public Subject(string id, string code, string name, SubjectType type,
-                  int units, int daysPerWeek, double hoursPerDay,
-                  DayPattern preferredPattern = DayPattern.MW)
+                  int units, double hoursPerDay, DayAndTimePreference dayAndTimePreference)
     {
         Id = id;
         Code = code;
         Name = name;
         Type = type;
         Units = units;
-        DaysPerWeek = daysPerWeek;
         HoursPerDay = hoursPerDay;
         ProfessorIds = new List<string>();
-        PreferredDayPattern = preferredPattern;
         RequiresLab = false;
+        DayAndTimePreference = dayAndTimePreference ?? new DayAndTimePreference(DayPattern.Single);
     }
 
     public override string ToString() => $"{Code} - {Name}";

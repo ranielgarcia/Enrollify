@@ -29,6 +29,7 @@ Console.WriteLine("Select Configuration:");
 Console.WriteLine("1. Default (Balanced)");
 Console.WriteLine("2. Fast Convergence");
 Console.WriteLine("3. High Quality");
+Console.WriteLine("4. Real World University");
 Console.Write("\nChoice (1-3, default=1): ");
 
 GAConfiguration config;
@@ -41,6 +42,10 @@ switch (choice)
         break;
     case "3":
         config = GAConfiguration.HighQuality;
+        Console.WriteLine("Using High Quality configuration");
+        break;
+    case "4":
+        config = GAConfiguration.RealWorldUniversity;
         Console.WriteLine("Using High Quality configuration");
         break;
     default:
@@ -70,12 +75,12 @@ var conflicts = ConflictDetector.DetectAllConflicts(bestSchedule, data);
 if (conflicts.Count > 0)
 {
     Console.WriteLine("\n⚠ CONFLICTS DETECTED:");
-    foreach (var conflict in conflicts.Take(10))
+    foreach (var conflict in conflicts)//.Take(10)
     {
         Console.WriteLine($"  • {conflict}");
     }
-    if (conflicts.Count > 10)
-        Console.WriteLine($"  ... and {conflicts.Count - 10} more");
+    //if (conflicts.Count > 10)
+    //    Console.WriteLine($"  ... and {conflicts.Count - 10} more");
 }
 else
 {
@@ -91,7 +96,7 @@ foreach (var profGroup in professorLoad.OrderByDescending(g => g.Count()))
 {
     var prof = data.Professors.First(p => p.Id == profGroup.Key);
     var uniqueSubjects = profGroup.Select(g => g.Subject.Id).Distinct().Count();
-    Console.WriteLine($"  {prof.Name,-20}: {profGroup.Count()} classes, {uniqueSubjects} subjects");
+    Console.WriteLine($"{prof.Id} - {prof.Name,-20}: {profGroup.Count()} classes, {uniqueSubjects} subjects");
 }
 
 var roomUtilization = bestSchedule.Genes.GroupBy(g => g.Room.Id);
