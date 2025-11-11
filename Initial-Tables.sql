@@ -232,26 +232,54 @@ CREATE TABLE ClassSectionSubjectOffering
 );
 GO;
 
+-- ====================================
+-- STUDENT STATUS LOOKUP TABLE
+-- ====================================
+CREATE TABLE StudentStatuses
+(
+    Id INT NOT NULL PRIMARY KEY,
+    Code VARCHAR(20) NOT NULL UNIQUE,
+    Name VARCHAR(50) NOT NULL,
+    Description VARCHAR(255) NULL,
+    IsActive BIT NOT NULL DEFAULT 1,
+    DisplayOrder INT NOT NULL DEFAULT 0,
+    
+    CONSTRAINT CHK_StudentStatuses_Code_NotEmpty CHECK (LEN(TRIM(Code)) > 0),
+    CONSTRAINT CHK_StudentStatuses_Name_NotEmpty CHECK (LEN(TRIM(Name)) > 0)
+);
+GO
+
+-- Seed data for StudentStatuses
+INSERT INTO StudentStatuses (Id, Code, Name, Description, DisplayOrder) VALUES
+(1, 'ACTIVE', 'Active', 'Currently enrolled student', 1),
+(2, 'INACTIVE', 'Inactive', 'Not currently enrolled but not withdrawn', 2),
+(3, 'LOA', 'Leave of Absence', 'Temporarily not attending', 3),
+(4, 'GRADUATED', 'Graduated', 'Completed degree requirements', 4),
+(5, 'WITHDRAWN', 'Withdrawn', 'Permanently left the institution', 5),
+(6, 'SUSPENDED', 'Suspended', 'Temporarily barred from enrollment', 6),
+(7, 'EXPELLED', 'Expelled', 'Permanently barred from institution', 7);
+GO
+
 
 -- ************************************
 
 CREATE TABLE Students
 (
-	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	StudentNumber VARCHAR(13) NOT NULL UNIQUE,
-	FirstName VARCHAR(50) NOT NULL,
-	LastName VARCHAR(50) NOT NULL,
-	Email VARCHAR(255) NOT NULL UNIQUE,
-	CourseId INT NOT NULL,
-	YearLevel INT NOT NULL,
-	Status VARCHAR(25), -- TBD
-	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
-	UpdatedAt DATETIME2 NULL,
-	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Students_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id)
+    Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    StudentNumber VARCHAR(13) NOT NULL UNIQUE,
+    FirstName VARCHAR(50) NOT NULL,
+    LastName VARCHAR(50) NOT NULL,
+    Email VARCHAR(255) NOT NULL UNIQUE,
+    CourseId INT NOT NULL,
+    YearLevel INT NOT NULL,
+    Status INT NOT NULL DEFAULT 1, -- References StudentStatuses, default to ACTIVE
+    CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+    UpdatedAt DATETIME2 NULL,
+    IsActive BIT NOT NULL DEFAULT 1,
+    CONSTRAINT FK_Students_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
+    CONSTRAINT FK_Students_StudentStatus FOREIGN KEY (Status) REFERENCES StudentStatuses(Id)
 );
-GO;
-
+GO
 
 -- ************************************
 
@@ -260,21 +288,52 @@ GO;
 -- Irregular students - Manual selection of ANY open subject offerings
 CREATE TABLE Enrollments
 (
-	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	StudentId INT NOT NULL,
-	ClassSectionId INT NULL, -- optional, null for irregular students
-	ClassSectionSubjectOfferingId INT NOT NULL,
-	SemesterId INT NOT NULL,
-	Status INT NOT NULL, -- Enum: Pending, Approved, Enrolled
-	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
-	UpdatedAt DATETIME2 NULL,
-	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Enrollments_Student FOREIGN KEY (StudentId) REFERENCES Students(Id),
-	CONSTRAINT FK_Enrollments_ClassSection FOREIGN KEY (ClassSectionId) REFERENCES ClassSections(Id),
-	CONSTRAINT FK_Enrollments_ClassSectionSubjectOffering FOREIGN KEY (ClassSectionSubjectOfferingId) REFERENCES ClassSectionSubjectOffering(Id),
-	CONSTRAINT FK_Enrollments_Semester FOREIGN KEY (SemesterId) REFERENCES Semesters(Id)
+    Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    StudentId INT NOT NULL,
+    ClassSectionId INT NULL, -- optional, null for irregular students
+    ClassSectionSubjectOfferingId INT NOT NULL,
+    SemesterId INT NOT NULL,
+    Status INT NOT NULL DEFAULT 1, -- References EnrollmentStatuses, default to PENDING
+    CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+    UpdatedAt DATETIME2 NULL,
+    IsActive BIT NOT NULL DEFAULT 1,
+    CONSTRAINT FK_Enrollments_Student FOREIGN KEY (StudentId) REFERENCES Students(Id),
+    CONSTRAINT FK_Enrollments_ClassSection FOREIGN KEY (ClassSectionId) REFERENCES ClassSections(Id),
+    CONSTRAINT FK_Enrollments_ClassSectionSubjectOffering FOREIGN KEY (ClassSectionSubjectOfferingId) REFERENCES ClassSectionSubjectOffering(Id),
+    CONSTRAINT FK_Enrollments_Semester FOREIGN KEY (SemesterId) REFERENCES Semesters(Id),
+    CONSTRAINT FK_Enrollments_EnrollmentStatus FOREIGN KEY (Status) REFERENCES EnrollmentStatuses(Id)
 );
-GO;
+GO
+
+-- ====================================
+-- ENROLLMENT STATUS LOOKUP TABLE
+-- ====================================
+CREATE TABLE EnrollmentStatuses
+(
+    Id INT NOT NULL PRIMARY KEY,
+    Code VARCHAR(20) NOT NULL UNIQUE,
+    Name VARCHAR(50) NOT NULL,
+    Description VARCHAR(255) NULL,
+    IsActive BIT NOT NULL DEFAULT 1,
+    DisplayOrder INT NOT NULL DEFAULT 0,
+    
+    CONSTRAINT CHK_EnrollmentStatuses_Code_NotEmpty CHECK (LEN(TRIM(Code)) > 0),
+    CONSTRAINT CHK_EnrollmentStatuses_Name_NotEmpty CHECK (LEN(TRIM(Name)) > 0)
+);
+GO
+
+-- Seed data for EnrollmentStatuses
+INSERT INTO EnrollmentStatuses (Id, Code, Name, Description, DisplayOrder) VALUES
+(1, 'PENDING', 'Pending', 'Awaiting approval', 1),
+(2, 'APPROVED', 'Approved', 'Ready for enrollment', 2),
+(3, 'ENROLLED', 'Enrolled', 'Currently enrolled in classes', 3),
+(4, 'COMPLETED', 'Completed', 'Semester completed', 4),
+(5, 'DROPPED', 'Dropped', 'Student dropped enrollment', 5),
+(6, 'FAILED', 'Failed', 'Did not meet requirements', 6),
+(7, 'CANCELLED', 'Cancelled', 'Enrollment cancelled by system', 7);
+GO
+
+
 
 -- ************************************
 
@@ -405,6 +464,10 @@ CREATE NONCLUSTERED INDEX IX_Students_CourseId
 ON Students(CourseId);
 GO
 
+CREATE NONCLUSTERED INDEX IX_Students_Status 
+ON Students(Status);
+GO
+
 -- Enrollments indexes
 CREATE NONCLUSTERED INDEX IX_Enrollments_StudentId 
 ON Enrollments(StudentId);
@@ -420,6 +483,10 @@ GO
 
 CREATE NONCLUSTERED INDEX IX_Enrollments_SemesterId 
 ON Enrollments(SemesterId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_Enrollments_Status 
+ON Enrollments(Status);
 GO
 
 -- EnrollmentAcademicRecords indexes
