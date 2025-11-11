@@ -103,7 +103,8 @@ CREATE TABLE SubjectPrerequisites
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT PK_SubjectPrerequisiteSubjectsMappings PRIMARY KEY(SourceSubjectId, PrerequisiteSubjectId),
 	CONSTRAINT FK_SubjectPrerequisites_SourceSubject FOREIGN KEY (SourceSubjectId) REFERENCES Subjects(Id),
-	CONSTRAINT FK_SubjectPrerequisites_PrerequisiteSubject FOREIGN KEY (PrerequisiteSubjectId) REFERENCES Subjects(Id)
+	CONSTRAINT FK_SubjectPrerequisites_PrerequisiteSubject FOREIGN KEY (PrerequisiteSubjectId) REFERENCES Subjects(Id),
+	CONSTRAINT CHK_SubjectPrerequisites_NoSelfReference CHECK (SourceSubjectId <> PrerequisiteSubjectId)
 );
 GO;
 
