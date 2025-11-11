@@ -15,7 +15,7 @@ CREATE TABLE Rooms
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Type FOREIGN KEY (RoomTypeId) REFERENCES RoomTypes(Id)
+	CONSTRAINT FK_Room_Type FOREIGN KEY (RoomTypeId) REFERENCES RoomTypes(Id)
 );
 GO;
 
@@ -47,7 +47,7 @@ CREATE TABLE Departments
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_College FOREIGN KEY (CollegeId) REFERENCES Colleges(Id)
+	CONSTRAINT FK_Departments_College FOREIGN KEY (CollegeId) REFERENCES Colleges(Id)
 );
 GO;
 
@@ -65,8 +65,8 @@ CREATE TABLE Courses -- Also known program
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_College FOREIGN KEY (CollegeId) REFERENCES Colleges(Id),
-	CONSTRAINT FK_PreferRoomType FOREIGN KEY (PreferRoomTypeId) REFERENCES RoomTypes(Id)
+	CONSTRAINT FK_Courses_College FOREIGN KEY (CollegeId) REFERENCES Colleges(Id),
+	CONSTRAINT FK_Courses_RoomType FOREIGN KEY (PreferRoomTypeId) REFERENCES RoomTypes(Id)
 );
 GO;
 
@@ -83,7 +83,7 @@ CREATE TABLE Subjects
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id)
+	CONSTRAINT FK_Students_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id)
 );
 GO;
 
@@ -97,6 +97,8 @@ CREATE TABLE SubjectPrerequisites
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT PK_SubjectPrerequisiteSubjectsMappings PRIMARY KEY(SourceSubjectId, PrerequisiteSubjectId),
+	CONSTRAINT FK_SubjectPrerequisites_SourceSubject FOREIGN KEY (SourceSubjectId) REFERENCES Subjects(Id),
+	CONSTRAINT FK_SubjectPrerequisites_PrerequisiteSubject FOREIGN KEY (PrerequisiteSubjectId) REFERENCES Subjects(Id)
 );
 GO;
 
@@ -121,6 +123,8 @@ CREATE TABLE EquivalentSubjectMapping
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT PK_EquivalentSubjectMappings PRIMARY KEY(SourceSubjectId, EquivalentSubjectId),
+	CONSTRAINT FK_EquivalentSubjectMapping_SourceSubject FOREIGN KEY (SourceSubjectId) REFERENCES Subjects(Id),
+	CONSTRAINT FK_EquivalentSubjectMapping_EquivalentSubject FOREIGN KEY (EquivalentSubjectId) REFERENCES Subjects(Id)
 );
 GO;
 
@@ -156,8 +160,8 @@ CREATE TABLE TeacherSubjects
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Teacher FOREIGN KEY (TeacherId) REFERENCES Teachers(Id),
-	CONSTRAINT FK_Subject FOREIGN KEY (SubjectId) REFERENCES Subjects(Id),
+	CONSTRAINT FK_TeacherSubjects_Teacher FOREIGN KEY (TeacherId) REFERENCES Teachers(Id),
+	CONSTRAINT FK_TeacherSubjects_Subject FOREIGN KEY (SubjectId) REFERENCES Subjects(Id),
 );
 GO;
 
@@ -195,9 +199,9 @@ CREATE TABLE ClassSections
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
-	CONSTRAINT FK_Semester FOREIGN KEY (SemesterId) REFERENCES Semesters(Id),
-	CONSTRAINT FK_Adviser FOREIGN KEY (AdviserId) REFERENCES Teachers(Id)
+	CONSTRAINT FK_ClassSections_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
+	CONSTRAINT FK_ClassSections_Semester FOREIGN KEY (SemesterId) REFERENCES Semesters(Id),
+	CONSTRAINT FK_ClassSections_Adviser FOREIGN KEY (AdviserId) REFERENCES Teachers(Id)
 );
 GO;
 
@@ -219,10 +223,10 @@ CREATE TABLE ClassSectionSubjectOffering
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Subject FOREIGN KEY (SubjectId) REFERENCES Subjects(Id),
-	CONSTRAINT FK_Teacher FOREIGN KEY (TeacherId) REFERENCES Teachers(Id),
-	CONSTRAINT FK_ClassSection FOREIGN KEY (ClassSectionId) REFERENCES ClassSections(Id),
-	CONSTRAINT FK_Room FOREIGN KEY (RoomId) REFERENCES Rooms(Id),
+	CONSTRAINT FK_ClassSectionSubjectOffering_Subject FOREIGN KEY (SubjectId) REFERENCES Subjects(Id),
+	CONSTRAINT FK_ClassSectionSubjectOffering_Teacher FOREIGN KEY (TeacherId) REFERENCES Teachers(Id),
+	CONSTRAINT FK_ClassSectionSubjectOffering_ClassSection FOREIGN KEY (ClassSectionId) REFERENCES ClassSections(Id),
+	CONSTRAINT FK_ClassSectionSubjectOffering_Room FOREIGN KEY (RoomId) REFERENCES Rooms(Id),
 );
 GO;
 
@@ -242,7 +246,7 @@ CREATE TABLE Students
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id)
+	CONSTRAINT FK_Students_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id)
 );
 GO;
 
@@ -263,10 +267,10 @@ CREATE TABLE Enrollments
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Student FOREIGN KEY (StudentId) REFERENCES Students(Id),
-	CONSTRAINT FK_ClassSection FOREIGN KEY (ClassSectionId) REFERENCES ClassSections(Id),
-	CONSTRAINT FK_ClassSectionSubjectOffering FOREIGN KEY (ClassSectionSubjectOfferingId) REFERENCES ClassSectionSubjectOffering(Id),
-	CONSTRAINT FK_Semester FOREIGN KEY (SemesterId) REFERENCES Semesters(Id)
+	CONSTRAINT FK_Enrollments_Student FOREIGN KEY (StudentId) REFERENCES Students(Id),
+	CONSTRAINT FK_Enrollments_ClassSection FOREIGN KEY (ClassSectionId) REFERENCES ClassSections(Id),
+	CONSTRAINT FK_Enrollments_ClassSectionSubjectOffering FOREIGN KEY (ClassSectionSubjectOfferingId) REFERENCES ClassSectionSubjectOffering(Id),
+	CONSTRAINT FK_Enrollments_Semester FOREIGN KEY (SemesterId) REFERENCES Semesters(Id)
 );
 GO;
 
@@ -283,7 +287,7 @@ CREATE TABLE EnrollmentAcademicRecords
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Enrollment FOREIGN KEY (EnrollmentId) REFERENCES Enrollments(Id)
+	CONSTRAINT FK_EnrollmentAcademicRecords_Enrollment FOREIGN KEY (EnrollmentId) REFERENCES Enrollments(Id)
 );
 GO;
 
@@ -292,10 +296,14 @@ CREATE TABLE EnrollmentPayments
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	EnrollmentId INT NOT NULL,
-	
+	Amount DECIMAL(10, 2) NOT NULL,
+	PaymentDate DATETIME2 NOT NULL,
+	PaymentMethod VARCHAR(50) NOT NULL,
+	ReferenceNumber VARCHAR(100) NULL,
+	PaymentStatus VARCHAR(50) NOT NULL,
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Enrollment FOREIGN KEY (EnrollmentId) REFERENCES Enrollments(Id)
+	CONSTRAINT FK_EnrollmentPayments_Enrollment FOREIGN KEY (EnrollmentId) REFERENCES Enrollments(Id)
 );
 GO;
