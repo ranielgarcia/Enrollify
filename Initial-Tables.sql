@@ -15,7 +15,8 @@ CREATE TABLE Rooms
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Rooms_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomTypes(Id)
+	CONSTRAINT FK_Rooms_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomTypes(Id),
+	CONSTRAINT CHK_Rooms_StudentCapacity_Positive CHECK (StudentCapacity > 0)
 );
 GO;
 
@@ -67,7 +68,8 @@ CREATE TABLE Courses -- Also known program
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_Courses_College FOREIGN KEY (CollegeId) REFERENCES Colleges(Id),
-	CONSTRAINT FK_Courses_RoomType FOREIGN KEY (PreferRoomTypeId) REFERENCES RoomTypes(Id)
+	CONSTRAINT FK_Courses_RoomType FOREIGN KEY (PreferRoomTypeId) REFERENCES RoomTypes(Id),
+	CONSTRAINT CHK_Courses_DurationYears_Valid CHECK (DurationYears > 0 AND DurationYears <= 10)
 );
 GO;
 
@@ -85,7 +87,8 @@ CREATE TABLE Subjects
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_Subjects_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
-	CONSTRAINT UQ_Subjects_Code_Course UNIQUE (Code, CourseId)
+	CONSTRAINT UQ_Subjects_Code_Course UNIQUE (Code, CourseId),
+	CONSTRAINT CHK_Subjects_Units_Valid CHECK (Units > 0 AND Units <= 12)
 );
 GO;
 
@@ -180,7 +183,9 @@ CREATE TABLE Semesters
 	SchoolYear INT NOT NULL,
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
-	IsActive BIT NOT NULL DEFAULT 1
+	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT CHK_Semesters_Semester_Valid CHECK (Semester IN (1, 2, 3)),
+	CONSTRAINT CHK_Semesters_SchoolYear_Valid CHECK (SchoolYear >= 2000)
 );
 GO;
 
@@ -203,7 +208,9 @@ CREATE TABLE ClassSections
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_ClassSections_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
 	CONSTRAINT FK_ClassSections_Semester FOREIGN KEY (SemesterId) REFERENCES Semesters(Id),
-	CONSTRAINT FK_ClassSections_Adviser FOREIGN KEY (AdviserId) REFERENCES Teachers(Id)
+	CONSTRAINT FK_ClassSections_Adviser FOREIGN KEY (AdviserId) REFERENCES Teachers(Id),
+	CONSTRAINT CHK_ClassSections_YearLevel_Valid CHECK (YearLevel BETWEEN 1 AND 6),
+	CONSTRAINT CHK_ClassSections_StudentCapacity_Positive CHECK (StudentCapacity > 0)
 );
 GO;
 
@@ -277,7 +284,8 @@ CREATE TABLE Students
     UpdatedAt DATETIME2 NULL,
     IsActive BIT NOT NULL DEFAULT 1,
     CONSTRAINT FK_Students_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
-    CONSTRAINT FK_Students_StudentStatus FOREIGN KEY (Status) REFERENCES StudentStatuses(Id)
+    CONSTRAINT FK_Students_StudentStatus FOREIGN KEY (Status) REFERENCES StudentStatuses(Id),
+    CONSTRAINT CHK_Students_YearLevel_Valid CHECK (YearLevel BETWEEN 1 AND 6)
 );
 GO
 
@@ -348,7 +356,9 @@ CREATE TABLE EnrollmentAcademicRecords
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_EnrollmentAcademicRecords_Enrollment FOREIGN KEY (EnrollmentId) REFERENCES Enrollments(Id)
+	CONSTRAINT FK_EnrollmentAcademicRecords_Enrollment FOREIGN KEY (EnrollmentId) REFERENCES Enrollments(Id),
+	CONSTRAINT CHK_EnrollmentAcademicRecords_MidtermGrade_Valid CHECK (MidtermGrade IS NULL OR (MidtermGrade BETWEEN 0 AND 100)),
+	CONSTRAINT CHK_EnrollmentAcademicRecords_FinalGrade_Valid CHECK (FinalGrade IS NULL OR (FinalGrade BETWEEN 0 AND 100))
 );
 GO;
 
