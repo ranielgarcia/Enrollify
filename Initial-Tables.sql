@@ -15,7 +15,7 @@ CREATE TABLE Rooms
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Room_Type FOREIGN KEY (RoomTypeId) REFERENCES RoomTypes(Id)
+	CONSTRAINT FK_Rooms_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomTypes(Id)
 );
 GO;
 
@@ -83,7 +83,7 @@ CREATE TABLE Subjects
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Students_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id)
+	CONSTRAINT FK_Subjects_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id)
 );
 GO;
 
@@ -147,7 +147,7 @@ CREATE TABLE Teachers
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	UpdatedAt DATETIME2 NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Department FOREIGN KEY (DepartmentId) REFERENCES Departments(Id)
+	CONSTRAINT FK_Teachers_Department FOREIGN KEY (DepartmentId) REFERENCES Departments(Id)
 );
 GO;
 
@@ -307,3 +307,125 @@ CREATE TABLE EnrollmentPayments
 	CONSTRAINT FK_EnrollmentPayments_Enrollment FOREIGN KEY (EnrollmentId) REFERENCES Enrollments(Id)
 );
 GO;
+
+-- ************************************
+-- INDEXES ON FOREIGN KEYS FOR PERFORMANCE
+-- ************************************
+
+-- Rooms indexes
+CREATE NONCLUSTERED INDEX IX_Rooms_RoomTypeId 
+ON Rooms(RoomTypeId);
+GO
+
+-- Departments indexes
+CREATE NONCLUSTERED INDEX IX_Departments_CollegeId 
+ON Departments(CollegeId);
+GO
+
+-- Courses indexes
+CREATE NONCLUSTERED INDEX IX_Courses_CollegeId 
+ON Courses(CollegeId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_Courses_PreferRoomTypeId 
+ON Courses(PreferRoomTypeId);
+GO
+
+-- Subjects indexes
+CREATE NONCLUSTERED INDEX IX_Subjects_CourseId 
+ON Subjects(CourseId);
+GO
+
+-- SubjectPrerequisites indexes
+CREATE NONCLUSTERED INDEX IX_SubjectPrerequisites_SourceSubjectId 
+ON SubjectPrerequisites(SourceSubjectId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_SubjectPrerequisites_PrerequisiteSubjectId 
+ON SubjectPrerequisites(PrerequisiteSubjectId);
+GO
+
+-- EquivalentSubjectMapping indexes
+CREATE NONCLUSTERED INDEX IX_EquivalentSubjectMapping_SourceSubjectId 
+ON EquivalentSubjectMapping(SourceSubjectId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_EquivalentSubjectMapping_EquivalentSubjectId 
+ON EquivalentSubjectMapping(EquivalentSubjectId);
+GO
+
+-- Teachers indexes
+CREATE NONCLUSTERED INDEX IX_Teachers_DepartmentId 
+ON Teachers(DepartmentId);
+GO
+
+-- TeacherSubjects indexes
+CREATE NONCLUSTERED INDEX IX_TeacherSubjects_TeacherId 
+ON TeacherSubjects(TeacherId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_TeacherSubjects_SubjectId 
+ON TeacherSubjects(SubjectId);
+GO
+
+-- ClassSections indexes
+CREATE NONCLUSTERED INDEX IX_ClassSections_CourseId 
+ON ClassSections(CourseId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_ClassSections_SemesterId 
+ON ClassSections(SemesterId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_ClassSections_AdviserId 
+ON ClassSections(AdviserId);
+GO
+
+-- ClassSectionSubjectOffering indexes
+CREATE NONCLUSTERED INDEX IX_ClassSectionSubjectOffering_SubjectId 
+ON ClassSectionSubjectOffering(SubjectId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_ClassSectionSubjectOffering_TeacherId 
+ON ClassSectionSubjectOffering(TeacherId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_ClassSectionSubjectOffering_ClassSectionId 
+ON ClassSectionSubjectOffering(ClassSectionId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_ClassSectionSubjectOffering_RoomId 
+ON ClassSectionSubjectOffering(RoomId);
+GO
+
+-- Students indexes
+CREATE NONCLUSTERED INDEX IX_Students_CourseId 
+ON Students(CourseId);
+GO
+
+-- Enrollments indexes
+CREATE NONCLUSTERED INDEX IX_Enrollments_StudentId 
+ON Enrollments(StudentId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_Enrollments_ClassSectionId 
+ON Enrollments(ClassSectionId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_Enrollments_ClassSectionSubjectOfferingId 
+ON Enrollments(ClassSectionSubjectOfferingId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_Enrollments_SemesterId 
+ON Enrollments(SemesterId);
+GO
+
+-- EnrollmentAcademicRecords indexes
+CREATE NONCLUSTERED INDEX IX_EnrollmentAcademicRecords_EnrollmentId 
+ON EnrollmentAcademicRecords(EnrollmentId);
+GO
+
+-- EnrollmentPayments indexes
+CREATE NONCLUSTERED INDEX IX_EnrollmentPayments_EnrollmentId 
+ON EnrollmentPayments(EnrollmentId);
+GO
