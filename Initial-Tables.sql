@@ -2,7 +2,17 @@
 CREATE TABLE RoomTypes
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	Name VARCHAR(50) NOT NULL UNIQUE
+	Name VARCHAR(50) NOT NULL UNIQUE,
+	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
+	UpdatedAt DATETIME2 NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
+	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT FK_RoomTypes_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_RoomTypes_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_RoomTypes_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
 );
 
 
@@ -13,9 +23,16 @@ CREATE TABLE Rooms
 	StudentCapacity INT NOT NULL,
 	RoomTypeId INT NOT NULL, 
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
 	UpdatedAt DATETIME2 NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_Rooms_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomTypes(Id),
+	CONSTRAINT FK_Rooms_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Rooms_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Rooms_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
 	CONSTRAINT CHK_Rooms_StudentCapacity_Positive CHECK (StudentCapacity > 0)
 );
 GO;
@@ -30,8 +47,15 @@ CREATE TABLE Colleges
 	Dean VARCHAR(100) NOT NULL, -- Hard coded name for now
 	Description VARCHAR(255) NULL,
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
 	UpdatedAt DATETIME2 NULL,
-	IsActive BIT NOT NULL DEFAULT 1
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
+	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT FK_Colleges_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Colleges_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Colleges_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
 );
 GO;
 
@@ -46,9 +70,16 @@ CREATE TABLE Departments
 	Description VARCHAR(255) NULL,
 	CollegeId INT NOT NULL,
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
 	UpdatedAt DATETIME2 NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_Departments_College FOREIGN KEY (CollegeId) REFERENCES Colleges(Id),
+	CONSTRAINT FK_Departments_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Departments_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Departments_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
 	CONSTRAINT UQ_Departments_Code_College UNIQUE (Code, CollegeId)
 );
 GO;
@@ -65,10 +96,17 @@ CREATE TABLE Courses -- Also known program
 	CollegeId INT NOT NULL, -- Or department, but for now use collegeId,
 	PreferRoomTypeId INT NOT NULL,
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
 	UpdatedAt DATETIME2 NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_Courses_College FOREIGN KEY (CollegeId) REFERENCES Colleges(Id),
 	CONSTRAINT FK_Courses_RoomType FOREIGN KEY (PreferRoomTypeId) REFERENCES RoomTypes(Id),
+	CONSTRAINT FK_Courses_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Courses_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Courses_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
 	CONSTRAINT CHK_Courses_DurationYears_Valid CHECK (DurationYears > 0 AND DurationYears <= 10)
 );
 GO;
@@ -84,9 +122,16 @@ CREATE TABLE Subjects
 	Description VARCHAR(255) NULL,
 	CourseId INT NOT NULL,
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
 	UpdatedAt DATETIME2 NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_Subjects_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
+	CONSTRAINT FK_Subjects_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Subjects_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Subjects_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
 	CONSTRAINT UQ_Subjects_Code_Course UNIQUE (Code, CourseId),
 	CONSTRAINT CHK_Subjects_Units_Valid CHECK (Units > 0 AND Units <= 12)
 );
@@ -99,11 +144,18 @@ CREATE TABLE SubjectPrerequisites
 	SourceSubjectId INT NOT NULL,
 	PrerequisiteSubjectId INT NOT NULL,
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
 	UpdatedAt DATETIME2 NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT PK_SubjectPrerequisiteSubjectsMappings PRIMARY KEY(SourceSubjectId, PrerequisiteSubjectId),
 	CONSTRAINT FK_SubjectPrerequisites_SourceSubject FOREIGN KEY (SourceSubjectId) REFERENCES Subjects(Id),
 	CONSTRAINT FK_SubjectPrerequisites_PrerequisiteSubject FOREIGN KEY (PrerequisiteSubjectId) REFERENCES Subjects(Id),
+	CONSTRAINT FK_SubjectPrerequisites_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_SubjectPrerequisites_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_SubjectPrerequisites_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
 	CONSTRAINT CHK_SubjectPrerequisites_NoSelfReference CHECK (SourceSubjectId <> PrerequisiteSubjectId)
 );
 GO;
@@ -126,11 +178,18 @@ CREATE TABLE EquivalentSubjectMapping
 	EquivalentSubjectId INT NOT NULL,
 	Reason VARCHAR(255) NOT NULL,
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
 	UpdatedAt DATETIME2 NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT PK_EquivalentSubjectMappings PRIMARY KEY(SourceSubjectId, EquivalentSubjectId),
 	CONSTRAINT FK_EquivalentSubjectMapping_SourceSubject FOREIGN KEY (SourceSubjectId) REFERENCES Subjects(Id),
-	CONSTRAINT FK_EquivalentSubjectMapping_EquivalentSubject FOREIGN KEY (EquivalentSubjectId) REFERENCES Subjects(Id)
+	CONSTRAINT FK_EquivalentSubjectMapping_EquivalentSubject FOREIGN KEY (EquivalentSubjectId) REFERENCES Subjects(Id),
+	CONSTRAINT FK_EquivalentSubjectMapping_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_EquivalentSubjectMapping_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_EquivalentSubjectMapping_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
 );
 GO;
 
@@ -151,9 +210,16 @@ CREATE TABLE Teachers
 	Email VARCHAR(255) NOT NULL UNIQUE,
 	DepartmentId INT NOT NULL,
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
 	UpdatedAt DATETIME2 NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Teachers_Department FOREIGN KEY (DepartmentId) REFERENCES Departments(Id)
+	CONSTRAINT FK_Teachers_Department FOREIGN KEY (DepartmentId) REFERENCES Departments(Id),
+	CONSTRAINT FK_Teachers_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Teachers_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Teachers_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
 );
 GO;
 
@@ -164,10 +230,17 @@ CREATE TABLE TeacherSubjects
 	TeacherId INT NOT NULL,
 	SubjectId INT NOT NULL,
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
 	UpdatedAt DATETIME2 NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_TeacherSubjects_Teacher FOREIGN KEY (TeacherId) REFERENCES Teachers(Id),
 	CONSTRAINT FK_TeacherSubjects_Subject FOREIGN KEY (SubjectId) REFERENCES Subjects(Id),
+	CONSTRAINT FK_TeacherSubjects_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_TeacherSubjects_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_TeacherSubjects_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
 );
 GO;
 
@@ -183,8 +256,15 @@ CREATE TABLE Semesters
 	Description VARCHAR(50) NOT NULL,
 	SchoolYear INT NOT NULL,
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
 	UpdatedAt DATETIME2 NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT FK_Semesters_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Semesters_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Semesters_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
 	CONSTRAINT CHK_Semesters_Semester_Valid CHECK (Semester IN (1, 2, 3)),
 	CONSTRAINT CHK_Semesters_SchoolYear_Valid CHECK (SchoolYear >= 2000)
 );
@@ -194,7 +274,7 @@ GO;
 
 -- ************************************
 
---  “BSCS-2A”, “ENG101-A”
+--  "BSCS-2A", "ENG101-A"
 CREATE TABLE ClassSections
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
@@ -205,11 +285,18 @@ CREATE TABLE ClassSections
 	AdviserId INT NOT NULL,
 	StudentCapacity INT NOT NULL, -- Soft rule
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
 	UpdatedAt DATETIME2 NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_ClassSections_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
 	CONSTRAINT FK_ClassSections_Semester FOREIGN KEY (SemesterId) REFERENCES Semesters(Id),
 	CONSTRAINT FK_ClassSections_Adviser FOREIGN KEY (AdviserId) REFERENCES Teachers(Id),
+	CONSTRAINT FK_ClassSections_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_ClassSections_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_ClassSections_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
 	CONSTRAINT CHK_ClassSections_YearLevel_Valid CHECK (YearLevel BETWEEN 1 AND 6),
 	CONSTRAINT CHK_ClassSections_StudentCapacity_Positive CHECK (StudentCapacity > 0)
 );
@@ -231,12 +318,19 @@ CREATE TABLE ClassSectionSubjectOffering
     EndTime TIME,
 	MaxNumberOfStudents INT NULL, -- Optional, soft rule, this to allow us to override the room student capacity
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
 	UpdatedAt DATETIME2 NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_ClassSectionSubjectOffering_Subject FOREIGN KEY (SubjectId) REFERENCES Subjects(Id),
 	CONSTRAINT FK_ClassSectionSubjectOffering_Teacher FOREIGN KEY (TeacherId) REFERENCES Teachers(Id),
 	CONSTRAINT FK_ClassSectionSubjectOffering_ClassSection FOREIGN KEY (ClassSectionId) REFERENCES ClassSections(Id),
 	CONSTRAINT FK_ClassSectionSubjectOffering_Room FOREIGN KEY (RoomId) REFERENCES Rooms(Id),
+	CONSTRAINT FK_ClassSectionSubjectOffering_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_ClassSectionSubjectOffering_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_ClassSectionSubjectOffering_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
 );
 GO;
 
@@ -249,9 +343,18 @@ CREATE TABLE StudentStatuses
     Code VARCHAR(20) NOT NULL UNIQUE,
     Name VARCHAR(50) NOT NULL,
     Description VARCHAR(255) NULL,
+    CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+    CreatedBy INT NULL,
+    UpdatedAt DATETIME2 NULL,
+    UpdatedBy INT NULL,
+    DeletedAt DATETIME2 NULL,
+    DeletedBy INT NULL,
     IsActive BIT NOT NULL DEFAULT 1,
     DisplayOrder INT NOT NULL DEFAULT 0,
     
+    CONSTRAINT FK_StudentStatuses_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_StudentStatuses_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_StudentStatuses_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
     CONSTRAINT CHK_StudentStatuses_Code_NotEmpty CHECK (LEN(TRIM(Code)) > 0),
     CONSTRAINT CHK_StudentStatuses_Name_NotEmpty CHECK (LEN(TRIM(Name)) > 0)
 );
@@ -282,10 +385,17 @@ CREATE TABLE Students
     YearLevel INT NOT NULL,
     Status INT NOT NULL DEFAULT 1, -- References StudentStatuses, default to ACTIVE
     CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+    CreatedBy INT NULL,
     UpdatedAt DATETIME2 NULL,
+    UpdatedBy INT NULL,
+    DeletedAt DATETIME2 NULL,
+    DeletedBy INT NULL,
     IsActive BIT NOT NULL DEFAULT 1,
     CONSTRAINT FK_Students_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
     CONSTRAINT FK_Students_StudentStatus FOREIGN KEY (Status) REFERENCES StudentStatuses(Id),
+    CONSTRAINT FK_Students_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_Students_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_Students_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
     CONSTRAINT CHK_Students_YearLevel_Valid CHECK (YearLevel BETWEEN 1 AND 6)
 );
 GO
@@ -304,13 +414,20 @@ CREATE TABLE Enrollments
     SemesterId INT NOT NULL,
     Status INT NOT NULL DEFAULT 1, -- References EnrollmentStatuses, default to PENDING
     CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+    CreatedBy INT NULL,
     UpdatedAt DATETIME2 NULL,
+    UpdatedBy INT NULL,
+    DeletedAt DATETIME2 NULL,
+    DeletedBy INT NULL,
     IsActive BIT NOT NULL DEFAULT 1,
     CONSTRAINT FK_Enrollments_Student FOREIGN KEY (StudentId) REFERENCES Students(Id),
     CONSTRAINT FK_Enrollments_ClassSection FOREIGN KEY (ClassSectionId) REFERENCES ClassSections(Id),
     CONSTRAINT FK_Enrollments_ClassSectionSubjectOffering FOREIGN KEY (ClassSectionSubjectOfferingId) REFERENCES ClassSectionSubjectOffering(Id),
     CONSTRAINT FK_Enrollments_Semester FOREIGN KEY (SemesterId) REFERENCES Semesters(Id),
-    CONSTRAINT FK_Enrollments_EnrollmentStatus FOREIGN KEY (Status) REFERENCES EnrollmentStatuses(Id)
+    CONSTRAINT FK_Enrollments_EnrollmentStatus FOREIGN KEY (Status) REFERENCES EnrollmentStatuses(Id),
+    CONSTRAINT FK_Enrollments_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_Enrollments_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_Enrollments_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
 );
 GO
 
@@ -323,9 +440,18 @@ CREATE TABLE EnrollmentStatuses
     Code VARCHAR(20) NOT NULL UNIQUE,
     Name VARCHAR(50) NOT NULL,
     Description VARCHAR(255) NULL,
+    CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+    CreatedBy INT NULL,
+    UpdatedAt DATETIME2 NULL,
+    UpdatedBy INT NULL,
+    DeletedAt DATETIME2 NULL,
+    DeletedBy INT NULL,
     IsActive BIT NOT NULL DEFAULT 1,
     DisplayOrder INT NOT NULL DEFAULT 0,
     
+    CONSTRAINT FK_EnrollmentStatuses_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_EnrollmentStatuses_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_EnrollmentStatuses_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
     CONSTRAINT CHK_EnrollmentStatuses_Code_NotEmpty CHECK (LEN(TRIM(Code)) > 0),
     CONSTRAINT CHK_EnrollmentStatuses_Name_NotEmpty CHECK (LEN(TRIM(Name)) > 0)
 );
@@ -355,9 +481,16 @@ CREATE TABLE EnrollmentAcademicRecords
 	FinalGrade DECIMAL(5, 2),
 	Remarks VARCHAR(255),
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
 	UpdatedAt DATETIME2 NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_EnrollmentAcademicRecords_Enrollment FOREIGN KEY (EnrollmentId) REFERENCES Enrollments(Id),
+	CONSTRAINT FK_EnrollmentAcademicRecords_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_EnrollmentAcademicRecords_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_EnrollmentAcademicRecords_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
 	CONSTRAINT CHK_EnrollmentAcademicRecords_MidtermGrade_Valid CHECK (MidtermGrade IS NULL OR (MidtermGrade BETWEEN 0 AND 100)),
 	CONSTRAINT CHK_EnrollmentAcademicRecords_FinalGrade_Valid CHECK (FinalGrade IS NULL OR (FinalGrade BETWEEN 0 AND 100))
 );
@@ -374,9 +507,16 @@ CREATE TABLE EnrollmentPayments
 	ReferenceNumber VARCHAR(100) NULL,
 	PaymentStatus VARCHAR(50) NOT NULL,
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+	CreatedBy INT NULL,
 	UpdatedAt DATETIME2 NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIME2 NULL,
+	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_EnrollmentPayments_Enrollment FOREIGN KEY (EnrollmentId) REFERENCES Enrollments(Id)
+	CONSTRAINT FK_EnrollmentPayments_Enrollment FOREIGN KEY (EnrollmentId) REFERENCES Enrollments(Id),
+	CONSTRAINT FK_EnrollmentPayments_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_EnrollmentPayments_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_EnrollmentPayments_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
 );
 GO;
 
