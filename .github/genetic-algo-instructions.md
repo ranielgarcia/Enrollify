@@ -1,3 +1,7 @@
+---
+applyTo: "src/POCs/Genetic-algorithm/**
+---
+
 # College Course Scheduling - Genetic Algorithm
 
 ## Architecture Overview

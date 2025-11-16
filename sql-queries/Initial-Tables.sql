@@ -313,9 +313,9 @@ CREATE TABLE ClassSectionSubjectOffering
 	TeacherId INT NOT NULL, -- Assigned to a Teacher,
 	ClassSectionId INT NOT NULL, -- Belongs to a ClassSection
 	RoomId INT NOT NULL,
-	DayOfWeek CHAR(3), -- MON, TUE, WED, THU, FRI, SAT, SUN,
-	StartTime TIME,
-    EndTime TIME,
+	DayPattern VARCHAR(10) NULL,      -- 'MW', 'TTh', 'MWF', 'MTWTHF',
+	DaysPerWeek INT NULL,              -- 2, 3, 5, etc.
+	HoursPerDay DECIMAL(3,1) NULL,     -- 1.5, 2.0, 3.0, etc.
 	MaxNumberOfStudents INT NULL, -- Optional, soft rule, this to allow us to override the room student capacity
 	CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
 	CreatedBy INT NULL,
@@ -333,6 +333,48 @@ CREATE TABLE ClassSectionSubjectOffering
 	CONSTRAINT FK_ClassSectionSubjectOffering_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
 );
 GO;
+
+
+-- Separate schedule details table (multiple rows for multi-day subjects)
+CREATE TABLE ClassSchedules
+(
+    Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    ClassSectionSubjectOfferingId INT NOT NULL,
+    DayOfWeek CHAR(3) NOT NULL,
+    StartTime TIME NOT NULL,
+    EndTime TIME NOT NULL,
+    CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+    UpdatedAt DATETIME2 NULL,
+    IsActive BIT NOT NULL DEFAULT 1,
+    
+    CONSTRAINT FK_ClassSchedules_Offering 
+        FOREIGN KEY (ClassSectionSubjectOfferingId) 
+        REFERENCES ClassSectionSubjectOffering(Id),
+    
+    CONSTRAINT CHK_ClassSchedules_DayOfWeek_Valid 
+        CHECK (DayOfWeek IN ('MON','TUE','WED','THU','FRI','SAT','SUN')),
+    
+    CONSTRAINT CHK_ClassSchedules_Time_Valid 
+        CHECK (StartTime < EndTime),
+    
+    -- Prevent duplicate schedules for same offering
+    CONSTRAINT UQ_ClassSchedules_Offering_Day 
+        UNIQUE (ClassSectionSubjectOfferingId, DayOfWeek)
+);
+
+-- **Example Data:**
+
+-- **ClassSectionSubjectOffering:**
+-- | Id | SubjectId | TeacherId | ClassSectionId | RoomId |
+-- |----|-----------|-----------|----------------|--------|
+-- | 1  | 101       | 5         | 10             | 301    |
+
+-- **ClassSchedules:**
+-- | Id | ClassSectionSubjectOfferingId | DayOfWeek | StartTime | EndTime |
+-- |----|------------------------------|-----------|-----------|---------|
+-- | 1  | 1                            | MON       | 09:00:00  | 10:30:00|
+-- | 2  | 1                            | WED       | 09:00:00  | 10:30:00|
+
 
 -- ====================================
 -- STUDENT STATUS LOOKUP TABLE
@@ -402,34 +444,6 @@ GO
 
 -- ************************************
 
--- SectionId is optional
--- Regular students - auto-selects Section-based offerings
--- Irregular students - Manual selection of ANY open subject offerings
-CREATE TABLE Enrollments
-(
-    Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-    StudentId INT NOT NULL,
-    ClassSectionId INT NULL, -- optional, null for irregular students
-    ClassSectionSubjectOfferingId INT NOT NULL,
-    SemesterId INT NOT NULL,
-    Status INT NOT NULL DEFAULT 1, -- References EnrollmentStatuses, default to PENDING
-    CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
-    CreatedBy INT NULL,
-    UpdatedAt DATETIME2 NULL,
-    UpdatedBy INT NULL,
-    DeletedAt DATETIME2 NULL,
-    DeletedBy INT NULL,
-    IsActive BIT NOT NULL DEFAULT 1,
-    CONSTRAINT FK_Enrollments_Student FOREIGN KEY (StudentId) REFERENCES Students(Id),
-    CONSTRAINT FK_Enrollments_ClassSection FOREIGN KEY (ClassSectionId) REFERENCES ClassSections(Id),
-    CONSTRAINT FK_Enrollments_ClassSectionSubjectOffering FOREIGN KEY (ClassSectionSubjectOfferingId) REFERENCES ClassSectionSubjectOffering(Id),
-    CONSTRAINT FK_Enrollments_Semester FOREIGN KEY (SemesterId) REFERENCES Semesters(Id),
-    CONSTRAINT FK_Enrollments_EnrollmentStatus FOREIGN KEY (Status) REFERENCES EnrollmentStatuses(Id),
-    CONSTRAINT FK_Enrollments_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
-    CONSTRAINT FK_Enrollments_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
-    CONSTRAINT FK_Enrollments_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
-);
-GO
 
 -- ====================================
 -- ENROLLMENT STATUS LOOKUP TABLE
@@ -469,6 +483,34 @@ INSERT INTO EnrollmentStatuses (Id, Code, Name, Description, DisplayOrder) VALUE
 GO
 
 
+-- SectionId is optional
+-- Regular students - auto-selects Section-based offerings
+-- Irregular students - Manual selection of ANY open subject offerings
+CREATE TABLE Enrollments
+(
+    Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    StudentId INT NOT NULL,
+    ClassSectionId INT NULL, -- optional, null for irregular students
+    ClassSectionSubjectOfferingId INT NOT NULL,
+    SemesterId INT NOT NULL,
+    Status INT NOT NULL DEFAULT 1, -- References EnrollmentStatuses, default to PENDING
+    CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
+    CreatedBy INT NULL,
+    UpdatedAt DATETIME2 NULL,
+    UpdatedBy INT NULL,
+    DeletedAt DATETIME2 NULL,
+    DeletedBy INT NULL,
+    IsActive BIT NOT NULL DEFAULT 1,
+    CONSTRAINT FK_Enrollments_Student FOREIGN KEY (StudentId) REFERENCES Students(Id),
+    CONSTRAINT FK_Enrollments_ClassSection FOREIGN KEY (ClassSectionId) REFERENCES ClassSections(Id),
+    CONSTRAINT FK_Enrollments_ClassSectionSubjectOffering FOREIGN KEY (ClassSectionSubjectOfferingId) REFERENCES ClassSectionSubjectOffering(Id),
+    CONSTRAINT FK_Enrollments_Semester FOREIGN KEY (SemesterId) REFERENCES Semesters(Id),
+    CONSTRAINT FK_Enrollments_EnrollmentStatus FOREIGN KEY (Status) REFERENCES EnrollmentStatuses(Id),
+    CONSTRAINT FK_Enrollments_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_Enrollments_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_Enrollments_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
+);
+GO
 
 -- ************************************
 
