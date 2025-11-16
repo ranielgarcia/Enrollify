@@ -4,21 +4,19 @@
     "type": "split",
     "children": [
       {
-        "id": "e0da470b8fde8e32",
+        "id": "849c5e80f6719c5e",
         "type": "tabs",
         "children": [
           {
-            "id": "7e74c6d1d95b7e80",
+            "id": "609e6657c6db1549",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "release-notes",
               "state": {
-                "file": "Genetic-Algorithm/Genetic Algorithm Course Scheduling - Csharp Implementation.md",
-                "mode": "source",
-                "source": false
+                "currentVersion": "1.10.3"
               },
-              "icon": "lucide-file",
-              "title": "Genetic Algorithm Course Scheduling - Csharp Implementation"
+              "icon": "lucide-book-up",
+              "title": "Release Notes 1.10.3"
             }
           }
         ]
@@ -169,10 +167,10 @@
       "bases:Create new base": false
     }
   },
-  "active": "7e74c6d1d95b7e80",
+  "active": "609e6657c6db1549",
   "lastOpenFiles": [
-    "Genetic-Algorithm/Selection, Crossover, and Mutation Explained.md",
     "Genetic-Algorithm/Genetic Algorithm Course Scheduling - Csharp Implementation.md",
+    "Genetic-Algorithm/Selection, Crossover, and Mutation Explained.md",
     "Genetic-Algorithm/Course Scheduling with GA.md",
     "Genetic-Algorithm"
   ]
