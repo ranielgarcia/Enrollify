@@ -1,0 +1,6 @@
+@Enrollify.WebAPI_HostAddress = http://localhost:5055
+
+GET {{Enrollify.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
