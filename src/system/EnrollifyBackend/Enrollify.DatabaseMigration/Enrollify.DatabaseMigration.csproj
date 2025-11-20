@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	  <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="appsettings.json" />
+    <None Remove="Mocks\Common\Mock0001__Initial.sql" />
+    <None Remove="Scripts\Script0000 - Turn on Snapshop trans level.sql" />
+    <None Remove="Seeds\Roles.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Mocks\Common\Mock0001__Initial.sql" />
+    <EmbeddedResource Include="Scripts\Script0000 - Turn on Snapshop trans level.sql" />
+    <EmbeddedResource Include="Scripts\Script0002__UsersTables.sql" />
+    <EmbeddedResource Include="Scripts\Script0003__InitialCoreTables.sql" />
+    <EmbeddedResource Include="Seeds\Roles.sql" />
+  </ItemGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="dbup-sqlserver" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.4" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.4" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.4" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.4" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.4" />
+		<PackageReference Include="Spectre.Console.Cli" Version="0.50.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="SchemaScripts\Views\" />
+		<Folder Include="SchemaScripts\TVFs\" />
+		<Folder Include="SchemaScripts\StoredProcedures\" />
+		<Folder Include="SchemaScripts\Shared\" />
+	</ItemGroup>
+
+
+</Project>

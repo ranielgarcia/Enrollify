@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Enrollify.DatabaseMigration/Enrollify.DatabaseMigration.csproj" Id="9e235c67-c306-4c14-bbe7-0092a6e32c95" />
+  <Project Path="Enrollify.WebAPI/Enrollify.WebAPI.csproj" />
+</Solution>
