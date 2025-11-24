@@ -1,3 +1,4 @@
+using Enrollify.Infrastructure;
 using Enrollify.WebAPI.Infrastructure.Exceptions;
 using Enrollify.WebAPI.Plumbing;
 using Serilog;
@@ -22,9 +23,15 @@ try
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
 
-
     builder.Services.AddGlobalCorsPolicy(builder.Configuration);
 
+    // Get ILogger instance before adding infrastructure services
+    using var loggerFactory = LoggerFactory.Create(config => config.AddConsole());
+    var startupLogger = loggerFactory.CreateLogger<Program>();
+
+    startupLogger.LogInformation("Starting web host");
+
+    builder.Services.AddInfrastructureServices(builder.Configuration, startupLogger);
 
     var app = builder.Build();
 

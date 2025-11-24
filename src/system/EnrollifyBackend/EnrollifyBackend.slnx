@@ -1,4 +1,7 @@
 <Solution>
+  <Project Path="Enrollify.Core/Enrollify.Core.csproj" Id="885acc37-63de-4c05-b402-5f6c4c7e9e8c" />
   <Project Path="Enrollify.DatabaseMigration/Enrollify.DatabaseMigration.csproj" Id="9e235c67-c306-4c14-bbe7-0092a6e32c95" />
+  <Project Path="Enrollify.Infrastructure/Enrollify.Infrastructure.csproj" Id="916e5a58-e152-4f52-9d32-0720fae79ed0" />
+  <Project Path="Enrollify.SharedKernel/Enrollify.SharedKernel.csproj" Id="aef19405-03a0-4cf1-b965-362ebb65cfd3" />
   <Project Path="Enrollify.WebAPI/Enrollify.WebAPI.csproj" />
 </Solution>
