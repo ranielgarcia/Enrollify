@@ -2,6 +2,7 @@ using Enrollify.Core.RoomAggregate;
 using Enrollify.Core.RoomTypeAggregate;
 using Enrollify.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Enrollify.SharedKernel;
 
 namespace Enrollify.WebAPI.Controllers;
 
@@ -23,13 +24,14 @@ public class WeatherForecastController : ControllerBase
     [HttpGet(Name = "GetWeatherForecast")]
     public IEnumerable<WeatherForecast> Get()
     {
-        var roomType = new RoomType(RoomTypeName.From("Test2"));
+        var roomType = new RoomType(RoomTypeName.From("Test3"));
         _dbContext.RoomTypes.Add(roomType);
         _dbContext.SaveChanges();
 
         var roomTypes = _dbContext.RoomTypes.ToList();
 
         var room = new Room(RoomName.From("Test"), 30, RoomTypeId.From(1));
+        room.UpdateCapacity(10).AuditInfo.SetUpdatedBy()
 
         //_dbContext.Rooms.Add();
 

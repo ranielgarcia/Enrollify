@@ -8,26 +8,12 @@
 public abstract class EntityBase : HasDomainEventsBase
 {
   public int Id { get; set; }
-  public DateTime CreatedAt { get; set; }
-  public int? CreatedBy { get; set; }
-  public DateTime? UpdatedAt { get; set; }
-  public int? UpdatedBy { get; set; }
-  public DateTime? DeletedAt { get; set; }
-  public int? DeletedBy { get; set; }
-  public bool IsActive { get; set; } = true;
 }
 
 public abstract class EntityBase<TId> : HasDomainEventsBase
   where TId : struct, IEquatable<TId>
 {
   public TId Id { get; set; } = default!;
-  public DateTime CreatedAt { get; set; }
-  public int? CreatedBy { get; set; }
-  public DateTime? UpdatedAt { get; set; }
-  public int? UpdatedBy { get; set; }
-  public DateTime? DeletedAt { get; set; }
-  public int? DeletedBy { get; set; }
-  public bool IsActive { get; set; } = true;
 }
 
 /// <summary>
@@ -40,12 +26,5 @@ public abstract class EntityBase<T, TId> : HasDomainEventsBase
   where T : EntityBase<T, TId>
 {
   public TId Id { get; set; } = default!;
-  public DateTime CreatedAt { get; set; }
-  public int? CreatedBy { get; set; }
-  public DateTime? UpdatedAt { get; set; }
-  public int? UpdatedBy { get; set; }
-  public DateTime? DeletedAt { get; set; }
-  public int? DeletedBy { get; set; }
-  public bool IsActive { get; set; } = true;
 }
 

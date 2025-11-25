@@ -3,7 +3,7 @@ using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.RoomTypeAggregate;
 
-public class RoomType : EntityBase<RoomType, RoomTypeId>, IAggregateRoot
+public class RoomType : EntityBase<RoomType, RoomTypeId>, IAggregateRoot, IAuditable<AuditInfo>
 {
     private RoomType() { } // EF Core constructor
 
@@ -13,6 +13,7 @@ public class RoomType : EntityBase<RoomType, RoomTypeId>, IAggregateRoot
     }
 
     public RoomTypeName Name { get; private set; }
+    public AuditInfo AuditInfo { get; set; } = new AuditInfo();
 
     public RoomType UpdateName(RoomTypeName newName)
     {

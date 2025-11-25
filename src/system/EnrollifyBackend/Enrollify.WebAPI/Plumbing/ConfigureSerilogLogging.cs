@@ -6,7 +6,7 @@ using Serilog.Extensions.Hosting;
 
 namespace Enrollify.WebAPI.Plumbing;
 
-public static class ConfigureLogging
+public static class ConfigureSerilogLogging
 {
     public static ReloadableLogger BootstrapLogger => new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)

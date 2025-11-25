@@ -1,6 +1,5 @@
 ﻿using Enrollify.Core.RoomAggregate;
 using Enrollify.Core.RoomTypeAggregate;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Enrollify.Infrastructure.Data.Config;
 
@@ -12,12 +11,12 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
 
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id)
-          .HasVogenConversion()
+          //.HasVogenConversion()
           .ValueGeneratedOnAdd()
           .IsRequired();
 
         builder.Property(e => e.Name)
-          .HasVogenConversion()
+          //.HasVogenConversion()
           .HasMaxLength(RoomName.MaxLength)
           .HasColumnType($"VARCHAR({RoomName.MaxLength})")
           .IsRequired();
@@ -26,38 +25,14 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
           .IsRequired();
 
         builder.Property(e => e.RoomTypeId)
-          .HasConversion(
-            id => id.Value,
-            value => RoomTypeId.From(value))
+          //.HasConversion(
+          //  id => id.Value,
+          //  value => RoomTypeId.From(value))
           .HasColumnName("RoomTypeId")
           .IsRequired();
 
         // Audit fields
-        builder.Property(e => e.CreatedAt)
-          .HasColumnType("DATETIME2")
-          .HasDefaultValueSql("SYSDATETIME()")
-          .IsRequired();
-
-        builder.Property(e => e.CreatedBy)
-          .IsRequired(true);
-
-        builder.Property(e => e.UpdatedAt)
-          .HasColumnType("DATETIME2")
-          .IsRequired(false);
-
-        builder.Property(e => e.UpdatedBy)
-          .IsRequired(false);
-
-        builder.Property(e => e.DeletedAt)
-          .HasColumnType("DATETIME2")
-          .IsRequired(false);
-
-        builder.Property(e => e.DeletedBy)
-          .IsRequired(false);
-
-        builder.Property(e => e.IsActive)
-          .HasDefaultValue(true)
-          .IsRequired();
+        builder.ConfigureAuditFields();
 
         // Don't expose navigation property publicly
         builder.HasOne<RoomType>()

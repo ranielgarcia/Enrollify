@@ -1,12 +1,11 @@
 ﻿using Ardalis.GuardClauses;
-using Enrollify.Core.RoomAggregate;
 using Enrollify.Core.RoomAggregate.Events;
 using Enrollify.Core.RoomTypeAggregate;
 using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.RoomAggregate;
 
-public class Room : EntityBase<Room, RoomId>, IAggregateRoot
+public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable<AuditInfo>
 {
     private Room() { } // EF Core constructor
 
@@ -19,6 +18,7 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot
         RegisterDomainEvent(new RoomCreatedEvent(this));
     }
 
+    public AuditInfo AuditInfo { get; set; } = new AuditInfo();
     public RoomName Name { get; private set; }
     public int StudentCapacity { get; private set; }
     public RoomTypeId RoomTypeId { get; private set; }

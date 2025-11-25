@@ -3,7 +3,7 @@ using Enrollify.WebAPI.Infrastructure.Exceptions;
 using Enrollify.WebAPI.Plumbing;
 using Serilog;
 
-Log.Logger = ConfigureLogging.BootstrapLogger;
+Log.Logger = ConfigureSerilogLogging.BootstrapLogger;
 
 try
 {
@@ -41,8 +41,10 @@ try
         app.MapOpenApi();
     }
 
+    app.UseSerilogLogging();
     app.UseHttpsRedirection();
 
+    app.UseGlobalCorsPolicy();
     app.UseAuthorization();
 
     app.MapControllers();
