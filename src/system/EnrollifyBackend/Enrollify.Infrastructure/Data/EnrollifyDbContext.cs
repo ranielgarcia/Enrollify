@@ -1,5 +1,6 @@
 ﻿using Enrollify.Core.RoomAggregate;
 using Enrollify.Core.RoomTypeAggregate;
+using Enrollify.Infrastructure.Data.Config;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -24,4 +25,11 @@ public class EnrollifyDbContext: DbContext
 
     public override int SaveChanges() =>
           SaveChangesAsync().GetAwaiter().GetResult();
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        base.ConfigureConventions(configurationBuilder);
+
+        configurationBuilder.RegisterAllInVogenEfCoreConverters();
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using Enrollify.Core.RoomAggregate;
 using Enrollify.Core.RoomTypeAggregate;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Enrollify.Infrastructure.Data.Config;
 
@@ -9,11 +10,11 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
     {
         builder.ToTable("Rooms");
 
+        builder.HasKey(e => e.Id);
         builder.Property(e => e.Id)
-          .HasConversion(
-            id => id.Value,
-            value => RoomId.From(value))
-          .ValueGeneratedOnAdd();
+          .HasVogenConversion()
+          .ValueGeneratedOnAdd()
+          .IsRequired();
 
         builder.Property(e => e.Name)
           .HasVogenConversion()
@@ -23,11 +24,6 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
 
         builder.Property(e => e.StudentCapacity)
           .IsRequired();
-
-
-        // Add check constraint for positive capacity
-        builder.ToTable(t => t.HasCheckConstraint("CHK_Rooms_StudentCapacity_Positive", "[StudentCapacity] > 0"));
-
 
         builder.Property(e => e.RoomTypeId)
           .HasConversion(
@@ -43,7 +39,7 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
           .IsRequired();
 
         builder.Property(e => e.CreatedBy)
-          .IsRequired(false);
+          .IsRequired(true);
 
         builder.Property(e => e.UpdatedAt)
           .HasColumnType("DATETIME2")
@@ -66,9 +62,7 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
         // Don't expose navigation property publicly
         builder.HasOne<RoomType>()
           .WithMany()
-          .HasForeignKey(r => r.RoomTypeId)
-          .HasConstraintName("FK_Rooms_RoomType")
-          .OnDelete(DeleteBehavior.Restrict);
+          .HasForeignKey(r => r.RoomTypeId);
 
         // Foreign key relationships to Users (if User entity exists)
         // Uncomment when User entity is available

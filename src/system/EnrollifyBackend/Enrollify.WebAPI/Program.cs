@@ -31,7 +31,7 @@ try
 
     startupLogger.LogInformation("Starting web host");
 
-    builder.Services.AddInfrastructureServices(builder.Configuration, startupLogger);
+    builder.Services.AddServiceConfigs(startupLogger, builder);
 
     var app = builder.Build();
 

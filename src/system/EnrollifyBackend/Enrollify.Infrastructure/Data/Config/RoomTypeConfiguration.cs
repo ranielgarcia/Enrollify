@@ -1,6 +1,9 @@
-﻿using Enrollify.Core.RoomTypeAggregate;
+﻿using Enrollify.Core.RoomAggregate;
+using Enrollify.Core.RoomTypeAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System;
 
 namespace Enrollify.Infrastructure.Data.Config;
 
@@ -10,11 +13,11 @@ public class RoomTypeConfiguration : IEntityTypeConfiguration<RoomType>
     {
         builder.ToTable("RoomTypes");
 
+        builder.HasKey(e => e.Id);
         builder.Property(e => e.Id)
-          .HasConversion(
-            id => id.Value,
-            value => RoomTypeId.From(value))
-          .ValueGeneratedOnAdd();
+          .HasVogenConversion()
+          .UseIdentityColumn()
+          .IsRequired();
 
         builder.Property(e => e.Name)
           .HasVogenConversion()

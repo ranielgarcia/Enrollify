@@ -3,6 +3,7 @@
 namespace Enrollify.Core.RoomTypeAggregate;
 
 [ValueObject<string>(conversions: Conversions.SystemTextJson)]
+[Instance("NotSet", "[NOT_SET]")]
 public partial struct RoomTypeName
 {
     public const int MaxLength = 50;
