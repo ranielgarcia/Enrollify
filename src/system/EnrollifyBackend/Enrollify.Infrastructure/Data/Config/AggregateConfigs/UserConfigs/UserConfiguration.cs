@@ -35,10 +35,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.OwnsMany<UserRoleAssignment>(u => u.RoleAssignments, ra =>
         {
             ra.ToTable("UserRolesAssignments");
-            ra.HasKey(r => r.Id);
-            ra.Property(e => e.Id)
-              .UseIdentityColumn()
-              .IsRequired();
+            ra.HasKey(r => new {r.UserId, r.RoleId});
 
             ra.WithOwner().HasForeignKey(r => r.UserId);
 

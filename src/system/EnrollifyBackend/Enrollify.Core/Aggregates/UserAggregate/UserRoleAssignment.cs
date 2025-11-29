@@ -1,18 +1,18 @@
 ﻿using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.RoleAggregate;
-using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.Aggregates.UserAggregate;
 
-public class UserRoleAssignment : EntityBase<UserRoleAssignment, UserRoleAssignmentId>, IAuditable<AuditInfo>
+public class UserRoleAssignment : IAuditable<AuditInfo>
 {
     private UserRoleAssignment() { } // EF Core constructor
 
-    public UserRoleAssignment(RoleId roleId, DateTimeOffset? expiresAt = null)
+    public UserRoleAssignment(RoleId roleId, UserId assignedBy, DateTimeOffset? expiresAt = null)
     {
         RoleId = Guard.Against.Null(roleId);
         AssignedAt = DateTimeOffset.UtcNow;
         ExpiresAt = expiresAt;
+        AuditInfo.SetCreatedBy(assignedBy);
     }
 
     public UserId UserId { get; set; }

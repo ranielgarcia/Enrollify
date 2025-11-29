@@ -1,4 +1,5 @@
 using Enrollify.Infrastructure;
+using Enrollify.WebAPI.Authentication;
 using Enrollify.WebAPI.Infrastructure.Exceptions;
 using Enrollify.WebAPI.Plumbing;
 using Serilog;
@@ -7,7 +8,6 @@ Log.Logger = ConfigureSerilogLogging.BootstrapLogger;
 
 try
 {
-
     var builder = WebApplication.CreateBuilder(args);
 
     // Add services to the container.
@@ -31,6 +31,8 @@ try
 
     startupLogger.LogInformation("Starting web host");
 
+
+    builder.Services.AddAzureADAuthentication(builder.Configuration);
     builder.Services.AddServiceConfigs(startupLogger, builder);
 
     var app = builder.Build();
@@ -45,7 +47,7 @@ try
     app.UseHttpsRedirection();
 
     app.UseGlobalCorsPolicy();
-    app.UseAuthorization();
+    app.UseAzureADAuthentication();
 
     app.MapControllers();
 
