@@ -7,50 +7,31 @@ public static class EntityTypeBuilderExtensions
     public static void ConfigureAuditFields<TEntity>(this EntityTypeBuilder<TEntity> builder)
         where TEntity : class, IAuditable<AuditInfo>
     {
-        builder.Property<DateTime>("CreatedAt")
-            .HasColumnType("DATETIME2")
-            .HasDefaultValueSql("SYSDATETIME()")
-            .IsRequired();
+        builder.ComplexProperty(e => e.AuditInfo, auditBuilder =>
+        {
+            auditBuilder.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
+            auditBuilder.Property(a => a.CreatedBy).HasColumnName("CreatedBy");
+            auditBuilder.Property(a => a.UpdatedAt).HasColumnName("UpdatedAt");
+            auditBuilder.Property(a => a.UpdatedBy).HasColumnName("UpdatedBy");
+            auditBuilder.Property(a => a.DeletedAt).HasColumnName("DeletedAt");
+            auditBuilder.Property(a => a.DeletedBy).HasColumnName("DeletedBy");
+            auditBuilder.Property(a => a.IsActive).HasColumnName("IsActive");
+        });
+    }
 
-        builder.Property<int>("CreatedBy")
-            .IsRequired(true);
-
-        builder.Property<DateTime?>("UpdatedAt")
-            .HasColumnType("DATETIME2")
-            .IsRequired(false);
-
-        builder.Property<int?>("UpdatedBy")
-            .IsRequired(false);
-
-        builder.Property<DateTime?>("DeletedAt")
-            .HasColumnType("DATETIME2")
-            .IsRequired(false);
-
-        builder.Property<int?>("DeletedBy")
-            .IsRequired(false);
-
-        builder.Property<bool>("IsActive")
-            .HasDefaultValue(true)
-            .IsRequired();
-
+    public static void ConfigureAuditFields<TOwner, TEntity>(this OwnedNavigationBuilder<TOwner, TEntity> builder)
+        where TOwner : class
+        where TEntity : class, IAuditable<AuditInfo>
+    {
         builder.OwnsOne(e => e.AuditInfo, auditBuilder =>
         {
-            auditBuilder.Property(a => a.CreatedAt)
-              .HasColumnName("CreatedAt")
-              .IsRequired();
-            auditBuilder.Property(a => a.CreatedBy)
-              .HasColumnName("CreatedBy");
-            auditBuilder.Property(a => a.UpdatedAt)
-              .HasColumnName("UpdatedAt");
-            auditBuilder.Property(a => a.UpdatedBy)
-              .HasColumnName("UpdatedBy");
-            auditBuilder.Property(a => a.DeletedAt)
-              .HasColumnName("DeletedAt");
-            auditBuilder.Property(a => a.DeletedBy)
-              .HasColumnName("DeletedBy");
-            auditBuilder.Property(a => a.IsActive)
-              .HasColumnName("IsActive")
-              .IsRequired();
+            auditBuilder.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
+            auditBuilder.Property(a => a.CreatedBy).HasColumnName("CreatedBy");
+            auditBuilder.Property(a => a.UpdatedAt).HasColumnName("UpdatedAt");
+            auditBuilder.Property(a => a.UpdatedBy).HasColumnName("UpdatedBy");
+            auditBuilder.Property(a => a.DeletedAt).HasColumnName("DeletedAt");
+            auditBuilder.Property(a => a.DeletedBy).HasColumnName("DeletedBy");
+            auditBuilder.Property(a => a.IsActive).HasColumnName("IsActive");
         });
     }
 }

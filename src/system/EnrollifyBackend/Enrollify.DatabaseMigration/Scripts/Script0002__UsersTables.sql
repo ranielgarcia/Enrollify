@@ -1,3 +1,4 @@
+
 -- ====================================
 -- USERS, ROLES, AND PERMISSIONS SCHEMA
 -- ====================================
@@ -11,13 +12,14 @@ CREATE TABLE Users
     Email VARCHAR(255) NOT NULL UNIQUE,
     FirstName VARCHAR(50) NOT NULL,
     LastName VARCHAR(50) NOT NULL,
+    LastLoginAt DATETIMEOFFSET NULL,
+
     IsActive BIT NOT NULL DEFAULT 1,
-    LastLoginAt DATETIME2 NULL,
-    CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
-    CreatedBy INT NULL,
-    UpdatedAt DATETIME2 NULL,
+    CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+    CreatedBy INT NOT NULL,
+    UpdatedAt DATETIMEOFFSET NULL,
     UpdatedBy INT NULL,
-    DeletedAt DATETIME2 NULL,
+    DeletedAt DATETIMEOFFSET NULL,
     DeletedBy INT NULL,
     
     CONSTRAINT CHK_Users_Email_NotEmpty CHECK (LEN(TRIM(Email)) > 0),
@@ -37,12 +39,13 @@ CREATE TABLE Roles
     Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
     Name VARCHAR(50) NOT NULL UNIQUE,
     Description VARCHAR(255) NULL,
+
     IsActive BIT NOT NULL DEFAULT 1,
-    CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
-    CreatedBy INT NULL,
-    UpdatedAt DATETIME2 NULL,
+    CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+    CreatedBy INT NOT NULL,
+    UpdatedAt DATETIMEOFFSET NULL,
     UpdatedBy INT NULL,
-    DeletedAt DATETIME2 NULL,
+    DeletedAt DATETIMEOFFSET NULL,
     DeletedBy INT NULL,
     
     CONSTRAINT CHK_Roles_Name_NotEmpty CHECK (LEN(TRIM(Name)) > 0),
@@ -62,12 +65,13 @@ CREATE TABLE Permissions
     Resource VARCHAR(50) NOT NULL,
     Action VARCHAR(50) NOT NULL,
     Description VARCHAR(255) NULL,
+
     IsActive BIT NOT NULL DEFAULT 1,
-    CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
-    CreatedBy INT NULL,
-    UpdatedAt DATETIME2 NULL,
+    CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+    CreatedBy INT NOT NULL,
+    UpdatedAt DATETIMEOFFSET NULL,
     UpdatedBy INT NULL,
-    DeletedAt DATETIME2 NULL,
+    DeletedAt DATETIMEOFFSET NULL,
     DeletedBy INT NULL,
     
     CONSTRAINT CHK_Permissions_Name_NotEmpty CHECK (LEN(TRIM(Name)) > 0),
@@ -82,32 +86,33 @@ GO
 -- ************************************
 -- USER-ROLE MAPPING TABLE
 -- ************************************
-CREATE TABLE UserRoles
+CREATE TABLE UserRolesAssignments
 (
     Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
     UserId INT NOT NULL,
     RoleId INT NOT NULL,
-    AssignedAt DATETIME2 DEFAULT SYSDATETIME(),
-    ExpiresAt DATETIME2 NULL,
+    AssignedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+    ExpiresAt DATETIMEOFFSET NULL,
+
     IsActive BIT NOT NULL DEFAULT 1,
-    CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
-    CreatedBy INT NULL,
-    UpdatedAt DATETIME2 NULL,
+    CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+    CreatedBy INT NOT NULL,
+    UpdatedAt DATETIMEOFFSET NULL,
     UpdatedBy INT NULL,
-    DeletedAt DATETIME2 NULL,
+    DeletedAt DATETIMEOFFSET NULL,
     DeletedBy INT NULL,
     
-    CONSTRAINT FK_UserRoles_User FOREIGN KEY (UserId) REFERENCES Users(Id),
-    CONSTRAINT FK_UserRoles_Role FOREIGN KEY (RoleId) REFERENCES Roles(Id),
-    CONSTRAINT FK_UserRoles_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
-    CONSTRAINT FK_UserRoles_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
-    CONSTRAINT FK_UserRoles_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
+    CONSTRAINT FK_UserRolesAssignments_User FOREIGN KEY (UserId) REFERENCES Users(Id),
+    CONSTRAINT FK_UserRolesAssignments_Role FOREIGN KEY (RoleId) REFERENCES Roles(Id),
+    CONSTRAINT FK_UserRolesAssignments_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_UserRolesAssignments_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_UserRolesAssignments_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
 );
 GO
 
 -- Unique index to ensure one active role assignment per user
-CREATE UNIQUE NONCLUSTERED INDEX UIdx_UserRoles_User_Role_IsActive
-ON UserRoles(UserId, RoleId)
+CREATE UNIQUE NONCLUSTERED INDEX UIdx_UserRolesAssignments_User_Role_IsActive
+ON UserRolesAssignments(UserId, RoleId)
 WHERE IsActive = 1;
 GO
 
@@ -119,12 +124,13 @@ CREATE TABLE RolePermissions
     Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
     RoleId INT NOT NULL,
     PermissionId INT NOT NULL,
+
     IsActive BIT NOT NULL DEFAULT 1,
-    CreatedAt DATETIME2 DEFAULT SYSDATETIME(),
-    CreatedBy INT NULL,
-    UpdatedAt DATETIME2 NULL,
+    CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+    CreatedBy INT NOT NULL,
+    UpdatedAt DATETIMEOFFSET NULL,
     UpdatedBy INT NULL,
-    DeletedAt DATETIME2 NULL,
+    DeletedAt DATETIMEOFFSET NULL,
     DeletedBy INT NULL,
     
     CONSTRAINT FK_RolePermissions_Role FOREIGN KEY (RoleId) REFERENCES Roles(Id),
@@ -185,24 +191,24 @@ ON Permissions(DeletedBy);
 GO
 
 -- UserRoles indexes
-CREATE NONCLUSTERED INDEX IX_UserRoles_UserId 
-ON UserRoles(UserId);
+CREATE NONCLUSTERED INDEX IX_UserRolesAssignments_UserId 
+ON UserRolesAssignments(UserId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_UserRoles_RoleId 
-ON UserRoles(RoleId);
+CREATE NONCLUSTERED INDEX IX_UserRolesAssignments_RoleId 
+ON UserRolesAssignments(RoleId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_UserRoles_CreatedBy 
-ON UserRoles(CreatedBy);
+CREATE NONCLUSTERED INDEX IX_UserRolesAssignments_CreatedBy 
+ON UserRolesAssignments(CreatedBy);
 GO
 
-CREATE NONCLUSTERED INDEX IX_UserRoles_UpdatedBy 
-ON UserRoles(UpdatedBy);
+CREATE NONCLUSTERED INDEX IX_UserRolesAssignments_UpdatedBy 
+ON UserRolesAssignments(UpdatedBy);
 GO
 
-CREATE NONCLUSTERED INDEX IX_UserRoles_DeletedBy 
-ON UserRoles(DeletedBy);
+CREATE NONCLUSTERED INDEX IX_UserRolesAssignments_DeletedBy 
+ON UserRolesAssignments(DeletedBy);
 GO
 
 -- RolePermissions indexes
@@ -224,4 +230,27 @@ GO
 
 CREATE NONCLUSTERED INDEX IX_RolePermissions_DeletedBy 
 ON RolePermissions(DeletedBy);
+GO
+
+
+-- ====================================
+-- SEED Initial System's User and Role
+-- ====================================
+-- 1) Temporarily disable the self-referencing FK
+ALTER TABLE Users NOCHECK CONSTRAINT FK_Users_CreatedBy;
+GO
+
+-- 2) Seed a System user with Id=1 referencing itself
+SET IDENTITY_INSERT Users ON;
+INSERT INTO Users (Id, Email, FirstName, LastName, LastLoginAt, IsActive, CreatedAt, CreatedBy, UpdatedAt, UpdatedBy, DeletedAt, DeletedBy)
+VALUES (1, 'system@enrollify.local', 'System', 'Account', NULL, 1, SYSDATETIME(), 1, NULL, NULL, NULL, NULL);
+SET IDENTITY_INSERT Users OFF;
+GO
+
+-- 3) Re-enable and validate the FK
+ALTER TABLE Users WITH CHECK CHECK CONSTRAINT FK_Users_CreatedBy;
+GO
+
+INSERT INTO Roles (Name, Description, CreatedBy) VALUES
+('SuperAdmin', 'Full system access with all permissions', 1);
 GO

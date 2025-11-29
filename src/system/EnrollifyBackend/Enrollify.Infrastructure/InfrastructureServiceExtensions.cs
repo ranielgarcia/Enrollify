@@ -20,13 +20,18 @@ public static class InfrastructureServiceExtensions
         Guard.Against.Null(connectionString);
 
         services.AddScoped<EventDispatchInterceptor>();
+        services.AddScoped<PreSaveChangesInterceptor>();
         services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
 
         services.AddDbContext<EnrollifyDbContext>((provider, options) =>
         {
             var eventDispatchInterceptor = provider.GetRequiredService<EventDispatchInterceptor>();
+            var preSaveChangesInterceptor = provider.GetRequiredService<PreSaveChangesInterceptor>();
+            
             options.UseSqlServer(connectionString);
+
             options.AddInterceptors(eventDispatchInterceptor);
+            options.AddInterceptors(preSaveChangesInterceptor);
         });
 
         logger.LogInformation("{Project} services registered", "Infrastructure");

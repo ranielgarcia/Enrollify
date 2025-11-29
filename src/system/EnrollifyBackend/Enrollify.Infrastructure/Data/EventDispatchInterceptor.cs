@@ -1,5 +1,7 @@
-﻿using Enrollify.SharedKernel;
+﻿using Enrollify.Core;
+using Enrollify.SharedKernel;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore; // added for ComplexProperty API
 
 namespace Enrollify.Infrastructure.Data;
 
@@ -15,7 +17,7 @@ public class EventDispatchInterceptor(IDomainEventDispatcher domainEventDispatch
         var context = eventData.Context;
         if (context is not EnrollifyDbContext appDbContext)
         {
-            return await base.SavedChangesAsync(eventData, result, cancellationToken).ConfigureAwait(false);
+            return await base.SavedChangesAsync(eventData, result, cancellationToken);
         }
 
         // Retrieve all tracked entities that have domain events

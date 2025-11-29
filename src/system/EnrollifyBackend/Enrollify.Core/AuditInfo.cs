@@ -1,34 +1,36 @@
-﻿namespace Enrollify.Core;
+﻿using Enrollify.Core.Aggregates.UserAggregate;
+
+namespace Enrollify.Core;
 
 public class AuditInfo
 {
-    public DateTime CreatedAt { get; set; }
-    public int? CreatedBy { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public int? UpdatedBy { get; set; }
-    public DateTime? DeletedAt { get; set; }
-    public int? DeletedBy { get; set; }
-    public bool IsActive { get; set; }
+    public DateTimeOffset CreatedAt { get; private set; }
+    public int CreatedBy { get; private set; }
+    public DateTimeOffset? UpdatedAt { get; private set; }
+    public int? UpdatedBy { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; }
+    public int? DeletedBy { get; private set; }
+    public bool IsActive { get; private set; }
 
-    public AuditInfo SetCreatedBy(int userId)
+    public AuditInfo SetCreatedBy(UserId userId)
     {
-        CreatedBy = userId;
-        CreatedAt = DateTime.UtcNow;
+        CreatedBy = userId.Value;
+        CreatedAt = DateTimeOffset.UtcNow;
         return this;
     }
 
-    public AuditInfo SetUpdatedBy(int userId)
+    public AuditInfo SetUpdatedBy(UserId userId)
     {
-        UpdatedBy = userId;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedBy = userId.Value;
+        UpdatedAt = DateTimeOffset.UtcNow;
         return this;
     }
 
-    public AuditInfo Deactivate(int userId)
+    public AuditInfo Deactivate(UserId userId)
     {
         IsActive = false;
-        DeletedBy = userId;
-        DeletedAt = DateTime.UtcNow;
+        DeletedBy = userId.Value;
+        DeletedAt = DateTimeOffset.UtcNow;
         return this;
     }
 

@@ -1,6 +1,6 @@
-﻿using Enrollify.Core.RoomTypeAggregate;
-using Enrollify.SharedKernel;
+﻿using Enrollify.SharedKernel;
 using Enrollify.Infrastructure;
+using Enrollify.Core.Aggregates.RoomTypeAggregate;
 
 namespace Enrollify.WebAPI.Plumbing;
 

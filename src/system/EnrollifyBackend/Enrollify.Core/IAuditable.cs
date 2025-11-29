@@ -2,5 +2,5 @@
 
 public interface IAuditable<T>
 {
-    public T AuditInfo { get; set; }
+    public T AuditInfo { get; init; }
 }

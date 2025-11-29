@@ -1,8 +1,10 @@
-using Enrollify.Core.RoomAggregate;
-using Enrollify.Core.RoomTypeAggregate;
+using Enrollify.Core.Aggregates.RoleAggregate;
+using Enrollify.Core.Aggregates.RoomTypeAggregate;
+using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
-using Enrollify.SharedKernel;
+using Microsoft.EntityFrameworkCore;
+using UserAggregate = Enrollify.Core.Aggregates.UserAggregate;
 
 namespace Enrollify.WebAPI.Controllers;
 
@@ -24,18 +26,37 @@ public class WeatherForecastController : ControllerBase
     [HttpGet(Name = "GetWeatherForecast")]
     public IEnumerable<WeatherForecast> Get()
     {
-        var roomType = new RoomType(RoomTypeName.From("Test3"));
+        var roomType = new RoomType(RoomTypeName.From("Test7"));
+        roomType.AuditInfo.SetCreatedBy(UserId.From(1));
         _dbContext.RoomTypes.Add(roomType);
         _dbContext.SaveChanges();
 
-        var roomTypes = _dbContext.RoomTypes.ToList();
+        //var roomTypes = _dbContext.RoomTypes.ToList();
 
-        var room = new Room(RoomName.From("Test"), 30, RoomTypeId.From(1));
-        room.UpdateCapacity(10).AuditInfo.SetUpdatedBy()
+        //var room = new Room(RoomName.From("Test"), RoomStudentCapacity.From(30), roomType.Id);
+        //room.AuditInfo.SetCreatedBy(UserId.From(1));
+        //room.UpdateCapacity(RoomStudentCapacity.From(35)).AuditInfo.SetUpdatedBy(UserId.From(1));
 
-        //_dbContext.Rooms.Add();
+        //_dbContext.Rooms.Add(room);
+        //_dbContext.SaveChanges();
 
-        var rooms = _dbContext.Rooms.ToList();
+        //var role = new Role(RoleName.From("Admin3"), RoleDescription.From("Administrator"));
+        //role.AuditInfo.SetCreatedBy(UserId.From(1));
+        //_dbContext.Roles.Add(role);
+        //_dbContext.SaveChanges();
+
+        //var user = UserAggregate.User.Create(
+        //    new UserAggregate.Models.UserForCreation { Email = "John2.Doe@gmail.com", FirstName = "John", LastName = "Doe" }, UserAggregate.UserId.From(1));
+        //user.AssignRole(RoleId.From(1), UserId.From(1));
+        //user.AuditInfo.SetCreatedBy(UserId.From(1));
+
+        //_dbContext.Users.Add(user);
+        //_dbContext.SaveChanges();
+
+        //var rooms = _dbContext.Rooms.ToList();
+
+
+        //var users = _dbContext.Users.Include(u => u.RoleAssignments).ToList();
 
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
