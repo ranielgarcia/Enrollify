@@ -10,7 +10,7 @@ public class User : EntityBase<User, UserId>, IAggregateRoot, IAuditable<AuditIn
 {
     private readonly List<UserRoleAssignment> _roleAssignments = new();
     
-    public string Email { get; private set; }
+    public UserEmail Email { get; private set; }
     public string FirstName { get; private set; }
     public string LastName { get; private set; }
     public DateTimeOffset? LastLoginAt { get; private set; }
@@ -20,11 +20,11 @@ public class User : EntityBase<User, UserId>, IAggregateRoot, IAuditable<AuditIn
 
     public static User Create(UserForCreation userForCreation, UserId createdBy)
     {
-        var newUser = new User(); 
+        var newUser = new User();
 
-        newUser.UpdateFirstName(userForCreation.FirstName);
-        newUser.UpdateLastName(userForCreation.LastName);
-        newUser.UpdateEmail(userForCreation.Email);
+        newUser.FirstName = Guard.Against.NullOrEmpty(userForCreation.FirstName);
+        newUser.LastName = Guard.Against.NullOrEmpty(userForCreation.LastName);
+        newUser.Email = UserEmail.From(Guard.Against.NullOrEmpty(userForCreation.Email));
 
         newUser.AuditInfo.SetCreatedBy(createdBy);
 
@@ -47,7 +47,7 @@ public class User : EntityBase<User, UserId>, IAggregateRoot, IAuditable<AuditIn
         return this;
     }
 
-    public User UpdateEmail (string newEmail)
+    public User UpdateEmail (UserEmail newEmail)
     {
         if (Email == newEmail) return this;
         Email = Guard.Against.Null(newEmail);
@@ -72,7 +72,7 @@ public class User : EntityBase<User, UserId>, IAggregateRoot, IAuditable<AuditIn
             return this; // Role already assigned and active
         }
 
-        var assignment = new UserRoleAssignment(roleId, expiresAt);
+        var assignment = new UserRoleAssignment(roleId, assignBy, expiresAt);
 
         assignment.AuditInfo.SetCreatedBy(assignBy);
 
@@ -112,7 +112,7 @@ public class User : EntityBase<User, UserId>, IAggregateRoot, IAuditable<AuditIn
 
     public bool HasRole(RoleId roleId)
     {
-        return _roleAssignments.Any(ra => ra.RoleId == roleId && !ra.IsExpired());
+        return _roleAssignments.Any(ra => ra.RoleId == roleId && !ra.IsExpired() && !ra.AuditInfo.IsActive);
     }
 
 

@@ -7,5 +7,4 @@ namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoleConfigs;
 [EfCoreConverter<RoleId>]
 [EfCoreConverter<RoleName>]
 [EfCoreConverter<RoleDescription>]
-[EfCoreConverter<RolePermissionId>]
 internal partial class RoleVogenEfCoreConverters;

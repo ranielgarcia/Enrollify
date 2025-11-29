@@ -88,7 +88,6 @@ GO
 -- ************************************
 CREATE TABLE UserRolesAssignments
 (
-    Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
     UserId INT NOT NULL,
     RoleId INT NOT NULL,
     AssignedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
@@ -102,6 +101,7 @@ CREATE TABLE UserRolesAssignments
     DeletedAt DATETIMEOFFSET NULL,
     DeletedBy INT NULL,
     
+    CONSTRAINT PK_UserRoleAssignments PRIMARY KEY (UserId, RoleId),
     CONSTRAINT FK_UserRolesAssignments_User FOREIGN KEY (UserId) REFERENCES Users(Id),
     CONSTRAINT FK_UserRolesAssignments_Role FOREIGN KEY (RoleId) REFERENCES Roles(Id),
     CONSTRAINT FK_UserRolesAssignments_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
@@ -121,7 +121,6 @@ GO
 -- ************************************
 CREATE TABLE RolePermissions
 (
-    Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
     RoleId INT NOT NULL,
     PermissionId INT NOT NULL,
 
@@ -132,7 +131,8 @@ CREATE TABLE RolePermissions
     UpdatedBy INT NULL,
     DeletedAt DATETIMEOFFSET NULL,
     DeletedBy INT NULL,
-    
+
+    CONSTRAINT PK_RolePermissions PRIMARY KEY (RoleId, PermissionId),
     CONSTRAINT FK_RolePermissions_Role FOREIGN KEY (RoleId) REFERENCES Roles(Id),
     CONSTRAINT FK_RolePermissions_Permission FOREIGN KEY (PermissionId) REFERENCES Permissions(Id),
     CONSTRAINT FK_RolePermissions_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),

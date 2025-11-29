@@ -35,6 +35,8 @@ public class EnrollifyDbContext: DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        modelBuilder.AddSoftDeleteQueryFilter();
     }
 
     public override int SaveChanges() =>

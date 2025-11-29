@@ -34,6 +34,10 @@ public static class InfrastructureServiceExtensions
             options.AddInterceptors(preSaveChangesInterceptor);
         });
 
+
+        services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>))
+               .AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
+
         logger.LogInformation("{Project} services registered", "Infrastructure");
 
         return services;

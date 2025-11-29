@@ -1,6 +1,7 @@
-﻿using Enrollify.SharedKernel;
-using Enrollify.Infrastructure;
+﻿using Enrollify.Application.Users.Get;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
+using Enrollify.Infrastructure;
+using Enrollify.SharedKernel;
 
 namespace Enrollify.WebAPI.Plumbing;
 
@@ -20,7 +21,7 @@ public static class MediatorConfig
             options.Assemblies =
             [
                 typeof(RoomType),                       // Core
-                //typeof(CreateContributorCommand),         // UseCases
+                typeof(GetUserByEmailQuery),         // Application
                 typeof(InfrastructureServiceExtensions), // Infrastructure
                 typeof(MediatorConfig)                  // Web
             ];

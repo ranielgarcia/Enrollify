@@ -1,6 +1,5 @@
 ﻿using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.PermissionsAggregate;
-using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.SharedKernel;
 
@@ -68,5 +67,17 @@ public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable<AuditIn
             _rolePermissions.Remove(rolePermission);
         }
         return this;
+    }
+
+    public IEnumerable<PermissionId> GetActivePermissions()
+    {
+        return _rolePermissions
+            .Where(p => p.AuditInfo.IsActive)
+            .Select(p => p.PermissionId);
+    }
+
+    public bool HasPermission(PermissionId permissionId)
+    {
+        return _rolePermissions.Any(rp => rp.PermissionId == permissionId && rp.AuditInfo.IsActive);
     }
 }
