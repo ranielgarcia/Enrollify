@@ -1,6 +1,5 @@
 ﻿using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.PermissionsAggregate;
-using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.SharedKernel;
 
