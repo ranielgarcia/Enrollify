@@ -1,6 +1,6 @@
 ﻿using Enrollify.Core;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Internal;
+using System.Linq.Expressions;
 
 namespace Enrollify.Infrastructure.Data;
 
@@ -29,6 +29,42 @@ public static class SoftDeleteExtensions
                         break;
                 }
             }
+        }
+    }
+
+    public static void AddSoftDeleteQueryFilter(this ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            // Only apply once per root type; derived types inherit the filter.
+            if (entityType.BaseType is not null)
+            {
+                continue;
+            }
+
+            // Do not apply query filters to owned entity types (e.g., owned collections like RolePermission)
+            // Owned types should be filtered/configured within their OwnsOne/OwnsMany mapping.
+            if (entityType.IsOwned())
+            {
+                continue;
+            }
+
+            if (!typeof(IAuditable<AuditInfo>).IsAssignableFrom(entityType.ClrType))
+            {
+                continue;
+            }
+
+            // Build expression: (e) => e.AuditInfo.IsActive == true
+            var parameter = Expression.Parameter(entityType.ClrType, "e");
+            var auditInfoProperty = Expression.Property(parameter, nameof(AuditInfo)); // property name on the entity is AuditInfo
+            var isActiveProperty = Expression.Property(auditInfoProperty, nameof(AuditInfo.IsActive));
+            var trueConstant = Expression.Constant(true);
+            var body = Expression.Equal(isActiveProperty, trueConstant);
+
+            var lambdaType = typeof(Func<,>).MakeGenericType(entityType.ClrType, typeof(bool));
+            var lambda = Expression.Lambda(lambdaType, body, parameter);
+
+            modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
         }
     }
 

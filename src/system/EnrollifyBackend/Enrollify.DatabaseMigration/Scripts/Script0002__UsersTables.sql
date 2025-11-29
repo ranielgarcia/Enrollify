@@ -121,7 +121,6 @@ GO
 -- ************************************
 CREATE TABLE RolePermissions
 (
-    Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
     RoleId INT NOT NULL,
     PermissionId INT NOT NULL,
 
@@ -133,6 +132,7 @@ CREATE TABLE RolePermissions
     DeletedAt DATETIMEOFFSET NULL,
     DeletedBy INT NULL,
     
+    CONSTRAINT PK_RolePermissions PRIMARY KEY (RoleId, PermissionId),
     CONSTRAINT FK_RolePermissions_Role FOREIGN KEY (RoleId) REFERENCES Roles(Id),
     CONSTRAINT FK_RolePermissions_Permission FOREIGN KEY (PermissionId) REFERENCES Permissions(Id),
     CONSTRAINT FK_RolePermissions_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),

@@ -43,15 +43,15 @@ public class WeatherForecastController : ControllerBase
 
         var permission = Permission.Create(new Core.Aggregates.RoleAggregate.Models.PermissionForCreation
         {
-            Name = "test",
-            Resource = "test",
-            Action = "test",
-            Description = "test"
+            Name = Guid.NewGuid().ToString(),
+            Resource = Guid.NewGuid().ToString(),
+            Action = Guid.NewGuid().ToString(),
+            Description = Guid.NewGuid().ToString()
         }, UserId.From(1));
         _dbContext.Permissions.Add(permission);
         await _dbContext.SaveChangesAsync();
 
-        var role = new Role(RoleName.From("Admin4"), RoleDescription.From("Administrator"));
+        var role = new Role(RoleName.From(Guid.NewGuid().ToString()), RoleDescription.From(Guid.NewGuid().ToString()));
         role.AuditInfo.SetCreatedBy(UserId.From(1));
         role.AddPermission(permission.Id, UserId.From(1));
         _dbContext.Roles.Add(role);
@@ -66,6 +66,8 @@ public class WeatherForecastController : ControllerBase
         //_dbContext.SaveChanges();
 
         //var rooms = _dbContext.Rooms.ToList();
+
+        var roles = _dbContext.Roles.Include(r => r.RolePermissions).ToList();
 
 
         //var users = _dbContext.Users.Include(u => u.RoleAssignments).ToList();

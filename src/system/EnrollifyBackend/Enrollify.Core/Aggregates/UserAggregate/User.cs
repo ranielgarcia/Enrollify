@@ -112,7 +112,7 @@ public class User : EntityBase<User, UserId>, IAggregateRoot, IAuditable<AuditIn
 
     public bool HasRole(RoleId roleId)
     {
-        return _roleAssignments.Any(ra => ra.RoleId == roleId && !ra.IsExpired());
+        return _roleAssignments.Any(ra => ra.RoleId == roleId && !ra.IsExpired() && !ra.AuditInfo.IsActive);
     }
 
 

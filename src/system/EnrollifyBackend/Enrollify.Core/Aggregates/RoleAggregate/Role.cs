@@ -68,4 +68,16 @@ public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable<AuditIn
         }
         return this;
     }
+
+    public IEnumerable<PermissionId> GetActivePermissions()
+    {
+        return _rolePermissions
+            .Where(p => p.AuditInfo.IsActive)
+            .Select(p => p.PermissionId);
+    }
+
+    public bool HasPermission(PermissionId permissionId)
+    {
+        return _rolePermissions.Any(rp => rp.PermissionId == permissionId && rp.AuditInfo.IsActive);
+    }
 }

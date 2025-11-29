@@ -26,19 +26,18 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
         // Audit fields
         builder.ConfigureAuditFields();
 
+        builder.Navigation(r => r.RolePermissions)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
         builder.OwnsMany<RolePermission>(r => r.RolePermissions, rp =>
         {
             rp.ToTable("RolePermissions");
-            rp.HasKey(r => r.Id);
-            rp.Property(e => e.Id)
-              .UseIdentityColumn()
-              .IsRequired();
+
+            rp.HasKey(e => new {e.RoleId, e.PermissionId });
 
             rp.WithOwner().HasForeignKey(e => e.RoleId);
-
             rp.Property(e => e.PermissionId)
               .IsRequired();
-
             rp.ConfigureAuditFields();
         });
 
