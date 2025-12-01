@@ -21,7 +21,7 @@ public static class MediatorConfig
             options.Assemblies =
             [
                 typeof(RoomType),                       // Core
-                typeof(GetUserByEmailQuery),         // Application
+                typeof(Application.Users.Get.GetUserByEmailQuery),         // Application
                 typeof(InfrastructureServiceExtensions), // Infrastructure
                 typeof(MediatorConfig)                  // Web
             ];

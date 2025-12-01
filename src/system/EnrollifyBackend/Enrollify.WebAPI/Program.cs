@@ -23,6 +23,7 @@ try
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
 
+    builder.Services.AddFastEndpointsConfigs();
     builder.Services.AddGlobalCorsPolicy(builder.Configuration);
 
     // Get ILogger instance before adding infrastructure services
@@ -44,12 +45,13 @@ try
     }
 
     app.UseSerilogLogging();
+    app.UseExceptionHandler();
+    app.UseRouting();
     app.UseHttpsRedirection();
-
     app.UseGlobalCorsPolicy();
     app.UseAzureADAuthentication();
-
-    app.MapControllers();
+    //app.MapControllers();
+    app.UseFastEndpointsConfigs();
 
     app.Run();
 }
