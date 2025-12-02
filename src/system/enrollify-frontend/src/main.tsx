@@ -5,7 +5,7 @@ import "./index.css";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
-import { MsalProvider } from "@azure/msal-react";
+import { MsalProvider, useMsal, type IMsalContext } from "@azure/msal-react";
 import { msalInstance } from "./infrastructure/auth/authConfig";
 import {
   EventType,
@@ -26,9 +26,14 @@ const queryClient = new QueryClient({
   },
 });
 
+const msal = {} as IMsalContext;
+
 // Create a new router instance
 const router = createRouter({
   routeTree,
+  context: {
+    msal,
+  },
   defaultPreload: "intent",
   scrollRestoration: true,
   defaultStructuralSharing: true,
@@ -44,9 +49,10 @@ declare module "@tanstack/react-router" {
 
 // eslint-disable-next-line react-refresh/only-export-components
 function App() {
-  // const msal = useMsal();
+  const msal = useMsal();
 
   const activeAccount = msalInstance.getActiveAccount();
+  console.log(activeAccount);
 
   if (!activeAccount) {
     const accounts = msalInstance.getAllAccounts();
@@ -56,6 +62,7 @@ function App() {
   }
 
   msalInstance.addEventCallback(async (event) => {
+    console.log(event.eventType);
     if (event.eventType === EventType.LOGIN_SUCCESS && event.payload) {
       const payload = event.payload as AuthenticationResult;
       const account = payload.account;
@@ -78,8 +85,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthorizationProvider>
-        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-          <RouterProvider router={router} />
+        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+          <RouterProvider router={router} context={{ msal }} />
           <ReactQueryDevtools initialIsOpen={false} />
         </ThemeProvider>
       </AuthorizationProvider>

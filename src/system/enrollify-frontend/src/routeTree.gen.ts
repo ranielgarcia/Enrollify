@@ -9,10 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PortalRouteImport } from './routes/portal'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as PortalRouteRouteImport } from './routes/portal/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PortalDashboardRouteImport } from './routes/portal/dashboard'
 
-const PortalRoute = PortalRouteImport.update({
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalRouteRoute = PortalRouteRouteImport.update({
   id: '/portal',
   path: '/portal',
   getParentRoute: () => rootRouteImport,
@@ -22,40 +29,59 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalDashboardRoute = PortalDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => PortalRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/portal': typeof PortalRoute
+  '/portal': typeof PortalRouteRouteWithChildren
+  '/login': typeof LoginRoute
+  '/portal/dashboard': typeof PortalDashboardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/portal': typeof PortalRoute
+  '/portal': typeof PortalRouteRouteWithChildren
+  '/login': typeof LoginRoute
+  '/portal/dashboard': typeof PortalDashboardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/portal': typeof PortalRoute
+  '/portal': typeof PortalRouteRouteWithChildren
+  '/login': typeof LoginRoute
+  '/portal/dashboard': typeof PortalDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/portal'
+  fullPaths: '/' | '/portal' | '/login' | '/portal/dashboard'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/portal'
-  id: '__root__' | '/' | '/portal'
+  to: '/' | '/portal' | '/login' | '/portal/dashboard'
+  id: '__root__' | '/' | '/portal' | '/login' | '/portal/dashboard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  PortalRoute: typeof PortalRoute
+  PortalRouteRoute: typeof PortalRouteRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portal': {
       id: '/portal'
       path: '/portal'
       fullPath: '/portal'
-      preLoaderRoute: typeof PortalRouteImport
+      preLoaderRoute: typeof PortalRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -65,12 +91,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portal/dashboard': {
+      id: '/portal/dashboard'
+      path: '/dashboard'
+      fullPath: '/portal/dashboard'
+      preLoaderRoute: typeof PortalDashboardRouteImport
+      parentRoute: typeof PortalRouteRoute
+    }
   }
 }
 
+interface PortalRouteRouteChildren {
+  PortalDashboardRoute: typeof PortalDashboardRoute
+}
+
+const PortalRouteRouteChildren: PortalRouteRouteChildren = {
+  PortalDashboardRoute: PortalDashboardRoute,
+}
+
+const PortalRouteRouteWithChildren = PortalRouteRoute._addFileChildren(
+  PortalRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  PortalRoute: PortalRoute,
+  PortalRouteRoute: PortalRouteRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
