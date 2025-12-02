@@ -2,7 +2,7 @@
 using Enrollify.Core.Services.Authentication;
 using Mediator;
 
-namespace Enrollify.Application.Users.Get;
+namespace Enrollify.Application.Authentication.GetContext;
 
 public record GetCurrentUserContextQuery() : IQuery<Result<UserContext>>;
 

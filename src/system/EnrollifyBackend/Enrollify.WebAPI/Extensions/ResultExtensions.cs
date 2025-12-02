@@ -6,6 +6,23 @@ namespace Enrollify.WebAPI.Extensions;
 public static class ResultExtensions
 {
     /// <summary>
+    /// Functional-style matcher for Result<T>. Invokes <paramref name="onOk"/> when status is Ok,
+    /// otherwise invokes <paramref name="onNotFound"/> (for NotFound and all other statuses).
+    /// </summary>
+    public static TReturn Match<TValue, TReturn>(
+      this Result<TValue> result,
+      Func<TValue, TReturn> onOk,
+      Func<Result<TValue>, TReturn> onNotFound)
+    {
+        return result.Status switch
+        {
+            ResultStatus.Ok => onOk(result.Value),
+            ResultStatus.NotFound => onNotFound(result),
+            _ => onNotFound(result)
+        };
+    }
+
+    /// <summary>
     /// Maps Result to TypedResults for endpoints that return Created, ValidationProblem, or ProblemHttpResult
     /// </summary>
     public static Results<Created<TResponse>, ValidationProblem, ProblemHttpResult> ToCreatedResult<TValue, TResponse>(

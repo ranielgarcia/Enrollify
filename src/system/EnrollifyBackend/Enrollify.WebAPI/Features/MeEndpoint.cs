@@ -1,11 +1,12 @@
-﻿using Enrollify.Application.Users.Get;
+﻿using Enrollify.Application.Authentication.GetContext;
 using Enrollify.Core.Services.Authentication;
 using Enrollify.WebAPI.Extensions;
+using Enrollify.WebAPI.Features.Users;
 using FastEndpoints;
 using Mediator;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Enrollify.WebAPI.Features.Users;
+namespace Enrollify.WebAPI.Features;
 
 public sealed class PermissionDTO
 {
@@ -62,19 +63,18 @@ public sealed class UserContextMapper : ResponseMapper<UserContextDTO, UserConte
     }
 }
 
-public class GetCurrentUserContext : EndpointWithoutRequest<UserContextDTO, UserContextMapper>
+public class MeEndpoint : EndpointWithoutRequest<UserContextDTO, UserContextMapper>
 {
     private readonly IMediator _mediator;
 
-    public GetCurrentUserContext(IMediator mediator)
+    public MeEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
 
     public override void Configure()
     {
-        Get("user-context");
-        Group<UserEndpointsGroup>();
+        Get("me");
         // Policies(PolicyName.HasValidRole);
     }
 
