@@ -52,7 +52,6 @@ function App() {
   const msal = useMsal();
 
   const activeAccount = msalInstance.getActiveAccount();
-  console.log(activeAccount);
 
   if (!activeAccount) {
     const accounts = msalInstance.getAllAccounts();
@@ -62,7 +61,6 @@ function App() {
   }
 
   msalInstance.addEventCallback(async (event) => {
-    console.log(event.eventType);
     if (event.eventType === EventType.LOGIN_SUCCESS && event.payload) {
       const payload = event.payload as AuthenticationResult;
       const account = payload.account;

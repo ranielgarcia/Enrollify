@@ -17,21 +17,24 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import type { FileRouteTypes } from "@/routeTree.gen";
 
-export function NavMain({
-  items,
-}: {
-  items: {
+export interface NavMainItemProp {
+  title: string;
+  url: FileRouteTypes["to"] & {};
+  icon?: LucideIcon;
+  isActive?: boolean;
+  items?: {
     title: string;
-    url: string;
-    icon?: LucideIcon;
-    isActive?: boolean;
-    items?: {
-      title: string;
-      url: string;
-    }[];
+    url: FileRouteTypes["to"] & {};
   }[];
-}) {
+}
+
+export interface NavMainProps {
+  items: NavMainItemProp[];
+}
+
+export function NavMain({ items }: NavMainProps) {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
