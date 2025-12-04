@@ -70,3 +70,10 @@ WHEN NOT MATCHED THEN
 	INSERT ([Id], [Name], [Description], [CreatedBy]) VALUES ([Source].[Id], [Source].[Name], [Source].[Description], @InitialUserId);
 
 SET IDENTITY_INSERT dbo.Roles OFF;
+
+-- Assign SystemAdmin role to the initial system user
+MERGE [UserRolesAssignments] As [Target]
+USING (VALUES(1, @InitialUserId)) AS [Source]([RoleId], [UserId])
+	ON [Target].[UserId] = [Source].[UserId] AND [Target].[RoleId] = [Source].[RoleId]
+WHEN NOT MATCHED THEN
+	INSERT (UserId, RoleId, AssignedAt, CreatedBy) VALUES ([Source].[UserId], [Source].[RoleId], SYSDATETIMEOFFSET(), @InitialUserId);

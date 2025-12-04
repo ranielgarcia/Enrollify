@@ -29,21 +29,40 @@ public class UserContext
 
     public UserContext WithRoleAndPermissions(Role role, IEnumerable<Permission> permissions)
     {
-        var rolePermissions = permissions.Select(p => new UserRolePermissionContext(p.Id, p.Name, p.Description,p.Action, p.Resource));
-        Roles.Add(new UserRoleContext(role.Id, role.Name, role.Description, rolePermissions));
+        var rolePermissions = permissions
+            .Select(p => new UserRolePermissionContext
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Action = p.Action,
+                Resource = p.Resource,
+            })
+            .ToList();
+        Roles.Add(new UserRoleContext
+        {
+            Id = role.Id,
+            Name = role.Name,
+            Description = role.Description,
+            Permissions = rolePermissions
+        });
         return this;
     }
 }
 
-public record UserRoleContext(
-    RoleId Id, 
-    RoleName Name, 
-    RoleDescription Description, 
-    IEnumerable<UserRolePermissionContext> Permissions);
-public record UserRolePermissionContext (
-    PermissionId Id, 
-    PermissionName Name, 
-    PermissionDescription Description, 
-    PermissionAction Action, 
-    PermissionResource Resource);
+public class UserRoleContext
+{
+    public RoleId Id { get; set; }
+    public RoleName Name { get; set; }
+    public RoleDescription Description { get; set; }
+    public List<UserRolePermissionContext> Permissions { get; set; } = new List<UserRolePermissionContext>();
+}
+public record UserRolePermissionContext()
+{
+    public PermissionId Id { get; set; }
+    public PermissionName Name { get; set; }
+    public PermissionDescription Description { get; set; }
+    public PermissionAction Action { get; set; }
+    public PermissionResource Resource { get; set; }
+};
 

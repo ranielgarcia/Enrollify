@@ -1,21 +1,52 @@
 ﻿using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.Services.Authentication;
 using Enrollify.Infrastructure.Data;
+using Dapper;
+using Enrollify.Core.Aggregates.RoleAggregate;
 
 namespace Enrollify.Infrastructure.Services.Authentication;
 
 public class UserContextService : IUserContextService
 {
     private readonly EnrollifyDbContext _db;
+    private readonly IDbConnectionFactory _connectionFactory;
 
-    public UserContextService(EnrollifyDbContext db)
+    public UserContextService(EnrollifyDbContext db, IDbConnectionFactory connectionFactory)
     {
         _db = db;
+        _connectionFactory = connectionFactory;
     }
 
     public async ValueTask<UserContext?> GetUserContextByEmail(UserEmail email, CancellationToken cancellationToken)
     {
         var now = DateTimeOffset.UtcNow;
+
+        using (var conn = await _connectionFactory.CreateOpenAsync(cancellationToken))
+        {
+            var query = @"SELECT U.Id, U.FirstName, U.LastName, U.Email, U.LastLoginAt, R.Id, R.Name, P.Name, P.Resource, P.Action, P.Description
+                FROM Users U
+                LEFT JOIN UserRolesAssignments URA ON URA.UserId=U.Id
+                LEFT JOIN Roles R ON R.Id = URA.RoleId
+                LEFT JOIN RolePermissions RP ON RP.RoleId = R.Id
+                LEFT JOIN Permissions P ON P.Id = RP.PermissionId";
+
+
+            var roles = await conn.QueryAsync<UserContext, UserRoleContext, UserRolePermissionContext, UserContext>(query,
+                (user, role, permission) =>
+                {
+                    if (permission != null && !role.Permissions.Any(p => p.Id == permission.Id))
+                    {
+                        role.Permissions.Add(permission);
+                    }
+
+                    if (role != null && !user.Roles.Any(r => r.Id == role.Id))
+                    {
+                        user.Roles.Add(role);
+                    }
+                    
+                    return user;
+                });
+        }
 
         // Single roundtrip:
         // - start from Users
@@ -38,6 +69,9 @@ public class UserContextService : IUserContextService
         )
         .AsNoTracking()
         .ToListAsync(cancellationToken);
+
+
+
 
         if (rows.Count == 0)
         {

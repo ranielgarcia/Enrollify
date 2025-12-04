@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { handleLogin } from "@/infrastructure/auth/msal";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/login")({
@@ -9,5 +11,11 @@ export const Route = createFileRoute("/login")({
       });
     }
   },
-  component: () => <h2>Login page</h2>,
+  component: () => (
+    <>
+      <h2>Login page</h2>
+
+      <Button onClick={handleLogin}>Login</Button>
+    </>
+  ),
 });
