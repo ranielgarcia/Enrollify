@@ -1,6 +1,7 @@
 ﻿using DbUp;
 using DbUp.Engine;
 using DbUp.Helpers;
+using DbUp.Support;
 using Spectre.Console;
 using System.Reflection;
 
@@ -25,7 +26,12 @@ internal static class Mocker
 
         var upgrader = DeployChanges.To
             .SqlDatabase(connectionString)
-            .WithScriptsAndCodeEmbeddedInAssembly(Assembly.GetExecutingAssembly(), (s => ShouldRunScript(s, environments)))
+            .WithTransactionPerScript()
+            .WithScriptsAndCodeEmbeddedInAssembly(
+                Assembly.GetExecutingAssembly(), 
+                (s => ShouldRunScript(s, environments)), 
+                new SqlScriptOptions { ScriptType = ScriptType.RunAlways }
+             )
             .JournalTo(new NullJournal())
             .LogToConsole()
             .Build();

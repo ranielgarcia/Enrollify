@@ -5,7 +5,7 @@ namespace Enrollify.Core.Aggregates.RoleAggregate;
 [ValueObject<string>(conversions: Conversions.SystemTextJson)]
 public partial struct RoleDescription
 {
-    public const int MaxLength = 255;
+    public const int MaxLength = int.MaxValue;
     private static Validation Validate(string value)
     {
         if (string.IsNullOrWhiteSpace(value))

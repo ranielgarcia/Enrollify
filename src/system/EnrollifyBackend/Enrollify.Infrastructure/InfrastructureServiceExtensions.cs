@@ -1,4 +1,5 @@
 ﻿using Enrollify.Infrastructure.Data;
+using Enrollify.Infrastructure.Data.Dapper.Generated;
 using Enrollify.SharedKernel;
 
 namespace Enrollify.Infrastructure;
@@ -18,6 +19,10 @@ public static class InfrastructureServiceExtensions
                                    ?? config.GetConnectionString("DefaultConnection")
                                    ?? config.GetConnectionString("SqliteConnection");
         Guard.Against.Null(connectionString);
+
+        services.AddTransient<IDbConnectionFactory>(sp =>
+            new SqlConnectionFactory(connectionString));
+        VogenDapperTypeHandlerRegistration.RegisterTypeHandlers();
 
         services.AddScoped<EventDispatchInterceptor>();
         services.AddScoped<PreSaveChangesInterceptor>();

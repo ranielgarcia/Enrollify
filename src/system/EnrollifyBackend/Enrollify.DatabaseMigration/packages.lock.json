@@ -104,6 +104,21 @@
           "Spectre.Console": "0.50.0"
         }
       },
+      "Ardalis.GuardClauses": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "jVPRvLw0xIUFto2cMrKgRYADWIHbEEfzZHGiU/swwNgl1zo28Q1zfSa3VUC3C0s9DyhFDPSaF4dEDQRyTZUcyQ=="
+      },
+      "Ardalis.SmartEnum": {
+        "type": "Transitive",
+        "resolved": "8.2.0",
+        "contentHash": "P1CLI2okpzHjOJnZMYLnzcyu1/fUJEYK1X4JSnal2TPmovrUTtXK6Sn78D2JgKUdwjSeWddnRveMj+BEZoksvg=="
+      },
+      "Ardalis.Specification": {
+        "type": "Transitive",
+        "resolved": "9.3.1",
+        "contentHash": "GWrE6BA0smWFLbN+XPU2l5rDF9Uzelfbb3w35jJ0CGIat+p1ChbtLcbkvYRMEculBHOAo12omwAAOm3VFWkoJQ=="
+      },
       "Azure.Core": {
         "type": "Transitive",
         "resolved": "1.38.0",
@@ -131,6 +146,14 @@
         "contentHash": "iGDG7mv93ePpZq4lttfr4duj1A/WsNI9HQG8241ROoWdwyGT6fUQtK0U2YOyi8aIebhRcgqba87Bcomjh4lFRw==",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "8.0.0"
+        }
+      },
+      "Mediator.Abstractions": {
+        "type": "Transitive",
+        "resolved": "3.0.1",
+        "contentHash": "WLWp7S7pt818wsK2IiFwGwvUhwq0E/7F0LkglDQKx+4rSzRWVKD3CHtaCi1fpeURH+v44ZPxaRVBCNV7uWOBYQ==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
         }
       },
       "Microsoft.Bcl.AsyncInterfaces": {
@@ -197,8 +220,8 @@
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "Transitive",
-        "resolved": "9.0.4",
-        "contentHash": "UI0TQPVkS78bFdjkTodmkH0Fe8lXv9LnhGFKgKrsgUJ5a5FVdFRcgjIkBVLbGgdRhxWirxH/8IXUtEyYJx6GQg=="
+        "resolved": "10.0.0",
+        "contentHash": "L3AdmZ1WOK4XXT5YFPEwyt0ep6l8lGIPs7F5OOBZc77Zqeo01Of7XXICy47628sdVl0v/owxYJTe86DTgFwKCA=="
       },
       "Microsoft.Extensions.Diagnostics": {
         "type": "Transitive",
@@ -266,10 +289,10 @@
       },
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "Transitive",
-        "resolved": "9.0.4",
-        "contentHash": "0MXlimU4Dud6t+iNi5NEz3dO2w1HXdhoOLaYFuLPCjAsvlPQGwOT6V2KZRMLEhCAm/stSZt1AUv0XmDdkjvtbw==",
+        "resolved": "10.0.0",
+        "contentHash": "FU/IfjDfwaMuKr414SSQNTIti/69bHEMb+QKrskRb26oVqpx3lNFXMjs/RC9ZUuhBhcwDM2BwOgoMw+PZ+beqQ==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.4"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.0"
         }
       },
       "Microsoft.Extensions.Logging.Configuration": {
@@ -481,6 +504,29 @@
         "type": "Transitive",
         "resolved": "8.0.0",
         "contentHash": "+TUFINV2q2ifyXauQXRwy4CiBhqvDEDZeVJU7qfxya4aRYOKzVBpN+4acx25VcPB9ywUN6C0n8drWl110PhZEg=="
+      },
+      "Vogen": {
+        "type": "Transitive",
+        "resolved": "8.0.2",
+        "contentHash": "0irt++hrVYJzvaCiiNLZsIu4cf0vQMw5raIwVqJjHp/DTxGyAzRb+aLsFHhqzQWKT0y+uqLKDu9QJfcqTkvZCQ=="
+      },
+      "enrollify.core": {
+        "type": "Project",
+        "dependencies": {
+          "Ardalis.SmartEnum": "[8.2.0, )",
+          "Enrollify.SharedKernel": "[1.0.0, )",
+          "Mediator.Abstractions": "[3.0.1, )",
+          "Vogen": "[8.0.2, )"
+        }
+      },
+      "enrollify.sharedkernel": {
+        "type": "Project",
+        "dependencies": {
+          "Ardalis.GuardClauses": "[5.0.0, )",
+          "Ardalis.Specification": "[9.3.1, )",
+          "Mediator.Abstractions": "[3.0.1, )",
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.0, )"
+        }
       }
     }
   }
