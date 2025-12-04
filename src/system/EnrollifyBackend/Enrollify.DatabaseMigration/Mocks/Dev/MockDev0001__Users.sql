@@ -19,3 +19,14 @@ WHEN MATCHED THEN
 WHEN NOT MATCHED THEN
     INSERT ([Email], [FirstName], [LastName], [CreatedBy])
     VALUES ([Source].[Email], [Source].[FirstName], [Source].[LastName], @InitialUserId);
+
+GO;
+
+DECLARE @TestAccountId INT = (SELECT Id FROM Users WHERE Email='ranielgarcia101@gmail.com');
+
+-- Assign SystemAdmin role to the initial system user
+MERGE [UserRolesAssignments] As [Target]
+USING (VALUES(1, @TestAccountId)) AS [Source]([RoleId], [UserId])
+	ON [Target].[UserId] = [Source].[UserId] AND [Target].[RoleId] = [Source].[RoleId]
+WHEN NOT MATCHED THEN
+	INSERT (UserId, RoleId, AssignedAt, CreatedBy) VALUES ([Source].[UserId], [Source].[RoleId], SYSDATETIMEOFFSET(), @TestAccountId);
