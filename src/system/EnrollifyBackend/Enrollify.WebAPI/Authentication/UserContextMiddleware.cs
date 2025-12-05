@@ -1,5 +1,5 @@
 ﻿using Enrollify.Core.Aggregates.UserAggregate;
-using Enrollify.Core.Services.Authentication;
+using Enrollify.Core.Authentication;
 using Microsoft.Identity.Web;
 
 namespace Enrollify.WebAPI.Authentication;

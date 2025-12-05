@@ -1,5 +1,5 @@
-﻿using Enrollify.Core.Services.Authentication;
-using Enrollify.Infrastructure.Services.Authentication;
+﻿using Enrollify.Core.Authentication;
+using Enrollify.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 

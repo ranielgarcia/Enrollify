@@ -1,5 +1,5 @@
 ﻿using Enrollify.Application.Authentication.GetContext;
-using Enrollify.Core.Services.Authentication;
+using Enrollify.Core.Authentication;
 using Enrollify.WebAPI.Extensions;
 using Enrollify.WebAPI.Features.Users;
 using FastEndpoints;
@@ -44,14 +44,14 @@ public sealed class UserContextMapper : ResponseMapper<UserContextDTO, UserConte
             Id = r.Id.Value,
             Name = r.Name.Value,
             Description = r.Description.Value,
-            Permissions = r.Permissions.Select(p => new PermissionDTO
-            {
-                Id = p.Id.Value,
-                Name = p.Name.Value,
-                Description = p.Description.Value,
-                Action = p.Action.Value,
-                Resource = p.Resource.Value
-            }).ToList()
+            //Permissions = r.Permissions.Select(p => new PermissionDTO
+            //{
+            //    Id = p.Id.Value,
+            //    Name = p.Name.Value,
+            //    Description = p.Description.Value,
+            //    Action = p.Action.Value,
+            //    Resource = p.Resource.Value
+            //}).ToList()
         }).ToList();
 
         return new UserContextDTO

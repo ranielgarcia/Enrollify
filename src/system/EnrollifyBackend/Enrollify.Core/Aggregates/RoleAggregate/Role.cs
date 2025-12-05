@@ -1,6 +1,7 @@
 ﻿using Ardalis.GuardClauses;
-using Enrollify.Core.Aggregates.PermissionsAggregate;
+using Enrollify.Core.Aggregates.PermissionScopeAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Core.Constants.Authorization;
 using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.Aggregates.RoleAggregate;
@@ -41,16 +42,15 @@ public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable<AuditIn
         return this;
     }
 
-
-    public Role AddPermission (PermissionId permissionId, UserId addedBy)
+    public Role AddPermission (PermissionScopeId permissionScopeId, PermissionEnum bitmaskPermission, UserId addedBy)
     {
-        Guard.Against.Null(permissionId);
+        Guard.Against.Null(permissionScopeId);
         Guard.Against.Null(addedBy);
 
-        if (_rolePermissions.Any(rp => rp.PermissionId == permissionId))
+        if (_rolePermissions.Any(rp => rp.PermissionScopeId == permissionScopeId))
             return this;
 
-        var rolePermission = new RolePermission(this.Id, permissionId, addedBy);
+        var rolePermission = new RolePermission(this.Id,  permissionScopeId, bitmaskPermission, addedBy);
         rolePermission.AuditInfo.SetCreatedBy(addedBy);
 
         _rolePermissions.Add(rolePermission);
@@ -58,10 +58,10 @@ public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable<AuditIn
         return this;
     }
 
-    public Role RemovePermission (PermissionId permissionId)
+    public Role RemovePermission (PermissionScopeId permissionScopeId)
     {
-        Guard.Against.Null(permissionId);
-        var rolePermission = _rolePermissions.FirstOrDefault(rp => rp.PermissionId == permissionId);
+        Guard.Against.Null(permissionScopeId);
+        var rolePermission = _rolePermissions.FirstOrDefault(rp => rp.PermissionScopeId == permissionScopeId);
         if (rolePermission != null)
         {
             _rolePermissions.Remove(rolePermission);
@@ -69,15 +69,18 @@ public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable<AuditIn
         return this;
     }
 
-    public IEnumerable<PermissionId> GetActivePermissions()
+    public IEnumerable<(PermissionScopeId, PermissionEnum)> GetActivePermissions()
     {
         return _rolePermissions
             .Where(p => p.AuditInfo.IsActive)
-            .Select(p => p.PermissionId);
+            .Select(p => (p.PermissionScopeId, p.BitmaskPermission));
     }
 
-    public bool HasPermission(PermissionId permissionId)
+    public bool HasPermission(PermissionScopeId permissionScopeId, PermissionEnum bitmaskPermission)
     {
-        return _rolePermissions.Any(rp => rp.PermissionId == permissionId && rp.AuditInfo.IsActive);
+        return _rolePermissions.Any(rp => 
+            rp.PermissionScopeId == permissionScopeId &&
+            rp.BitmaskPermission == bitmaskPermission && 
+            rp.AuditInfo.IsActive);
     }
 }

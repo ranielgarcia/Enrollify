@@ -1,6 +1,6 @@
 ﻿using Enrollify.Core.Aggregates.UserAggregate;
 
-namespace Enrollify.Core.Services.Authentication;
+namespace Enrollify.Core.Authentication;
 
 public interface IUserContextService
 {

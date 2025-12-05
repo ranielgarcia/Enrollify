@@ -30,4 +30,8 @@
     <ProjectReference Include="..\Enrollify.Infrastructure\Enrollify.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Authorization\" />
+  </ItemGroup>
+
 </Project>

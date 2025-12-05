@@ -1,4 +1,4 @@
-﻿namespace Enrollify.Core.Services.Authentication;
+﻿namespace Enrollify.Core.Authentication;
 
 public interface ICurrentUserAccessor
 {

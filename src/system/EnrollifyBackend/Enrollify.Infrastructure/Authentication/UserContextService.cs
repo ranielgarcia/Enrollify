@@ -1,9 +1,9 @@
 ﻿using Dapper;
 using Enrollify.Core.Aggregates.UserAggregate;
-using Enrollify.Core.Services.Authentication;
+using Enrollify.Core.Authentication;
 using Enrollify.Infrastructure.Data;
 
-namespace Enrollify.Infrastructure.Services.Authentication;
+namespace Enrollify.Infrastructure.Authentication;
 
 public class UserContextService : IUserContextService
 {
@@ -21,23 +21,24 @@ public class UserContextService : IUserContextService
         using (var conn = await _connectionFactory.CreateOpenAsync(cancellationToken))
         {
             var query = @"
-                SELECT 
-                    U.Id, CONCAT(U.FirstName, ' ', U.LastName) As FullName, U.Email, U.LastLoginAt,
-                    R.Id, R.Name, R.Description,
-                    P.Id, P.Name, P.Resource, P.Action, P.Description
-                FROM Users U
-                LEFT JOIN UserRolesAssignments URA ON URA.UserId = U.Id 
-                    AND URA.IsActive = 1
-                    AND (URA.ExpiresAt IS NULL OR URA.ExpiresAt > @Now)
-                LEFT JOIN Roles R ON R.Id = URA.RoleId AND R.IsActive = 1
-                LEFT JOIN RolePermissions RP ON RP.RoleId = R.Id AND RP.IsActive = 1
-                LEFT JOIN Permissions P ON P.Id = RP.PermissionId AND P.IsActive = 1
-                WHERE U.Email = @Email AND U.IsActive = 1";
+            SELECT 
+                U.Id, CONCAT(U.FirstName, ' ', U.LastName) As FullName, U.Email, U.LastLoginAt,
+                R.Id, R.Name, R.Description,
+                RP.PermissionScopeId, PS.Name as PermissionScopeName, RP.BitmaskPermission
+            FROM Users U
+            LEFT JOIN UserRolesAssignments URA ON URA.UserId = U.Id 
+                AND URA.IsActive = 1
+                AND (URA.ExpiresAt IS NULL OR URA.ExpiresAt > @Now)
+            LEFT JOIN Roles R ON R.Id = URA.RoleId AND R.IsActive = 1
+            LEFT JOIN RolePermissions RP ON RP.RoleId = R.Id AND RP.IsActive = 1
+            LEFT JOIN PermissionScopes PS ON PS.Id = RP.PermissionScopeId AND PS.IsActive = 1
+            WHERE U.Email = @Email AND U.IsActive = 1
+            ";
 
             UserContext? userContext = null;
             var roleLookup = new Dictionary<int, UserRoleContext>();
 
-            await conn.QueryAsync<UserContext, UserRoleContext, UserRolePermissionContext, UserContext>(
+            await conn.QueryAsync<UserContext, UserRoleContext, RolePermissionContext, UserContext>(
                 query,
                 (user, role, permission) =>
                 {
@@ -59,9 +60,9 @@ public class UserContextService : IUserContextService
                         }
 
                         // Add permission to role if present and not already added
-                        if (permission != null && permission.Id.Value != 0)
+                        if (permission != null && permission.PermissionScopeId != 0)
                         {
-                            if (!existingRole.Permissions.Any(p => p.Id.Value == permission.Id.Value))
+                            if (!existingRole.Permissions.Any(p => p.PermissionScopeId == permission.PermissionScopeId))
                             {
                                 existingRole.Permissions.Add(permission);
                             }
@@ -71,7 +72,7 @@ public class UserContextService : IUserContextService
                     return userContext;
                 },
                 new { Email = email.Value, Now = now },
-                splitOn: "Id,Id,Id"
+                splitOn: "Id,Id,PermissionScopeId"
             );
 
             return userContext;

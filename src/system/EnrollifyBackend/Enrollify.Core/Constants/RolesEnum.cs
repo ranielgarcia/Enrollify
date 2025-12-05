@@ -16,6 +16,7 @@ public sealed class RolesEnum : SmartEnum<RolesEnum>
     public static readonly RolesEnum ProgramCoordinator = new RolesEnum(nameof(ProgramCoordinator), 10);
     public static readonly RolesEnum Student = new RolesEnum(nameof(Student), 11);
     public static readonly RolesEnum ParentOrGuardian = new RolesEnum(nameof(ParentOrGuardian), 12);
+
     private RolesEnum(string name, int value) : base(name, value)
     {
     }

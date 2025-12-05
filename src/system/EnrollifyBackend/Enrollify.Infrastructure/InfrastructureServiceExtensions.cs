@@ -1,4 +1,7 @@
-﻿using Enrollify.Infrastructure.Data;
+﻿using Ardalis.SmartEnum.Dapper;
+using Dapper;
+using Enrollify.Core.Constants;
+using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
 using Enrollify.SharedKernel;
 
@@ -22,7 +25,12 @@ public static class InfrastructureServiceExtensions
 
         services.AddTransient<IDbConnectionFactory>(sp =>
             new SqlConnectionFactory(connectionString));
+
+
+        // Auto register all Vogen Dapper type handlers/converters
         VogenDapperTypeHandlerRegistration.RegisterTypeHandlers();
+        SqlMapper.AddTypeHandler(typeof(PermissionScopeEnum), new SmartEnumByValueTypeHandler<PermissionScopeEnum>());
+
 
         services.AddScoped<EventDispatchInterceptor>();
         services.AddScoped<PreSaveChangesInterceptor>();
