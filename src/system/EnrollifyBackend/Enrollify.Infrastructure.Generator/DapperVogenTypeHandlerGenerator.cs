@@ -13,7 +13,7 @@ namespace Enrollify.Infrastructure.Generator;
 /// simplify the process of registering all generated type handlers with Dapper. Use this generator to enable seamless
 /// mapping of Vogen value objects in Dapper queries and commands.</remarks>
 [Generator]
-public class DapperTypeHandlerGenerator : IIncrementalGenerator
+public class DapperVogenTypeHandlerGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {

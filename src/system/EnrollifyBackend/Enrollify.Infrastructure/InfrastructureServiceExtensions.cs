@@ -1,9 +1,11 @@
-﻿using Ardalis.SmartEnum.Dapper;
+﻿using Ardalis.SmartEnum;
+using Ardalis.SmartEnum.Dapper;
 using Dapper;
-using Enrollify.Core.Constants;
+using Enrollify.Core.Constants.Authorization;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
 using Enrollify.SharedKernel;
+using System.Reflection;
 
 namespace Enrollify.Infrastructure;
 
@@ -29,7 +31,9 @@ public static class InfrastructureServiceExtensions
 
         // Auto register all Vogen Dapper type handlers/converters
         VogenDapperTypeHandlerRegistration.RegisterTypeHandlers();
-        SqlMapper.AddTypeHandler(typeof(PermissionScopeEnum), new SmartEnumByValueTypeHandler<PermissionScopeEnum>());
+        
+        // Auto register all SmartEnum Dapper type handlers
+        RegisterSmartEnumTypeHandlers(typeof(PermissionScopeEnum).Assembly);
 
 
         services.AddScoped<EventDispatchInterceptor>();
@@ -54,5 +58,48 @@ public static class InfrastructureServiceExtensions
         logger.LogInformation("{Project} services registered", "Infrastructure");
 
         return services;
+    }
+
+    /// <summary>
+    /// Registers Dapper type handlers for all SmartEnum types found in the specified assemblies.
+    /// </summary>
+    /// <param name="assemblies">Assemblies to scan for SmartEnum types. If none provided, scans the calling assembly.</param>
+    public static void RegisterSmartEnumTypeHandlers(params Assembly[] assemblies)
+    {
+        if (assemblies == null || assemblies.Length == 0)
+        {
+            assemblies = [Assembly.GetCallingAssembly()];
+        }
+
+        var smartEnumTypes = assemblies
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type => type is { IsClass: true, IsAbstract: false } 
+                          && IsSmartEnum(type));
+
+        foreach (var smartEnumType in smartEnumTypes)
+        {
+            var handlerType = typeof(SmartEnumByValueTypeHandler<>).MakeGenericType(smartEnumType);
+            var handler = Activator.CreateInstance(handlerType);
+            SqlMapper.AddTypeHandler(smartEnumType, (SqlMapper.ITypeHandler)handler!);
+        }
+    }
+
+    private static bool IsSmartEnum(Type type)
+    {
+        var baseType = type.BaseType;
+        while (baseType != null)
+        {
+            if (baseType.IsGenericType)
+            {
+                var genericTypeDef = baseType.GetGenericTypeDefinition();
+                if (genericTypeDef == typeof(SmartEnum<>) || 
+                    genericTypeDef == typeof(SmartEnum<,>))
+                {
+                    return true;
+                }
+            }
+            baseType = baseType.BaseType;
+        }
+        return false;
     }
 }
