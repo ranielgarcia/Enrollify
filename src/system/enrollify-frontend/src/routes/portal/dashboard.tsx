@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminPortalLayout } from "@/portal/portal-layout";
+import { useAuthorizationContext } from "@/infrastructure/auth/authorizationContext";
 
 export const Route = createFileRoute("/portal/dashboard")({
   component: About,
@@ -9,5 +10,7 @@ export const Route = createFileRoute("/portal/dashboard")({
 });
 
 function About() {
+  const userContext = useAuthorizationContext();
+  console.log(userContext);
   return <AdminPortalLayout />;
 }

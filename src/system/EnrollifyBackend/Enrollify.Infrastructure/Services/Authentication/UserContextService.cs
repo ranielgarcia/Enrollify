@@ -22,7 +22,7 @@ public class UserContextService : IUserContextService
         {
             var query = @"
                 SELECT 
-                    U.Id, U.FirstName, U.LastName, U.Email, U.LastLoginAt,
+                    U.Id, CONCAT(U.FirstName, ' ', U.LastName) As FullName, U.Email, U.LastLoginAt,
                     R.Id, R.Name, R.Description,
                     P.Id, P.Name, P.Resource, P.Action, P.Description
                 FROM Users U

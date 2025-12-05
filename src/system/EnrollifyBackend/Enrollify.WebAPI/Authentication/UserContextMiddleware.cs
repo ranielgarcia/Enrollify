@@ -31,7 +31,10 @@ public class UserContextMiddleware
 
             var userContext = await userContextService.GetUserContextByEmail(UserEmail.From(email), cancellationToken);
 
-            SetHttpContext(userContext, httpContext);
+            if (userContext != null)
+            {
+                SetHttpContext(userContext, httpContext);
+            }
         }
 
         await _next(httpContext!);

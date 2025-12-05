@@ -52,18 +52,19 @@ public sealed class UserContextMapper : ResponseMapper<UserContextDTO, UserConte
                 Action = p.Action.Value,
                 Resource = p.Resource.Value
             }).ToList()
-        });
+        }).ToList();
 
         return new UserContextDTO
         {
             Id = e.Id.Value,
             Email = e.Email.Value,
             FullName = e.FullName,
+            Roles = roles
         };
     }
 }
 
-public class MeEndpoint : EndpointWithoutRequest<UserContextDTO, UserContextMapper>
+public class MeEndpoint : EndpointWithoutRequest<Results<Ok<UserContextDTO>, NotFound, ProblemHttpResult>, UserContextMapper>
 {
     private readonly IMediator _mediator;
 
@@ -78,10 +79,9 @@ public class MeEndpoint : EndpointWithoutRequest<UserContextDTO, UserContextMapp
         // Policies(PolicyName.HasValidRole);
     }
 
-    public override async Task<Results<Ok<UserContextDTO>, NotFound, ProblemHttpResult>> HandleAsync(CancellationToken ct)
+    public override async Task<Results<Ok<UserContextDTO>, NotFound, ProblemHttpResult>> ExecuteAsync(CancellationToken ct)
     {
         var result = await _mediator.Send(new GetCurrentUserContextQuery(), ct);
-
         return result.ToGetByIdResult(Map.FromEntity);
     }
 

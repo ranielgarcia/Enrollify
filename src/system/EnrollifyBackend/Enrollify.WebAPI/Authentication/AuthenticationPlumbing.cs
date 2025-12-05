@@ -12,8 +12,8 @@ public static class AuthenticationPlumbing
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApi(configuration.GetSection("AzureAd"));
 
-        services.AddScoped<ICurrentUserAccessor, HttpUserAccessor>();
         services.AddScoped<IUserContextService, UserContextService>();
+        services.AddScoped<ICurrentUserAccessor, HttpUserAccessor>();
 
         return services;
     }

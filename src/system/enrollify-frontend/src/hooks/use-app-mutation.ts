@@ -50,6 +50,13 @@ const useAppMutation = <TData extends object>({
         }
       }
 
+      if (!accessToken) {
+        // Either throw to set error state...
+        throw new Error("Failed to acquire access token.");
+        // Or return an empty shape:
+        // return {} as TData;
+      }
+
       if (isMultipart) {
         const response = await axios.post<TData>(
           `${Config.API_URL}${path}`,

@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import {
   BookOpen,
@@ -17,14 +19,10 @@ import {
   SidebarMenuButton,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useAuthorizationContext } from "@/infrastructure/auth/authorizationContext";
 
 // This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Master Data Management",
@@ -115,6 +113,8 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const userContext = useAuthorizationContext();
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -136,7 +136,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser
+          user={{
+            name: userContext.user?.fullName ?? "Guest User",
+            email: userContext.user?.email ?? "",
+            avatar: "/avatars/default-avatar.png",
+          }}
+        />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
