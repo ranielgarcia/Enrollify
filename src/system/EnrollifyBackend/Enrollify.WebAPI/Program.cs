@@ -1,5 +1,6 @@
 using Enrollify.Infrastructure;
 using Enrollify.WebAPI.Authentication;
+using Enrollify.WebAPI.Authorization;
 using Enrollify.WebAPI.Infrastructure.Exceptions;
 using Enrollify.WebAPI.Plumbing;
 using Serilog;
@@ -34,6 +35,7 @@ try
 
 
     builder.Services.AddAzureADAuthentication(builder.Configuration);
+    builder.Services.AddAuthorizationPolicies();
     builder.Services.AddServiceConfigs(startupLogger, builder);
 
     var app = builder.Build();

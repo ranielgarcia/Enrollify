@@ -1,5 +1,6 @@
 ﻿using Enrollify.Application.Roles;
 using Enrollify.Application.Roles.List;
+using Enrollify.WebAPI.Authorization;
 using FastEndpoints;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,7 @@ namespace Enrollify.WebAPI.Features.Roles;
 
 [HttpGet("")]
 [Group<RoleEndpointsGroup>]
-[AllowAnonymous]
+[Authorize(Policy = PolicyName.HasViewRolesPermission)]
 public class ListRolesEndpoint : EndpointWithoutRequest<List<RoleDTO>>
 {
     private readonly IMediator _mediator;
