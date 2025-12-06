@@ -38,9 +38,9 @@ public class UserContextService : IUserContextService
             UserContext? userContext = null;
             var roleLookup = new Dictionary<int, UserRoleContext>();
 
-            await conn.QueryAsync<UserContext, UserRoleContext, RolePermissionContext, UserContext>(
+            await conn.QueryAsync<UserContext, UserRoleContext, RolePermissionScopeContext, UserContext>(
                 query,
-                (user, role, permission) =>
+                (user, role, permissionScope) =>
                 {
                     // Initialize user context only once
                     if (userContext == null)
@@ -60,11 +60,11 @@ public class UserContextService : IUserContextService
                         }
 
                         // Add permission to role if present and not already added
-                        if (permission != null && permission.PermissionScopeId != 0)
+                        if (permissionScope != null && permissionScope.PermissionScopeId != 0)
                         {
-                            if (!existingRole.Permissions.Any(p => p.PermissionScopeId == permission.PermissionScopeId))
+                            if (!existingRole.PermissionScopes.Any(p => p.PermissionScopeId == permissionScope.PermissionScopeId))
                             {
-                                existingRole.Permissions.Add(permission);
+                                existingRole.PermissionScopes.Add(permissionScope);
                             }
                         }
                     }

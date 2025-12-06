@@ -4,18 +4,18 @@ using System.Data;
 
 namespace Enrollify.Infrastructure.Data;
 
-public class SmartFlagEnumDapperTypeHandler<T> : SqlMapper.TypeHandler<IEnumerable<T>>
-    where T : SmartFlagEnum<T, int>
+public class SmartFlagEnumDapperTypeHandler<T> : SqlMapper.TypeHandler<T>
+    where T : SmartFlagEnum<T>
 {
     public override void SetValue(IDbDataParameter parameter, T value)
     {
-        parameter.Value = value.Value; // store the integer flags
+        parameter.Value = value.Value;
     }
 
-    public override IEnumerable<T> Parse(object value)
+    public override T Parse(object value)
     {
-        // value comes as int, long, or other numeric types
         var intValue = Convert.ToInt32(value);
-        return SmartFlagEnum<T, int>.FromValue(intValue);
+
+        return SmartFlagEnum<T>.DeserializeValue(intValue);
     }
 }

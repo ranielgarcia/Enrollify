@@ -1,20 +1,19 @@
 ﻿using Enrollify.Application.Authentication.GetContext;
 using Enrollify.Core.Authentication;
 using Enrollify.WebAPI.Extensions;
-using Enrollify.WebAPI.Features.Users;
 using FastEndpoints;
 using Mediator;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Enrollify.WebAPI.Features;
 
-public sealed class PermissionDTO
+public sealed record PermissionDTO(int value, string name);
+
+public sealed class PermissionScope
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = null!;
-    public string Description { get; set; } = null!;
-    public string Action { get; set; } = null!;
-    public string Resource { get; set; } = null!;
+    public int ScopeId { get; set; }
+    public string ScopeName { get; set; } = null!;
+    public List<PermissionDTO> Permissions { get; set; } = null!;
 }
 
 public sealed class RoleDTO
@@ -23,7 +22,7 @@ public sealed class RoleDTO
     public string Name { get; set; } = null!;
     public string Description { get; set; } = null!;
 
-    public List<PermissionDTO> Permissions { get; set; } = new List<PermissionDTO>();
+    public List<PermissionScope> PermissionScopes { get; set; } = new List<PermissionScope>();
 }
 
 public sealed class UserContextDTO
@@ -44,14 +43,12 @@ public sealed class UserContextMapper : ResponseMapper<UserContextDTO, UserConte
             Id = r.Id.Value,
             Name = r.Name.Value,
             Description = r.Description.Value,
-            //Permissions = r.Permissions.Select(p => new PermissionDTO
-            //{
-            //    Id = p.Id.Value,
-            //    Name = p.Name.Value,
-            //    Description = p.Description.Value,
-            //    Action = p.Action.Value,
-            //    Resource = p.Resource.Value
-            //}).ToList()
+            PermissionScopes = r.PermissionScopes.Select(scope => new PermissionScope
+            {
+                ScopeId = scope.PermissionScopeId.Value,
+                ScopeName = scope.PermissionScopeName,
+                Permissions = scope.Permissions.Select(p => new PermissionDTO(p.Value, p.Name)).ToList()
+            }).ToList()
         }).ToList();
 
         return new UserContextDTO

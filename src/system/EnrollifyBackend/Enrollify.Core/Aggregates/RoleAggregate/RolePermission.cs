@@ -8,10 +8,10 @@ public class RolePermission : IAuditable<AuditInfo>
 {
     public RolePermission() { } // EF Core constructor
 
-    public RolePermission(RoleId roleId, PermissionScopeId permissionScopeId, PermissionEnum bitmaskPermission, UserId addedBy)
+    public RolePermission(RoleId roleId, PermissionScopeEnum permissionScopeId, PermissionEnum bitmaskPermission, UserId addedBy)
     {
         RoleId = roleId;
-        PermissionScopeId = permissionScopeId;
+        PermissionScopeId = PermissionScopeId.From(permissionScopeId.Value);
         BitmaskPermission = bitmaskPermission;
         AuditInfo.SetCreatedBy(addedBy);
     }
@@ -20,7 +20,12 @@ public class RolePermission : IAuditable<AuditInfo>
 
     public PermissionScopeId PermissionScopeId { get; private set; }
 
-    public PermissionEnum BitmaskPermission { get; private set; } = PermissionEnum.None;
+    // We don't need to expose the PermissionScopes table in the code as it is directly mapped to PermissionScopeEnum
+    public PermissionScopeEnum PermissionScope => PermissionScopeEnum.FromValue(PermissionScopeId.Value);
+
+    public int BitmaskPermission { get; private set; }
+
+    public IEnumerable<PermissionEnum> Permissions => PermissionEnum.FromValue(BitmaskPermission);
 
     public AuditInfo AuditInfo { get; init; } = new AuditInfo();
 }

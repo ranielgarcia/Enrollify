@@ -42,7 +42,7 @@ public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable<AuditIn
         return this;
     }
 
-    public Role AddPermission (PermissionScopeId permissionScopeId, PermissionEnum bitmaskPermission, UserId addedBy)
+    public Role AddPermission (PermissionScopeEnum permissionScopeId, PermissionEnum bitmaskPermission, UserId addedBy)
     {
         Guard.Against.Null(permissionScopeId);
         Guard.Against.Null(addedBy);
@@ -69,7 +69,7 @@ public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable<AuditIn
         return this;
     }
 
-    public IEnumerable<(PermissionScopeId, PermissionEnum)> GetActivePermissions()
+    public IEnumerable<(PermissionScopeId, int)> GetActivePermissions()
     {
         return _rolePermissions
             .Where(p => p.AuditInfo.IsActive)

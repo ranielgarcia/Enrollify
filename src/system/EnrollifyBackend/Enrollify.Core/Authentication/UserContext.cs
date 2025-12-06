@@ -23,12 +23,13 @@ public class UserRoleContext
     public RoleName Name { get; set; }
     public RoleDescription Description { get; set; }
 
-    public List<RolePermissionContext> Permissions { get; set; } = new List<RolePermissionContext>();
+    public List<RolePermissionScopeContext> PermissionScopes { get; set; } = new List<RolePermissionScopeContext>();
 }
 
-public class RolePermissionContext
+public class RolePermissionScopeContext
 {
     public PermissionScopeId PermissionScopeId { get; set; }
     public string PermissionScopeName { get; set; } = null!;
-    public PermissionEnum BitmaskPermission { get; set; } = PermissionEnum.None;
+    public int BitmaskPermission { get; set; }
+    public IEnumerable<PermissionEnum> Permissions => PermissionEnum.FromValue(BitmaskPermission);
 }

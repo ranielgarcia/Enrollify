@@ -1,9 +1,11 @@
 ﻿using Ardalis.SmartEnum;
 using Ardalis.SmartEnum.Dapper;
 using Dapper;
+using Enrollify.Application.Roles.List;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
+using Enrollify.Infrastructure.Data.Queries;
 using Enrollify.SharedKernel;
 using System.Reflection;
 
@@ -34,7 +36,7 @@ public static class InfrastructureServiceExtensions
         
         // Auto register all SmartEnum Dapper type handlers
         RegisterSmartEnumTypeHandlers(typeof(PermissionScopeEnum).Assembly);
-
+        SqlMapper.AddTypeHandler(new SmartFlagEnumDapperTypeHandler<PermissionEnum>());
 
         services.AddScoped<EventDispatchInterceptor>();
         services.AddScoped<PreSaveChangesInterceptor>();
@@ -54,6 +56,8 @@ public static class InfrastructureServiceExtensions
 
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>))
                .AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
+
+        services.AddScoped<IListRolesQueryService, ListRolesQueryService>();
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 

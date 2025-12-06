@@ -30,11 +30,17 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
             rp.ToTable("RolePermissions");
 
             rp.WithOwner().HasForeignKey(e => e.RoleId);
+            
+            rp.HasKey(e => new { e.RoleId, e.PermissionScopeId });
+            
             rp.Property(e => e.PermissionScopeId)
               .IsRequired();
 
             rp.Property(e => e.BitmaskPermission)
                 .IsRequired();
+
+            rp.Ignore(e => e.Permissions);
+            rp.Ignore(e => e.PermissionScope);
 
             rp.ConfigureAuditFields();
         });

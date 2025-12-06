@@ -79,6 +79,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Enrollify.Application\Enrollify.Application.csproj" />
     <ProjectReference Include="..\Enrollify.Core\Enrollify.Core.csproj" />
     <ProjectReference Include="..\Enrollify.Infrastructure.Generator\Enrollify.Infrastructure.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
