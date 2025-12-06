@@ -1,5 +1,5 @@
 ﻿using Ardalis.Result;
-using Enrollify.Core.Services.Authentication;
+using Enrollify.Core.Authentication;
 using Mediator;
 
 namespace Enrollify.Application.Authentication.GetContext;

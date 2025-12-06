@@ -1,5 +1,5 @@
-﻿using Enrollify.Core.Services.Authentication;
-using Enrollify.Infrastructure.Services.Authentication;
+﻿using Enrollify.Core.Authentication;
+using Enrollify.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 
@@ -12,8 +12,8 @@ public static class AuthenticationPlumbing
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddMicrosoftIdentityWebApi(configuration.GetSection("AzureAd"));
 
-        services.AddScoped<ICurrentUserAccessor, HttpUserAccessor>();
         services.AddScoped<IUserContextService, UserContextService>();
+        services.AddScoped<ICurrentUserAccessor, HttpUserAccessor>();
 
         return services;
     }

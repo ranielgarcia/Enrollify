@@ -15,13 +15,9 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
 
         builder.Property(e => e.Name)
             .HasColumnName("Name");
-        //.HasMaxLength(RoleName.MaxLength)
-        //.HasColumnType($"VARCHAR({RoleName.MaxLength})");
 
         builder.Property(e => e.Description)
             .HasColumnName("Description");
-            //.HasMaxLength(RoleDescription.MaxLength)
-            //.HasColumnType($"VARCHAR({RoleDescription.MaxLength})");
 
         // Audit fields
         builder.ConfigureAuditFields();
@@ -33,11 +29,19 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
         {
             rp.ToTable("RolePermissions");
 
-            rp.HasKey(e => new {e.RoleId, e.PermissionId });
-
             rp.WithOwner().HasForeignKey(e => e.RoleId);
-            rp.Property(e => e.PermissionId)
+            
+            rp.HasKey(e => new { e.RoleId, e.PermissionScopeId });
+            
+            rp.Property(e => e.PermissionScopeId)
               .IsRequired();
+
+            rp.Property(e => e.BitmaskPermission)
+                .IsRequired();
+
+            rp.Ignore(e => e.Permissions);
+            rp.Ignore(e => e.PermissionScope);
+
             rp.ConfigureAuditFields();
         });
 

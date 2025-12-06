@@ -1,5 +1,5 @@
 ﻿using Enrollify.Core.Aggregates.UserAggregate;
-using Enrollify.Core.Services.Authentication;
+using Enrollify.Core.Authentication;
 using Microsoft.Identity.Web;
 
 namespace Enrollify.WebAPI.Authentication;
@@ -31,7 +31,10 @@ public class UserContextMiddleware
 
             var userContext = await userContextService.GetUserContextByEmail(UserEmail.From(email), cancellationToken);
 
-            SetHttpContext(userContext, httpContext);
+            if (userContext != null)
+            {
+                SetHttpContext(userContext, httpContext);
+            }
         }
 
         await _next(httpContext!);

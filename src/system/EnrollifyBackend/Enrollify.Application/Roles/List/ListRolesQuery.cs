@@ -1,0 +1,23 @@
+﻿using Ardalis.Result;
+using Mediator;
+
+namespace Enrollify.Application.Roles.List;
+
+public class ListRolesQuery : IQuery<Result<List<RoleDTO>>>
+{
+}
+
+public class ListRolesQueryHandler : IQueryHandler<ListRolesQuery, Result<List<RoleDTO>>>
+{
+    private readonly IListRolesQueryService _queryService;
+
+    public ListRolesQueryHandler(IListRolesQueryService queryService)
+    {
+        _queryService = queryService;
+    }
+    public async ValueTask<Result<List<RoleDTO>>> Handle(ListRolesQuery request, CancellationToken cancellationToken)
+    {
+        var roles = await _queryService.ListRolesAsync(cancellationToken);
+        return Result.Success(roles);
+    }
+}

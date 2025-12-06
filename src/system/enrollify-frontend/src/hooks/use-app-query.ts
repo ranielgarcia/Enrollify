@@ -45,6 +45,13 @@ const useAppQuery = <TData extends object, TError = unknown>({
         }
       }
 
+      if (!accessToken) {
+        // Either throw to set error state...
+        throw new Error("Failed to acquire access token.");
+        // Or return an empty shape:
+        // return {} as TData;
+      }
+
       const response = await axios.get<TData>(`${Config.API_URL}${path}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,

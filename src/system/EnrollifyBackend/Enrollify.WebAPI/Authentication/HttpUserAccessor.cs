@@ -1,4 +1,4 @@
-﻿using Enrollify.Core.Services.Authentication;
+﻿using Enrollify.Core.Authentication;
 
 namespace Enrollify.WebAPI.Authentication;
 

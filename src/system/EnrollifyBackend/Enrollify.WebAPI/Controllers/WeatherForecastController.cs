@@ -1,6 +1,4 @@
-using Enrollify.Core.Aggregates.PermissionsAggregate;
 using Enrollify.Core.Aggregates.RoleAggregate;
-using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
