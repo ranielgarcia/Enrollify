@@ -4,17 +4,15 @@ import { useMsal } from "@azure/msal-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { OverlayLoader } from "@/components/app-loading-overlay";
-import useAppQuery from "@/hooks/use-app-query";
+import useAppQuery from "@/hooks/use-app-query-v2";
 
-import { type UserContext } from "./user-context";
 import {
   AuthorizationContext,
   type IAuthorizationContext,
   defaultAuthorizationContext,
 } from "./authorizationContext";
 import { EventType, type AuthenticationResult } from "@azure/msal-browser";
-
-const getMyDetailsEndpoint = "/me";
+// import useAppMutation from "@/hooks/use-app-mutation-v2";
 
 export const AuthorizationProvider = ({
   children,
@@ -33,12 +31,24 @@ export const AuthorizationProvider = ({
     data: userContext,
     isSuccess: isGetUserContextSuccessful,
     isLoading: isLoadingUserContext,
-  } = useAppQuery<UserContext>({
-    path: getMyDetailsEndpoint,
+  } = useAppQuery({
+    path: "/api/me",
     queryOptions: {
-      queryKey: [getMyDetailsEndpoint],
+      queryKey: ["/api/me"],
     },
   });
+
+  // const { mutateAsync, isSuccess, isError, isPending, data } = useAppMutation({
+  //   path: "/api/me",
+  //   httpVerb: "post",
+  //   mutationKey: "",
+  // });
+
+  // const currentUser = apiClient
+  //   .GET("/api/me")
+  //   .then((response) => response.data);
+
+  // console.log(currentUser);
 
   useEffect(() => {
     const callbackId = instance.addEventCallback(async (event) => {
@@ -51,7 +61,7 @@ export const AuthorizationProvider = ({
             user: {
               fullName: account.name ?? "",
               email: account.username,
-            } as UserContext,
+            },
           } as IAuthorizationContext);
         }
       }
@@ -77,7 +87,7 @@ export const AuthorizationProvider = ({
         user: userContext,
         refreshUserContext: () => {
           queryClientRef.current.invalidateQueries({
-            queryKey: [getMyDetailsEndpoint],
+            queryKey: ["/api/me"],
           });
         },
       } as IAuthorizationContext);

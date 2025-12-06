@@ -57,30 +57,39 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         EnrollifyCoreAuthenticationUserContext: {
-            id?: string;
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
             email?: components["schemas"]["EnrollifyCoreAggregatesUserAggregateUserEmail"];
             fullName?: string;
             /** Format: date-time */
             lastLoginAt?: string;
             roles?: components["schemas"]["EnrollifyCoreAuthenticationUserRoleContext"][];
         };
-        EnrollifyCoreAggregatesUserAggregateUserEmail: {
-            value?: string;
-        };
+        /** @description Value object wrapping String */
+        EnrollifyCoreAggregatesUserAggregateUserEmail: string;
         EnrollifyCoreAuthenticationUserRoleContext: {
-            id?: string;
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
             name?: components["schemas"]["EnrollifyCoreAggregatesRoleAggregateRoleName"];
             description?: components["schemas"]["EnrollifyCoreAggregatesRoleAggregateRoleDescription"];
             permissionScopes?: components["schemas"]["EnrollifyCoreAuthenticationRolePermissionScopeContext"][];
         };
-        EnrollifyCoreAggregatesRoleAggregateRoleName: {
-            value?: string;
-        };
-        EnrollifyCoreAggregatesRoleAggregateRoleDescription: {
-            value?: string;
-        };
+        /** @description Value object wrapping String */
+        EnrollifyCoreAggregatesRoleAggregateRoleName: string;
+        /** @description Value object wrapping String */
+        EnrollifyCoreAggregatesRoleAggregateRoleDescription: string;
         EnrollifyCoreAuthenticationRolePermissionScopeContext: {
-            permissionScopeId?: string;
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            permissionScopeId?: number;
             permissionScope?: components["schemas"]["EnrollifyCoreConstantsAuthorizationPermissionScopeEnum"];
             /** Format: int32 */
             bitmaskPermission?: number;
@@ -111,7 +120,11 @@ export interface components {
         };
         ArdalisSmartEnumSmartFlagEngineOfPermissionEnumAndInt32: Record<string, never>;
         EnrollifyApplicationRolesDTOsRoleDTO: {
-            id?: string;
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
             name?: components["schemas"]["EnrollifyCoreAggregatesRoleAggregateRoleName"];
             description?: components["schemas"]["EnrollifyCoreAggregatesRoleAggregateRoleDescription"];
             permissionScopes?: components["schemas"]["EnrollifyApplicationRolesDTOsRolePermissionDTO"][];

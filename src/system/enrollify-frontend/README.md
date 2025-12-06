@@ -1,4 +1,8 @@
-# React + TypeScript + Vite
+# Scripts
+
+Use tsc --noEmit to check for type errors rather than relying on your linter or your build command. Nothing will typecheck as accurately as the TypeScript compiler itself.
+
+## React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

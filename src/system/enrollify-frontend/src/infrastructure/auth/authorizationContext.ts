@@ -1,8 +1,8 @@
 import React, { use } from "react";
-import { type UserContext } from "./user-context";
+import type { components } from "@/api/generated/api";
 
 export interface IAuthorizationContext {
-  user: UserContext | null;
+  user: components["schemas"]["EnrollifyCoreAuthenticationUserContext"] | null;
   refreshUserContext: () => void;
 }
 
