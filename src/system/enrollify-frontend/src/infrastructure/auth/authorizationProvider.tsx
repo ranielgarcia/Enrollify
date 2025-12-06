@@ -40,12 +40,6 @@ export const AuthorizationProvider = ({
     },
   });
 
-  const roles = useAppQuery({
-    path: "/roles",
-  });
-
-  console.log(roles.data);
-
   useEffect(() => {
     const callbackId = instance.addEventCallback(async (event) => {
       if (event.eventType === EventType.LOGIN_SUCCESS && event.payload) {

@@ -15,7 +15,7 @@ public abstract class UserAuthorizationHandler<TRequirement> : AuthorizationHand
         _mediator = mediator;
         if (_mediator is null)
         {
-            throw new ArgumentNullException("_mediator", $"{nameof(IMediator)} is required");
+            throw new ArgumentNullException(nameof(mediator), $"{nameof(IMediator)} is required");
         }
     }
 
@@ -40,7 +40,7 @@ public abstract class UserAuthorizationHandler<TRequirement> : AuthorizationHand
             return;
         }
 
-        await CheckRequirement(currentUser, context, requirement);
+        await CheckRequirement(currentUser.Value, context, requirement);
     }
 
     protected abstract Task CheckRequirement(UserContext user, AuthorizationHandlerContext context, TRequirement requirement);

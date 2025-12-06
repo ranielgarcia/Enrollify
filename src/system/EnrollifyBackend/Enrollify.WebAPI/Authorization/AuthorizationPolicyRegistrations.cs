@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Enrollify.WebAPI.Authorization;
 
-public static class AuthorizatinoPolicyRegistrations
+public static class AuthorizationPolicyRegistrations
 {
     public static IServiceCollection AddAuthorizationPolicies(this IServiceCollection services)
     {

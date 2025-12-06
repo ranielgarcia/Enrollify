@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Features\Roles\ListRolesEndpoint.cs~RFa43932.TMP" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.17.1" />
     <PackageReference Include="FastEndpoints" Version="7.1.1" />
     <PackageReference Include="FastEndpoints.Swagger" Version="7.1.1" />

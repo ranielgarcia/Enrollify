@@ -1,7 +1,3 @@
--- ====================================
--- USERS, ROLES, AND PERMISSIONS SCHEMA
--- ====================================
-
 -- ************************************
 -- USERS TABLE
 -- ************************************
@@ -194,7 +190,7 @@ CREATE NONCLUSTERED INDEX IX_RolePermissions_RoleId
 ON RolePermissions(RoleId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_RolePermissions_PermissionId 
+CREATE NONCLUSTERED INDEX IX_RolePermissions_BitmaskPermission 
 ON RolePermissions(BitmaskPermission);
 GO
 

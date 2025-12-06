@@ -10,8 +10,5 @@ public sealed class PermissionScopeEnum : SmartEnum<PermissionScopeEnum>
     public static readonly PermissionScopeEnum Rooms = new PermissionScopeEnum("Rooms", 3);
     public static readonly PermissionScopeEnum RoomTypes = new PermissionScopeEnum("RoomTypes", 4);
 
-    private PermissionScopeEnum(string name, int value) : base(name, value)
-    {
-        
-    }
+    private PermissionScopeEnum(string name, int value) : base(name, value) { }
 }

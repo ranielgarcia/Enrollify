@@ -2,7 +2,7 @@
 
 namespace Enrollify.WebAPI.Authorization.Roles;
 
-public static class RolesAuthorizationPolifyRegistration
+public static class RolesAuthorizationPolicyRegistration
 {
     public static IServiceCollection AddRolesAuthorizationPolicyHandlers(this IServiceCollection services)
     {
