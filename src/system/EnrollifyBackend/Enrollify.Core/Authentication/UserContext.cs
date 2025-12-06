@@ -29,7 +29,7 @@ public class UserRoleContext
 public class RolePermissionScopeContext
 {
     public PermissionScopeId PermissionScopeId { get; set; }
-    public string PermissionScopeName { get; set; } = null!;
+    public PermissionScopeEnum PermissionScope => PermissionScopeEnum.FromValue(PermissionScopeId.Value);
     public int BitmaskPermission { get; set; }
     public IEnumerable<PermissionEnum> Permissions => PermissionEnum.FromValue(BitmaskPermission);
 }

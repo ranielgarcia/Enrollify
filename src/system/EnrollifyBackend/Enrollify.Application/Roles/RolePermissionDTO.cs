@@ -5,7 +5,6 @@ namespace Enrollify.Application.Roles;
 
 public class RolePermissionDTO
 {
-    public PermissionScopeId PermissionScopeId { get; set; }
-    public int BitmaskPermission { get; set; }
-    public IEnumerable<PermissionEnum> Permissions => PermissionEnum.FromValue(BitmaskPermission);
+    public PermissionScopeEnum PermissionScope { get; set; } = PermissionScopeEnum.None;
+    public IEnumerable<PermissionEnum> Permissions { get; set; } = Enumerable.Empty<PermissionEnum>();
 }

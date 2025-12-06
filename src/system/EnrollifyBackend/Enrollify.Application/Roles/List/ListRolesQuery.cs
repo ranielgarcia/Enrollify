@@ -1,5 +1,4 @@
 ﻿using Ardalis.Result;
-using Enrollify.Core.Aggregates.RoleAggregate;
 using Mediator;
 
 namespace Enrollify.Application.Roles.List;
