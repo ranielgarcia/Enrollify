@@ -449,6 +449,52 @@ export class RoleRequirement implements IAuthorizationRequirement {
 // PermissionRequirement.ts
 export class PermissionRequirement implements IAuthorizationRequirement {
   type = 'Permission';
+
+  constructor(
+    public readonly permission: string,
+    public readonly scope?: AuthorizationScope
+  ) {}
+
+  evaluate(context: AuthorizationContext): boolean {
+    const effectiveScope = this.scope || context.scope;
+    
+    if (!context.user.permissions) return false;
+
+    if (effectiveScope) {
+      return context.user.permissions.some(
+        p => p.name === this.permission &&
+             p.scope?.type === effectiveScope.type &&
+             (!effectiveScope.id || p.scope?.id === effectiveScope.id)
+      );
+    }
+
+    return context.user.permissions.some(
+      p => p.name === this.permission && !p.scope
+    );
+  }
+}
+
+// ScopeRequirement.ts
+export class ScopeRequirement implements IAuthorizationRequirement {
+  type = 'Scope';
+
+  constructor(
+    public readonly scopeType: string,
+    public readonly scopeId?: string
+  ) {}
+
+  evaluate(context: AuthorizationContext): boolean {
+    if (!context.scope) return false;
+    
+    if (context.scope.type !== this.scopeType) return false;
+    
+    if (this.scopeId && context.scope.id !== this.scopeId) return false;
+    
+    return true;
+  }
+}
+```
+
 ### 6. Custom Authorization Handlers
 
 You can create custom handlers for specific business logic:
@@ -510,52 +556,6 @@ const authService = new AuthorizationService(policyRegistry, customHandlers);
 const policy = new PolicyBuilder('CanEditOwnProfile')
   .addCustomRequirement(new ResourceOwnerRequirement('userId'))
   .build();
-```
-
----
-
-## React Components and Hooksn: string,
-    public readonly scope?: AuthorizationScope
-  ) {}
-
-  evaluate(context: AuthorizationContext): boolean {
-    const effectiveScope = this.scope || context.scope;
-    
-    if (!context.user.permissions) return false;
-
-    if (effectiveScope) {
-      return context.user.permissions.some(
-        p => p.name === this.permission &&
-             p.scope?.type === effectiveScope.type &&
-             (!effectiveScope.id || p.scope?.id === effectiveScope.id)
-      );
-    }
-
-    return context.user.permissions.some(
-      p => p.name === this.permission && !p.scope
-    );
-  }
-}
-
-// ScopeRequirement.ts
-export class ScopeRequirement implements IAuthorizationRequirement {
-  type = 'Scope';
-
-  constructor(
-    public readonly scopeType: string,
-    public readonly scopeId?: string
-  ) {}
-
-  evaluate(context: AuthorizationContext): boolean {
-    if (!context.scope) return false;
-    
-    if (context.scope.type !== this.scopeType) return false;
-    
-    if (this.scopeId && context.scope.id !== this.scopeId) return false;
-    
-    return true;
-  }
-}
 ```
 
 ---
@@ -1059,6 +1059,115 @@ export const syncPoliciesFromBackend = async (
     });
   } catch (error) {
     console.error('Failed to sync policies from backend:', error);
+  }
+};
+```
+
+### User Permissions from JWT
+
+```typescript
+// Parse permissions from JWT claims
+export const parseUserPermissions = (token: string): Permission[] => {
+  const decoded = jwtDecode<JWTPayload>(token);
+  
+  // Example: permissions stored as JSON in claims
+  const permissionsClaim = decoded['permissions'];
+  
+  if (typeof permissionsClaim === 'string') {
+    return JSON.parse(permissionsClaim);
+  }
+  
+  return permissionsClaim || [];
+};
+
+// Permission structure
+interface Permission {
+  name: string;
+  scope?: {
+    type: string;
+    id: string;
+  };
+}
+```
+
+---
+
+## Common Authorization Policies for Enrollify
+
+### Student Management
+- `CanViewStudents` - View student list and details
+- `CanManageStudents` - Create, edit, delete students
+- `CanManageDepartmentStudents` - Manage students within a department scope
+
+### Enrollment Management
+- `CanViewEnrollments` - View enrollment records
+- `CanCreateEnrollment` - Create new enrollments
+- `CanApproveEnrollment` - Approve/reject enrollments
+- `CanManageSemesterEnrollments` - Manage enrollments for a specific semester
+
+### Academic Records
+- `CanViewGrades` - View student grades
+- `CanEditGrades` - Edit and finalize grades
+- `CanEditOwnCourseGrades` - Teacher can edit grades for their courses only
+
+### Schedule Management
+- `CanViewSchedules` - View class schedules
+- `CanManageSchedules` - Create and modify schedules
+- `CanManageDepartmentSchedules` - Manage schedules within department
+
+### Course & Subject Management
+- `CanManageCourses` - Manage course definitions
+- `CanManageSubjects` - Manage subject offerings
+- `CanManageDepartmentSubjects` - Manage subjects within department
+
+### Administrative
+- `AdminOnly` - Full system access
+- `RegistrarAccess` - Registrar-specific functions
+- `DeanAccess` - Dean-specific functions with college scope
+- `DepartmentHeadAccess` - Department head with department scope
+
+---
+
+## Implementation Steps
+
+### Phase 1: Core Infrastructure (Week 1)
+1. ✅ Create base interfaces and types
+2. ✅ Implement PolicyBuilder and PolicyRegistry
+3. ✅ Implement AuthorizationService
+4. ✅ Create requirement implementations (Role, Permission, Scope)
+5. ✅ Set up AuthorizationProvider
+
+### Phase 2: React Components (Week 1-2)
+1. ⬜ Create useAuthorization hook
+2. ⬜ Implement Authorized component
+3. ⬜ Implement AuthorizeView component
+4. ⬜ Create ProtectedRoute wrapper
+5. ⬜ Add loading and error states
+
+### Phase 3: Policy Configuration (Week 2)
+1. ⬜ Define all system policies
+2. ⬜ Register default policies
+3. ⬜ Create policy documentation
+4. ⬜ Implement policy sync with backend
+
+### Phase 4: Integration (Week 2-3)
+1. ⬜ Integrate with existing auth system
+2. ⬜ Parse permissions from JWT
+3. ⬜ Update user profile structure
+4. ⬜ Add authorization to existing routes
+5. ⬜ Add authorization to existing components
+
+### Phase 5: Testing & Refinement (Week 3-4)
+1. ⬜ Unit tests for authorization service
+2. ⬜ Integration tests for components
+3. ⬜ Test all policies
+4. ⬜ Performance optimization
+5. ⬜ Documentation and examples
+
+---
+
+## Testing Strategy
+
 ### Unit Tests
 
 ```typescript
@@ -1342,115 +1451,6 @@ describe('Authorization Handlers', () => {
     });
   });
 });
-```CanEditGrades` - Edit and finalize grades
-- `CanEditOwnCourseGrades` - Teacher can edit grades for their courses only
-
-### Schedule Management
-- `CanViewSchedules` - View class schedules
-- `CanManageSchedules` - Create and modify schedules
-- `CanManageDepartmentSchedules` - Manage schedules within department
-
-### Course & Subject Management
-- `CanManageCourses` - Manage course definitions
-- `CanManageSubjects` - Manage subject offerings
-- `CanManageDepartmentSubjects` - Manage subjects within department
-
-### Administrative
-- `AdminOnly` - Full system access
-- `RegistrarAccess` - Registrar-specific functions
-- `DeanAccess` - Dean-specific functions with college scope
-- `DepartmentHeadAccess` - Department head with department scope
-
----
-
-## Implementation Steps
-
-### Phase 1: Core Infrastructure (Week 1)
-1. ✅ Create base interfaces and types
-2. ✅ Implement PolicyBuilder and PolicyRegistry
-3. ✅ Implement AuthorizationService
-4. ✅ Create requirement implementations (Role, Permission, Scope)
-5. ✅ Set up AuthorizationProvider
-
-### Phase 2: React Components (Week 1-2)
-1. ⬜ Create useAuthorization hook
-2. ⬜ Implement Authorized component
-3. ⬜ Implement AuthorizeView component
-4. ⬜ Create ProtectedRoute wrapper
-5. ⬜ Add loading and error states
-
-### Phase 3: Policy Configuration (Week 2)
-1. ⬜ Define all system policies
-2. ⬜ Register default policies
-3. ⬜ Create policy documentation
-4. ⬜ Implement policy sync with backend
-
-### Phase 4: Integration (Week 2-3)
-1. ⬜ Integrate with existing auth system
-2. ⬜ Parse permissions from JWT
-3. ⬜ Update user profile structure
-4. ⬜ Add authorization to existing routes
-5. ⬜ Add authorization to existing components
-
-### Phase 5: Testing & Refinement (Week 3-4)
-1. ⬜ Unit tests for authorization service
-2. ⬜ Integration tests for components
-3. ⬜ Test all policies
-4. ⬜ Performance optimization
-5. ⬜ Documentation and examples
-
----
-
-## Testing Strategy
-
-### Unit Tests
-
-```typescript
-describe('AuthorizationService', () => {
-  it('should authorize user with correct role', async () => {
-    const policy = new PolicyBuilder('TestPolicy')
-      .requireRole('Admin')
-      .build();
-    
-    const service = new AuthorizationService(registry, handlers);
-    const context = {
-      user: { id: '1', roles: ['Admin'], permissions: [] }
-    };
-    
-    const result = await service.evaluatePolicy(policy, context);
-    expect(result.succeeded).toBe(true);
-  });
-
-  it('should deny user without permission', async () => {
-    const policy = new PolicyBuilder('TestPolicy')
-      .requirePermission('students.delete')
-      .build();
-    
-    const context = {
-      user: { id: '1', roles: ['Teacher'], permissions: [] }
-    };
-    
-    const result = await service.evaluatePolicy(policy, context);
-    expect(result.succeeded).toBe(false);
-  });
-
-  it('should check scoped permissions correctly', () => {
-    const user = {
-      id: '1',
-      permissions: [
-        { name: 'students.manage', scope: { type: 'department', id: 'CS' } }
-      ]
-    };
-    
-    const hasPermission = service.hasPermission(
-      user,
-      'students.manage',
-      { type: 'department', id: 'CS' }
-    );
-    
-    expect(hasPermission).toBe(true);
-  });
-});
 ```
 
 ### Component Tests
@@ -1564,3 +1564,5 @@ The declarative nature of the authorization components (`<Authorized>`, `<Author
 - [React Context API](https://react.dev/reference/react/useContext)
 - [JWT Best Practices](https://tools.ietf.org/html/rfc8725)
 - [OWASP Authorization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
+
+
