@@ -17,7 +17,7 @@ import {
   SidebarMenuButton,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { useAuthorizationContext } from "@/infrastructure/auth/authorizationContext";
+import { useAuthenticationContext } from "@/infrastructure/auth/authenticationContext";
 
 // This is sample data.
 const data = {
@@ -111,7 +111,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const userContext = useAuthorizationContext();
+  const userContext = useAuthenticationContext();
 
   return (
     <Sidebar collapsible="icon" {...props}>

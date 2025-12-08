@@ -13,7 +13,7 @@ import {
   type AuthenticationResult,
 } from "@azure/msal-browser";
 import { handleLogin } from "./infrastructure/auth/msal";
-import { AuthorizationProvider } from "./infrastructure/auth/authorizationProvider";
+import { AuthenticationProvider } from "./infrastructure/auth/authenticationProvider";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "./components/theming/theme-provider";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
@@ -82,12 +82,12 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthorizationProvider>
+      <AuthenticationProvider>
         <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
           <RouterProvider router={router} context={{ msal }} />
           <ReactQueryDevtools initialIsOpen={false} />
         </ThemeProvider>
-      </AuthorizationProvider>
+      </AuthenticationProvider>
     </QueryClientProvider>
   );
 }
