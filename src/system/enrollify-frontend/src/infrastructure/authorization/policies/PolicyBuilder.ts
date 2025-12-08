@@ -1,14 +1,15 @@
-import type { AuthorizationScope } from "../AuthorizationEvaluationContext";
-import type { AuthorizationPolicy } from "../AuthorizationPolicy";
+import type { AuthorizationScope, Scope } from "../models/AuthorizationScope";
+import type { IAuthorizationPolicy } from "./IAuthorizationPolicy";
 import type { IAuthorizationRequirement } from "../requirements/IAuthorizationRequirement";
 import { PermissionRequirement } from "../requirements/PermissionRequirement";
 import { RoleRequirement } from "../requirements/RoleRequirement";
 import { ScopeRequirement } from "../requirements/ScopeRequirement";
+import type { PolicyName } from "../models/PolicyNames";
 
 export class PolicyBuilder {
-  private policy: AuthorizationPolicy;
+  private policy: IAuthorizationPolicy;
 
-  constructor(name: string) {
+  constructor(name: PolicyName) {
     this.policy = {
       name,
       requirements: [],
@@ -26,8 +27,8 @@ export class PolicyBuilder {
     return this;
   }
 
-  requireScope(scopeType: string, scopeId?: number): this {
-    this.policy.requirements.push(new ScopeRequirement(scopeType, scopeId));
+  requireScope(scope: Scope): this {
+    this.policy.requirements.push(new ScopeRequirement(scope));
     return this;
   }
 
@@ -46,7 +47,7 @@ export class PolicyBuilder {
     return this;
   }
 
-  build(): AuthorizationPolicy {
+  build(): IAuthorizationPolicy {
     return this.policy;
   }
 }

@@ -1,4 +1,4 @@
-import type { AuthorizationEvaluationContext } from "../AuthorizationEvaluationContext";
+import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
 import type { IAuthorizationRequirement } from "../requirements/IAuthorizationRequirement";
 import type { RoleRequirement } from "../requirements/RoleRequirement";
 import type { IAuthorizationHandler } from "./IAuthorizationHandler";

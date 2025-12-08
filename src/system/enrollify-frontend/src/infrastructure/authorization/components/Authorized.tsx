@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { useAuthorization } from "./useAuthorization";
-import type { AuthorizationScope } from "../AuthorizationEvaluationContext";
+import type { AuthorizationScope } from "../models/AuthorizationScope";
+import type { PolicyName } from "../models/PolicyNames";
+import type { Role } from "../models/Roles";
+import type { Permission } from "../models/Permissions";
 
 export interface AuthorizedProps {
-  policy?: string;
-  roles?: string[];
-  permissions?: string[];
+  policy?: PolicyName;
+  roles?: Role[];
+  permissions?: Permission[];
   scope?: AuthorizationScope;
   requireAll?: boolean;
   fallback?: React.ReactNode;

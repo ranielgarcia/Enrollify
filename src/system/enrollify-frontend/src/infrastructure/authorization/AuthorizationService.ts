@@ -1,13 +1,14 @@
-import type {
-  AuthorizationContext,
-  AuthorizationScope,
-} from "./AuthorizationEvaluationContext";
-import type { AuthorizationPolicy } from "./AuthorizationPolicy";
+import type { AuthorizationEvaluationContext } from "./models/AuthorizationEvaluationContext";
+import type { IAuthorizationPolicy } from "./policies/IAuthorizationPolicy";
 import type { AuthorizationResult } from "./AuthorizationResult";
 import type { IAuthorizationHandler } from "./handlers/IAuthorizationHandler";
 import type { PolicyRegistry } from "./policies/PolicyRegistry";
 import type { IAuthorizationRequirement } from "./requirements/IAuthorizationRequirement";
 import type { components } from "@/api/generated/api";
+import type { AuthorizationScope } from "./models/AuthorizationScope";
+import type { PolicyName } from "./models/PolicyNames";
+import type { Permission } from "./models/Permissions";
+import type { Role } from "./models/Roles";
 
 type UserContext =
   components["schemas"]["EnrollifyCoreAuthenticationUserContext"];
@@ -31,8 +32,8 @@ export class AuthorizationService {
   }
 
   async authorize(
-    policyName: string,
-    context: AuthorizationContext
+    policyName: PolicyName,
+    context: AuthorizationEvaluationContext
   ): Promise<AuthorizationResult> {
     const policy = this.policyRegistry.get(policyName);
 
@@ -49,7 +50,7 @@ export class AuthorizationService {
 
   async authorizeWithRequirements(
     requirements: IAuthorizationRequirement[],
-    context: AuthorizationContext,
+    context: AuthorizationEvaluationContext,
     requireAll: boolean = true
   ): Promise<AuthorizationResult> {
     const failureReasons: string[] = [];
@@ -90,8 +91,8 @@ export class AuthorizationService {
   }
 
   private async evaluatePolicy(
-    policy: AuthorizationPolicy,
-    context: AuthorizationContext
+    policy: IAuthorizationPolicy,
+    context: AuthorizationEvaluationContext
   ): Promise<AuthorizationResult> {
     return this.authorizeWithRequirements(
       policy.requirements,
@@ -100,16 +101,16 @@ export class AuthorizationService {
     );
   }
 
-  hasRole(user: UserContext | null, ...roles: string[]): boolean {
+  hasRole(user: UserContext | null, ...roles: Role[]): boolean {
     return roles.some((role) =>
-      user?.roles?.map((r) => r.name)?.includes(role)
+      user?.roles?.map((r) => r.id)?.includes(role.id)
     );
   }
 
   hasPermission(
     user: UserContext | null,
-    permission: string,
-    scope?: AuthorizationScope
+    permission: Permission,
+    authorizationScope?: AuthorizationScope
   ): boolean {
     if (!user?.roles) return false;
 
@@ -119,17 +120,20 @@ export class AuthorizationService {
 
       for (const permissionScope of role.permissionScopes) {
         // If scope is specified, check if it matches
-        if (scope) {
+        if (authorizationScope) {
           const scopeMatches =
-            permissionScope.permissionScope?.name === scope.type &&
-            (!scope.id || permissionScope.permissionScope?.value === scope.id);
+            permissionScope.permissionScope?.name ===
+              authorizationScope.scope.name &&
+            (!authorizationScope.scope.id ||
+              permissionScope.permissionScope?.value ===
+                authorizationScope.scope.id);
 
           if (!scopeMatches) continue;
         }
 
         // Check if the permission exists in this scope
         const hasPermission = permissionScope.permissions?.some(
-          (p) => p.name === permission
+          (p) => p.name === permission.name
         );
 
         if (hasPermission) return true;

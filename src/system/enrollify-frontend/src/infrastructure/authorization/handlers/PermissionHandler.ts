@@ -1,4 +1,4 @@
-import type { AuthorizationEvaluationContext } from "../AuthorizationEvaluationContext";
+import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
 import type { IAuthorizationRequirement } from "../requirements/IAuthorizationRequirement";
 import type { PermissionRequirement } from "../requirements/PermissionRequirement";
 import type { IAuthorizationHandler } from "./IAuthorizationHandler";
@@ -26,7 +26,9 @@ export class PermissionHandler implements IAuthorizationHandler {
       return false;
     }
 
-    const effectiveScope = permissionRequirement.scope || context.scope;
+    const effectiveScope =
+      permissionRequirement.authorizationScope?.scope ||
+      context.authorizationScope?.scope;
 
     // Iterate through all roles to find the permission
     for (const role of context.user.roles) {
@@ -36,7 +38,7 @@ export class PermissionHandler implements IAuthorizationHandler {
         // If scope is specified, check if it matches
         if (effectiveScope) {
           const scopeMatches =
-            permissionScope.permissionScope?.name === effectiveScope.type &&
+            permissionScope.permissionScope?.name === effectiveScope.name &&
             (!effectiveScope.id ||
               permissionScope.permissionScope?.value === effectiveScope.id);
 

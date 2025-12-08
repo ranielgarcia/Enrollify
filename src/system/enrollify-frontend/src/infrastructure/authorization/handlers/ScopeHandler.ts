@@ -1,4 +1,4 @@
-import type { AuthorizationEvaluationContext } from "../AuthorizationEvaluationContext";
+import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
 import type { IAuthorizationRequirement } from "../requirements/IAuthorizationRequirement";
 import type { ScopeRequirement } from "../requirements/ScopeRequirement";
 import type { IAuthorizationHandler } from "./IAuthorizationHandler";
@@ -22,19 +22,19 @@ export class ScopeHandler implements IAuthorizationHandler {
 
     const scopeRequirement = requirement as ScopeRequirement;
 
-    if (!context.scope) {
+    if (!context.authorizationScope) {
       return false;
     }
 
     // Check if scope type matches
-    if (context.scope.type !== scopeRequirement.scopeType) {
+    if (context.authorizationScope.scope.name !== scopeRequirement.scope.name) {
       return false;
     }
 
     // If specific scope ID is required, check it
     if (
-      scopeRequirement.scopeId &&
-      context.scope.id !== scopeRequirement.scopeId
+      scopeRequirement.scope.id &&
+      context.authorizationScope.scope.id !== scopeRequirement.scope.id
     ) {
       return false;
     }

@@ -8,11 +8,12 @@ import { RoleHandler } from "./handlers/RoleHandler";
 import { PermissionHandler } from "./handlers/PermissionHandler";
 import { ScopeHandler } from "./handlers/ScopeHandler";
 import type { AuthorizationResult } from "./AuthorizationResult";
-import type {
-  AuthorizationEvaluationContext,
-  AuthorizationScope,
-} from "./AuthorizationEvaluationContext";
+import type { AuthorizationEvaluationContext } from "./models/AuthorizationEvaluationContext";
 import { AuthorizationContext } from "./AuthorizationContext";
+import type { AuthorizationScope } from "./models/AuthorizationScope";
+import type { PolicyName } from "./models/PolicyNames";
+import type { Permission } from "./models/Permissions";
+import type { Role } from "./models/Roles";
 
 export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
   children,
@@ -38,25 +39,29 @@ export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
   }, []);
 
   const authorize = async (
-    policyName: string,
+    policyName: PolicyName,
     resource?: string,
-    scope?: AuthorizationScope
+    authorizationScope?: AuthorizationScope
   ): Promise<AuthorizationResult> => {
     if (!authService || !user) {
       return { succeeded: false, failureReasons: ["Not authenticated"] };
     }
 
-    const context: AuthorizationEvaluationContext = { user, resource, scope };
+    const context: AuthorizationEvaluationContext = {
+      user,
+      resource,
+      authorizationScope,
+    };
     return authService.authorize(policyName, context);
   };
 
-  const hasRole = (...roles: string[]): boolean => {
+  const hasRole = (...roles: Role[]): boolean => {
     if (!authService || !user) return false;
     return authService.hasRole(user, ...roles);
   };
 
   const hasPermission = (
-    permission: string,
+    permission: Permission,
     scope?: AuthorizationScope
   ): boolean => {
     if (!authService || !user) return false;

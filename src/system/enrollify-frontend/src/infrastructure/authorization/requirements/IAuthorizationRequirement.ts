@@ -1,4 +1,4 @@
-import type { AuthorizationEvaluationContext } from "../AuthorizationEvaluationContext";
+import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
 
 export interface IAuthorizationRequirement {
   type: string;

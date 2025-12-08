@@ -1,6 +1,7 @@
 import { use } from "react";
 import { AuthorizationContext } from "../AuthorizationContext";
-import type { AuthorizationScope } from "../AuthorizationEvaluationContext";
+import type { AuthorizationScope } from "../models/AuthorizationScope";
+import type { PolicyName } from "../models/PolicyNames";
 
 export const useAuthorization = () => {
   const context = use(AuthorizationContext);
@@ -12,7 +13,7 @@ export const useAuthorization = () => {
   }
 
   const checkPolicy = async (
-    policyName: string,
+    policyName: PolicyName,
     resource?: string,
     scope?: AuthorizationScope
   ): Promise<boolean> => {

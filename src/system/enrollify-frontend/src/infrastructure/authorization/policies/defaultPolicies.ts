@@ -1,3 +1,4 @@
+import { type Scope } from "../models/AuthorizationScope";
 import { PolicyBuilder } from "./PolicyBuilder";
 import type { PolicyRegistry } from "./PolicyRegistry";
 
@@ -18,7 +19,7 @@ export const registerDefaultPolicies = (registry: PolicyRegistry) => {
   registry.register(
     new PolicyBuilder("CanManageDepartmentStudents")
       .requirePermission("students.manage")
-      .requireScope("department")
+      .requireScope({ name: "None", id: 0 } as Scope)
       .build()
   );
 
@@ -43,7 +44,7 @@ export const registerDefaultPolicies = (registry: PolicyRegistry) => {
   registry.register(
     new PolicyBuilder("DepartmentAdmin")
       .requireRole("DepartmentHead")
-      .requireScope("department")
+      .requireScope({ name: "None", id: 0 } as Scope)
       .requirePermission("department.manage")
       .build()
   );

@@ -1,23 +1,23 @@
-import type { AuthorizationEvaluationContext } from "../AuthorizationEvaluationContext";
+import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
+import type { Scope } from "../models/AuthorizationScope";
 import type { IAuthorizationRequirement } from "./IAuthorizationRequirement";
 
 export class ScopeRequirement implements IAuthorizationRequirement {
   type = "Scope";
 
-  public readonly scopeType: string;
-  public readonly scopeId?: number;
+  public readonly scope: Scope;
 
-  constructor(scopeType: string, scopeId?: number) {
-    this.scopeType = scopeType;
-    this.scopeId = scopeId;
+  constructor(scope: Scope) {
+    this.scope = scope;
   }
 
   evaluate(context: AuthorizationEvaluationContext): boolean {
-    if (!context.scope) return false;
+    if (!context.authorizationScope) return false;
 
-    if (context.scope.type !== this.scopeType) return false;
+    if (context.authorizationScope.scope.name !== this.scope.name) return false;
 
-    if (this.scopeId && context.scope.id !== this.scopeId) return false;
+    if (this.scope.id && context.authorizationScope.scope.id !== this.scope.id)
+      return false;
 
     return true;
   }
