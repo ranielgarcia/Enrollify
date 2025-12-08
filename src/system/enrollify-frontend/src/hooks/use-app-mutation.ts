@@ -3,7 +3,7 @@ import { useMsal } from "@azure/msal-react";
 import { useMutation as useReactMutation } from "@tanstack/react-query";
 import axios, { AxiosError, type AxiosProgressEvent } from "axios";
 
-import { loginRequest } from "@/infrastructure/auth/authConfig";
+import { loginRequest } from "@/infrastructure/authentication/authConfig";
 import { Config } from "@/infrastructure/Configurations/app-config";
 
 interface useQueryParams {

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminPortalLayout } from "@/portal/portal-layout";
-import { useAuthenticationContext } from "@/infrastructure/auth/authenticationContext";
+import { useAuthenticationContext } from "@/infrastructure/authentication/authenticationContext";
 
 export const Route = createFileRoute("/portal/dashboard")({
   component: About,

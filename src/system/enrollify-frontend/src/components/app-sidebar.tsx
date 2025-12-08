@@ -17,7 +17,7 @@ import {
   SidebarMenuButton,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { useAuthenticationContext } from "@/infrastructure/auth/authenticationContext";
+import { useAuthenticationContext } from "@/infrastructure/authentication/authenticationContext";
 
 // This is sample data.
 const data = {

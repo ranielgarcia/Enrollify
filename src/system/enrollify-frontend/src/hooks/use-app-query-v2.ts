@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 import axios from "axios";
 
-import { loginRequest } from "@/infrastructure/auth/authConfig";
+import { loginRequest } from "@/infrastructure/authentication/authConfig";
 import { Config } from "@/infrastructure/Configurations/app-config";
 import type { paths as ApiPaths } from "@/api/generated/api";
 
