@@ -177,10 +177,18 @@ export class PolicyRegistry {
 ```typescript
 // authorizationService.ts
 export class AuthorizationService {
+  private handlerMap: Map<string, IAuthorizationHandler>;
+
   constructor(
     private policyRegistry: PolicyRegistry,
     private handlers: IAuthorizationHandler[]
-  ) {}
+  ) {
+    // Create a map of requirement types to handlers for faster lookup
+    this.handlerMap = new Map();
+    handlers.forEach(handler => {
+      this.handlerMap.set(handler.requirementType, handler);
+    });
+  }
 
   async authorize(
     policyName: string,
@@ -204,8 +212,27 @@ export class AuthorizationService {
     context: AuthorizationContext,
     requireAll: boolean = true
   ): Promise<AuthorizationResult> {
+    const failureReasons: string[] = [];
+    
+    // Evaluate each requirement using appropriate handler
     const results = await Promise.all(
-      requirements.map(req => req.evaluate(context))
+      requirements.map(async (req) => {
+        try {
+          const handler = this.handlerMap.get(req.type);
+          
+          if (!handler) {
+            // Fallback to requirement's own evaluate method
+            return await Promise.resolve(req.evaluate(context));
+          }
+          
+          return await Promise.resolve(handler.handle(req, context));
+        } catch (error) {
+          failureReasons.push(
+            `Requirement '${req.type}' evaluation failed: ${error}`
+          );
+          return false;
+        }
+      })
     );
 
     const succeeded = requireAll 
@@ -214,7 +241,11 @@ export class AuthorizationService {
 
     return {
       succeeded,
-      failureReasons: succeeded ? undefined : ['One or more requirements failed'],
+      failureReasons: succeeded ? undefined : (
+        failureReasons.length > 0 
+          ? failureReasons 
+          : ['One or more requirements failed']
+      ),
     };
   }
 
@@ -252,17 +283,163 @@ export class AuthorizationService {
     // Check global permissions
     return user.permissions.some(p => p.name === permission && !p.scope);
   }
+
+  /**
+   * Register a new handler at runtime
+   */
+  registerHandler(handler: IAuthorizationHandler): void {
+    this.handlers.push(handler);
+    this.handlerMap.set(handler.requirementType, handler);
+  }
+
+  /**
+   * Get all registered handlers
+   */
+  getHandlers(): IAuthorizationHandler[] {
+    return [...this.handlers];
+  }
 }
 ```
 
-### 4. Requirement Implementations
+### 4. Authorization Handlers
+
+```typescript
+// IAuthorizationHandler.ts
+export interface IAuthorizationHandler {
+  /**
+   * The type of requirement this handler can process
+   */
+  readonly requirementType: string;
+
+  /**
+   * Determines whether the handler can handle the given requirement
+   */
+  canHandle(requirement: IAuthorizationRequirement): boolean;
+
+  /**
+   * Handles the authorization requirement evaluation
+   * @returns Promise<boolean> indicating if the requirement is satisfied
+   */
+  handle(
+    requirement: IAuthorizationRequirement,
+    context: AuthorizationContext
+  ): Promise<boolean> | boolean;
+}
+
+// RoleHandler.ts
+export class RoleHandler implements IAuthorizationHandler {
+  readonly requirementType = 'Role';
+
+  canHandle(requirement: IAuthorizationRequirement): boolean {
+    return requirement.type === this.requirementType;
+  }
+
+  handle(
+    requirement: IAuthorizationRequirement,
+    context: AuthorizationContext
+  ): boolean {
+    if (!this.canHandle(requirement)) {
+      throw new Error(`RoleHandler cannot handle requirement of type: ${requirement.type}`);
+    }
+
+    const roleRequirement = requirement as RoleRequirement;
+    
+    if (!context.user || !context.user.roles || context.user.roles.length === 0) {
+      return false;
+    }
+
+    // User must have at least one of the required roles
+    return roleRequirement.roles.some(role => 
+      context.user.roles?.includes(role)
+    );
+  }
+}
+
+// PermissionHandler.ts
+export class PermissionHandler implements IAuthorizationHandler {
+  readonly requirementType = 'Permission';
+
+  canHandle(requirement: IAuthorizationRequirement): boolean {
+    return requirement.type === this.requirementType;
+  }
+
+  handle(
+    requirement: IAuthorizationRequirement,
+    context: AuthorizationContext
+  ): boolean {
+    if (!this.canHandle(requirement)) {
+      throw new Error(`PermissionHandler cannot handle requirement of type: ${requirement.type}`);
+    }
+
+    const permissionRequirement = requirement as PermissionRequirement;
+    
+    if (!context.user || !context.user.permissions || context.user.permissions.length === 0) {
+      return false;
+    }
+
+    const effectiveScope = permissionRequirement.scope || context.scope;
+
+    // Check scoped permissions
+    if (effectiveScope) {
+      return context.user.permissions.some(p => 
+        p.name === permissionRequirement.permission &&
+        p.scope?.type === effectiveScope.type &&
+        (!effectiveScope.id || p.scope?.id === effectiveScope.id)
+      );
+    }
+
+    // Check global permissions (no scope)
+    return context.user.permissions.some(
+      p => p.name === permissionRequirement.permission && !p.scope
+    );
+  }
+}
+
+// ScopeHandler.ts
+export class ScopeHandler implements IAuthorizationHandler {
+  readonly requirementType = 'Scope';
+
+  canHandle(requirement: IAuthorizationRequirement): boolean {
+    return requirement.type === this.requirementType;
+  }
+
+  handle(
+    requirement: IAuthorizationRequirement,
+    context: AuthorizationContext
+  ): boolean {
+    if (!this.canHandle(requirement)) {
+      throw new Error(`ScopeHandler cannot handle requirement of type: ${requirement.type}`);
+    }
+
+    const scopeRequirement = requirement as ScopeRequirement;
+    
+    if (!context.scope) {
+      return false;
+    }
+
+    // Check if scope type matches
+    if (context.scope.type !== scopeRequirement.scopeType) {
+      return false;
+    }
+
+    // If specific scope ID is required, check it
+    if (scopeRequirement.scopeId && context.scope.id !== scopeRequirement.scopeId) {
+      return false;
+    }
+
+    return true;
+  }
+}
+```
+
+### 5. Requirement Implementations
 
 ```typescript
 // RoleRequirement.ts
 export class RoleRequirement implements IAuthorizationRequirement {
   type = 'Role';
 
-  constructor(private roles: string[]) {}
+  constructor(public readonly roles: string[]) {}
 
   evaluate(context: AuthorizationContext): boolean {
     return this.roles.some(role => context.user.roles?.includes(role));
@@ -272,10 +449,73 @@ export class RoleRequirement implements IAuthorizationRequirement {
 // PermissionRequirement.ts
 export class PermissionRequirement implements IAuthorizationRequirement {
   type = 'Permission';
+### 6. Custom Authorization Handlers
 
-  constructor(
-    private permission: string,
-    private scope?: AuthorizationScope
+You can create custom handlers for specific business logic:
+
+```typescript
+// CustomRequirement.ts
+export class ResourceOwnerRequirement implements IAuthorizationRequirement {
+  type = 'ResourceOwner';
+
+  constructor(public readonly resourceIdField: string = 'ownerId') {}
+
+  evaluate(context: AuthorizationContext): boolean {
+    if (!context.resource || !context.user) return false;
+    
+    const ownerId = context.resource[this.resourceIdField];
+    return ownerId === context.user.id;
+  }
+}
+
+// ResourceOwnerHandler.ts
+export class ResourceOwnerHandler implements IAuthorizationHandler {
+  readonly requirementType = 'ResourceOwner';
+
+  canHandle(requirement: IAuthorizationRequirement): boolean {
+    return requirement.type === this.requirementType;
+  }
+
+  handle(
+    requirement: IAuthorizationRequirement,
+    context: AuthorizationContext
+  ): boolean {
+    if (!this.canHandle(requirement)) {
+      throw new Error(`ResourceOwnerHandler cannot handle requirement of type: ${requirement.type}`);
+    }
+
+    const ownerRequirement = requirement as ResourceOwnerRequirement;
+    
+    if (!context.resource || !context.user) {
+      return false;
+    }
+
+    // Check if the user is the owner of the resource
+    const ownerId = context.resource[ownerRequirement.resourceIdField];
+    return ownerId === context.user.id;
+  }
+}
+
+// Usage example - register custom handler
+const customHandlers = [
+  new RoleHandler(),
+  new PermissionHandler(),
+  new ScopeHandler(),
+  new ResourceOwnerHandler(), // Custom handler
+];
+
+const authService = new AuthorizationService(policyRegistry, customHandlers);
+
+// Create policy using custom requirement
+const policy = new PolicyBuilder('CanEditOwnProfile')
+  .addCustomRequirement(new ResourceOwnerRequirement('userId'))
+  .build();
+```
+
+---
+
+## React Components and Hooksn: string,
+    public readonly scope?: AuthorizationScope
   ) {}
 
   evaluate(context: AuthorizationContext): boolean {
@@ -302,8 +542,8 @@ export class ScopeRequirement implements IAuthorizationRequirement {
   type = 'Scope';
 
   constructor(
-    private scopeType: string,
-    private scopeId?: string
+    public readonly scopeType: string,
+    public readonly scopeId?: string
   ) {}
 
   evaluate(context: AuthorizationContext): boolean {
@@ -819,55 +1059,290 @@ export const syncPoliciesFromBackend = async (
     });
   } catch (error) {
     console.error('Failed to sync policies from backend:', error);
-  }
-};
-```
-
-### User Permissions from JWT
+### Unit Tests
 
 ```typescript
-// Parse permissions from JWT claims
-export const parseUserPermissions = (token: string): Permission[] => {
-  const decoded = jwtDecode<JWTPayload>(token);
-  
-  // Example: permissions stored as JSON in claims
-  const permissionsClaim = decoded['permissions'];
-  
-  if (typeof permissionsClaim === 'string') {
-    return JSON.parse(permissionsClaim);
-  }
-  
-  return permissionsClaim || [];
-};
+describe('AuthorizationService', () => {
+  let service: AuthorizationService;
+  let registry: PolicyRegistry;
+  let handlers: IAuthorizationHandler[];
 
-// Permission structure
-interface Permission {
-  name: string;
-  scope?: {
-    type: string;
-    id: string;
-  };
-}
-```
+  beforeEach(() => {
+    registry = new PolicyRegistry();
+    handlers = [
+      new RoleHandler(),
+      new PermissionHandler(),
+      new ScopeHandler(),
+    ];
+    service = new AuthorizationService(registry, handlers);
+  });
 
----
+  it('should authorize user with correct role', async () => {
+    const policy = new PolicyBuilder('TestPolicy')
+      .requireRole('Admin')
+      .build();
+    
+    registry.register(policy);
+    
+    const context: AuthorizationContext = {
+      user: { id: '1', roles: ['Admin'], permissions: [] }
+    };
+    
+    const result = await service.authorize('TestPolicy', context);
+    expect(result.succeeded).toBe(true);
+  });
 
-## Common Authorization Policies for Enrollify
+  it('should deny user without permission', async () => {
+    const policy = new PolicyBuilder('TestPolicy')
+      .requirePermission('students.delete')
+      .build();
+    
+    registry.register(policy);
+    
+    const context: AuthorizationContext = {
+      user: { id: '1', roles: ['Teacher'], permissions: [] }
+    };
+    
+    const result = await service.authorize('TestPolicy', context);
+    expect(result.succeeded).toBe(false);
+  });
 
-### Student Management
-- `CanViewStudents` - View student list and details
-- `CanManageStudents` - Create, edit, delete students
-- `CanManageDepartmentStudents` - Manage students within a department scope
+  it('should check scoped permissions correctly', () => {
+    const user: UserProfile = {
+      id: '1',
+      roles: [],
+      permissions: [
+        { name: 'students.manage', scope: { type: 'department', id: 'CS' } }
+      ]
+    };
+    
+    const hasPermission = service.hasPermission(
+      user,
+      'students.manage',
+      { type: 'department', id: 'CS' }
+    );
+    
+    expect(hasPermission).toBe(true);
+  });
 
-### Enrollment Management
-- `CanViewEnrollments` - View enrollment records
-- `CanCreateEnrollment` - Create new enrollments
-- `CanApproveEnrollment` - Approve/reject enrollments
-- `CanManageSemesterEnrollments` - Manage enrollments for a specific semester
+  it('should handle policy not found', async () => {
+    const context: AuthorizationContext = {
+      user: { id: '1', roles: ['Admin'], permissions: [] }
+    };
+    
+    const result = await service.authorize('NonExistentPolicy', context);
+    expect(result.succeeded).toBe(false);
+    expect(result.failureReasons).toContain("Policy 'NonExistentPolicy' not found");
+  });
 
-### Academic Records
-- `CanViewGrades` - View student grades
-- `CanEditGrades` - Edit and finalize grades
+  it('should support requireAll (AND logic)', async () => {
+    const policy = new PolicyBuilder('TestPolicy')
+      .requireRole('Admin')
+      .requirePermission('students.delete')
+      .requireAll()
+      .build();
+    
+    registry.register(policy);
+    
+    // User has role but not permission
+    const context: AuthorizationContext = {
+      user: { 
+        id: '1', 
+        roles: ['Admin'], 
+        permissions: [] 
+      }
+    };
+    
+    const result = await service.authorize('TestPolicy', context);
+    expect(result.succeeded).toBe(false);
+  });
+
+  it('should support requireAny (OR logic)', async () => {
+    const policy = new PolicyBuilder('TestPolicy')
+      .requireRole('Admin')
+      .requirePermission('students.delete')
+      .requireAny()
+      .build();
+    
+    registry.register(policy);
+    
+    // User has role but not permission - should succeed with OR
+    const context: AuthorizationContext = {
+      user: { 
+        id: '1', 
+        roles: ['Admin'], 
+        permissions: [] 
+      }
+    };
+    
+    const result = await service.authorize('TestPolicy', context);
+    expect(result.succeeded).toBe(true);
+  });
+});
+
+describe('Authorization Handlers', () => {
+  describe('RoleHandler', () => {
+    let handler: RoleHandler;
+
+    beforeEach(() => {
+      handler = new RoleHandler();
+    });
+
+    it('should handle role requirements', () => {
+      const requirement = new RoleRequirement(['Admin']);
+      expect(handler.canHandle(requirement)).toBe(true);
+    });
+
+    it('should authorize user with required role', () => {
+      const requirement = new RoleRequirement(['Admin', 'SuperAdmin']);
+      const context: AuthorizationContext = {
+        user: { id: '1', roles: ['Admin'], permissions: [] }
+      };
+
+      const result = handler.handle(requirement, context);
+      expect(result).toBe(true);
+    });
+
+    it('should deny user without required role', () => {
+      const requirement = new RoleRequirement(['Admin']);
+      const context: AuthorizationContext = {
+        user: { id: '1', roles: ['User'], permissions: [] }
+      };
+
+      const result = handler.handle(requirement, context);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('PermissionHandler', () => {
+    let handler: PermissionHandler;
+
+    beforeEach(() => {
+      handler = new PermissionHandler();
+    });
+
+    it('should handle permission requirements', () => {
+      const requirement = new PermissionRequirement('students.view');
+      expect(handler.canHandle(requirement)).toBe(true);
+    });
+
+    it('should authorize user with global permission', () => {
+      const requirement = new PermissionRequirement('students.view');
+      const context: AuthorizationContext = {
+        user: { 
+          id: '1', 
+          roles: [], 
+          permissions: [{ name: 'students.view' }] 
+        }
+      };
+
+      const result = handler.handle(requirement, context);
+      expect(result).toBe(true);
+    });
+
+    it('should authorize user with scoped permission', () => {
+      const requirement = new PermissionRequirement(
+        'students.manage',
+        { type: 'department', id: 'CS' }
+      );
+      const context: AuthorizationContext = {
+        user: { 
+          id: '1', 
+          roles: [], 
+          permissions: [
+            { 
+              name: 'students.manage', 
+              scope: { type: 'department', id: 'CS' } 
+            }
+          ] 
+        }
+      };
+
+      const result = handler.handle(requirement, context);
+      expect(result).toBe(true);
+    });
+
+    it('should deny user with permission in different scope', () => {
+      const requirement = new PermissionRequirement(
+        'students.manage',
+        { type: 'department', id: 'CS' }
+      );
+      const context: AuthorizationContext = {
+        user: { 
+          id: '1', 
+          roles: [], 
+          permissions: [
+            { 
+              name: 'students.manage', 
+              scope: { type: 'department', id: 'EE' } 
+            }
+          ] 
+        }
+      };
+
+      const result = handler.handle(requirement, context);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('ScopeHandler', () => {
+    let handler: ScopeHandler;
+
+    beforeEach(() => {
+      handler = new ScopeHandler();
+    });
+
+    it('should handle scope requirements', () => {
+      const requirement = new ScopeRequirement('department');
+      expect(handler.canHandle(requirement)).toBe(true);
+    });
+
+    it('should authorize when scope type matches', () => {
+      const requirement = new ScopeRequirement('department');
+      const context: AuthorizationContext = {
+        user: { id: '1', roles: [], permissions: [] },
+        scope: { type: 'department', id: 'CS' }
+      };
+
+      const result = handler.handle(requirement, context);
+      expect(result).toBe(true);
+    });
+
+    it('should authorize when scope type and id match', () => {
+      const requirement = new ScopeRequirement('department', 'CS');
+      const context: AuthorizationContext = {
+        user: { id: '1', roles: [], permissions: [] },
+        scope: { type: 'department', id: 'CS' }
+      };
+
+      const result = handler.handle(requirement, context);
+      expect(result).toBe(true);
+    });
+
+    it('should deny when scope type does not match', () => {
+      const requirement = new ScopeRequirement('college');
+      const context: AuthorizationContext = {
+        user: { id: '1', roles: [], permissions: [] },
+        scope: { type: 'department', id: 'CS' }
+      };
+
+      const result = handler.handle(requirement, context);
+      expect(result).toBe(false);
+    });
+
+    it('should deny when scope id does not match', () => {
+      const requirement = new ScopeRequirement('department', 'EE');
+      const context: AuthorizationContext = {
+        user: { id: '1', roles: [], permissions: [] },
+        scope: { type: 'department', id: 'CS' }
+      };
+
+      const result = handler.handle(requirement, context);
+      expect(result).toBe(false);
+    });
+  });
+});
+```CanEditGrades` - Edit and finalize grades
 - `CanEditOwnCourseGrades` - Teacher can edit grades for their courses only
 
 ### Schedule Management
