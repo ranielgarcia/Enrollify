@@ -5,6 +5,8 @@ import { PermissionRequirement } from "../requirements/PermissionRequirement";
 import { RoleRequirement } from "../requirements/RoleRequirement";
 import { ScopeRequirement } from "../requirements/ScopeRequirement";
 import type { PolicyName } from "../models/PolicyNames";
+import type { Permission } from "../models/PermissionsEnum";
+import type { RoleName } from "../models/Roles";
 
 export class PolicyBuilder {
   private policy: IAuthorizationPolicy;
@@ -17,18 +19,18 @@ export class PolicyBuilder {
     };
   }
 
-  requireRole(...roles: string[]): this {
+  requireRole(...roles: RoleName[]): this {
     this.policy.requirements.push(new RoleRequirement(roles));
     return this;
   }
 
-  requirePermission(permission: string, scope?: AuthorizationScope): this {
+  requirePermission(permission: Permission, scope?: AuthorizationScope): this {
     this.policy.requirements.push(new PermissionRequirement(permission, scope));
     return this;
   }
 
-  requireScope(scope: Scope): this {
-    this.policy.requirements.push(new ScopeRequirement(scope));
+  requireScope(scopes: Scope[]): this {
+    this.policy.requirements.push(new ScopeRequirement(scopes));
     return this;
   }
 

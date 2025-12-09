@@ -3,7 +3,7 @@ import { useAuthorization } from "./useAuthorization";
 import type { AuthorizationScope } from "../models/AuthorizationScope";
 import type { PolicyName } from "../models/PolicyNames";
 import type { Role } from "../models/Roles";
-import type { Permission } from "../models/Permissions";
+import type { Permission } from "../models/PermissionsEnum";
 
 export interface AuthorizedProps {
   policy?: PolicyName;

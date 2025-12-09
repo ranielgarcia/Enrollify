@@ -27,14 +27,19 @@ export class ScopeHandler implements IAuthorizationHandler {
     }
 
     // Check if scope type matches
-    if (context.authorizationScope.scope.name !== scopeRequirement.scope.name) {
+    if (
+      scopeRequirement.scopes
+        .map((s) => s.name)
+        .indexOf(context.authorizationScope.scope.name) === -1
+    ) {
       return false;
     }
 
     // If specific scope ID is required, check it
     if (
-      scopeRequirement.scope.id &&
-      context.authorizationScope.scope.id !== scopeRequirement.scope.id
+      scopeRequirement.scopes
+        .map((s) => s.id)
+        .indexOf(context.authorizationScope.scope.id) === -1
     ) {
       return false;
     }

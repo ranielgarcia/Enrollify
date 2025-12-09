@@ -1,12 +1,13 @@
 import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
+import type { RoleName } from "../models/Roles";
 import type { IAuthorizationRequirement } from "./IAuthorizationRequirement";
 
 export class RoleRequirement implements IAuthorizationRequirement {
   type = "Role";
 
-  public readonly roles: string[];
+  public readonly roles: RoleName[];
 
-  constructor(roles: string[]) {
+  constructor(roles: RoleName[]) {
     this.roles = roles;
   }
 

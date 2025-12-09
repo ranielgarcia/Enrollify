@@ -1,8 +1,8 @@
-import type { components } from "@/api/generated/api";
 import type { AuthorizationScope } from "./AuthorizationScope";
+import type { UserContext } from "./UserContext";
 
 export interface AuthorizationEvaluationContext {
-  user: components["schemas"]["EnrollifyCoreAuthenticationUserContext"] | null;
+  user: UserContext;
   resource?: string;
   authorizationScope?: AuthorizationScope;
 }

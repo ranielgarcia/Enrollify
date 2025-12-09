@@ -3,7 +3,7 @@ import type { AuthorizationResult } from "./AuthorizationResult";
 import type { AuthorizationService } from "./AuthorizationService";
 import type { AuthorizationScope } from "./models/AuthorizationScope";
 import type { PolicyName } from "./models/PolicyNames";
-import type { Permission } from "./models/Permissions";
+import type { Permission } from "./models/PermissionsEnum";
 import type { Role } from "./models/Roles";
 
 // React Context for Authorization

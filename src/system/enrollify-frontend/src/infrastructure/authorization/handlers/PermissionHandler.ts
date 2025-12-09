@@ -1,4 +1,5 @@
 import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
+import { PermissionFlagEnum } from "../models/PermissionsEnum";
 import type { IAuthorizationRequirement } from "../requirements/IAuthorizationRequirement";
 import type { PermissionRequirement } from "../requirements/PermissionRequirement";
 import type { IAuthorizationHandler } from "./IAuthorizationHandler";
@@ -46,8 +47,11 @@ export class PermissionHandler implements IAuthorizationHandler {
         }
 
         // Check if the permission exists in this scope
+        const permissionFlag = new PermissionFlagEnum(
+          permissionRequirement.permission
+        );
         const hasPermission = permissionScope.permissions?.some(
-          (p) => p.name === permissionRequirement.permission
+          (p) => !p.value && permissionFlag.has(p.value ?? -1)
         );
 
         if (hasPermission) return true;

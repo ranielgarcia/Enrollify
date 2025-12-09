@@ -1,11 +1,12 @@
 import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
+import type { RequirementType } from "../models/RequirementTypes";
 import type { IAuthorizationRequirement } from "../requirements/IAuthorizationRequirement";
 
 export interface IAuthorizationHandler {
   /**
    * The type of requirement this handler can process
    */
-  readonly requirementType: string;
+  readonly requirementType: RequirementType;
 
   /**
    * Determines whether the handler can handle the given requirement

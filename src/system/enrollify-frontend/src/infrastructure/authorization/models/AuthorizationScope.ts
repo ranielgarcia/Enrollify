@@ -10,10 +10,19 @@ export const Scopes = {
 export type ScopeName = keyof typeof Scopes;
 export type ScopeId = (typeof Scopes)[ScopeName];
 
-export interface Scope {
-  id: ScopeId;
-  name: ScopeName;
-}
+// Type-safe Scope that ensures id and name correspond correctly
+export type Scope = {
+  [K in ScopeName]: { id: (typeof Scopes)[K]; name: K };
+}[ScopeName];
+
+// Helper function to create a Scope from just the name
+export const createScope = <T extends ScopeName>(
+  name: T
+): Extract<Scope, { name: T }> =>
+  ({
+    id: Scopes[name],
+    name,
+  }) as Extract<Scope, { name: T }>;
 
 export interface AuthorizationScope {
   scope: Scope;

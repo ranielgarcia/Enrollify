@@ -12,7 +12,7 @@ import type { AuthorizationEvaluationContext } from "./models/AuthorizationEvalu
 import { AuthorizationContext } from "./AuthorizationContext";
 import type { AuthorizationScope } from "./models/AuthorizationScope";
 import type { PolicyName } from "./models/PolicyNames";
-import type { Permission } from "./models/Permissions";
+import type { Permission } from "./models/PermissionsEnum";
 import type { Role } from "./models/Roles";
 
 export const AuthorizationProvider: React.FC<PropsWithChildren> = ({

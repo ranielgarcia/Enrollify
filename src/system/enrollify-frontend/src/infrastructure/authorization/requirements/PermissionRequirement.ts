@@ -1,14 +1,19 @@
 import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
 import type { AuthorizationScope } from "../models/AuthorizationScope";
+import {
+  PermissionFlagEnum,
+  Permissions,
+  type Permission,
+} from "../models/PermissionsEnum";
 import type { IAuthorizationRequirement } from "./IAuthorizationRequirement";
 
 export class PermissionRequirement implements IAuthorizationRequirement {
   type = "Permission";
 
-  public readonly permission: string;
+  public readonly permission: Permission;
   public readonly authorizationScope?: AuthorizationScope;
 
-  constructor(permission: string, authorizationScope?: AuthorizationScope) {
+  constructor(permission: Permission, authorizationScope?: AuthorizationScope) {
     this.permission = permission;
     this.authorizationScope = authorizationScope;
   }
@@ -36,9 +41,13 @@ export class PermissionRequirement implements IAuthorizationRequirement {
           if (!scopeMatches) continue;
         }
 
+        const permissionFlag = new PermissionFlagEnum(this.permission);
         // Check if the permission exists in this scope
         const hasPermission = permissionScope.permissions?.some(
-          (p) => p.name === this.permission
+          (p) =>
+            !p.value &&
+            p.value !== Permissions.None &&
+            permissionFlag.has(p.value ?? -1)
         );
 
         if (hasPermission) return true;

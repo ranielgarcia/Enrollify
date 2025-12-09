@@ -4,14 +4,11 @@ import type { AuthorizationResult } from "./AuthorizationResult";
 import type { IAuthorizationHandler } from "./handlers/IAuthorizationHandler";
 import type { PolicyRegistry } from "./policies/PolicyRegistry";
 import type { IAuthorizationRequirement } from "./requirements/IAuthorizationRequirement";
-import type { components } from "@/api/generated/api";
 import type { AuthorizationScope } from "./models/AuthorizationScope";
 import type { PolicyName } from "./models/PolicyNames";
-import type { Permission } from "./models/Permissions";
+import type { Permission } from "./models/PermissionsEnum";
 import type { Role } from "./models/Roles";
-
-type UserContext =
-  components["schemas"]["EnrollifyCoreAuthenticationUserContext"];
+import type { UserContext } from "./models/UserContext";
 
 export class AuthorizationService {
   private handlerMap: Map<string, IAuthorizationHandler>;

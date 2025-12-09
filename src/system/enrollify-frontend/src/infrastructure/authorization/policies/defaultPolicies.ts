@@ -1,33 +1,34 @@
-import { type Scope } from "../models/AuthorizationScope";
+import { createScope } from "../models/AuthorizationScope";
+import { createPermission, type Permission } from "../models/PermissionsEnum";
 import { PolicyBuilder } from "./PolicyBuilder";
 import type { PolicyRegistry } from "./PolicyRegistry";
 
 export const registerDefaultPolicies = (registry: PolicyRegistry) => {
   // Simple role-based policy
   registry.register(
-    new PolicyBuilder("AdminOnly").requireRole("Admin", "SuperAdmin").build()
+    new PolicyBuilder("AdminOnly").requireRole("Admin", "SystemAdmin").build()
   );
 
   // Permission-based policy
   registry.register(
     new PolicyBuilder("CanManageStudents")
-      .requirePermission("students.manage")
+      .requirePermission({ name: "Delete" } as Permission)
       .build()
   );
 
   // Scoped permission policy
   registry.register(
     new PolicyBuilder("CanManageDepartmentStudents")
-      .requirePermission("students.manage")
-      .requireScope({ name: "None", id: 0 } as Scope)
+      .requirePermission(createPermission("Update"))
+      .requireScope([createScope("None")])
       .build()
   );
 
   // Complex multi-requirement policy (AND)
   registry.register(
     new PolicyBuilder("EnrollmentManager")
-      .requireRole("Registrar", "Dean")
-      .requirePermission("enrollment.approve")
+      .requireRole("Registrar", "FinanceOfficer")
+      .requirePermission(createPermission("Update"))
       .requireAll()
       .build()
   );
@@ -35,7 +36,7 @@ export const registerDefaultPolicies = (registry: PolicyRegistry) => {
   // Alternative requirements policy (OR)
   registry.register(
     new PolicyBuilder("CanViewReports")
-      .requireRole("Admin", "Registrar", "Dean")
+      .requireRole("Admin", "Registrar", "DepartmentHead")
       .requireAny()
       .build()
   );
@@ -44,8 +45,8 @@ export const registerDefaultPolicies = (registry: PolicyRegistry) => {
   registry.register(
     new PolicyBuilder("DepartmentAdmin")
       .requireRole("DepartmentHead")
-      .requireScope({ name: "None", id: 0 } as Scope)
-      .requirePermission("department.manage")
+      .requireScope([createScope("None")])
+      .requirePermission(createPermission("Full"))
       .build()
   );
 };
