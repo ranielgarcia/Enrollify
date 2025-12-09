@@ -17,6 +17,7 @@ import { AuthenticationProvider } from "./infrastructure/authentication/authenti
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "./components/theming/theme-provider";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import type { RouteLoaderData } from "./types/route.types";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +45,7 @@ const router = createRouter({
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
+    routeLoaderData: RouteLoaderData;
   }
 }
 

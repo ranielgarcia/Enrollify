@@ -29,15 +29,11 @@ const data = {
       isActive: true,
       items: [
         {
-          title: "Room Type Management",
-          url: "/portal",
+          title: "Rooms",
+          url: "/portal/master-data-management/rooms",
         },
         {
-          title: "Room Management",
-          url: "#",
-        },
-        {
-          title: "College Management",
+          title: "Colleges",
           url: "#",
         },
       ],
