@@ -6,17 +6,18 @@ import "./index.css";
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 import { MsalProvider, useMsal, type IMsalContext } from "@azure/msal-react";
-import { msalInstance } from "./infrastructure/auth/authConfig";
+import { msalInstance } from "./infrastructure/authentication/authConfig";
 import {
   EventType,
   InteractionType,
   type AuthenticationResult,
 } from "@azure/msal-browser";
-import { handleLogin } from "./infrastructure/auth/msal";
-import { AuthorizationProvider } from "./infrastructure/auth/authorizationProvider";
+import { handleLogin } from "./infrastructure/authentication/msal";
+import { AuthenticationProvider } from "./infrastructure/authentication/authenticationProvider";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "./components/theming/theme-provider";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import type { RouteLoaderData } from "./types/route.types";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +45,7 @@ const router = createRouter({
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
+    routeLoaderData: RouteLoaderData;
   }
 }
 
@@ -82,12 +84,12 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthorizationProvider>
+      <AuthenticationProvider>
         <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
           <RouterProvider router={router} context={{ msal }} />
           <ReactQueryDevtools initialIsOpen={false} />
         </ThemeProvider>
-      </AuthorizationProvider>
+      </AuthenticationProvider>
     </QueryClientProvider>
   );
 }

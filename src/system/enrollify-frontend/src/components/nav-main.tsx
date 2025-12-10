@@ -16,6 +16,8 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import type { FileRouteTypes } from "@/routeTree.gen";
+import { Link, useLocation } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
 
 export interface NavMainItemProp {
   title: string;
@@ -33,6 +35,23 @@ export interface NavMainProps {
 }
 
 export function NavMain({ items }: NavMainProps) {
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  // Normalize path by removing trailing slash (except for root "/")
+  const normalizePath = (path: string) =>
+    path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path;
+
+  // Check if any sub-item matches the current path (for expanding parent)
+  const isParentActive = (item: NavMainItemProp) =>
+    item.items?.some(
+      (subItem) => normalizePath(currentPath) === normalizePath(subItem.url)
+    ) ?? false;
+
+  // Check if a sub-item is the current active route
+  const isSubItemActive = (url: string) =>
+    normalizePath(currentPath) === normalizePath(url);
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
@@ -41,7 +60,7 @@ export function NavMain({ items }: NavMainProps) {
           <Collapsible
             key={item.title}
             asChild
-            defaultOpen={item.isActive}
+            defaultOpen={item.isActive || isParentActive(item)}
             className="group/collapsible"
           >
             <SidebarMenuItem>
@@ -56,10 +75,18 @@ export function NavMain({ items }: NavMainProps) {
                 <SidebarMenuSub>
                   {item.items?.map((subItem) => (
                     <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
-                        <a href={subItem.url}>
+                      <SidebarMenuSubButton
+                        asChild
+                        className={cn(
+                          "transition-colors",
+                          isSubItemActive(subItem.url)
+                            ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground hover:bg-sidebar-accent/10"
+                        )}
+                      >
+                        <Link to={subItem.url}>
                           <span>{subItem.title}</span>
-                        </a>
+                        </Link>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   ))}

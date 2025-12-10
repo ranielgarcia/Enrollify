@@ -4,27 +4,25 @@ import { useMsal } from "@azure/msal-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { OverlayLoader } from "@/components/app-loading-overlay";
-import useAppQuery from "@/hooks/use-app-query";
+import useAppQuery from "@/hooks/use-app-query-v2";
 
-import { type UserContext } from "./user-context";
 import {
-  AuthorizationContext,
-  type IAuthorizationContext,
-  defaultAuthorizationContext,
-} from "./authorizationContext";
+  AuthenticationContext,
+  type IAuthenticationContext,
+  defaultAuthenticationContext,
+} from "./authenticationContext";
 import { EventType, type AuthenticationResult } from "@azure/msal-browser";
+// import useAppMutation from "@/hooks/use-app-mutation-v2";
 
-const getMyDetailsEndpoint = "/me";
-
-export const AuthorizationProvider = ({
+export const AuthenticationProvider = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>): React.ReactElement => {
   const queryClient = useQueryClient();
   const queryClientRef = useRef(queryClient);
-  const [contextValue, setContextValue] = useState<IAuthorizationContext>(
-    defaultAuthorizationContext
+  const [contextValue, setContextValue] = useState<IAuthenticationContext>(
+    defaultAuthenticationContext
   );
 
   const { instance, accounts } = useMsal();
@@ -33,10 +31,10 @@ export const AuthorizationProvider = ({
     data: userContext,
     isSuccess: isGetUserContextSuccessful,
     isLoading: isLoadingUserContext,
-  } = useAppQuery<UserContext>({
-    path: getMyDetailsEndpoint,
+  } = useAppQuery({
+    path: "/api/me",
     queryOptions: {
-      queryKey: [getMyDetailsEndpoint],
+      queryKey: ["/api/me"],
     },
   });
 
@@ -51,8 +49,8 @@ export const AuthorizationProvider = ({
             user: {
               fullName: account.name ?? "",
               email: account.username,
-            } as UserContext,
-          } as IAuthorizationContext);
+            },
+          } as IAuthenticationContext);
         }
       }
     });
@@ -77,10 +75,10 @@ export const AuthorizationProvider = ({
         user: userContext,
         refreshUserContext: () => {
           queryClientRef.current.invalidateQueries({
-            queryKey: [getMyDetailsEndpoint],
+            queryKey: ["/api/me"],
           });
         },
-      } as IAuthorizationContext);
+      } as IAuthenticationContext);
     } else if (instance && accounts.length > 0) {
       const currentAccount = accounts[0];
       setContextValue({
@@ -88,7 +86,7 @@ export const AuthorizationProvider = ({
           fullName: currentAccount?.name,
           email: currentAccount?.username,
         },
-      } as IAuthorizationContext);
+      } as IAuthenticationContext);
     }
   }, [
     instance,
@@ -109,8 +107,8 @@ export const AuthorizationProvider = ({
   }
 
   return (
-    <AuthorizationContext.Provider value={contextValue}>
+    <AuthenticationContext.Provider value={contextValue}>
       {children}
-    </AuthorizationContext.Provider>
+    </AuthenticationContext.Provider>
   );
 };

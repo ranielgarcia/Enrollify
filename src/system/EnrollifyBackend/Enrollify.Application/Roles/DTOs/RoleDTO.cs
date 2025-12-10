@@ -1,6 +1,6 @@
 ﻿using Enrollify.Core.Aggregates.RoleAggregate;
 
-namespace Enrollify.Application.Roles;
+namespace Enrollify.Application.Roles.DTOs;
 
 public class RoleDTO
 {

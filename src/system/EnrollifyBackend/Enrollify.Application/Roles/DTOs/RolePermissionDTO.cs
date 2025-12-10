@@ -1,7 +1,7 @@
 ﻿using Enrollify.Core.Aggregates.PermissionScopeAggregate;
 using Enrollify.Core.Constants.Authorization;
 
-namespace Enrollify.Application.Roles;
+namespace Enrollify.Application.Roles.DTOs;
 
 public class RolePermissionDTO
 {

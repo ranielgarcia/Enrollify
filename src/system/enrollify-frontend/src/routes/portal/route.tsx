@@ -1,7 +1,9 @@
+import AppContainer from "@/components/app-container";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
+  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
@@ -10,6 +12,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import type { RouteLoaderData } from "@/types/route.types";
 import { Separator } from "@radix-ui/react-separator";
 import {
   createFileRoute,
@@ -18,6 +21,7 @@ import {
   redirect,
   useMatches,
 } from "@tanstack/react-router";
+import React from "react";
 
 export const Route = createFileRoute("/portal")({
   beforeLoad: async ({ context: { msal }, location }) => {
@@ -31,10 +35,13 @@ export const Route = createFileRoute("/portal")({
       });
     } else if (location.pathname === "/portal") {
       throw redirect({
-        to: "/portal/dashboard",
+        to: "/portal/home",
       });
     }
   },
+  loader: (): RouteLoaderData => ({
+    crumb: undefined,
+  }),
   component: RouteComponent,
 });
 
@@ -42,10 +49,17 @@ function RouteComponent() {
   const matches = useMatches();
 
   const items = matches
-    .filter((match) => match.loaderData?.crumb)
+    .filter(
+      (match): match is typeof match & { loaderData: { crumb: string } } =>
+        "loaderData" in match &&
+        match.loaderData !== null &&
+        typeof match.loaderData === "object" &&
+        "crumb" in match.loaderData &&
+        typeof match.loaderData.crumb === "string"
+    )
     .map(({ pathname, loaderData }) => ({
       href: pathname,
-      label: loaderData?.crumb,
+      label: loaderData.crumb,
     }));
 
   return (
@@ -61,21 +75,31 @@ function RouteComponent() {
             />
             <Breadcrumb>
               <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to="/portal/home">Home</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                {items.length > 0 && <BreadcrumbSeparator />}
                 {items.map((item, index) => (
-                  <BreadcrumbItem key={index} className="hidden md:block">
-                    <Link to={item.href} className="breadcrumb-link">
-                      {item.label}
-                    </Link>
+                  <React.Fragment key={index}>
+                    <BreadcrumbItem key={index} className="hidden md:block">
+                      <Link to={item.href} className="breadcrumb-link">
+                        {item.label}
+                      </Link>
+                    </BreadcrumbItem>
                     {index < items.length - 1 && (
                       <BreadcrumbSeparator className="hidden md:block" />
                     )}
-                  </BreadcrumbItem>
+                  </React.Fragment>
                 ))}
               </BreadcrumbList>
             </Breadcrumb>
           </div>
         </header>
-        <Outlet />
+        <AppContainer>
+          <Outlet />
+        </AppContainer>
       </SidebarInset>
     </SidebarProvider>
   );

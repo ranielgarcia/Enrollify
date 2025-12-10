@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { handleLogin } from "@/infrastructure/auth/msal";
+import { handleLogin } from "@/infrastructure/authentication/msal";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/login")({

@@ -1,7 +1,7 @@
 ﻿using Ardalis.SmartEnum;
 using Ardalis.SmartEnum.Dapper;
 using Dapper;
-using Enrollify.Application.Roles.List;
+using Enrollify.Application.Roles.Features.List;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;

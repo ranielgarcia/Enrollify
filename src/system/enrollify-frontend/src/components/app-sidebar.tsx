@@ -17,7 +17,7 @@ import {
   SidebarMenuButton,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { useAuthorizationContext } from "@/infrastructure/auth/authorizationContext";
+import { useAuthenticationContext } from "@/infrastructure/authentication/authenticationContext";
 
 // This is sample data.
 const data = {
@@ -29,15 +29,11 @@ const data = {
       isActive: true,
       items: [
         {
-          title: "Room Type Management",
-          url: "/portal",
+          title: "Rooms",
+          url: "/portal/master-data-management/rooms",
         },
         {
-          title: "Room Management",
-          url: "#",
-        },
-        {
-          title: "College Management",
+          title: "Colleges",
           url: "#",
         },
       ],
@@ -111,7 +107,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const userContext = useAuthorizationContext();
+  const userContext = useAuthenticationContext();
 
   return (
     <Sidebar collapsible="icon" {...props}>

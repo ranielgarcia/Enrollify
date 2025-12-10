@@ -13,5 +13,8 @@ export const Route = createRootRouteWithContext<{
       </>
     );
   },
+  loader: () => ({
+    crumb: undefined,
+  }),
   notFoundComponent: () => <div>404 Not Found</div>,
 });

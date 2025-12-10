@@ -1,7 +1,8 @@
 ﻿using Ardalis.Result;
+using Enrollify.Application.Roles.DTOs;
 using Mediator;
 
-namespace Enrollify.Application.Roles.List;
+namespace Enrollify.Application.Roles.Features.List;
 
 public class ListRolesQuery : IQuery<Result<List<RoleDTO>>>
 {

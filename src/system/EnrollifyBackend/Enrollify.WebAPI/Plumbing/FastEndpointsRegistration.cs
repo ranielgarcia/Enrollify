@@ -1,6 +1,7 @@
 ﻿using FastEndpoints;
 using FastEndpoints.Swagger;
 using System.Text.Json;
+using Vogen;
 
 namespace Enrollify.WebAPI.Plumbing;
 
@@ -8,7 +9,7 @@ public static class FastEndpointsRegistration
 {
     public static IServiceCollection AddFastEndpointsConfigs(
        this IServiceCollection services)
-    {
+    {        
         services.AddFastEndpoints()
             .SwaggerDocument(o =>
             {
@@ -16,6 +17,9 @@ public static class FastEndpointsRegistration
                 {
                     s.Title = "Laundro API";
                     s.Version = "v1";
+
+                    // Map Vogen value objects to their underlying primitive types in OpenAPI
+                    s.SchemaSettings.SchemaProcessors.Add(new VogenNSwagSchemaProcessor());
                 };
             });
         return services;
