@@ -7,7 +7,7 @@ import type { Permission } from "./models/PermissionsEnum";
 import type { Role } from "./models/Roles";
 
 // React Context for Authorization
-export interface AuthorizationContextValue {
+export interface IAuthorizationContextValue {
   authorize: (
     policyName: PolicyName,
     resource?: string,
@@ -22,4 +22,4 @@ export interface AuthorizationContextValue {
 }
 
 export const AuthorizationContext =
-  createContext<AuthorizationContextValue | null>(null);
+  createContext<IAuthorizationContextValue | null>(null);

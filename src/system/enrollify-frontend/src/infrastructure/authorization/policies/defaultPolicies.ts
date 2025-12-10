@@ -1,5 +1,5 @@
 import { createScope } from "../models/AuthorizationScope";
-import { createPermission, type Permission } from "../models/PermissionsEnum";
+import { createPermission } from "../models/PermissionsEnum";
 import { PolicyBuilder } from "./PolicyBuilder";
 import type { PolicyRegistry } from "./PolicyRegistry";
 
@@ -12,7 +12,7 @@ export const registerDefaultPolicies = (registry: PolicyRegistry) => {
   // Permission-based policy
   registry.register(
     new PolicyBuilder("CanManageStudents")
-      .requirePermission({ name: "Delete" } as Permission)
+      .requirePermission(createPermission("None"))
       .build()
   );
 

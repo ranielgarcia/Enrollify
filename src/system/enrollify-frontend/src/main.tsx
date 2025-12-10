@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { StrictMode, use } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import "./index.css";
@@ -18,6 +18,11 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "./components/theming/theme-provider";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import type { RouteLoaderData } from "./types/route.types";
+import { AuthorizationProvider } from "./infrastructure/authorization/AuthorizationProvider";
+import {
+  AuthorizationContext,
+  type IAuthorizationContextValue,
+} from "./infrastructure/authorization/AuthorizationContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,12 +33,14 @@ const queryClient = new QueryClient({
 });
 
 const msal = {} as IMsalContext;
+const authorization = {} as IAuthorizationContextValue;
 
 // Create a new router instance
 const router = createRouter({
   routeTree,
   context: {
     msal,
+    authorization,
   },
   defaultPreload: "intent",
   scrollRestoration: true,
@@ -52,6 +59,7 @@ declare module "@tanstack/react-router" {
 // eslint-disable-next-line react-refresh/only-export-components
 function App() {
   const msal = useMsal();
+  const authorizationContext = use(AuthorizationContext);
 
   const activeAccount = msalInstance.getActiveAccount();
 
@@ -83,14 +91,13 @@ function App() {
   msalInstance.enableAccountStorageEvents();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthenticationProvider>
-        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-          <RouterProvider router={router} context={{ msal }} />
-          <ReactQueryDevtools initialIsOpen={false} />
-        </ThemeProvider>
-      </AuthenticationProvider>
-    </QueryClientProvider>
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <RouterProvider
+        router={router}
+        context={{ msal, authorization: authorizationContext }}
+      />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </ThemeProvider>
   );
 }
 
@@ -101,7 +108,13 @@ if (!rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <MsalProvider instance={msalInstance}>
-        <App />
+        <QueryClientProvider client={queryClient}>
+          <AuthenticationProvider>
+            <AuthorizationProvider>
+              <App />
+            </AuthorizationProvider>
+          </AuthenticationProvider>
+        </QueryClientProvider>
       </MsalProvider>
     </StrictMode>
   );

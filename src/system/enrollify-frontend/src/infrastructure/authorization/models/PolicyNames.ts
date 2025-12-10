@@ -9,6 +9,8 @@ export const PolicyNames = {
   EnrollmentManager: "EnrollmentManager",
   CanViewReports: "CanViewReports",
   DepartmentAdmin: "DepartmentAdmin",
+
+  // Rooms and Room Types
 } as const;
 
 export type PolicyName = keyof typeof PolicyNames;

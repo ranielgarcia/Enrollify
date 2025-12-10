@@ -111,7 +111,7 @@ export class AuthorizationService {
   ): boolean {
     if (!user?.roles) return false;
 
-    // Iterate through all roles to find the permission
+    // h aIterate througll roles to find the permission
     for (const role of user.roles) {
       if (!role.permissionScopes) continue;
 

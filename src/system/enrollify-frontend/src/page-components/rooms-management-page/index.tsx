@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoomsTab } from "./rooms-tab";
 import type { Room } from "./rooms-table";
 import { RoomTypeTab } from "./room-type-tab";
+import { DrawerDemo } from "./room-type-form-drawer";
 
 export default function RoomsPage() {
   const [rooms] = useState<Room[]>([
@@ -104,6 +105,7 @@ export default function RoomsPage() {
           </TabsList>
 
           <TabsContent value="rooms" className="space-y-4">
+            <DrawerDemo />
             <RoomsTab rooms={rooms} roomTypes={roomTypes} />
           </TabsContent>
 
