@@ -5,28 +5,19 @@ import type { IAuthorizationRequirement } from "./IAuthorizationRequirement";
 export class ScopeRequirement implements IAuthorizationRequirement {
   type = "Scope";
 
-  public readonly scopes: Scope[];
+  public readonly scope: Scope;
 
-  constructor(scopes: Scope[]) {
-    this.scopes = scopes;
+  constructor(scope: Scope) {
+    this.scope = scope;
   }
 
   evaluate(context: AuthorizationEvaluationContext): boolean {
     if (!context.authorizationScope) return false;
 
-    if (
-      !this.scopes.some(
-        (scope) => scope.name === context.authorizationScope?.scope.name
-      )
-    )
+    if (this.scope.name !== context.authorizationScope?.scope.name)
       return false;
 
-    if (
-      this.scopes.some(
-        (scope) => scope.id && context.authorizationScope?.scope.id !== scope.id
-      )
-    )
-      return false;
+    if (context.authorizationScope?.scope.id !== this.scope.id) return false;
 
     return true;
   }

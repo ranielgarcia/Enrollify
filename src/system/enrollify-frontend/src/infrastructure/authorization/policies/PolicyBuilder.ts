@@ -6,7 +6,7 @@ import { RoleRequirement } from "../requirements/RoleRequirement";
 import { ScopeRequirement } from "../requirements/ScopeRequirement";
 import type { PolicyName } from "../models/PolicyNames";
 import type { Permission } from "../models/PermissionsEnum";
-import type { RoleName } from "../models/Roles";
+import type { Role } from "../models/Roles";
 
 export class PolicyBuilder {
   private policy: IAuthorizationPolicy;
@@ -19,7 +19,7 @@ export class PolicyBuilder {
     };
   }
 
-  requireRole(...roles: RoleName[]): this {
+  requireRole(...roles: Role[]): this {
     this.policy.requirements.push(new RoleRequirement(roles));
     return this;
   }
@@ -29,8 +29,8 @@ export class PolicyBuilder {
     return this;
   }
 
-  requireScope(scopes: Scope[]): this {
-    this.policy.requirements.push(new ScopeRequirement(scopes));
+  requireScope(scope: Scope): this {
+    this.policy.requirements.push(new ScopeRequirement(scope));
     return this;
   }
 

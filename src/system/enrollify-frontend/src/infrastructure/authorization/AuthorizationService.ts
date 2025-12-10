@@ -6,7 +6,7 @@ import type { PolicyRegistry } from "./policies/PolicyRegistry";
 import type { IAuthorizationRequirement } from "./requirements/IAuthorizationRequirement";
 import type { AuthorizationScope } from "./models/AuthorizationScope";
 import type { PolicyName } from "./models/PolicyNames";
-import type { Permission } from "./models/PermissionsEnum";
+import { PermissionFlagEnum, type Permission } from "./models/PermissionsEnum";
 import type { Role } from "./models/Roles";
 import type { UserContext } from "../../api/models/UserContext";
 
@@ -111,7 +111,7 @@ export class AuthorizationService {
   ): boolean {
     if (!user?.roles) return false;
 
-    // h aIterate througll roles to find the permission
+    // Iterate through all roles to find the permission
     for (const role of user.roles) {
       if (!role.permissionScopes) continue;
 
@@ -128,9 +128,11 @@ export class AuthorizationService {
           if (!scopeMatches) continue;
         }
 
+        const permissionFlag = new PermissionFlagEnum(permission);
         // Check if the permission exists in this scope
         const hasPermission = permissionScope.permissions?.some(
-          (p) => p.name === permission.name
+          (p) =>
+            p !== undefined && p !== null && permissionFlag.has(p.value ?? -1)
         );
 
         if (hasPermission) return true;

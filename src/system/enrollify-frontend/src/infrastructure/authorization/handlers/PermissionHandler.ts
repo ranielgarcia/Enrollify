@@ -1,11 +1,15 @@
 import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
 import { PermissionFlagEnum } from "../models/PermissionsEnum";
+import {
+  RequirementTypes,
+  type RequirementType,
+} from "../models/RequirementTypes";
 import type { IAuthorizationRequirement } from "../requirements/IAuthorizationRequirement";
 import type { PermissionRequirement } from "../requirements/PermissionRequirement";
 import type { IAuthorizationHandler } from "./IAuthorizationHandler";
 
 export class PermissionHandler implements IAuthorizationHandler {
-  readonly requirementType = "Permission";
+  readonly requirementType = RequirementTypes.Permission as RequirementType;
 
   canHandle(requirement: IAuthorizationRequirement): boolean {
     return requirement.type === this.requirementType;
@@ -51,7 +55,10 @@ export class PermissionHandler implements IAuthorizationHandler {
           permissionRequirement.permission
         );
         const hasPermission = permissionScope.permissions?.some(
-          (p) => !p.value && permissionFlag.has(p.value ?? -1)
+          (p) =>
+            p.value !== undefined &&
+            p.value !== null &&
+            permissionFlag.has(p.value ?? -1)
         );
 
         if (hasPermission) return true;

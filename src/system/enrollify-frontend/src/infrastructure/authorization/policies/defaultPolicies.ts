@@ -1,12 +1,13 @@
 import { createScope } from "../models/AuthorizationScope";
 import { createPermission } from "../models/PermissionsEnum";
+import { createRole } from "../models/Roles";
 import { PolicyBuilder } from "./PolicyBuilder";
 import type { PolicyRegistry } from "./PolicyRegistry";
 
 export const registerDefaultPolicies = (registry: PolicyRegistry) => {
   // Simple role-based policy
   registry.register(
-    new PolicyBuilder("AdminOnly").requireRole("Admin", "SystemAdmin").build()
+    new PolicyBuilder("AdminOnly").requireRole(createRole("Admin")).build()
   );
 
   // Permission-based policy
@@ -20,14 +21,14 @@ export const registerDefaultPolicies = (registry: PolicyRegistry) => {
   registry.register(
     new PolicyBuilder("CanManageDepartmentStudents")
       .requirePermission(createPermission("Update"))
-      .requireScope([createScope("None")])
+      .requireScope(createScope("None"))
       .build()
   );
 
   // Complex multi-requirement policy (AND)
   registry.register(
     new PolicyBuilder("EnrollmentManager")
-      .requireRole("Registrar", "FinanceOfficer")
+      .requireRole(createRole("Registrar"), createRole("FinanceOfficer"))
       .requirePermission(createPermission("Update"))
       .requireAll()
       .build()
@@ -36,7 +37,7 @@ export const registerDefaultPolicies = (registry: PolicyRegistry) => {
   // Alternative requirements policy (OR)
   registry.register(
     new PolicyBuilder("CanViewReports")
-      .requireRole("Admin", "Registrar", "DepartmentHead")
+      .requireRole(createRole("Admin"), createRole("AdmissionOfficer"))
       .requireAny()
       .build()
   );
@@ -44,8 +45,8 @@ export const registerDefaultPolicies = (registry: PolicyRegistry) => {
   // Department-scoped policy
   registry.register(
     new PolicyBuilder("DepartmentAdmin")
-      .requireRole("DepartmentHead")
-      .requireScope([createScope("None")])
+      .requireRole(createRole("DepartmentHead"))
+      .requireScope(createScope("None"))
       .requirePermission(createPermission("Full"))
       .build()
   );

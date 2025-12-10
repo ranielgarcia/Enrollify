@@ -2,9 +2,13 @@ import type { AuthorizationEvaluationContext } from "../models/AuthorizationEval
 import type { IAuthorizationRequirement } from "../requirements/IAuthorizationRequirement";
 import type { RoleRequirement } from "../requirements/RoleRequirement";
 import type { IAuthorizationHandler } from "./IAuthorizationHandler";
+import {
+  RequirementTypes,
+  type RequirementType,
+} from "../models/RequirementTypes";
 
 export class RoleHandler implements IAuthorizationHandler {
-  readonly requirementType = "Role";
+  readonly requirementType = RequirementTypes.Role as RequirementType;
 
   canHandle(requirement: IAuthorizationRequirement): boolean {
     return requirement.type === this.requirementType;
@@ -32,7 +36,7 @@ export class RoleHandler implements IAuthorizationHandler {
 
     // User must have at least one of the required roles
     return roleRequirement.roles.some((role) =>
-      context.user?.roles?.map((r) => r.name).includes(role)
+      context.user?.roles?.map((r) => r.id).includes(role.id)
     );
   }
 }

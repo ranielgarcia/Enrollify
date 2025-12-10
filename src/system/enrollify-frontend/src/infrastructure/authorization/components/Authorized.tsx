@@ -31,33 +31,38 @@ export const Authorized: React.FC<AuthorizedProps> = ({
 
   useEffect(() => {
     const checkAuthorization = async () => {
-      // Check policy
-      if (policy) {
-        const result = await authorize(policy, undefined, scope);
-        setIsAuthorized(result.succeeded);
-        return;
-      }
-
-      // Check roles
-      if (roles && roles.length > 0) {
-        const roleCheck = requireAll
-          ? roles.every((role) => hasRole(role))
-          : roles.some((role) => hasRole(role));
-
-        if (!roleCheck) {
-          setIsAuthorized(false);
+      try {
+        // Check policy
+        if (policy) {
+          const result = await authorize(policy, undefined, scope);
+          setIsAuthorized(result.succeeded);
           return;
         }
-      }
 
-      // Check permissions
-      if (permissions && permissions.length > 0) {
-        const permCheck = requireAll
-          ? permissions.every((perm) => hasPermission(perm, scope))
-          : permissions.some((perm) => hasPermission(perm, scope));
+        // Check roles
+        if (roles && roles.length > 0) {
+          const roleCheck = requireAll
+            ? roles.every((role) => hasRole(role))
+            : roles.some((role) => hasRole(role));
 
-        setIsAuthorized(permCheck);
-        return;
+          if (!roleCheck) {
+            setIsAuthorized(false);
+            return;
+          }
+        }
+
+        // Check permissions
+        if (permissions && permissions.length > 0) {
+          const permCheck = requireAll
+            ? permissions.every((perm) => hasPermission(perm, scope))
+            : permissions.some((perm) => hasPermission(perm, scope));
+
+          setIsAuthorized(permCheck);
+          return;
+        }
+      } catch (error) {
+        console.error("Authorization check failed:", error);
+        setIsAuthorized(false);
       }
 
       // No checks specified

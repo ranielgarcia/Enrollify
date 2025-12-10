@@ -1,10 +1,14 @@
 import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
+import {
+  RequirementTypes,
+  type RequirementType,
+} from "../models/RequirementTypes";
 import type { IAuthorizationRequirement } from "../requirements/IAuthorizationRequirement";
 import type { ScopeRequirement } from "../requirements/ScopeRequirement";
 import type { IAuthorizationHandler } from "./IAuthorizationHandler";
 
 export class ScopeHandler implements IAuthorizationHandler {
-  readonly requirementType = "Scope";
+  readonly requirementType = RequirementTypes.Scope as RequirementType;
 
   canHandle(requirement: IAuthorizationRequirement): boolean {
     return requirement.type === this.requirementType;
@@ -27,20 +31,11 @@ export class ScopeHandler implements IAuthorizationHandler {
     }
 
     // Check if scope type matches
-    if (
-      scopeRequirement.scopes
-        .map((s) => s.name)
-        .indexOf(context.authorizationScope.scope.name) === -1
-    ) {
+    if (scopeRequirement.scope.name !== context.authorizationScope.scope.name)
       return false;
-    }
 
     // If specific scope ID is required, check it
-    if (
-      scopeRequirement.scopes
-        .map((s) => s.id)
-        .indexOf(context.authorizationScope.scope.id) === -1
-    ) {
+    if (scopeRequirement.scope.id !== context.authorizationScope.scope.id) {
       return false;
     }
 

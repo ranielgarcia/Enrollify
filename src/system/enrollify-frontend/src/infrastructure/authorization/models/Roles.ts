@@ -17,7 +17,19 @@ export const Roles = {
 export type RoleName = keyof typeof Roles;
 export type RoleId = (typeof Roles)[RoleName];
 
-export interface Role {
-  id: RoleId;
-  name: RoleName;
-}
+// export interface Role {
+//   id: RoleId;
+//   name: RoleName;
+// }
+
+export type Role = {
+  [K in RoleName]: { id: (typeof Roles)[K]; name: K };
+}[RoleName];
+
+export const createRole = <T extends RoleName>(
+  name: T
+): Extract<Role, { name: T }> =>
+  ({
+    id: Roles[name],
+    name,
+  }) as Extract<Role, { name: T }>;
