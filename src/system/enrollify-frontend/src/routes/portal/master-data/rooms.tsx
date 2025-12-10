@@ -2,7 +2,7 @@ import RoomManagement from "@/page-components/rooms-management-page";
 import type { RouteLoaderData } from "@/types/route.types";
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/portal/master-data-management/rooms")({
+export const Route = createFileRoute("/portal/master-data/rooms")({
   loader: (): RouteLoaderData => ({
     crumb: "Rooms",
   }),

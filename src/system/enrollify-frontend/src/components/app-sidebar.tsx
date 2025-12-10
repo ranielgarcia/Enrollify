@@ -30,7 +30,7 @@ const data = {
       items: [
         {
           title: "Rooms",
-          url: "/portal/master-data-management/rooms",
+          url: "/portal/master-data/rooms",
         },
         {
           title: "Colleges",
