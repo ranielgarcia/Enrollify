@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table";
 import { Edit2, Trash2 } from "lucide-react";
 
-interface RoomType {
+export interface RoomType {
   id: string;
   name: string;
   description: string;
@@ -30,20 +30,12 @@ export function RoomTypesTable({
     {
       accessorKey: "name",
       header: "Name",
-      cell: ({ row }) => {
-        <span className="font-semibold text-accent">
-          {row.getValue("name")}
-        </span>;
-      },
+      cell: ({ row }) => <span>{row.getValue("name")}</span>,
     },
     {
       accessorKey: "description",
       header: "Description",
-      cell: ({ row }) => {
-        <span className="font-semibold text-accent">
-          {row.getValue("description")}
-        </span>;
-      },
+      cell: ({ row }) => <span>{row.getValue("description")}</span>,
     },
     {
       id: "actions",

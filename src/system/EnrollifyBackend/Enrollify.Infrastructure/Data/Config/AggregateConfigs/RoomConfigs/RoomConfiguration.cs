@@ -15,12 +15,10 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
           .IsRequired();
 
         builder.Property(e => e.RoomNumber).IsRequired();
-
         builder.Property(e => e.Capacity).IsRequired();
-
-        builder.Property(e => e.RoomTypeId)
-          .HasColumnName("RoomTypeId")
-          .IsRequired();
+        builder.Property(e => e.RoomTypeId).IsRequired();
+        builder.Property(e => e.BuildingId).IsRequired();
+        builder.Property(e => e.CollegeId).IsRequired();
 
         // Audit fields
         builder.ConfigureAuditFields();

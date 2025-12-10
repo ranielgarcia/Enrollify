@@ -1,4 +1,5 @@
 ﻿using Ardalis.GuardClauses;
+using Enrollify.Core.Aggregates.BuildingAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate.Events;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
@@ -22,6 +23,7 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable<AuditIn
     public string RoomNumber { get; private set; }
     public int Capacity { get; private set; }
     public RoomTypeId RoomTypeId { get; private set; }
+    public BuildingId BuildingId { get; set; }
     public CollegeId CollegeId { get; set; }
 
     public AuditInfo AuditInfo { get; init; } = new AuditInfo();

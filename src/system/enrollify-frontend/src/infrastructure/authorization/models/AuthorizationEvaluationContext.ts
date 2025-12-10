@@ -1,5 +1,5 @@
 import type { AuthorizationScope } from "./AuthorizationScope";
-import type { UserContext } from "./UserContext";
+import type { UserContext } from "../../../api/models/UserContext";
 
 export interface AuthorizationEvaluationContext {
   user: UserContext;
