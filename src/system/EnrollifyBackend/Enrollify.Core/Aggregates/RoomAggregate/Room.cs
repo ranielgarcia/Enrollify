@@ -1,4 +1,5 @@
 ﻿using Ardalis.GuardClauses;
+using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate.Events;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.SharedKernel;
@@ -9,35 +10,36 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable<AuditIn
 {
     private Room() { } // EF Core constructor
 
-    public Room(RoomName name, RoomStudentCapacity studentCapacity, RoomTypeId roomTypeId)
+    public Room(string roomNumber, int capacity, RoomTypeId roomTypeId)
     {
-        Name = Guard.Against.Null(name);
-        StudentCapacity = studentCapacity;
+        RoomNumber = Guard.Against.Null(roomNumber);
+        Capacity = capacity;
         RoomTypeId = Guard.Against.Null(roomTypeId);
 
         RegisterDomainEvent(new RoomCreatedEvent(this));
     }
 
-    public RoomName Name { get; private set; }
-    public RoomStudentCapacity StudentCapacity { get; private set; }
+    public string RoomNumber { get; private set; }
+    public int Capacity { get; private set; }
     public RoomTypeId RoomTypeId { get; private set; }
+    public CollegeId CollegeId { get; set; }
 
     public AuditInfo AuditInfo { get; init; } = new AuditInfo();
 
     // Navigation property - not exposed publicly
     private RoomType? _roomType;
 
-    public Room UpdateName(RoomName newName)
+    public Room UpdateName(string newRoomNumber)
     {
-        if (Name == newName) return this;
-        Name = Guard.Against.Null(newName);
+        if (RoomNumber == newRoomNumber) return this;
+        RoomNumber = Guard.Against.Null(newRoomNumber);
         return this;
     }
 
-    public Room UpdateCapacity(RoomStudentCapacity newCapacity)
+    public Room UpdateCapacity(int newCapacity)
     {
-        if (newCapacity == StudentCapacity) return this;
-        StudentCapacity = newCapacity;
+        if (newCapacity == Capacity) return this;
+        Capacity = newCapacity;
         return this;
     }
 
@@ -45,6 +47,13 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable<AuditIn
     {
         if (RoomTypeId == newRoomTypeId) return this;
         RoomTypeId = Guard.Against.Null(newRoomTypeId);
+        return this;
+    }
+
+    public Room UpdateCollege(CollegeId newCollegeId)
+    {
+        if (CollegeId == newCollegeId) return this;
+        CollegeId = Guard.Against.Null(newCollegeId);
         return this;
     }
 }

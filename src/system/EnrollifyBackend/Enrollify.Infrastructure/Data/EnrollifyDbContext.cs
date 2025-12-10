@@ -2,6 +2,8 @@
 using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Infrastructure.Data.Config.AggregateConfigs.BuildingConfigs;
+using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CollegeConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.PermissionScopeConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoleConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoomConfigs;
@@ -46,6 +48,9 @@ public class EnrollifyDbContext: DbContext
         base.ConfigureConventions(configurationBuilder);
         configurationBuilder.ConfigureSmartEnum();
 
+        // Do not forget to add using statement when adding new entry
+        configurationBuilder.RegisterAllInCollegeVogenEfCoreConverters();
+        configurationBuilder.RegisterAllInBuildingVogenEfCoreConverters();
         configurationBuilder.RegisterAllInPermissionScopeVogenEfCoreConverters();
         configurationBuilder.RegisterAllInRoomVogenEfCoreConverters();
         configurationBuilder.RegisterAllInRoleVogenEfCoreConverters();

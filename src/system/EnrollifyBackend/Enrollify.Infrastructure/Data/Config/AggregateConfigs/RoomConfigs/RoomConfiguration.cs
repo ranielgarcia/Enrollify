@@ -11,23 +11,14 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
 
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id)
-          //.HasVogenConversion()
           .ValueGeneratedOnAdd()
           .IsRequired();
 
-        builder.Property(e => e.Name)
-          //.HasVogenConversion()
-          .HasMaxLength(RoomName.MaxLength)
-          .HasColumnType($"VARCHAR({RoomName.MaxLength})")
-          .IsRequired();
+        builder.Property(e => e.RoomNumber).IsRequired();
 
-        builder.Property(e => e.StudentCapacity)
-          .IsRequired();
+        builder.Property(e => e.Capacity).IsRequired();
 
         builder.Property(e => e.RoomTypeId)
-          //.HasConversion(
-          //  id => id.Value,
-          //  value => RoomTypeId.From(value))
           .HasColumnName("RoomTypeId")
           .IsRequired();
 

@@ -1,4 +1,5 @@
-﻿ 
+﻿
+ 
 CREATE TABLE RoomTypes
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
@@ -18,30 +19,6 @@ CREATE TABLE RoomTypes
 );
 
 
-CREATE TABLE Rooms
-(
-	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	Name VARCHAR(50) NOT NULL,
-	StudentCapacity INT NOT NULL,
-	RoomTypeId INT NOT NULL, 
-	
-	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
-	CreatedBy INT NOT NULL,
-	UpdatedAt DATETIMEOFFSET NULL,
-	UpdatedBy INT NULL,
-	DeletedAt DATETIMEOFFSET NULL,
-	DeletedBy INT NULL,
-	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Rooms_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomTypes(Id),
-	CONSTRAINT FK_Rooms_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_Rooms_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_Rooms_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
-	CONSTRAINT CHK_Rooms_StudentCapacity_Positive CHECK (StudentCapacity > 0)
-);
-GO;
-
-
-
 CREATE TABLE Colleges
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
@@ -49,6 +26,7 @@ CREATE TABLE Colleges
 	Name VARCHAR(100) NOT NULL,
 	Dean VARCHAR(100) NOT NULL, -- Hard coded name for now
 	Description VARCHAR(255) NULL,
+
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
 	UpdatedAt DATETIMEOFFSET NULL,
@@ -61,6 +39,55 @@ CREATE TABLE Colleges
 	CONSTRAINT FK_Colleges_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
 );
 GO;
+
+
+CREATE TABLE Buildings
+(
+	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	Name VARCHAR(50) NOT NULL UNIQUE,
+	Description VARCHAR(255),
+
+	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+	CreatedBy INT NOT NULL,
+	UpdatedAt DATETIMEOFFSET NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIMEOFFSET NULL,
+	DeletedBy INT NULL,
+	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT FK_Buildings_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Buildings_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Buildings_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
+);
+
+
+CREATE TABLE Rooms
+(
+	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	RoomNumber VARCHAR(50) NOT NULL,
+	Capacity INT NOT NULL,
+	RoomTypeId INT NOT NULL,
+	BuildingId INT NOT NULL,
+	CollegeId INT NOT NULL,
+
+	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+	CreatedBy INT NOT NULL,
+	UpdatedAt DATETIMEOFFSET NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIMEOFFSET NULL,
+	DeletedBy INT NULL,
+	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT FK_Rooms_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomTypes(Id),
+	CONSTRAINT FK_Rooms_Building FOREIGN KEY (BuildingId) REFERENCES Buildings(Id),
+	CONSTRAINT FK_Rooms_College FOREIGN KEY (BuildingId) REFERENCES Colleges(Id),
+	CONSTRAINT FK_Rooms_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Rooms_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Rooms_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
+	CONSTRAINT CHK_Rooms_Capacity_Positive CHECK (Capacity > 0)
+);
+GO;
+
+
+
 
 -- ************************************
 
