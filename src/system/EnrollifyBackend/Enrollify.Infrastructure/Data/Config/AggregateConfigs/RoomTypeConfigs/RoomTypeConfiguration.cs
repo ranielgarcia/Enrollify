@@ -15,9 +15,6 @@ public class RoomTypeConfiguration : IEntityTypeConfiguration<RoomType>
           .IsRequired();
 
         builder.Property(e => e.Name)
-          .HasVogenConversion()
-          .HasMaxLength(RoomTypeName.MaxLength)
-          .HasColumnType($"VARCHAR({RoomTypeName.MaxLength})")
           .IsRequired();
 
         builder.HasIndex(e => e.Name)
