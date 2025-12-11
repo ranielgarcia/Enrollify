@@ -1,7 +1,8 @@
 import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
 import type { AuthorizationScope } from "../models/AuthorizationScope";
-import { PermissionFlagEnum, type Permission } from "../models/PermissionsEnum";
+import type { Permission } from "../models/PermissionsEnum";
 import type { IAuthorizationRequirement } from "./IAuthorizationRequirement";
+import { userHasPermission } from "../helpers/AuthorizationHelpers";
 
 export class PermissionRequirement implements IAuthorizationRequirement {
   type = "Permission";
@@ -15,41 +16,13 @@ export class PermissionRequirement implements IAuthorizationRequirement {
   }
 
   evaluate(context: AuthorizationEvaluationContext): boolean {
-    const effectiveScope =
+    const effectiveAuthorizationScope =
       this.authorizationScope || context.authorizationScope;
 
-    if (!context.user?.roles) return false;
-
-    // Iterate through all roles to find the permission
-    for (const role of context.user.roles) {
-      if (!role.permissionScopes) continue;
-
-      for (const permissionScope of role.permissionScopes) {
-        // If scope is specified, check if it matches
-        if (effectiveScope) {
-          const scopeMatches =
-            permissionScope.permissionScope?.name ===
-              effectiveScope.scope.name &&
-            (!effectiveScope.scope.id ||
-              permissionScope.permissionScope?.value ===
-                effectiveScope.scope.id);
-
-          if (!scopeMatches) continue;
-        }
-
-        const permissionFlag = new PermissionFlagEnum(this.permission);
-        // Check if the permission exists in this scope
-        const hasPermission = permissionScope.permissions?.some(
-          (p) =>
-            p.value !== undefined &&
-            p.value !== null &&
-            permissionFlag.has(p.value ?? -1)
-        );
-
-        if (hasPermission) return true;
-      }
-    }
-
-    return false;
+    return userHasPermission(
+      context.user,
+      this.permission,
+      effectiveAuthorizationScope
+    );
   }
 }

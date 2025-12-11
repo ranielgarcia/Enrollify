@@ -4,7 +4,7 @@ import { createRole } from "../models/Roles";
 import { PolicyBuilder } from "./PolicyBuilder";
 import type { PolicyRegistry } from "./PolicyRegistry";
 
-export const registerDefaultPolicies = (registry: PolicyRegistry) => {
+export const registerRoomPolicies = (registry: PolicyRegistry) => {
   // Department-scoped policy
   registry.register(
     new PolicyBuilder("AdminOnly")

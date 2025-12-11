@@ -1,11 +1,12 @@
-import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
-import type { IAuthorizationRequirement } from "../requirements/IAuthorizationRequirement";
-import type { RoleRequirement } from "../requirements/RoleRequirement";
-import type { IAuthorizationHandler } from "./IAuthorizationHandler";
 import {
   RequirementTypes,
   type RequirementType,
 } from "../models/RequirementTypes";
+import type { IAuthorizationRequirement } from "../requirements/IAuthorizationRequirement";
+import type { RoleRequirement } from "../requirements/RoleRequirement";
+import type { IAuthorizationHandler } from "./IAuthorizationHandler";
+import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
+import { userHasAnyRole } from "../helpers/AuthorizationHelpers";
 
 export class RoleHandler implements IAuthorizationHandler {
   readonly requirementType = RequirementTypes.Role as RequirementType;
@@ -25,18 +26,6 @@ export class RoleHandler implements IAuthorizationHandler {
     }
 
     const roleRequirement = requirement as RoleRequirement;
-
-    if (
-      !context.user ||
-      !context.user.roles ||
-      context.user.roles.length === 0
-    ) {
-      return false;
-    }
-
-    // User must have at least one of the required roles
-    return roleRequirement.roles.some((role) =>
-      context.user?.roles?.map((r) => r.id).includes(role.id)
-    );
+    return userHasAnyRole(context.user, roleRequirement.roles);
   }
 }

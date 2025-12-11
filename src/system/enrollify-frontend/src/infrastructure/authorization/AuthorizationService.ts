@@ -6,9 +6,13 @@ import type { PolicyRegistry } from "./policies/PolicyRegistry";
 import type { IAuthorizationRequirement } from "./requirements/IAuthorizationRequirement";
 import type { AuthorizationScope } from "./models/AuthorizationScope";
 import type { PolicyName } from "./models/PolicyNames";
-import { PermissionFlagEnum, type Permission } from "./models/PermissionsEnum";
+import type { Permission } from "./models/PermissionsEnum";
 import type { Role } from "./models/Roles";
 import type { UserContext } from "../../api/models/UserContext";
+import {
+  userHasAnyRole,
+  userHasPermission,
+} from "./helpers/AuthorizationHelpers";
 
 export class AuthorizationService {
   private handlerMap: Map<string, IAuthorizationHandler>;
@@ -99,9 +103,7 @@ export class AuthorizationService {
   }
 
   hasRole(user: UserContext | null, ...roles: Role[]): boolean {
-    return roles.some((role) =>
-      user?.roles?.map((r) => r.id)?.includes(role.id)
-    );
+    return userHasAnyRole(user, roles);
   }
 
   hasPermission(
@@ -109,37 +111,7 @@ export class AuthorizationService {
     permission: Permission,
     authorizationScope?: AuthorizationScope
   ): boolean {
-    if (!user?.roles) return false;
-
-    // Iterate through all roles to find the permission
-    for (const role of user.roles) {
-      if (!role.permissionScopes) continue;
-
-      for (const permissionScope of role.permissionScopes) {
-        // If scope is specified, check if it matches
-        if (authorizationScope) {
-          const scopeMatches =
-            permissionScope.permissionScope?.name ===
-              authorizationScope.scope.name &&
-            (!authorizationScope.scope.id ||
-              permissionScope.permissionScope?.value ===
-                authorizationScope.scope.id);
-
-          if (!scopeMatches) continue;
-        }
-
-        const permissionFlag = new PermissionFlagEnum(permission);
-        // Check if the permission exists in this scope
-        const hasPermission = permissionScope.permissions?.some(
-          (p) =>
-            p !== undefined && p !== null && permissionFlag.has(p.value ?? -1)
-        );
-
-        if (hasPermission) return true;
-      }
-    }
-
-    return false;
+    return userHasPermission(user, permission, authorizationScope);
   }
 
   /**
