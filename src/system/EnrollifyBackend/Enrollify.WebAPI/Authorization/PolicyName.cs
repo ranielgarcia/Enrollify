@@ -9,4 +9,5 @@ public class PolicyName
 
     // Room Types
     public const string HasCreateRoomTypePermission = "HasCreateRoomTypePermission";
+    public const string HasViewRoomTypesPermission = "HasViewRoomTypesPermission";
 }

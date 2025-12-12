@@ -1,4 +1,4 @@
-﻿using Enrollify.Application.RoomTypes;
+﻿using Enrollify.Application.RoomTypes.Features.Create;
 using Enrollify.WebAPI.Authorization;
 using Enrollify.WebAPI.Extensions;
 using FastEndpoints;

@@ -6,7 +6,8 @@ public static class RoomTypesAuthorizationPolicyRegistration
 {
     public static IServiceCollection AddRoomTypesAuthorizationPolicyHandlers(this IServiceCollection services)
     {
-        services.AddScoped<IAuthorizationHandler, Create.HasCreateRoomTypePermissionHandler>();
+        services.AddScoped<IAuthorizationHandler, HasCreateRoomTypePermissionHandler>();
+        services.AddScoped<IAuthorizationHandler, HasViewRoomTypesPermissionHandler>();
 
         return services;
     }
@@ -14,6 +15,9 @@ public static class RoomTypesAuthorizationPolicyRegistration
     public static void AddRoomTypesAuthorizationPolicies(this AuthorizationOptions options)
     {
         options.AddPolicy(PolicyName.HasCreateRoomTypePermission, policyBuilder =>
-            policyBuilder.AddRequirements(new Create.HasCreateRoomTypePermission()));
+            policyBuilder.AddRequirements(new HasCreateRoomTypePermission()));
+
+        options.AddPolicy(PolicyName.HasViewRoomTypesPermission, policyBuilder =>
+            policyBuilder.AddRequirements(new HasViewRoomTypesPermission()));
     }
 }

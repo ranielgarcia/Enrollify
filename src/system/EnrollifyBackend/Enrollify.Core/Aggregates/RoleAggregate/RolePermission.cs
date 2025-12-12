@@ -4,7 +4,7 @@ using Enrollify.Core.Constants.Authorization;
 
 namespace Enrollify.Core.Aggregates.RoleAggregate;
 
-public class RolePermission : IAuditable<AuditInfo>
+public class RolePermission : IAuditable
 {
     public RolePermission() { } // EF Core constructor
 
@@ -13,7 +13,6 @@ public class RolePermission : IAuditable<AuditInfo>
         RoleId = roleId;
         PermissionScopeId = PermissionScopeId.From(permissionScopeId.Value);
         BitmaskPermission = bitmaskPermission;
-        AuditInfo.SetCreatedBy(addedBy);
     }
 
     public RoleId RoleId { get; private set; }
@@ -27,5 +26,14 @@ public class RolePermission : IAuditable<AuditInfo>
 
     public IEnumerable<PermissionEnum> Permissions => PermissionEnum.FromValue(BitmaskPermission);
 
-    public AuditInfo AuditInfo { get; init; } = new AuditInfo();
+    public DateTimeOffset CreatedAt { get; private set; }
+    public UserId CreatedBy { get; private set; }
+    public User? CreatedByUser { get; private set; }
+    public DateTimeOffset? UpdatedAt { get; private set; }
+    public UserId? UpdatedBy { get; private set; }
+    public User? UpdatedByUser { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; }
+    public UserId? DeletedBy { get; private set; }
+    public User? DeletedByUser { get; private set; }
+    public bool IsActive { get; private set; }
 }

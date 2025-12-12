@@ -1,16 +1,18 @@
-import type { ColumnDef } from "@tanstack/react-table";
 import {
   useReactTable,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
+  createColumnHelper,
 } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table";
 import { Edit2, Trash2 } from "lucide-react";
+import type AuditInfo from "@/api/models/AuditInfo";
+import { formatDateTime } from "@/lib/dateutils";
 
-export interface RoomType {
-  id: string;
+export interface RoomType extends AuditInfo {
+  id: number;
   name: string;
   description: string;
 }
@@ -18,7 +20,7 @@ export interface RoomType {
 interface RoomTypesTableProps {
   roomTypes: RoomType[];
   onEdit: (roomType: RoomType) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
 }
 
 export function RoomTypesTable({
@@ -26,28 +28,73 @@ export function RoomTypesTable({
   onEdit,
   onDelete,
 }: RoomTypesTableProps) {
-  const columns: ColumnDef<RoomType>[] = [
-    {
-      accessorKey: "name",
+  const columnHelper = createColumnHelper<RoomType>();
+
+  const columns = [
+    columnHelper.accessor("name", {
       header: "Name",
-      cell: ({ row }) => <span>{row.getValue("name")}</span>,
-    },
-    {
-      accessorKey: "description",
+      cell: (info) => <span>{info.getValue()}</span>,
+    }),
+    columnHelper.accessor("description", {
       header: "Description",
-      cell: ({ row }) => <span>{row.getValue("description")}</span>,
-    },
-    {
+      cell: (info) => <span>{info.getValue()}</span>,
+    }),
+    columnHelper.accessor("createdAt", {
+      header: "Created At",
+      cell: (info) => <span>{formatDateTime(info.getValue())}</span>,
+    }),
+    columnHelper.accessor(
+      (row) =>
+        row.createdBy
+          ? `${row.createdBy?.firstName} ${row.createdBy?.lastName}`
+          : "N/A",
+      {
+        id: "createdBy",
+        header: "Created By",
+        cell: (info) => <span>{info.getValue()}</span>,
+      }
+    ),
+    columnHelper.accessor("updatedAt", {
+      header: "Updated At",
+      cell: (info) => <span>{formatDateTime(info.getValue())}</span>,
+    }),
+    columnHelper.accessor(
+      (row) =>
+        row.updatedBy?.firstName
+          ? `${row.updatedBy?.firstName} ${row.updatedBy?.lastName}`
+          : "",
+      {
+        id: "updatedBy",
+        header: "Updated By",
+        cell: (info) => <span>{info.getValue()}</span>,
+      }
+    ),
+    columnHelper.accessor("deletedAt", {
+      header: "Deleted At",
+      cell: (info) => <span>{formatDateTime(info.getValue())}</span>,
+    }),
+    columnHelper.accessor(
+      (row) =>
+        row.deletedBy?.firstName
+          ? `${row.deletedBy?.firstName} ${row.deletedBy?.lastName}`
+          : "",
+      {
+        id: "deletedBy",
+        header: "Deleted By",
+        cell: (info) => <span>{info.getValue()}</span>,
+      }
+    ),
+    columnHelper.display({
       id: "actions",
       header: "Actions",
       cell: (info) => {
-        const roomType = info.row.original;
+        const room = info.row.original;
         return (
           <div className="flex gap-2">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onEdit(roomType)}
+              onClick={() => onEdit(room)}
               className="hover:bg-blue-500/10 text-blue-600 hover:text-blue-700"
             >
               <Edit2 className="size-4" />
@@ -55,7 +102,7 @@ export function RoomTypesTable({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onDelete(roomType.id)}
+              onClick={() => onDelete(room.id)}
               className="hover:bg-destructive/10 text-destructive hover:text-destructive"
             >
               <Trash2 className="size-4" />
@@ -63,7 +110,7 @@ export function RoomTypesTable({
           </div>
         );
       },
-    },
+    }),
   ];
 
   // eslint-disable-next-line react-hooks/incompatible-library

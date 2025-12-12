@@ -1,9 +1,10 @@
 ﻿using Ardalis.GuardClauses;
+using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.Aggregates.CollegeAggregate;
 
-public class College : EntityBase<College, CollegeId>, IAggregateRoot, IAuditable<AuditInfo> 
+public class College : EntityBase<College, CollegeId>, IAggregateRoot, IAuditable 
 { 
     public College() { }
     public College(string name, string description)
@@ -13,7 +14,19 @@ public class College : EntityBase<College, CollegeId>, IAggregateRoot, IAuditabl
     }
     public string Name { get; set; }
     public string Description { get; set; }
-    public AuditInfo AuditInfo { get; init; } = new AuditInfo();
+
+
+    public DateTimeOffset CreatedAt { get; private set; }
+    public UserId CreatedBy { get; private set; }
+    public User? CreatedByUser { get; private set; }
+    public DateTimeOffset? UpdatedAt { get; private set; }
+    public UserId? UpdatedBy { get; private set; }
+    public User? UpdatedByUser { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; }
+    public UserId? DeletedBy { get; private set; }
+    public User? DeletedByUser { get; private set; }
+    public bool IsActive { get; private set; }
+
 
     public College UpdateName(string newName)
     {

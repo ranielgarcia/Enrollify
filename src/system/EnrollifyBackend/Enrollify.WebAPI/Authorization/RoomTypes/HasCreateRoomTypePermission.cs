@@ -3,7 +3,7 @@ using Enrollify.Core.Constants.Authorization;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Enrollify.WebAPI.Authorization.RoomTypes.Create;
+namespace Enrollify.WebAPI.Authorization.RoomTypes;
 
 public class HasCreateRoomTypePermission : IAuthorizationRequirement
 {

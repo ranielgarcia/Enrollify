@@ -9,8 +9,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate:api:lin": "NODE_OPTIONS=--use-system-ca NODE_OPTIONS=--use-system-ca npx openapi-typescript https://localhost:7107/swagger/v1/swagger.json --output src/api/generated/api.ts",
-    "generate:api:win": "cross-env NODE_OPTIONS=--use-system-ca NODE_OPTIONS=--use-system-ca npx openapi-typescript https://localhost:7107/swagger/v1/swagger.json --output src/api/generated/api.ts"
+    "generate:api:lin": "NODE_OPTIONS=--use-system-ca npx openapi-typescript https://localhost:7107/swagger/v1/swagger.json --output src/api/generated/api.ts",
+    "generate:api:win": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 npx openapi-typescript https://localhost:7107/swagger/v1/swagger.json --output src/api/generated/api.ts"
   },
   "dependencies": {
     "@azure/msal-browser": "^4.26.2",
@@ -34,6 +34,7 @@
     "axios": "^1.13.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "lucide-react": "^0.555.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

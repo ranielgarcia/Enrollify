@@ -6,7 +6,7 @@ using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.Aggregates.UserAggregate;
 
-public class User : EntityBase<User, UserId>, IAggregateRoot, IAuditable<AuditInfo>
+public class User : EntityBase<User, UserId>, IAggregateRoot, IAuditable
 {
     private readonly List<UserRoleAssignment> _roleAssignments = new();
     
@@ -16,7 +16,18 @@ public class User : EntityBase<User, UserId>, IAggregateRoot, IAuditable<AuditIn
     public DateTimeOffset? LastLoginAt { get; private set; }
     public IReadOnlyCollection<UserRoleAssignment> RoleAssignments => _roleAssignments.AsReadOnly();
 
-    public AuditInfo AuditInfo { get; init; } = new AuditInfo();
+
+    public DateTimeOffset CreatedAt { get; private set; }
+    public UserId CreatedBy { get; private set; }
+    public User? CreatedByUser { get; private set; }
+    public DateTimeOffset? UpdatedAt { get; private set; }
+    public UserId? UpdatedBy { get; private set; }
+    public User? UpdatedByUser { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; }
+    public UserId? DeletedBy { get; private set; }
+    public User? DeletedByUser { get; private set; }
+    public bool IsActive { get; private set; }
+
 
     public static User Create(UserForCreation userForCreation, UserId createdBy)
     {
@@ -25,8 +36,6 @@ public class User : EntityBase<User, UserId>, IAggregateRoot, IAuditable<AuditIn
         newUser.FirstName = Guard.Against.NullOrEmpty(userForCreation.FirstName);
         newUser.LastName = Guard.Against.NullOrEmpty(userForCreation.LastName);
         newUser.Email = UserEmail.From(Guard.Against.NullOrEmpty(userForCreation.Email));
-
-        newUser.AuditInfo.SetCreatedBy(createdBy);
 
         newUser.RegisterDomainEvent(new UserCreatedEvent(newUser));
 
@@ -74,8 +83,6 @@ public class User : EntityBase<User, UserId>, IAggregateRoot, IAuditable<AuditIn
 
         var assignment = new UserRoleAssignment(roleId, assignBy, expiresAt);
 
-        assignment.AuditInfo.SetCreatedBy(assignBy);
-
         _roleAssignments.Add(assignment);
         return this;
     }
@@ -112,7 +119,7 @@ public class User : EntityBase<User, UserId>, IAggregateRoot, IAuditable<AuditIn
 
     public bool HasRole(RoleId roleId)
     {
-        return _roleAssignments.Any(ra => ra.RoleId == roleId && !ra.IsExpired() && !ra.AuditInfo.IsActive);
+        return _roleAssignments.Any(ra => ra.RoleId == roleId && !ra.IsExpired() && !ra.IsActive);
     }
 
 

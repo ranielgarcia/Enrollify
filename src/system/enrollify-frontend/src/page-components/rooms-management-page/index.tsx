@@ -4,6 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoomsTab } from "./rooms-tab";
 import type { Room } from "./rooms-table";
 import { RoomTypeTab } from "./room-type-tab";
+import useAppQuery from "@/hooks/use-app-query-v2";
+import type BasicUserInfo from "@/api/models/AuditInfo";
+import { parseDateTime } from "@/lib/dateutils";
 
 export default function RoomsPage() {
   const [rooms] = useState<Room[]>([
@@ -57,33 +60,61 @@ export default function RoomsPage() {
     },
   ]);
 
-  const [roomTypes] = useState<RoomType[]>([
-    {
-      id: "1",
-      name: "Lecture Hall",
-      description: "Large classroom for lectures",
-    },
-    {
-      id: "2",
-      name: "Lab",
-      description: "Equipment and experiment space",
-    },
-    {
-      id: "3",
-      name: "Seminar Room",
-      description: "Interactive discussion space",
-    },
-    {
-      id: "4",
-      name: "Tutorial Room",
-      description: "Small group study room",
-    },
-    {
-      id: "5",
-      name: "Auditorium",
-      description: "Large assembly hall",
-    },
-  ]);
+  // const [roomTypes] = useState<RoomType[]>([
+  //   {
+  //     id: "1",
+  //     name: "Lecture Hall",
+  //     description: "Large classroom for lectures",
+  //   },
+  //   {
+  //     id: "2",
+  //     name: "Lab",
+  //     description: "Equipment and experiment space",
+  //   },
+  //   {
+  //     id: "3",
+  //     name: "Seminar Room",
+  //     description: "Interactive discussion space",
+  //   },
+  //   {
+  //     id: "4",
+  //     name: "Tutorial Room",
+  //     description: "Small group study room",
+  //   },
+  //   {
+  //     id: "5",
+  //     name: "Auditorium",
+  //     description: "Large assembly hall",
+  //   },
+  // ]);
+
+  const { data: roomTypesData } = useAppQuery({
+    path: "/api/room-types",
+  });
+
+  const roomTypes: RoomType[] = roomTypesData
+    ? roomTypesData.map(
+        (t) =>
+          ({
+            id: t.id,
+            name: t.name,
+            description: t.description,
+            createdAt: parseDateTime(t.createdAt),
+            createdBy: {
+              ...t.createdByUser,
+            } as BasicUserInfo,
+            updatedAt: parseDateTime(t.updatedAt),
+            updatedBy: {
+              ...t.updatedByUser,
+            } as BasicUserInfo,
+            deletedAt: parseDateTime(t.deletedAt),
+            deletedBy: {
+              ...t.deletedByUser,
+            } as BasicUserInfo,
+            isActive: t.isActive,
+          }) as RoomType
+      )
+    : [];
 
   return (
     <main>

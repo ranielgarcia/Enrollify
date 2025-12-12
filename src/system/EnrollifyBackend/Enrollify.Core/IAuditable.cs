@@ -1,6 +1,15 @@
-﻿namespace Enrollify.Core;
+﻿using Enrollify.Core.Aggregates.UserAggregate;
 
-public interface IAuditable<T>
+namespace Enrollify.Core;
+
+// just a marker interface
+public interface IAuditable
 {
-    public T AuditInfo { get; init; }
+    DateTimeOffset CreatedAt { get; }
+    UserId CreatedBy { get; }
+    DateTimeOffset? UpdatedAt { get;  }
+    UserId? UpdatedBy { get;  }
+    DateTimeOffset? DeletedAt { get; }
+    UserId? DeletedBy { get; }
+    bool IsActive { get; }
 }

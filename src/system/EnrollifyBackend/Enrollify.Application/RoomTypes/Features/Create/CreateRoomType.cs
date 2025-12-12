@@ -3,7 +3,7 @@ using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.SharedKernel;
 using Mediator;
 
-namespace Enrollify.Application.RoomTypes;
+namespace Enrollify.Application.RoomTypes.Features.Create;
 
 public static class CreateRoomType
 {

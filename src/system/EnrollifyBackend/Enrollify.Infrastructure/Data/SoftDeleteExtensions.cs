@@ -1,7 +1,5 @@
 ﻿using Enrollify.Core;
-using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.Authentication;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Linq.Expressions;
 
 namespace Enrollify.Infrastructure.Data;
@@ -14,34 +12,37 @@ public static class SoftDeleteExtensions
 
         foreach (var entry in changeTracker.Entries())
         {
-            if (entry.Entity is IAuditable<AuditInfo>)
+            if (entry.Entity is IAuditable)
             {
                 switch (entry.State)
                 {
                     case EntityState.Added:
 
-                        SetIsActive(entry, isActive: true);
+                        entry.CurrentValues[nameof(IAuditable.IsActive)] = true;
 
                         if (currentUser is not null)
                         {
-                            SetIsCreatedUpdatedOrDeletedBy(entry, nameof(AuditInfo.CreatedBy), currentUser.Id);
+                            entry.CurrentValues[nameof(IAuditable.CreatedBy)] = currentUser.Id;
+                            entry.CurrentValues[nameof(IAuditable.CreatedAt)] = DateTimeOffset.UtcNow;
                         }
                         break;
                     case EntityState.Modified:
-                        
+
                         if (currentUser is not null)
                         {
-                            SetIsCreatedUpdatedOrDeletedBy(entry, nameof(AuditInfo.UpdatedBy), currentUser.Id);
+                            entry.CurrentValues[nameof(IAuditable.UpdatedBy)] = currentUser.Id;
+                            entry.CurrentValues[nameof(IAuditable.UpdatedAt)] = DateTimeOffset.UtcNow;
                         }
                         break;
                     case EntityState.Deleted:
                         entry.State = EntityState.Modified;
-                        SetIsActive(entry, isActive: false);
-                        SetDeletedAt(entry, DateTimeOffset.UtcNow);
+
+                        entry.CurrentValues[nameof(IAuditable.IsActive)] = false;
 
                         if (currentUser is not null)
                         {
-                            SetIsCreatedUpdatedOrDeletedBy(entry, nameof(AuditInfo.DeletedBy), currentUser.Id);
+                            entry.CurrentValues[nameof(IAuditable.DeletedBy)] = currentUser.Id;
+                            entry.CurrentValues[nameof(IAuditable.DeletedAt)] = DateTimeOffset.UtcNow;
                         }
                         break;
                 }
@@ -66,86 +67,22 @@ public static class SoftDeleteExtensions
                 continue;
             }
 
-            if (!typeof(IAuditable<AuditInfo>).IsAssignableFrom(entityType.ClrType))
+            if (!typeof(IAuditable).IsAssignableFrom(entityType.ClrType))
             {
                 continue;
             }
 
             // Build expression: (e) => e.AuditInfo.IsActive == true
             var parameter = Expression.Parameter(entityType.ClrType, "e");
-            var auditInfoProperty = Expression.Property(parameter, nameof(AuditInfo)); // property name on the entity is AuditInfo
-            var isActiveProperty = Expression.Property(auditInfoProperty, nameof(AuditInfo.IsActive));
-            var trueConstant = Expression.Constant(true);
-            var body = Expression.Equal(isActiveProperty, trueConstant);
+            var property = Expression.Property(parameter, nameof(IAuditable.IsActive));
+            var isActive = Expression.Constant(true);
+            var equal = Expression.Equal(property, isActive);
+            var lambda = Expression.Lambda(equal, parameter);
 
-            var lambdaType = typeof(Func<,>).MakeGenericType(entityType.ClrType, typeof(bool));
-            var lambda = Expression.Lambda(lambdaType, body, parameter);
-
+            // This is equivalent to this
+            //modelBuilder.Entity<Shop>().HasQueryFilter(s => s.IsActive == true);
             modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
         }
     }
 
-    private static void SetIsActive(EntityEntry entry, bool isActive)
-    {
-        // Complex property path (root entities)
-        var complex = entry.Metadata.FindComplexProperty(nameof(AuditInfo));
-        if (complex is not null)
-        {
-            entry.ComplexProperty(nameof(AuditInfo))
-                 .Property(nameof(AuditInfo.IsActive))
-                 .CurrentValue = isActive;
-            return;
-        }
-
-        // The ComplexProperty(...) API is only defined on EntityTypeBuilder<TEntity>, not on OwnedNavigationBuilder<TOwner, TEntity>
-        // Owned navigation path (owned entities like RolePermission)
-        var ownedRef = entry.Reference(nameof(AuditInfo));
-        var ownedEntry = ownedRef?.TargetEntry;
-        if (ownedEntry is not null)
-        {
-            ownedEntry.Property(nameof(AuditInfo.IsActive)).CurrentValue = isActive;
-        }
-    }
-
-    private static void SetDeletedAt(EntityEntry entry, DateTimeOffset utcNow)
-    {
-        var complex = entry.Metadata.FindComplexProperty(nameof(AuditInfo));
-        if (complex is not null)
-        {
-            entry.ComplexProperty(nameof(AuditInfo))
-                 .Property(nameof(AuditInfo.DeletedAt))
-                 .CurrentValue = utcNow;
-            return;
-        }
-
-        var ownedRef = entry.Reference(nameof(AuditInfo));
-        var ownedEntry = ownedRef?.TargetEntry;
-        if (ownedEntry is not null)
-        {
-            ownedEntry.Property(nameof(AuditInfo.DeletedAt)).CurrentValue = utcNow;
-        }
-    }
-
-
-    private static void SetIsCreatedUpdatedOrDeletedBy(EntityEntry entry, string propertyName, UserId userId)
-    {
-        // Complex property path (root entities)
-        var complex = entry.Metadata.FindComplexProperty(nameof(AuditInfo));
-        if (complex is not null)
-        {
-            entry.ComplexProperty(nameof(AuditInfo))
-                 .Property(propertyName)
-                 .CurrentValue = userId;
-            return;
-        }
-
-        // The ComplexProperty(...) API is only defined on EntityTypeBuilder<TEntity>, not on OwnedNavigationBuilder<TOwner, TEntity>
-        // Owned navigation path (owned entities like RolePermission)
-        var ownedRef = entry.Reference(nameof(AuditInfo));
-        var ownedEntry = ownedRef?.TargetEntry;
-        if (ownedEntry is not null)
-        {
-            ownedEntry.Property(propertyName).CurrentValue = userId;
-        }
-    }
 }

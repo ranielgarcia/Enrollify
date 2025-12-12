@@ -19,11 +19,33 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
         builder.Property(e => e.Description)
             .HasColumnName("Description");
 
-        // Audit fields
-        builder.ConfigureAuditFields();
-
         builder.Navigation(r => r.RolePermissions)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+
+        builder.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
+        builder.Property(a => a.CreatedBy).HasColumnName("CreatedBy");
+        builder.Property(a => a.UpdatedAt).HasColumnName("UpdatedAt");
+        builder.Property(a => a.UpdatedBy).HasColumnName("UpdatedBy");
+        builder.Property(a => a.DeletedAt).HasColumnName("DeletedAt");
+        builder.Property(a => a.DeletedBy).HasColumnName("DeletedBy");
+        builder.Property(a => a.IsActive).HasColumnName("IsActive");
+
+        // Foreign key relationships for audit fields
+        builder.HasOne(e => e.CreatedByUser)
+          .WithMany()
+          .HasForeignKey(e => e.CreatedBy)
+          .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne(e => e.UpdatedByUser)
+          .WithMany()
+          .HasForeignKey(e => e.UpdatedBy)
+          .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne(e => e.DeletedByUser)
+          .WithMany()
+          .HasForeignKey(e => e.DeletedBy)
+          .OnDelete(DeleteBehavior.NoAction);
 
         builder.OwnsMany<RolePermission>(r => r.RolePermissions, rp =>
         {
@@ -42,8 +64,33 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
             rp.Ignore(e => e.Permissions);
             rp.Ignore(e => e.PermissionScope);
 
-            rp.ConfigureAuditFields();
+
+            rp.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
+            rp.Property(a => a.CreatedBy).HasColumnName("CreatedBy");
+            rp.Property(a => a.UpdatedAt).HasColumnName("UpdatedAt");
+            rp.Property(a => a.UpdatedBy).HasColumnName("UpdatedBy");
+            rp.Property(a => a.DeletedAt).HasColumnName("DeletedAt");
+            rp.Property(a => a.DeletedBy).HasColumnName("DeletedBy");
+            rp.Property(a => a.IsActive).HasColumnName("IsActive");
+
+            // Foreign key relationships for audit fields
+            rp.HasOne(e => e.CreatedByUser)
+              .WithMany()
+              .HasForeignKey(e => e.CreatedBy)
+              .OnDelete(DeleteBehavior.NoAction);
+
+            rp.HasOne(e => e.UpdatedByUser)
+              .WithMany()
+              .HasForeignKey(e => e.UpdatedBy)
+              .OnDelete(DeleteBehavior.NoAction);
+
+            rp.HasOne(e => e.DeletedByUser)
+              .WithMany()
+              .HasForeignKey(e => e.DeletedBy)
+              .OnDelete(DeleteBehavior.NoAction);
         });
+
+
 
     }
 }

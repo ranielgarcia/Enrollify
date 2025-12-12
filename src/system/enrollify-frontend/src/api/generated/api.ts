@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/room-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesRoomTypesListRoomTypesEndpoint"];
+        put?: never;
+        post: operations["EnrollifyWebAPIFeaturesRoomTypesCreateEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/roles": {
         parameters: {
             query?: never;
@@ -119,7 +135,72 @@ export interface components {
             value?: number;
         };
         ArdalisSmartEnumSmartFlagEngineOfPermissionEnumAndInt32: Record<string, never>;
-        EnrollifyApplicationRolesDTOsRoleDTO: {
+        EnrollifyWebAPIFeaturesRoomTypesCreateRoomTypeResponse: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            description?: string;
+        };
+        MicrosoftAspNetCoreHttpHttpValidationProblemDetails: components["schemas"]["MicrosoftAspNetCoreMvcProblemDetails"] & ({
+            errors?: {
+                [key: string]: string[];
+            };
+        } & {
+            [key: string]: unknown;
+        });
+        MicrosoftAspNetCoreMvcProblemDetails: {
+            type?: string | null;
+            title?: string | null;
+            /** Format: int32 */
+            status?: number | null;
+            detail?: string | null;
+            instance?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        EnrollifyWebAPIFeaturesRoomTypesCreateRoomTypeRequest: {
+            name: string;
+            description?: string;
+        };
+        EnrollifyApplicationRoomTypesDTOsRoomTypeDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            name?: string;
+            description?: string;
+        };
+        EnrollifyApplicationBaseDTO: {
+            /** Format: date-time */
+            createdAt?: string;
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            createdBy?: number;
+            createdByUser?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
+            /** Format: date-time */
+            updatedAt?: string | null;
+            updatedBy?: string | null;
+            updatedByUser?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
+            /** Format: date-time */
+            deletedAt?: string | null;
+            deletedBy?: string | null;
+            deletedByUser?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
+            isActive?: boolean;
+        };
+        EnrollifyApplicationBaseUserDTO: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            email?: components["schemas"]["EnrollifyCoreAggregatesUserAggregateUserEmail"];
+            firstName?: string;
+            lastName?: string;
+        };
+        EnrollifyApplicationRolesDTOsRoleDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
             /**
              * Format: int32
              * @description Value object wrapping Int32
@@ -185,6 +266,87 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesRoomTypesListRoomTypesEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationRoomTypesDTOsRoomTypeDTO"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesRoomTypesCreateEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesRoomTypesCreateRoomTypeRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyWebAPIFeaturesRoomTypesCreateRoomTypeResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
