@@ -2,7 +2,6 @@ import { useEffect, useState, type PropsWithChildren } from "react";
 import { useAuthenticationContext } from "../authentication/authenticationContext";
 import { AuthorizationService } from "./AuthorizationService";
 import { PolicyRegistry } from "./policies/PolicyRegistry";
-import { registerDefaultPolicies } from "./policies/defaultPolicies";
 import type { IAuthorizationHandler } from "./handlers/IAuthorizationHandler";
 import { RoleHandler } from "./handlers/RoleHandler";
 import { PermissionHandler } from "./handlers/PermissionHandler";
@@ -13,19 +12,28 @@ import type { AuthorizationResource } from "./models/AuthorizationResource";
 import type { PolicyName } from "./models/PolicyNames";
 import type { Permission } from "./models/PermissionsEnum";
 import type { Role } from "./models/Roles";
+import { registerRoomPolicies } from "./policies/rooms-policies";
 
 export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
   children,
 }) => {
-  const { user } = useAuthenticationContext();
+  // const queryClient = useQueryClient();
+  const { user, isLoading: isUserLoading } = useAuthenticationContext();
   const [authService, setAuthService] = useState<AuthorizationService | null>(
     null
   );
 
+  // Authorization is ready when auth service is initialized and user data is loaded
+  const isReady =
+    authService !== null &&
+    !isUserLoading &&
+    user !== null &&
+    user !== undefined;
+
   useEffect(() => {
     // Initialize authorization service with handlers and policies
     const policyRegistry = new PolicyRegistry();
-    registerDefaultPolicies(policyRegistry);
+    registerRoomPolicies(policyRegistry);
 
     const handlers: IAuthorizationHandler[] = [
       new RoleHandler(),
@@ -80,6 +88,7 @@ export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
   return (
     <AuthorizationContext.Provider
       value={{
+        isReady,
         authorize,
         checkPolicy,
         currentUserHasRole,

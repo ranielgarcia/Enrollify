@@ -1,5 +1,3 @@
-import { Minus } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -13,8 +11,9 @@ import {
 } from "@/components/ui/drawer";
 import { useState } from "react";
 import type { RoomType } from "./room-types-table";
+import { Plus } from "lucide-react";
 
-export function DrawerDemo() {
+export function RoomTypeFormDrawer() {
   const [isOpen, setIsOpen] = useState(false);
   const [typeFormData, setTypeFormData] = useState<Partial<RoomType>>({
     name: "",
@@ -28,16 +27,19 @@ export function DrawerDemo() {
       onOpenChange={setIsOpen}
     >
       <DrawerTrigger asChild>
-        <Button variant="outline">Open Drawer</Button>
+        <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+          <Plus className="size-4" />
+          Add Room Type
+        </Button>
       </DrawerTrigger>
       <DrawerContent>
-        <div className="mx-auto w-full max-w-sm">
-          <DrawerHeader>
-            <DrawerTitle>Create Room Type</DrawerTitle>
-            <DrawerDescription>Set room type details.</DrawerDescription>
-          </DrawerHeader>
-          <div className="p-4 pb-0">
-            <form className="space-y-4">
+        <form className="space-y-4">
+          <div className="mx-auto w-full max-w-sm">
+            <DrawerHeader>
+              <DrawerTitle>Create Room Type</DrawerTitle>
+              <DrawerDescription>Set room type details.</DrawerDescription>
+            </DrawerHeader>
+            <div className="p-4 pb-0">
               <div>
                 <label className="text-sm font-medium text-foreground block mb-1">
                   Type Name
@@ -70,18 +72,18 @@ export function DrawerDemo() {
                   }
                 />
               </div>
-            </form>
-          </div>
+            </div>
 
-          <DrawerFooter>
-            <Button>Submit</Button>
-            <DrawerClose asChild>
-              <Button variant="outline" onClick={() => setIsOpen(false)}>
-                Cancel
-              </Button>
-            </DrawerClose>
-          </DrawerFooter>
-        </div>
+            <DrawerFooter>
+              <Button>Submit</Button>
+              <DrawerClose asChild>
+                <Button variant="outline" onClick={() => setIsOpen(false)}>
+                  Cancel
+                </Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </div>
+        </form>
       </DrawerContent>
     </Drawer>
   );

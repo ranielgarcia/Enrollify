@@ -34,7 +34,10 @@ export const AuthenticationProvider = ({
   } = useAppQuery({
     path: "/api/me",
     queryOptions: {
+      meta: { persist: true },
       queryKey: ["/api/me"],
+      staleTime: 1000 * 60 * 5, // 5 minutes - use cached data without refetching
+      gcTime: 1000 * 60 * 60 * 24, // 24 hours - keep in cache for persistence
     },
   });
 
@@ -49,6 +52,12 @@ export const AuthenticationProvider = ({
             user: {
               fullName: account.name ?? "",
               email: account.username,
+            },
+            isLoading: false,
+            refreshUserContext: () => {
+              queryClientRef.current.invalidateQueries({
+                queryKey: ["/api/me"],
+              });
             },
           } as IAuthenticationContext);
         }
@@ -73,6 +82,7 @@ export const AuthenticationProvider = ({
 
       setContextValue({
         user: userContext,
+        isLoading: isLoadingUserContext,
         refreshUserContext: () => {
           queryClientRef.current.invalidateQueries({
             queryKey: ["/api/me"],
@@ -86,6 +96,12 @@ export const AuthenticationProvider = ({
           fullName: currentAccount?.name,
           email: currentAccount?.username,
         },
+        isLoading: isLoadingUserContext,
+        refreshUserContext: () => {
+          queryClientRef.current.invalidateQueries({
+            queryKey: ["/api/me"],
+          });
+        },
       } as IAuthenticationContext);
     }
   }, [
@@ -93,6 +109,7 @@ export const AuthenticationProvider = ({
     accounts,
     isGetUserContextSuccessful,
     userContext,
+    isLoadingUserContext,
     queryClientRef,
   ]);
 

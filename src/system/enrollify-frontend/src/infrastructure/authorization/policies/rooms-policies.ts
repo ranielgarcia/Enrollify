@@ -6,9 +6,14 @@ import type { PolicyRegistry } from "./PolicyRegistry";
 export const registerRoomPolicies = (registry: PolicyRegistry) => {
   // Admin-only policy with full permissions on Rooms scope
   registry.register(
-    new PolicyBuilder("AdminOnly")
-      .requireRole(createRole("Admin"))
-      .requirePermission(createPermission("Full"), "Rooms")
+    new PolicyBuilder("canViewRooms")
+      .requireRole(
+        createRole("Admin"),
+        createRole("SystemAdmin"),
+        createRole("Registrar")
+      )
+      .requirePermission(createPermission("View"), "Rooms")
+      .requireAll()
       .build()
   );
 };

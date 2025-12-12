@@ -9,6 +9,12 @@ import type { Role } from "./models/Roles";
 // React Context for Authorization
 export interface IAuthorizationContextValue {
   /**
+   * Indicates whether the authorization context is ready to make authorization decisions.
+   * This is false until both the user data is loaded and the auth service is initialized.
+   */
+  isReady: boolean;
+
+  /**
    * Authorize against a named policy.
    * @param policyName - The policy to evaluate
    * @param resource - Optional resource for scoped/entity-level authorization

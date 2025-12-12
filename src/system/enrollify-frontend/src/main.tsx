@@ -16,7 +16,12 @@ import { handleLogin } from "./infrastructure/authentication/msal";
 import { AuthenticationProvider } from "./infrastructure/authentication/authenticationProvider";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "./components/theming/theme-provider";
-import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import {
+  PersistQueryClientProvider,
+  type PersistedClient,
+  type Persister,
+} from "@tanstack/react-query-persist-client";
 import type { RouteLoaderData } from "./types/route.types";
 import { AuthorizationProvider } from "./infrastructure/authorization/AuthorizationProvider";
 import {
@@ -27,10 +32,24 @@ import {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
+      // refetchOnWindowFocus: false,
+      gcTime: 1000 * 60 * 60 * 24, // 24 hours - how long inactive data stays in cache
     },
   },
 });
+
+const persister: Persister = {
+  persistClient: async (client: PersistedClient) => {
+    localStorage.setItem("REACT_QUERY_CACHE", JSON.stringify(client));
+  },
+  restoreClient: async () => {
+    const cache = localStorage.getItem("REACT_QUERY_CACHE");
+    return cache ? JSON.parse(cache) : undefined;
+  },
+  removeClient: async () => {
+    localStorage.removeItem("REACT_QUERY_CACHE");
+  },
+};
 
 const msal = {} as IMsalContext;
 const authorization = {} as IAuthorizationContextValue;
@@ -108,13 +127,21 @@ if (!rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <MsalProvider instance={msalInstance}>
-        <QueryClientProvider client={queryClient}>
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={{
+            persister,
+            dehydrateOptions: {
+              shouldDehydrateQuery: (query) => query.meta?.persist === true,
+            },
+          }}
+        >
           <AuthenticationProvider>
             <AuthorizationProvider>
               <App />
             </AuthorizationProvider>
           </AuthenticationProvider>
-        </QueryClientProvider>
+        </PersistQueryClientProvider>
       </MsalProvider>
     </StrictMode>
   );
