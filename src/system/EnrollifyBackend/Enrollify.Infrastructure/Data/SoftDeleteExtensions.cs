@@ -1,4 +1,6 @@
 ﻿using Enrollify.Core;
+using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Core.Authentication;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Linq.Expressions;
 
@@ -6,7 +8,7 @@ namespace Enrollify.Infrastructure.Data;
 
 public static class SoftDeleteExtensions
 {
-    public static void ApplySoftDelete<TContext>(this TContext context) where TContext : DbContext
+    public static void ApplySoftDelete<TContext>(this TContext context, UserContext? currentUser) where TContext : DbContext
     {
         var changeTracker = context.ChangeTracker;
 
@@ -20,12 +22,27 @@ public static class SoftDeleteExtensions
 
                         SetIsActive(entry, isActive: true);
 
+                        if (currentUser is not null)
+                        {
+                            SetIsCreatedUpdatedOrDeletedBy(entry, nameof(AuditInfo.CreatedBy), currentUser.Id);
+                        }
                         break;
-
+                    case EntityState.Modified:
+                        
+                        if (currentUser is not null)
+                        {
+                            SetIsCreatedUpdatedOrDeletedBy(entry, nameof(AuditInfo.UpdatedBy), currentUser.Id);
+                        }
+                        break;
                     case EntityState.Deleted:
                         entry.State = EntityState.Modified;
                         SetIsActive(entry, isActive: false);
                         SetDeletedAt(entry, DateTimeOffset.UtcNow);
+
+                        if (currentUser is not null)
+                        {
+                            SetIsCreatedUpdatedOrDeletedBy(entry, nameof(AuditInfo.DeletedBy), currentUser.Id);
+                        }
                         break;
                 }
             }
@@ -106,6 +123,29 @@ public static class SoftDeleteExtensions
         if (ownedEntry is not null)
         {
             ownedEntry.Property(nameof(AuditInfo.DeletedAt)).CurrentValue = utcNow;
+        }
+    }
+
+
+    private static void SetIsCreatedUpdatedOrDeletedBy(EntityEntry entry, string propertyName, UserId userId)
+    {
+        // Complex property path (root entities)
+        var complex = entry.Metadata.FindComplexProperty(nameof(AuditInfo));
+        if (complex is not null)
+        {
+            entry.ComplexProperty(nameof(AuditInfo))
+                 .Property(propertyName)
+                 .CurrentValue = userId;
+            return;
+        }
+
+        // The ComplexProperty(...) API is only defined on EntityTypeBuilder<TEntity>, not on OwnedNavigationBuilder<TOwner, TEntity>
+        // Owned navigation path (owned entities like RolePermission)
+        var ownedRef = entry.Reference(nameof(AuditInfo));
+        var ownedEntry = ownedRef?.TargetEntry;
+        if (ownedEntry is not null)
+        {
+            ownedEntry.Property(propertyName).CurrentValue = userId;
         }
     }
 }
