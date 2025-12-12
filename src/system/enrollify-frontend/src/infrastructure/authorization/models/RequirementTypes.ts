@@ -1,5 +1,4 @@
 export const RequirementTypes = {
-  Scope: "Scope",
   Role: "Role",
   Permission: "Permission",
 };

@@ -1,5 +1,7 @@
 import type { UserContext } from "../../../api/models/UserContext";
-import type { AuthorizationScope, Scope } from "../models/AuthorizationScope";
+import type { ScopeName } from "../models/AuthorizationScope";
+import { Scopes } from "../models/AuthorizationScope";
+import type { AuthorizationResource } from "../models/AuthorizationResource";
 import {
   PermissionFlagEnum,
   type Permission,
@@ -79,30 +81,42 @@ export function userHasAnyRole(
 }
 
 /**
- * Check if scope matches the target scope
+ * Check if a user's permission scope matches the target scope name
  */
 export function scopeMatches(
   userScope: { name?: string | null; value?: number } | null | undefined,
-  targetScope: Scope
+  targetScopeName: ScopeName
 ): boolean {
   if (!userScope) return false;
 
   // Check name matches
-  if (userScope.name !== targetScope.name) return false;
+  if (userScope.name !== targetScopeName) return false;
 
-  // If target has specific ID, check it matches
-  if (targetScope.id !== 0 && userScope.value !== targetScope.id) return false;
+  // Check value matches the expected scope ID
+  const expectedScopeId = Scopes[targetScopeName];
+  if (userScope.value !== expectedScopeId) return false;
 
   return true;
 }
 
 /**
- * Check if user has the specified permission within the given scope
+ * Check if user has the specified permission within the given resource scope.
+ *
+ * @param user - The user context
+ * @param permission - The permission to check
+ * @param resource - Optional resource (if provided, checks permission within that scope)
+ *
+ * @example
+ * // Check if user has View permission on Rooms feature
+ * userHasPermission(user, createPermission("View"), { scope: "Rooms" })
+ *
+ * // Check if user has Update permission (any scope)
+ * userHasPermission(user, createPermission("Update"))
  */
 export function userHasPermission(
   user: UserContext | null | undefined,
   permission: Permission,
-  authorizationScope?: AuthorizationScope
+  resource?: AuthorizationResource
 ): boolean {
   const validation = validateUserContext(user);
   if (!validation.isValid) return false;
@@ -113,11 +127,11 @@ export function userHasPermission(
     if (!role.permissionScopes) continue;
 
     for (const permissionScope of role.permissionScopes) {
-      // If scope is specified, check if it matches
-      if (authorizationScope) {
+      // If resource scope is specified, check if it matches
+      if (resource?.scope) {
         const matches = scopeMatches(
           permissionScope.permissionScope,
-          authorizationScope.scope
+          resource.scope
         );
         if (!matches) continue;
       }
@@ -152,14 +166,4 @@ export function checkPermissionInScope(
       p.value !== null &&
       requiredPermission.has(p.value as PermissionValue)
   );
-}
-
-/**
- * Get the effective scope from requirement and context
- */
-export function getEffectiveScope(
-  requirementScope: AuthorizationScope | undefined,
-  contextScope: AuthorizationScope | undefined
-): Scope | undefined {
-  return requirementScope?.scope || contextScope?.scope;
 }

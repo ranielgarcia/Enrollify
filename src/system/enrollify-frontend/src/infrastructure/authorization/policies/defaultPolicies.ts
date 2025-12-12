@@ -1,4 +1,3 @@
-import { createScope } from "../models/AuthorizationScope";
 import { createPermission } from "../models/PermissionsEnum";
 import { createRole } from "../models/Roles";
 import { PolicyBuilder } from "./PolicyBuilder";
@@ -10,18 +9,17 @@ export const registerDefaultPolicies = (registry: PolicyRegistry) => {
     new PolicyBuilder("AdminOnly").requireRole(createRole("Admin")).build()
   );
 
-  // Permission-based policy
+  // Permission-based policy - requires Update permission on Users scope
   registry.register(
     new PolicyBuilder("CanManageStudents")
-      .requirePermission(createPermission("None"))
+      .requirePermission(createPermission("Update"), "Users")
       .build()
   );
 
-  // Scoped permission policy
+  // Scoped permission policy - requires Update on Users scope
   registry.register(
     new PolicyBuilder("CanManageDepartmentStudents")
-      .requirePermission(createPermission("Update"))
-      .requireScope(createScope("None"))
+      .requirePermission(createPermission("Update"), "Users")
       .build()
   );
 
@@ -29,7 +27,7 @@ export const registerDefaultPolicies = (registry: PolicyRegistry) => {
   registry.register(
     new PolicyBuilder("EnrollmentManager")
       .requireRole(createRole("Registrar"), createRole("FinanceOfficer"))
-      .requirePermission(createPermission("Update"))
+      .requirePermission(createPermission("Update"), "Users")
       .requireAll()
       .build()
   );
@@ -42,12 +40,11 @@ export const registerDefaultPolicies = (registry: PolicyRegistry) => {
       .build()
   );
 
-  // Department-scoped policy
+  // Department-scoped policy - requires DepartmentHead role AND Full permission on Users scope
   registry.register(
     new PolicyBuilder("DepartmentAdmin")
       .requireRole(createRole("DepartmentHead"))
-      .requireScope(createScope("None"))
-      .requirePermission(createPermission("Full"))
+      .requirePermission(createPermission("Full"), "Users")
       .build()
   );
 };

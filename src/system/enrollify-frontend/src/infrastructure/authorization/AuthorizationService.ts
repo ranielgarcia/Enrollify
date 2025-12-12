@@ -4,7 +4,7 @@ import type { AuthorizationResult } from "./AuthorizationResult";
 import type { IAuthorizationHandler } from "./handlers/IAuthorizationHandler";
 import type { PolicyRegistry } from "./policies/PolicyRegistry";
 import type { IAuthorizationRequirement } from "./requirements/IAuthorizationRequirement";
-import type { AuthorizationScope } from "./models/AuthorizationScope";
+import type { AuthorizationResource } from "./models/AuthorizationResource";
 import type { PolicyName } from "./models/PolicyNames";
 import type { Permission } from "./models/PermissionsEnum";
 import type { Role } from "./models/Roles";
@@ -109,9 +109,9 @@ export class AuthorizationService {
   hasPermission(
     user: UserContext | null,
     permission: Permission,
-    authorizationScope?: AuthorizationScope
+    resource?: AuthorizationResource
   ): boolean {
-    return userHasPermission(user, permission, authorizationScope);
+    return userHasPermission(user, permission, resource);
   }
 
   /**

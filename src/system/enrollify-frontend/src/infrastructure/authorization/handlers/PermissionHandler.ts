@@ -6,6 +6,7 @@ import type { IAuthorizationRequirement } from "../requirements/IAuthorizationRe
 import type { PermissionRequirement } from "../requirements/PermissionRequirement";
 import type { IAuthorizationHandler } from "./IAuthorizationHandler";
 import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
+import type { AuthorizationResource } from "../models/AuthorizationResource";
 import { userHasPermission } from "../helpers/AuthorizationHelpers";
 
 export class PermissionHandler implements IAuthorizationHandler {
@@ -27,14 +28,18 @@ export class PermissionHandler implements IAuthorizationHandler {
 
     const permissionRequirement = requirement as PermissionRequirement;
 
-    // Use context's authorizationScope if requirement doesn't specify one
-    const effectiveAuthorizationScope =
-      permissionRequirement.authorizationScope || context.authorizationScope;
+    // Use requirement's scope, fallback to context's resource scope
+    const effectiveScope =
+      permissionRequirement.scope ?? context.resource?.scope;
+
+    const resource: AuthorizationResource | undefined = effectiveScope
+      ? { scope: effectiveScope }
+      : undefined;
 
     return userHasPermission(
       context.user,
       permissionRequirement.permission,
-      effectiveAuthorizationScope
+      resource
     );
   }
 }

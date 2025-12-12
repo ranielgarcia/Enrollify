@@ -1,9 +1,8 @@
-import type { AuthorizationScope, Scope } from "../models/AuthorizationScope";
+import type { ScopeName } from "../models/AuthorizationScope";
 import type { IAuthorizationPolicy } from "./IAuthorizationPolicy";
 import type { IAuthorizationRequirement } from "../requirements/IAuthorizationRequirement";
 import { PermissionRequirement } from "../requirements/PermissionRequirement";
 import { RoleRequirement } from "../requirements/RoleRequirement";
-import { ScopeRequirement } from "../requirements/ScopeRequirement";
 import type { PolicyName } from "../models/PolicyNames";
 import type { Permission } from "../models/PermissionsEnum";
 import type { Role } from "../models/Roles";
@@ -24,13 +23,13 @@ export class PolicyBuilder {
     return this;
   }
 
-  requirePermission(permission: Permission, scope?: AuthorizationScope): this {
+  /**
+   * Require a specific permission within a scope.
+   * @param permission - The permission to require (View, Create, Update, Delete, Full)
+   * @param scope - The feature scope to check the permission within (Users, Roles, Rooms, etc.)
+   */
+  requirePermission(permission: Permission, scope: ScopeName): this {
     this.policy.requirements.push(new PermissionRequirement(permission, scope));
-    return this;
-  }
-
-  requireScope(scope: Scope): this {
-    this.policy.requirements.push(new ScopeRequirement(scope));
     return this;
   }
 
