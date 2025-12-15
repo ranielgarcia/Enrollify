@@ -8,6 +8,8 @@ public static class RoomTypesAuthorizationPolicyRegistration
     {
         services.AddScoped<IAuthorizationHandler, HasCreateRoomTypePermissionHandler>();
         services.AddScoped<IAuthorizationHandler, HasViewRoomTypesPermissionHandler>();
+        services.AddScoped<IAuthorizationHandler, HasUpdateRoomTypePermissionHandler>();
+        services.AddScoped<IAuthorizationHandler, HasDeleteRoomTypePermissionHandler>();
 
         return services;
     }
@@ -16,7 +18,10 @@ public static class RoomTypesAuthorizationPolicyRegistration
     {
         options.AddPolicy(PolicyName.HasCreateRoomTypePermission, policyBuilder =>
             policyBuilder.AddRequirements(new HasCreateRoomTypePermission()));
-
+        options.AddPolicy(PolicyName.HasUpdateRoomTypesPermission, policyBuilder =>
+            policyBuilder.AddRequirements(new HasUpdateRoomTypePermission()));
+        options.AddPolicy(PolicyName.HasDeleteRoomTypesPermission, policyBuilder =>
+            policyBuilder.AddRequirements(new HasDeleteRoomTypePermission()));
         options.AddPolicy(PolicyName.HasViewRoomTypesPermission, policyBuilder =>
             policyBuilder.AddRequirements(new HasViewRoomTypesPermission()));
     }

@@ -8,19 +8,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table";
 import { Edit2, Trash2 } from "lucide-react";
-import type AuditInfo from "@/api/models/AuditInfo";
 import { formatDateTime } from "@/lib/dateutils";
-
-export interface RoomType extends AuditInfo {
-  id: number;
-  name: string;
-  description: string;
-}
+import type { RoomType } from "./models/RoomType";
 
 interface RoomTypesTableProps {
   roomTypes: RoomType[];
   onEdit: (roomType: RoomType) => void;
-  onDelete: (id: number) => void;
+  onDelete: (roomType: RoomType) => void;
 }
 
 export function RoomTypesTable({
@@ -69,32 +63,17 @@ export function RoomTypesTable({
         cell: (info) => <span>{info.getValue()}</span>,
       }
     ),
-    columnHelper.accessor("deletedAt", {
-      header: "Deleted At",
-      cell: (info) => <span>{formatDateTime(info.getValue())}</span>,
-    }),
-    columnHelper.accessor(
-      (row) =>
-        row.deletedBy?.firstName
-          ? `${row.deletedBy?.firstName} ${row.deletedBy?.lastName}`
-          : "",
-      {
-        id: "deletedBy",
-        header: "Deleted By",
-        cell: (info) => <span>{info.getValue()}</span>,
-      }
-    ),
     columnHelper.display({
       id: "actions",
       header: "Actions",
       cell: (info) => {
-        const room = info.row.original;
+        const item = info.row.original;
         return (
           <div className="flex gap-2">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onEdit(room)}
+              onClick={() => onEdit(item)}
               className="hover:bg-blue-500/10 text-blue-600 hover:text-blue-700"
             >
               <Edit2 className="size-4" />
@@ -102,7 +81,7 @@ export function RoomTypesTable({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onDelete(room.id)}
+              onClick={() => onDelete(item)}
               className="hover:bg-destructive/10 text-destructive hover:text-destructive"
             >
               <Trash2 className="size-4" />

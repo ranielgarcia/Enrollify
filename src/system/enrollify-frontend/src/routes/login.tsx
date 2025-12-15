@@ -7,7 +7,7 @@ export const Route = createFileRoute("/login")({
     const activeAccount = msal?.instance.getActiveAccount();
     if (activeAccount !== null) {
       throw redirect({
-        to: "/portal/dashboard",
+        to: "/portal/home",
       });
     }
   },

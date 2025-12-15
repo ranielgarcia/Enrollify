@@ -1,9 +1,8 @@
 ﻿using Ardalis.Result;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
-using Enrollify.SharedKernel;
 using Mediator;
 
-namespace Enrollify.Application.RoomTypes.Features.Create;
+namespace Enrollify.Application.RoomTypes.Features;
 
 public static class CreateRoomType
 {
@@ -11,16 +10,17 @@ public static class CreateRoomType
 
     public sealed class Handler : ICommandHandler<Command, Result<RoomTypeId>>
     {
-        private readonly IRepository<RoomType> _roomTypeRepository;
-        public Handler(IRepository<RoomType> roomTypeRepository)
+        private readonly IRoomTypeRepository _roomTypeRepository;
+
+        public Handler(IRoomTypeRepository roomTypeRepository)
         {
             _roomTypeRepository = roomTypeRepository;
         }
         public async ValueTask<Result<RoomTypeId>> Handle(Command command, CancellationToken cancellationToken)
         {
             var roomType = RoomType.Create(command.name, command.description);
-            await _roomTypeRepository.AddAsync(roomType, cancellationToken);
-            return Result.Success(roomType.Id);
+            var result = await _roomTypeRepository.Create(roomType, cancellationToken);
+            return result;
         }
     }
 }

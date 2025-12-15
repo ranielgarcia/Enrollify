@@ -12,6 +12,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/sonner";
 import type { RouteLoaderData } from "@/types/route.types";
 import { Separator } from "@radix-ui/react-separator";
 import {
@@ -99,6 +100,7 @@ function RouteComponent() {
         </header>
         <AppContainer>
           <Outlet />
+          <Toaster position="bottom-center" />
         </AppContainer>
       </SidebarInset>
     </SidebarProvider>

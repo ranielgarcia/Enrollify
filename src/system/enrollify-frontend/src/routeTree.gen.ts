@@ -14,7 +14,7 @@ import { Route as PortalRouteRouteImport } from './routes/portal/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PortalHomeRouteImport } from './routes/portal/home'
 import { Route as PortalMasterDataRouteRouteImport } from './routes/portal/master-data/route'
-import { Route as PortalMasterDataRoomsRouteImport } from './routes/portal/master-data/rooms'
+import { Route as PortalMasterDataRoomsTabRouteImport } from './routes/portal/master-data/rooms.$tab'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -41,11 +41,12 @@ const PortalMasterDataRouteRoute = PortalMasterDataRouteRouteImport.update({
   path: '/master-data',
   getParentRoute: () => PortalRouteRoute,
 } as any)
-const PortalMasterDataRoomsRoute = PortalMasterDataRoomsRouteImport.update({
-  id: '/rooms',
-  path: '/rooms',
-  getParentRoute: () => PortalMasterDataRouteRoute,
-} as any)
+const PortalMasterDataRoomsTabRoute =
+  PortalMasterDataRoomsTabRouteImport.update({
+    id: '/rooms/$tab',
+    path: '/rooms/$tab',
+    getParentRoute: () => PortalMasterDataRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,7 +54,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/portal/master-data': typeof PortalMasterDataRouteRouteWithChildren
   '/portal/home': typeof PortalHomeRoute
-  '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
+  '/portal/master-data/rooms/$tab': typeof PortalMasterDataRoomsTabRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,7 +62,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/portal/master-data': typeof PortalMasterDataRouteRouteWithChildren
   '/portal/home': typeof PortalHomeRoute
-  '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
+  '/portal/master-data/rooms/$tab': typeof PortalMasterDataRoomsTabRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,7 +71,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/portal/master-data': typeof PortalMasterDataRouteRouteWithChildren
   '/portal/home': typeof PortalHomeRoute
-  '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
+  '/portal/master-data/rooms/$tab': typeof PortalMasterDataRoomsTabRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -80,7 +81,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal/master-data'
     | '/portal/home'
-    | '/portal/master-data/rooms'
+    | '/portal/master-data/rooms/$tab'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -88,7 +89,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal/master-data'
     | '/portal/home'
-    | '/portal/master-data/rooms'
+    | '/portal/master-data/rooms/$tab'
   id:
     | '__root__'
     | '/'
@@ -96,7 +97,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal/master-data'
     | '/portal/home'
-    | '/portal/master-data/rooms'
+    | '/portal/master-data/rooms/$tab'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -142,22 +143,22 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalMasterDataRouteRouteImport
       parentRoute: typeof PortalRouteRoute
     }
-    '/portal/master-data/rooms': {
-      id: '/portal/master-data/rooms'
-      path: '/rooms'
-      fullPath: '/portal/master-data/rooms'
-      preLoaderRoute: typeof PortalMasterDataRoomsRouteImport
+    '/portal/master-data/rooms/$tab': {
+      id: '/portal/master-data/rooms/$tab'
+      path: '/rooms/$tab'
+      fullPath: '/portal/master-data/rooms/$tab'
+      preLoaderRoute: typeof PortalMasterDataRoomsTabRouteImport
       parentRoute: typeof PortalMasterDataRouteRoute
     }
   }
 }
 
 interface PortalMasterDataRouteRouteChildren {
-  PortalMasterDataRoomsRoute: typeof PortalMasterDataRoomsRoute
+  PortalMasterDataRoomsTabRoute: typeof PortalMasterDataRoomsTabRoute
 }
 
 const PortalMasterDataRouteRouteChildren: PortalMasterDataRouteRouteChildren = {
-  PortalMasterDataRoomsRoute: PortalMasterDataRoomsRoute,
+  PortalMasterDataRoomsTabRoute: PortalMasterDataRoomsTabRoute,
 }
 
 const PortalMasterDataRouteRouteWithChildren =

@@ -1,5 +1,5 @@
 ﻿using Enrollify.Application.RoomTypes.DTOs;
-using Enrollify.Application.RoomTypes.Features.List;
+using Enrollify.Application.RoomTypes.Features;
 using Enrollify.WebAPI.Authorization;
 using FastEndpoints;
 using Mediator;

@@ -24,8 +24,8 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable
     public string RoomNumber { get; private set; }
     public int Capacity { get; private set; }
     public RoomTypeId RoomTypeId { get; private set; }
-    public BuildingId BuildingId { get; set; }
-    public CollegeId CollegeId { get; set; }
+    public BuildingId BuildingId { get; private set; }
+    public CollegeId CollegeId { get; private set; }
 
 
     public DateTimeOffset CreatedAt { get; private set; }
@@ -43,6 +43,7 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable
 
     // Navigation property - not exposed publicly
     private RoomType? _roomType;
+    public RoomType? RoomType => _roomType;
 
     public Room UpdateName(string newRoomNumber)
     {

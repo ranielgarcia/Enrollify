@@ -23,14 +23,13 @@ type JsonResponseForPathVerb<P extends ApiPath, V extends HttpVerb> =
       : never
     : never;
 
-// Extract query params type for a given path
-type QueryParamsForPath<P extends ApiPath> = ApiPaths[P] extends {
-  parameters: { query?: infer Q };
-}
-  ? Q extends never
-    ? undefined
-    : Q
-  : undefined;
+// Extract query params type for a given path + verb (operation-level params)
+type QueryParamsForPathVerb<P extends ApiPath, V extends HttpVerb> =
+  ApiPaths[P] extends Record<V, infer Op>
+    ? Op extends { parameters: { query: infer Q } }
+      ? Q
+      : undefined
+    : undefined;
 
 // Extract request body type (application/json) for a given path + verb
 type JsonRequestBodyForPathVerb<P extends ApiPath, V extends HttpVerb> =
@@ -48,7 +47,7 @@ interface UseMutationParams<P extends ApiPath, V extends HttpVerb> {
   httpVerb?: V;
   mutationKey: string | readonly unknown[];
   path: P;
-  params?: QueryParamsForPath<P>;
+  params?: QueryParamsForPathVerb<P, V>;
   isMultipart?: boolean;
   onUploadProgressCallBack?: (progressEvent: AxiosProgressEvent) => void;
   forceRefreshToken?: boolean;
@@ -112,7 +111,7 @@ const useAppMutation = <P extends ApiPath, V extends HttpVerb = "post">({
               "Content-Type": "multipart/form-data",
               Accept: "*/*",
             },
-            params: params as QueryParamsForPath<P>,
+            params: params as QueryParamsForPathVerb<P, V>,
             onUploadProgress: onUploadProgressCallBack,
           }
         );
@@ -128,7 +127,7 @@ const useAppMutation = <P extends ApiPath, V extends HttpVerb = "post">({
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json; charset=utf8",
         },
-        params: params as QueryParamsForPath<P>,
+        params: params as QueryParamsForPathVerb<P, V>,
       });
 
       return response.data;

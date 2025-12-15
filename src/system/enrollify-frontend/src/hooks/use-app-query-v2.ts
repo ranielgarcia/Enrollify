@@ -27,13 +27,13 @@ type JsonResponseForPath<P extends ApiPath> = ApiPaths[P] extends {
     : never
   : never;
 
-// Extract the query params type for a given path, if present.
+// Extract the query params type for a GET operation on a given path.
 type QueryParamsForPath<P extends ApiPath> = ApiPaths[P] extends {
-  parameters: { query?: infer Q };
+  get: infer GetOp;
 }
-  ? Q extends never
-    ? undefined
-    : Q
+  ? GetOp extends { parameters: { query: infer Q } }
+    ? Q
+    : undefined
   : undefined;
 
 interface useQueryParams<P extends ApiPath, TError = unknown> {

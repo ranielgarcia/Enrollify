@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { type RoomType } from "./room-types-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoomsTab } from "./rooms-tab";
 import type { Room } from "./rooms-table";
@@ -7,8 +6,15 @@ import { RoomTypeTab } from "./room-type-tab";
 import useAppQuery from "@/hooks/use-app-query-v2";
 import type BasicUserInfo from "@/api/models/AuditInfo";
 import { parseDateTime } from "@/lib/dateutils";
+import type { RoomType } from "./models/RoomType";
+import { OverlayLoader } from "@/components/app-loading-overlay";
+import { useParams } from "@tanstack/react-router";
 
 export default function RoomsPage() {
+  const { tab } = useParams();
+
+  console.log(tab);
+
   const [rooms] = useState<Room[]>([
     {
       id: 1,
@@ -60,37 +66,10 @@ export default function RoomsPage() {
     },
   ]);
 
-  // const [roomTypes] = useState<RoomType[]>([
-  //   {
-  //     id: "1",
-  //     name: "Lecture Hall",
-  //     description: "Large classroom for lectures",
-  //   },
-  //   {
-  //     id: "2",
-  //     name: "Lab",
-  //     description: "Equipment and experiment space",
-  //   },
-  //   {
-  //     id: "3",
-  //     name: "Seminar Room",
-  //     description: "Interactive discussion space",
-  //   },
-  //   {
-  //     id: "4",
-  //     name: "Tutorial Room",
-  //     description: "Small group study room",
-  //   },
-  //   {
-  //     id: "5",
-  //     name: "Auditorium",
-  //     description: "Large assembly hall",
-  //   },
-  // ]);
-
-  const { data: roomTypesData } = useAppQuery({
-    path: "/api/room-types",
-  });
+  const { data: roomTypesData, isPending: isLoadingRoomTypesInProgress } =
+    useAppQuery({
+      path: "/api/room-types",
+    });
 
   const roomTypes: RoomType[] = roomTypesData
     ? roomTypesData.map(
@@ -118,6 +97,11 @@ export default function RoomsPage() {
 
   return (
     <main>
+      <OverlayLoader
+        isLoading={isLoadingRoomTypesInProgress}
+        text="Loading"
+        size="sm"
+      />
       <div className="p-4 md:p-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
