@@ -1,10 +1,13 @@
-// This must stay in sync with the RolesEnum in the backend.
+// Reminder: Be mindful when changing the values of existing enums, as they are stored in the database and
+// the value is considered an identifier (Id value).
+// This enum must be kept in sync with `PermissionScopeEnum.cs` in the backend API
 export const Scopes = {
   None: 0,
   Users: 1,
   Roles: 2,
-  Rooms: 3,
-  RoomTypes: 4,
+  Colleges: 3,
+  Rooms: 4,
+  RoomTypes: 5,
 } as const;
 
 export type ScopeName = keyof typeof Scopes;
