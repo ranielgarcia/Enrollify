@@ -35,7 +35,7 @@ public class CreateRoomTypeRequestValidator : Validator<CreateRoomTypeRequest>
 }
 
 [HttpPost("")]
-[Group<RoomTypeEndpoingGroup>]
+[Group<RoomTypeEndpointGroup>]
 [Authorize(Policy = PolicyName.HasCreateRoomTypePermission)]
 public class CreateEndpoint : Endpoint<CreateRoomTypeRequest, Results<Created<CreateRoomTypeResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
 {

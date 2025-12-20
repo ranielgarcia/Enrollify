@@ -14,7 +14,6 @@ public class HasDeleteRoomTypePermissionHandler : UserAuthorizationHandler<HasDe
     public HasDeleteRoomTypePermissionHandler(IMediator mediator) : base(mediator) { }
     protected override Task CheckRequirement(UserContext user, AuthorizationHandlerContext context, HasDeleteRoomTypePermission requirement)
     {
-        // Check if the user has the 'Delete' permission for the 'RoomTypes' scope
         if (user.HasPermissionToTheScope(PermissionScopeEnum.RoomTypes, PermissionEnum.Delete))
         {
             context.Succeed(requirement);

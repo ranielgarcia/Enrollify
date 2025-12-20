@@ -55,7 +55,7 @@ export function RoomTypeTab({
 
       <DeleteRoomTypeAlertDialog
         isOpen={!!roomTypeToDelete}
-        openOpenChange={handleDeleteAlertDialogOnOpenChange}
+        onOpenChange={handleDeleteAlertDialogOnOpenChange}
         roomTypeToDelete={roomTypeToDelete}
         onSuccessful={refreshRoomTypesTable}
       />

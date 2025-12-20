@@ -27,6 +27,7 @@ export interface NavMainItemProp {
   items?: {
     title: string;
     url: FileRouteTypes["to"] & {};
+    params?: Record<string, string>;
   }[];
 }
 
@@ -84,7 +85,7 @@ export function NavMain({ items }: NavMainProps) {
                             : "text-sidebar-foreground hover:bg-sidebar-accent/10"
                         )}
                       >
-                        <Link to={subItem.url}>
+                        <Link to={subItem.url} params={subItem.params}>
                           <span>{subItem.title}</span>
                         </Link>
                       </SidebarMenuSubButton>

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace Enrollify.WebAPI.Features.RoomTypes;
 
 [HttpGet("")]
-[Group<RoomTypeEndpoingGroup>]
+[Group<RoomTypeEndpointGroup>]
 [Authorize(Policy = PolicyName.HasViewRoomTypesPermission)]
 public class ListRoomTypesEndpoint : EndpointWithoutRequest<List<RoomTypeDTO>>
 {

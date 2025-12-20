@@ -40,7 +40,7 @@ public class UpdateRoomTypeRequestValidator : Validator<UpdateRoomTypeRequest>
 }
 
 [HttpPut("")]
-[Group<RoomTypeEndpoingGroup>]
+[Group<RoomTypeEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateRoomTypesPermission)]
 public class UpdateEndpoint : Endpoint<UpdateRoomTypeRequest, Results<Ok<UpdateRoomTypeResponse>, NotFound, Conflict<string[]>, ProblemHttpResult>>
 {

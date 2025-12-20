@@ -14,7 +14,6 @@ public class HasCreateRoomTypePermissionHandler : UserAuthorizationHandler<HasCr
     public HasCreateRoomTypePermissionHandler(IMediator mediator) : base(mediator) { }
     protected override Task CheckRequirement(UserContext user, AuthorizationHandlerContext context, HasCreateRoomTypePermission requirement)
     {
-        // Check if the user has the 'View' permission for the 'Roles' scope
         if (user.HasPermissionToTheScope(PermissionScopeEnum.RoomTypes, PermissionEnum.Create))
         {
             context.Succeed(requirement);

@@ -14,7 +14,6 @@ public class HasUpdateRoomTypePermissionHandler : UserAuthorizationHandler<HasUp
     public HasUpdateRoomTypePermissionHandler(IMediator mediator) : base(mediator) { }
     protected override Task CheckRequirement(UserContext user, AuthorizationHandlerContext context, HasUpdateRoomTypePermission requirement)
     {
-        // Check if the user has the 'Update' permission for the 'RoomTypes' scope
         if (user.HasPermissionToTheScope(PermissionScopeEnum.RoomTypes, PermissionEnum.Update))
         {
             context.Succeed(requirement);

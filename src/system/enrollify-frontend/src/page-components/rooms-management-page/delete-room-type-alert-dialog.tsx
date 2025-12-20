@@ -23,14 +23,14 @@ import type { AxiosError } from "axios";
 interface DeleteRoomTypeAlertDialogProps {
   roomTypeToDelete?: RoomType;
   isOpen: boolean;
-  openOpenChange: (open: boolean) => void;
+  onOpenChange: (open: boolean) => void;
   onSuccessful: () => void;
 }
 
 export function DeleteRoomTypeAlertDialog({
   roomTypeToDelete,
   isOpen,
-  openOpenChange,
+  onOpenChange,
   onSuccessful,
 }: DeleteRoomTypeAlertDialogProps) {
   const { data: associatedRooms, isPending: isLoadingAssociatedRooms } =
@@ -74,7 +74,7 @@ export function DeleteRoomTypeAlertDialog({
   };
 
   return (
-    <AlertDialog onOpenChange={openOpenChange} open={isOpen}>
+    <AlertDialog onOpenChange={onOpenChange} open={isOpen}>
       <AlertDialogContent>
         <OverlayLoader
           isLoading={isLoadingAssociatedRooms || isDeletingInProgress}

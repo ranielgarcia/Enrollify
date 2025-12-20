@@ -80,13 +80,13 @@ public class RoomTypeRepository : IRoomTypeRepository
         }
         catch (DbUpdateException ex) when (IsForeignKeyConstraintException(ex))
         {
-            _logger.LogWarning(ex, "Cannot delete room type with ID: {RoomTypeId} due to foreign key constraint", id);
+            _logger.LogWarning(ex, "Cannot delete room type with ID: {RoomTypeId} due to foreign key constraint", id.Value);
             return Result.Conflict("Cannot delete this room type because it is currently in use by one or more rooms or courses. Please remove all references before deleting.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting room type with ID: {RoomTypeId}", id);
-            return Result.Error($"Unable to delete the room type with ID {id} due to internal error");
+            _logger.LogError(ex, "Error deleting room type with ID: {RoomTypeId}", id.Value);
+            return Result.Error($"Unable to delete the room type with ID {id.Value} due to internal error");
         }
     }
 

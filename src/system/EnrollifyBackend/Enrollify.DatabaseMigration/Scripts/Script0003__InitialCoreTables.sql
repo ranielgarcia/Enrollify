@@ -78,7 +78,7 @@ CREATE TABLE Rooms
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_Rooms_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomTypes(Id),
 	CONSTRAINT FK_Rooms_Building FOREIGN KEY (BuildingId) REFERENCES Buildings(Id),
-	CONSTRAINT FK_Rooms_College FOREIGN KEY (BuildingId) REFERENCES Colleges(Id),
+	CONSTRAINT FK_Rooms_College FOREIGN KEY (CollegeId) REFERENCES Colleges(Id),
 	CONSTRAINT FK_Rooms_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Rooms_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Rooms_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
