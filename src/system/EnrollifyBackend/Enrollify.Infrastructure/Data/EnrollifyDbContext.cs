@@ -1,4 +1,5 @@
-﻿using Enrollify.Core.Aggregates.RoleAggregate;
+﻿using Enrollify.Core.Aggregates.CollegeAggregate;
+using Enrollify.Core.Aggregates.RoleAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
@@ -23,6 +24,7 @@ public class EnrollifyDbContext: DbContext
 
 
     public DbSet<RoomType> RoomTypes => Set<RoomType>();
+    public DbSet<College> Colleges => Set<College>();
     public DbSet<Room> Rooms => Set<Room> ();
 
     public DbSet<User> Users => Set<User>();

@@ -18,7 +18,7 @@ public class ListRoomTypesQueryHandler : IQueryHandler<ListRoomTypesQuery, Resul
     }
     public async ValueTask<Result<List<RoomTypeDTO>>> Handle(ListRoomTypesQuery request, CancellationToken cancellationToken)
     {
-        var roomTypes = await _repository.ListRoomTypesAsync(cancellationToken);
+        var roomTypes = await _repository.ListRoomTypes(cancellationToken);
 
         var toReturn = roomTypes
             .Select(rt => new RoomTypeDTO

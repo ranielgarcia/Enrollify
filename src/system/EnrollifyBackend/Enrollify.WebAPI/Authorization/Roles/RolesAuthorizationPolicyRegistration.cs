@@ -6,13 +6,13 @@ public static class RolesAuthorizationPolicyRegistration
 {
     public static IServiceCollection AddRolesAuthorizationPolicyHandlers(this IServiceCollection services)
     {
-        services.AddScoped<IAuthorizationHandler, View.HasViewRolesPermissionHandler>();
+        services.AddScoped<IAuthorizationHandler, HasViewRolesPermissionHandler>();
         return services;
     }
 
     public static void AddRolesAuthorizationPolicies(this AuthorizationOptions options)
     {
         options.AddPolicy(PolicyName.HasViewRolesPermission, policyBuilder =>
-            policyBuilder.AddRequirements(new View.HasViewRolesPermission()));
+            policyBuilder.AddRequirements(new HasViewRolesPermission()));
     }
 }

@@ -5,14 +5,14 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Enrollify.WebAPI.Authorization.RoomTypes;
 
-public class HasViewRoomTypesPermission : IAuthorizationRequirement
+public class HasViewRoomTypePermission : IAuthorizationRequirement
 {
 }
 
-public class HasViewRoomTypesPermissionHandler : UserAuthorizationHandler<HasViewRoomTypesPermission>
+public class HasViewRoomTypesPermissionHandler : UserAuthorizationHandler<HasViewRoomTypePermission>
 {
     public HasViewRoomTypesPermissionHandler(IMediator mediator) : base(mediator) { }
-    protected override Task CheckRequirement(UserContext user, AuthorizationHandlerContext context, HasViewRoomTypesPermission requirement)
+    protected override Task CheckRequirement(UserContext user, AuthorizationHandlerContext context, HasViewRoomTypePermission requirement)
     {
         if (user.HasPermissionToTheScope(PermissionScopeEnum.RoomTypes, PermissionEnum.View))
         {

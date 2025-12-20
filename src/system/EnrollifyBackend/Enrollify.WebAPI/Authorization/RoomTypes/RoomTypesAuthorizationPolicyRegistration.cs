@@ -23,6 +23,6 @@ public static class RoomTypesAuthorizationPolicyRegistration
         options.AddPolicy(PolicyName.HasDeleteRoomTypesPermission, policyBuilder =>
             policyBuilder.AddRequirements(new HasDeleteRoomTypePermission()));
         options.AddPolicy(PolicyName.HasViewRoomTypesPermission, policyBuilder =>
-            policyBuilder.AddRequirements(new HasViewRoomTypesPermission()));
+            policyBuilder.AddRequirements(new HasViewRoomTypePermission()));
     }
 }

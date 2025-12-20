@@ -19,7 +19,7 @@ public static class UpdateRoomType
             var existingRoomType = await _roomTypeRepository.GetById(command.id, cancellationToken);
             if (existingRoomType == null)
             {
-                return Result.NotFound($"Room type with ID {command.id.Value} not found.");
+                return Result.NotFound($"Room type with an ID {command.id.Value} not found.");
             }
 
             existingRoomType.UpdateName(command.name);

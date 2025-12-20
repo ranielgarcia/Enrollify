@@ -1,5 +1,5 @@
-﻿using Enrollify.Application.RoomTypes.Features;
-using Enrollify.Core.Aggregates.RoomTypeAggregate;
+﻿using Enrollify.Application.Colleges.Features;
+using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.WebAPI.Authorization;
 using Enrollify.WebAPI.Extensions;
 using FastEndpoints;
@@ -8,10 +8,9 @@ using Mediator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Enrollify.WebAPI.Features.RoomTypes;
+namespace Enrollify.WebAPI.Features.Colleges;
 
-
-public class DeleteRequest
+public class DeleteRequest 
 {
     [QueryParam]
     public int Id { get; set; }
@@ -22,13 +21,13 @@ public class DeleteRequestValidator : Validator<DeleteRequest>
     public DeleteRequestValidator()
     {
         RuleFor(x => x.Id)
-            .GreaterThan(0).WithMessage("Please provide a valid room type ID.");
+            .GreaterThan(0).WithMessage("Please provide a valid college ID.");
     }
 }
 
 [HttpDelete("")]
-[Group<RoomTypeEndpointsGroup>]
-[Authorize(Policy = PolicyName.HasDeleteRoomTypesPermission)]
+[Group<CollegeEndpointsGroup>]
+[Authorize(Policy = PolicyName.HasDeleteCollegePermission)]
 public class DeleteEndpoint : Endpoint<DeleteRequest, Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
 {
     private readonly IMediator _mediator;
@@ -38,11 +37,10 @@ public class DeleteEndpoint : Endpoint<DeleteRequest, Results<NoContent, NotFoun
         _mediator = mediator;
     }
 
-
     public override async Task<Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>> 
         ExecuteAsync (DeleteRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new DeleteRoomType.Command(RoomTypeId.From(request.Id)));
+        var result = await _mediator.Send(new DeleteCollege.Command(CollegeId.From(request.Id)));
         return result.ToDeleteResult();
     }
 }

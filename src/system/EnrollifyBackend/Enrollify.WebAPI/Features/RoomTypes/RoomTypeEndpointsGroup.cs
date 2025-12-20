@@ -2,9 +2,9 @@
 
 namespace Enrollify.WebAPI.Features.RoomTypes;
 
-public class RoomTypeEndpointGroup : Group
+public class RoomTypeEndpointsGroup : Group
 {
-    public RoomTypeEndpointGroup()
+    public RoomTypeEndpointsGroup()
     {
         Configure("room-types", ep =>
         {
