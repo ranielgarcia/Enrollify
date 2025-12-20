@@ -38,9 +38,9 @@ public static class ResultExtensions
     }
 
     /// <summary>
-    /// Maps Result to TypedResults for endpoints that return Created, ValidationProblem, or ProblemHttpResult
+    /// Maps Result to TypedResults for endpoints that return Created, ValidationProblem, Conflict, or ProblemHttpResult
     /// </summary>
-    public static Results<Created<TResponse>, ValidationProblem, ProblemHttpResult> ToCreatedResult<TValue, TResponse>(
+    public static Results<Created<TResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult> ToCreatedResult<TValue, TResponse>(
       this Result<TValue> result,
       Func<TValue, string> locationBuilder,
       Func<TValue, TResponse> mapResponse)
@@ -56,6 +56,7 @@ public static class ResultExtensions
                   g => g.Select(e => e.ErrorMessage).ToArray()
                 )
             ),
+            ResultStatus.Conflict => TypedResults.Conflict(result.Errors.ToArray()),
             _ => TypedResults.Problem(
               title: "Create failed",
               detail: string.Join("; ", result.Errors),
@@ -66,7 +67,7 @@ public static class ResultExtensions
     /// <summary>
     /// Maps Result to TypedResults for GetById endpoints that return Ok, NotFound, or ProblemHttpResult
     /// </summary>
-    public static Results<Ok<TResponse>, NotFound, ProblemHttpResult> ToGetByIdResult<TValue, TResponse>(
+    public static Results<Ok<TResponse>, NotFound, Conflict<string[]>, ProblemHttpResult> ToGetByIdResult<TValue, TResponse>(
       this Result<TValue> result,
       Func<TValue, TResponse> mapResponse)
     {
@@ -76,7 +77,7 @@ public static class ResultExtensions
     /// <summary>
     /// Maps Result to TypedResults for Update endpoints that return Ok, NotFound, or ProblemHttpResult
     /// </summary>
-    public static Results<Ok<TResponse>, NotFound, ProblemHttpResult> ToUpdateResult<TValue, TResponse>(
+    public static Results<Ok<TResponse>, NotFound, Conflict<string[]>, ProblemHttpResult> ToUpdateResult<TValue, TResponse>(
       this Result<TValue> result,
       Func<TValue, TResponse> mapResponse)
     {
@@ -84,26 +85,35 @@ public static class ResultExtensions
     }
 
     /// <summary>
-    /// Maps Result to TypedResults for Delete endpoints that return NoContent, NotFound, or ProblemHttpResult
+    /// Maps Result to TypedResults for Delete endpoints that return NoContent, NotFound, Conflict, or ProblemHttpResult
     /// </summary>
-    public static Results<NoContent, NotFound, ProblemHttpResult> ToDeleteResult(
+    public static Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult> ToDeleteResult(
       this Result result)
     {
         return result.Status switch
         {
             ResultStatus.Ok => TypedResults.NoContent(),
             ResultStatus.NotFound => TypedResults.NotFound(),
+            ResultStatus.Invalid => TypedResults.ValidationProblem(
+            result.ValidationErrors
+              .GroupBy(e => e.Identifier ?? string.Empty)
+              .ToDictionary(
+                g => g.Key,
+                g => g.Select(e => e.ErrorMessage).ToArray()
+              )
+            ),
+            ResultStatus.Conflict => TypedResults.Conflict(result.Errors.ToArray()),
             _ => TypedResults.Problem(
               title: "Delete failed",
               detail: string.Join("; ", result.Errors),
-              statusCode: StatusCodes.Status400BadRequest)
+              statusCode: StatusCodes.Status400BadRequest),
         };
     }
 
     /// <summary>
     /// Private helper method for Ok/NotFound result patterns
     /// </summary>
-    private static Results<Ok<TResponse>, NotFound, ProblemHttpResult> ToOkOrNotFoundResult<TValue, TResponse>(
+    private static Results<Ok<TResponse>, NotFound, Conflict<string[]>, ProblemHttpResult> ToOkOrNotFoundResult<TValue, TResponse>(
       Result<TValue> result,
       Func<TValue, TResponse> mapResponse,
       string operationName)
@@ -112,6 +122,7 @@ public static class ResultExtensions
         {
             ResultStatus.Ok => TypedResults.Ok(mapResponse(result.Value)),
             ResultStatus.NotFound => TypedResults.NotFound(),
+            ResultStatus.Conflict => TypedResults.Conflict(result.Errors.ToArray()),
             _ => TypedResults.Problem(
               title: $"{operationName} failed",
               detail: string.Join("; ", result.Errors),

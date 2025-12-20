@@ -1,19 +1,18 @@
 import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
-import type { RoleName } from "../models/Roles";
+import type { Role } from "../models/Roles";
 import type { IAuthorizationRequirement } from "./IAuthorizationRequirement";
+import { userHasAnyRole } from "../helpers/AuthorizationHelpers";
 
 export class RoleRequirement implements IAuthorizationRequirement {
   type = "Role";
 
-  public readonly roles: RoleName[];
+  public readonly roles: Role[];
 
-  constructor(roles: RoleName[]) {
+  constructor(roles: Role[]) {
     this.roles = roles;
   }
 
   evaluate(context: AuthorizationEvaluationContext): boolean {
-    return this.roles.some((role) =>
-      context?.user?.roles?.map((r) => r.name)?.includes(role)
-    );
+    return userHasAnyRole(context.user, this.roles);
   }
 }

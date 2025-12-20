@@ -1,0 +1,63 @@
+﻿using Enrollify.Application.RoomTypes.Features;
+using Enrollify.WebAPI.Authorization;
+using Enrollify.WebAPI.Extensions;
+using FastEndpoints;
+using FluentValidation;
+using Mediator;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
+
+namespace Enrollify.WebAPI.Features.RoomTypes;
+
+public class CreateRoomTypeResponse
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+}
+
+public class CreateRoomTypeRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+}
+
+public class CreateRoomTypeRequestValidator : Validator<CreateRoomTypeRequest>
+{
+    public CreateRoomTypeRequestValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Please provide a room type name.")
+            .MaximumLength(100).WithMessage("Name must be 100 characters or fewer.");
+        RuleFor(x => x.Description)
+            .MaximumLength(500).WithMessage("Description must be 500 characters or fewer.");
+    }
+}
+
+[HttpPost("")]
+[Group<RoomTypeEndpointGroup>]
+[Authorize(Policy = PolicyName.HasCreateRoomTypePermission)]
+public class CreateEndpoint : Endpoint<CreateRoomTypeRequest, Results<Created<CreateRoomTypeResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+{
+    private readonly IMediator _mediator;
+
+    public CreateEndpoint(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    public override async Task<Results<Created<CreateRoomTypeResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>> 
+        ExecuteAsync (CreateRoomTypeRequest request, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new CreateRoomType.Command(request.Name, request.Description));
+
+        return result.ToCreatedResult(
+            id => $"/room-types/{id}",
+            id => new CreateRoomTypeResponse
+            {
+                Id = id.Value,
+                Name = request.Name,
+                Description = request.Description
+            });
+    }
+}

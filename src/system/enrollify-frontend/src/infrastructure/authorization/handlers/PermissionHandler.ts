@@ -1,11 +1,16 @@
-import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
-import { PermissionFlagEnum } from "../models/PermissionsEnum";
+import {
+  RequirementTypes,
+  type RequirementType,
+} from "../models/RequirementTypes";
 import type { IAuthorizationRequirement } from "../requirements/IAuthorizationRequirement";
 import type { PermissionRequirement } from "../requirements/PermissionRequirement";
 import type { IAuthorizationHandler } from "./IAuthorizationHandler";
+import type { AuthorizationEvaluationContext } from "../models/AuthorizationEvaluationContext";
+import type { AuthorizationResource } from "../models/AuthorizationResource";
+import { userHasPermission } from "../helpers/AuthorizationHelpers";
 
 export class PermissionHandler implements IAuthorizationHandler {
-  readonly requirementType = "Permission";
+  readonly requirementType = RequirementTypes.Permission as RequirementType;
 
   canHandle(requirement: IAuthorizationRequirement): boolean {
     return requirement.type === this.requirementType;
@@ -23,41 +28,18 @@ export class PermissionHandler implements IAuthorizationHandler {
 
     const permissionRequirement = requirement as PermissionRequirement;
 
-    if (!context.user?.roles) {
-      return false;
-    }
-
+    // Use requirement's scope, fallback to context's resource scope
     const effectiveScope =
-      permissionRequirement.authorizationScope?.scope ||
-      context.authorizationScope?.scope;
+      permissionRequirement.scope ?? context.resource?.scope;
 
-    // Iterate through all roles to find the permission
-    for (const role of context.user.roles) {
-      if (!role.permissionScopes) continue;
+    const resource: AuthorizationResource | undefined = effectiveScope
+      ? { scope: effectiveScope }
+      : undefined;
 
-      for (const permissionScope of role.permissionScopes) {
-        // If scope is specified, check if it matches
-        if (effectiveScope) {
-          const scopeMatches =
-            permissionScope.permissionScope?.name === effectiveScope.name &&
-            (!effectiveScope.id ||
-              permissionScope.permissionScope?.value === effectiveScope.id);
-
-          if (!scopeMatches) continue;
-        }
-
-        // Check if the permission exists in this scope
-        const permissionFlag = new PermissionFlagEnum(
-          permissionRequirement.permission
-        );
-        const hasPermission = permissionScope.permissions?.some(
-          (p) => !p.value && permissionFlag.has(p.value ?? -1)
-        );
-
-        if (hasPermission) return true;
-      }
-    }
-
-    return false;
+    return userHasPermission(
+      context.user,
+      permissionRequirement.permission,
+      resource
+    );
   }
 }

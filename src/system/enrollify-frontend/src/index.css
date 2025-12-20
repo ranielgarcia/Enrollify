@@ -123,4 +123,14 @@
   body {
     @apply bg-background text-foreground;
   }
+  button {
+    cursor: pointer;
+  }
+}
+
+/* Utility classes */
+@layer utilities {
+  .text-danger {
+    color: var(--destructive);
+  }
 }

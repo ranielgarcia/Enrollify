@@ -5,14 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X } from "lucide-react";
-
-interface Room {
-  id: string;
-  roomNumber: string;
-  building: string;
-  capacity: number;
-  type: string;
-}
+import type { Room } from "./rooms-table";
 
 interface RoomFormProps {
   onClose: () => void;
@@ -106,6 +99,7 @@ export function RoomForm({ onClose, onSave, roomTypes = [] }: RoomFormProps) {
                 Room Type
               </label>
               <select
+                name="roomType"
                 value={formData.type}
                 onChange={(e) =>
                   setFormData({ ...formData, type: e.target.value })

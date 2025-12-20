@@ -6,7 +6,7 @@ using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.Aggregates.RoleAggregate;
 
-public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable<AuditInfo>
+public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable
 {
     private readonly List<RolePermission> _rolePermissions = new();
     private Role() { }// EF Core constructor
@@ -17,13 +17,26 @@ public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable<AuditIn
         Description = description;
     }
 
-    public AuditInfo AuditInfo { get; init; } = new AuditInfo();
-
     public RoleName Name { get; private set; }
 
     public RoleDescription Description { get; private set; }
 
     public IReadOnlyCollection<RolePermission> RolePermissions => _rolePermissions.AsReadOnly();
+
+
+    public DateTimeOffset CreatedAt { get; private set; }
+    public UserId CreatedBy { get; private set; }
+    public User? CreatedByUser { get; private set; }
+    public DateTimeOffset? UpdatedAt { get; private set; }
+    public UserId? UpdatedBy { get; private set; }
+    public User? UpdatedByUser { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; }
+    public UserId? DeletedBy { get; private set; }
+    public User? DeletedByUser { get; private set; }
+    public bool IsActive { get; private set; }
+
+
+
 
 
     public Role UpdateName (RoleName newName)
@@ -51,8 +64,7 @@ public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable<AuditIn
             return this;
 
         var rolePermission = new RolePermission(this.Id,  permissionScopeId, bitmaskPermission, addedBy);
-        rolePermission.AuditInfo.SetCreatedBy(addedBy);
-
+        
         _rolePermissions.Add(rolePermission);
 
         return this;
@@ -72,7 +84,7 @@ public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable<AuditIn
     public IEnumerable<(PermissionScopeId, int)> GetActivePermissions()
     {
         return _rolePermissions
-            .Where(p => p.AuditInfo.IsActive)
+            .Where(p => p.IsActive)
             .Select(p => (p.PermissionScopeId, p.BitmaskPermission));
     }
 
@@ -81,6 +93,6 @@ public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable<AuditIn
         return _rolePermissions.Any(rp => 
             rp.PermissionScopeId == permissionScopeId &&
             rp.BitmaskPermission == bitmaskPermission && 
-            rp.AuditInfo.IsActive);
+            rp.IsActive);
     }
 }

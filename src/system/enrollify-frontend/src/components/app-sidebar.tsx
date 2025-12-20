@@ -24,13 +24,14 @@ const data = {
   navMain: [
     {
       title: "Master Data Management",
-      url: "/login",
+      url: "/portal/master-data",
       icon: DatabaseIcon,
       isActive: true,
       items: [
         {
           title: "Rooms",
-          url: "/portal/master-data-management/rooms",
+          url: "/portal/master-data/rooms/$tab",
+          params: { tab: "rooms" },
         },
         {
           title: "Colleges",

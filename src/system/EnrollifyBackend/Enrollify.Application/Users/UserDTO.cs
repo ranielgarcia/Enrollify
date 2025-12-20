@@ -1,16 +1,14 @@
 ﻿using Enrollify.Core.Aggregates.UserAggregate;
-using Enrollify.Core;
 
 namespace Enrollify.Application.Users;
 
-public class UserDTO
+public class UserDTO : BaseDTO
 {
     public UserId Id { get; set; }
     public UserEmail Email { get; set; }
     public string FirstName { get; set; } = null!;
     public string LastName { get; set; } = null!;
     public DateTimeOffset? LastLoginAt { get; set; }
-    public AuditInfoDTO AuditInfo { get; set; } = new AuditInfoDTO();
 
     public static UserDTO FromUser(User user)
     {
@@ -23,7 +21,15 @@ public class UserDTO
             FirstName = user.FirstName,
             LastName = user.LastName,
             LastLoginAt = user.LastLoginAt,
-            AuditInfo = AuditInfoDTO.FromAuditInfo(user.AuditInfo)
+            CreatedAt = user.CreatedAt,
+            CreatedBy = user.CreatedBy,
+            CreatedByUser = BaseUserDTO.FromUser(user.CreatedByUser),
+            UpdatedAt = user.UpdatedAt,
+            UpdatedBy = user.UpdatedBy,
+            UpdatedByUser = BaseUserDTO.FromUser(user.UpdatedByUser),
+            DeletedAt = user.DeletedAt,
+            DeletedBy = user.DeletedBy,
+            DeletedByUser = BaseUserDTO.FromUser(user.DeletedByUser)
         };
     }
 }

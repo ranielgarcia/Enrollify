@@ -1,4 +1,5 @@
-﻿using Enrollify.Application.Roles;
+﻿using Enrollify.Application;
+using Enrollify.Application.Roles;
 using Enrollify.Application.Roles.DTOs;
 using Enrollify.Application.Roles.Features.List;
 using Enrollify.Core.Constants.Authorization;
@@ -16,7 +17,8 @@ internal class ListRolesQueryService : IListRolesQueryService
     public async Task<List<RoleDTO>> ListRolesAsync(CancellationToken cancellationToken = default)
     {
         var roles = await _dbContext.Roles
-            .Include(r => r.RolePermissions).Select(role => new RoleDTO
+            .Include(r => r.RolePermissions)
+            .Select(role => new RoleDTO
             {
                 Id = role.Id,
                 Name = role.Name,
