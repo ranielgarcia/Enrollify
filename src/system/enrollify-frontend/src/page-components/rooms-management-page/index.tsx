@@ -8,12 +8,18 @@ import type BasicUserInfo from "@/api/models/AuditInfo";
 import { parseDateTime } from "@/lib/dateutils";
 import type { RoomType } from "./models/RoomType";
 import { OverlayLoader } from "@/components/app-loading-overlay";
-import { useParams } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 
 export default function RoomsPage() {
-  const { tab } = useParams();
+  const { tab } = useParams({ strict: false });
+  const navigate = useNavigate();
 
-  console.log(tab);
+  const handleTabChange = (value: string) => {
+    navigate({
+      to: "/portal/master-data/rooms/$tab",
+      params: { tab: value },
+    });
+  };
 
   const [rooms] = useState<Room[]>([
     {
@@ -66,10 +72,17 @@ export default function RoomsPage() {
     },
   ]);
 
-  const { data: roomTypesData, isPending: isLoadingRoomTypesInProgress } =
-    useAppQuery({
-      path: "/api/room-types",
-    });
+  const {
+    data: roomTypesData,
+    isPending: isLoadingRoomTypesInProgress,
+    refetch: refetchRoomTypes,
+  } = useAppQuery({
+    path: "/api/room-types",
+    queryOptions: {
+      queryKey: ["room-types", tab],
+      enabled: !!tab,
+    },
+  });
 
   const roomTypes: RoomType[] = roomTypesData
     ? roomTypesData.map(
@@ -95,6 +108,10 @@ export default function RoomsPage() {
       )
     : [];
 
+  if (!tab) {
+    return null;
+  }
+
   return (
     <main>
       <OverlayLoader
@@ -112,7 +129,7 @@ export default function RoomsPage() {
           </p>
         </div>
 
-        <Tabs defaultValue="rooms" className="space-y-4">
+        <Tabs value={tab} onValueChange={handleTabChange} className="space-y-4">
           <TabsList>
             <TabsTrigger value="rooms">Rooms</TabsTrigger>
             <TabsTrigger value="room-types">Room Types</TabsTrigger>
@@ -123,7 +140,10 @@ export default function RoomsPage() {
           </TabsContent>
 
           <TabsContent value="room-types" className="space-y-4">
-            <RoomTypeTab roomTypes={roomTypes} />
+            <RoomTypeTab
+              roomTypes={roomTypes}
+              refreshRoomTypesTable={refetchRoomTypes}
+            />
           </TabsContent>
         </Tabs>
       </div>

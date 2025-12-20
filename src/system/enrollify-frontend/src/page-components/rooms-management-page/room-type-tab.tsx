@@ -1,25 +1,23 @@
 import { RoomTypesTable } from "./room-types-table";
 import { RoomTypeFormDrawer } from "./room-type-form-drawer";
-import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type { RoomType } from "./models/RoomType";
 import { DeleteRoomTypeAlertDialog } from "./delete-room-type-alert-dialog";
 
 interface RoomTypeTabProps {
   roomTypes: RoomType[];
+  refreshRoomTypesTable: () => void;
 }
 
-export function RoomTypeTab({ roomTypes }: RoomTypeTabProps) {
+export function RoomTypeTab({
+  roomTypes,
+  refreshRoomTypesTable,
+}: RoomTypeTabProps) {
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
-  const queryClient = useQueryClient();
   const [roomTypeToEdit, setRoomTypeToEdit] = useState<RoomType | undefined>();
   const [roomTypeToDelete, setRoomTypeToDelete] = useState<
     RoomType | undefined
   >();
-
-  const refreshRoomTypesTable = () => {
-    queryClient.invalidateQueries({ queryKey: ["/api/room-types"] });
-  };
 
   const handleEdit = (roomType: RoomType) => {
     setRoomTypeToEdit(roomType);

@@ -1,10 +1,22 @@
 import { Button } from "@/components/ui/button";
 import { handleLogin } from "@/infrastructure/authentication/msal";
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import z from "zod";
+
+const loginSearchParamsSchema = z.object({
+  redirect: z.string().optional(),
+});
 
 export const Route = createFileRoute("/login")({
-  beforeLoad: ({ context: { msal } }) => {
+  validateSearch: loginSearchParamsSchema,
+  beforeLoad: ({ context: { msal }, search }) => {
     const activeAccount = msal?.instance.getActiveAccount();
+
+    if (search.redirect && activeAccount !== null) {
+      throw redirect({
+        to: search.redirect,
+      });
+    }
     if (activeAccount !== null) {
       throw redirect({
         to: "/portal/home",
