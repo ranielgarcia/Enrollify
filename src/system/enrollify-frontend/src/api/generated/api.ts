@@ -320,6 +320,7 @@ export interface components {
             code?: string;
             name?: string;
             description?: string;
+            dean?: string;
         };
         EnrollifyWebAPIFeaturesCollegesUpdateCollegeResponse: {
             /** Format: int32 */

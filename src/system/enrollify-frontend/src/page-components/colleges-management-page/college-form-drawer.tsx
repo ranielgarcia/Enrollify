@@ -1,4 +1,14 @@
-import { Button } from "@/components/ui/button";
+import z from "zod";
+import type { College } from "./models/College";
+import { useForm } from "@tanstack/react-form";
+import useAppMutation from "@/hooks/use-app-mutation-v2";
+import type { AxiosError } from "axios";
+import {
+  formatValidationErrors,
+  parseApiError,
+  type ProblemDetails,
+} from "@/lib/axios-utils";
+import { toast } from "sonner";
 import {
   Drawer,
   DrawerClose,
@@ -9,19 +19,8 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Plus } from "lucide-react";
-import { useForm } from "@tanstack/react-form";
-import { z } from "zod";
-import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import useAppMutation from "@/hooks/use-app-mutation-v2";
-import { AxiosError } from "axios";
-import {
-  formatValidationErrors,
-  parseApiError,
-  type ProblemDetails,
-} from "@/lib/axios-utils";
-import type { RoomType } from "../models/RoomType";
+import { Button } from "@/components/ui/button";
+import { Loader2, Plus } from "lucide-react";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Unauthorized } from "@/components/unauthorized";
 
@@ -36,67 +35,71 @@ const defaultMeta: FormMeta = {
   formAction: null,
 };
 
-const roomTypeSchema = z.object({
+const collegeFormSchema = z.object({
+  code: z.string().min(3, "Code is required"),
   name: z.string().min(3, "Name is required"),
   description: z.string().min(3, "Description is required"),
+  dean: z.string().min(3, "Dean is required"),
 });
-type RoomTypeForm = z.infer<typeof roomTypeSchema>;
+type CollegeForm = z.infer<typeof collegeFormSchema>;
 
-interface RoomTypeFormDrawerProps {
+interface CollegeFormDrawerProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  roomTypeToUpdate?: RoomType | null;
+  collegeToUpdate?: College | null;
   onOpenChange: (isOpen: boolean) => void;
   onSuccessful?: () => void;
 }
 
-export function RoomTypeFormDrawer({
-  roomTypeToUpdate,
+export function CollegeFormDrawer({
+  collegeToUpdate,
   onOpenChange,
   isOpen = false,
   setIsOpen,
   onSuccessful,
-}: RoomTypeFormDrawerProps) {
-  const defaultFormValues: RoomTypeForm = {
-    name: roomTypeToUpdate?.name ?? "",
-    description: roomTypeToUpdate?.description ?? "",
+}: CollegeFormDrawerProps) {
+  const defaultFormValues: CollegeForm = {
+    code: collegeToUpdate?.code ?? "",
+    name: collegeToUpdate?.name ?? "",
+    description: collegeToUpdate?.description ?? "",
+    dean: collegeToUpdate?.dean ?? "",
   };
 
-  const { mutateAsync: createNewRoomTypeAsync } = useAppMutation({
+  const { mutateAsync: createNewCollegeAsync } = useAppMutation({
     httpVerb: "post",
-    path: "/api/room-types",
-    mutationKey: "create-new-room-type",
+    path: "/api/colleges",
+    mutationKey: "create-new-college",
   });
 
-  const { mutateAsync: updateRoomTypeAsync } = useAppMutation({
+  const { mutateAsync: updateCollegeAsync } = useAppMutation({
     httpVerb: "put",
-    path: `/api/room-types`,
-    params: roomTypeToUpdate
+    path: "/api/colleges",
+    params: collegeToUpdate
       ? {
-          id: roomTypeToUpdate.id,
+          id: collegeToUpdate.id,
         }
       : undefined,
-    mutationKey: `update-room-type-${roomTypeToUpdate?.id}`,
+    mutationKey: `update-college-${collegeToUpdate?.id}`,
   });
 
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
-      onChange: roomTypeSchema,
+      onChange: collegeFormSchema,
     },
     onSubmitMeta: defaultMeta,
     onSubmit: async ({ value, meta }) => {
-      const formValues = roomTypeSchema.parse(value);
+      const formValues = collegeFormSchema.parse(value);
 
       try {
         if (meta.submitAction === "create") {
-          await createNewRoomTypeAsync(formValues);
-          toast.success("Room type created successfully");
+          await createNewCollegeAsync(formValues);
+          toast.success("College created successfully");
         }
 
-        if (meta.submitAction === "update" && roomTypeToUpdate) {
-          await updateRoomTypeAsync(formValues);
-          toast.success("Room type updated successfully");
+        if (meta.submitAction === "update" && collegeToUpdate) {
+          await updateCollegeAsync(formValues);
+          toast.success("College updated successfully");
         }
 
         if (meta.formAction === "close") {
@@ -119,8 +122,8 @@ export function RoomTypeFormDrawer({
       }
     },
   });
-  const isUpdateRoomType = !!roomTypeToUpdate;
 
+  const isUpdateCollege = !!collegeToUpdate;
   return (
     <Drawer
       direction="right"
@@ -131,15 +134,15 @@ export function RoomTypeFormDrawer({
       <DrawerTrigger asChild>
         <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer">
           <Plus className="size-4" />
-          Add Room Type
+          Add College
         </Button>
       </DrawerTrigger>
       <DrawerContent>
         <AuthorizeView
-          policy="canCreateRoomTypes"
+          policy="canCreateCollege"
           unauthorized={
             <Unauthorized
-              message="Your current role does not have the necessary permissions to create room type."
+              message="Your current role does not have the necessary permissions to create college."
               buttonLabel="Back to Home"
               backOptions={{
                 to: "/portal/master-data/rooms/room-types",
@@ -160,14 +163,37 @@ export function RoomTypeFormDrawer({
             <div className="mx-auto w-full max-w-sm">
               <DrawerHeader>
                 <DrawerTitle>
-                  {isUpdateRoomType ? "Update" : "Create"} Room Type
+                  {isUpdateCollege ? "Update" : "Create"} College
                 </DrawerTitle>
-                <DrawerDescription>Set room type details.</DrawerDescription>
+                <DrawerDescription>Set college details.</DrawerDescription>
               </DrawerHeader>
               <div className="p-4 pb-0">
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-1">
-                    Type Name
+                    Code
+                  </label>
+                  <form.Field
+                    name="code"
+                    children={(field) => (
+                      <>
+                        <input
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
+                          placeholder="e.g., CCS"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                        />
+                        <em role="alert" className="text-red-800">
+                          {field.state.meta.errors
+                            .map((e) => e?.message)
+                            .join(", ")}
+                        </em>
+                      </>
+                    )}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground block mb-1">
+                    Name
                   </label>
                   <form.Field
                     name="name"
@@ -175,7 +201,7 @@ export function RoomTypeFormDrawer({
                       <>
                         <input
                           className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., Lecture Hall"
+                          placeholder="e.g., College of Computer Studies"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -198,7 +224,32 @@ export function RoomTypeFormDrawer({
                       <>
                         <input
                           className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., Large classroom for lectures"
+                          placeholder="e.g., College of Computer Studies"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                        />
+                        {!field.state.meta.isValid && (
+                          <em role="alert" className="text-red-800">
+                            {field.state.meta.errors
+                              .map((e) => e?.message)
+                              .join(", ")}
+                          </em>
+                        )}
+                      </>
+                    )}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground block mb-1">
+                    Dean
+                  </label>
+                  <form.Field
+                    name="dean"
+                    children={(field) => (
+                      <>
+                        <input
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
+                          placeholder="e.g., Raniel Garcia"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -225,14 +276,14 @@ export function RoomTypeFormDrawer({
                       type="submit"
                       onClick={() =>
                         form.handleSubmit({
-                          submitAction: isUpdateRoomType ? "update" : "create",
+                          submitAction: isUpdateCollege ? "update" : "create",
                           formAction: "close",
                         })
                       }
                     >
                       {isSubmitting ? (
                         <Loader2 />
-                      ) : isUpdateRoomType ? (
+                      ) : isUpdateCollege ? (
                         "Update"
                       ) : (
                         "Submit"

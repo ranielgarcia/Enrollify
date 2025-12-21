@@ -58,7 +58,7 @@ export function DeleteRoomTypeAlertDialog({
   const handleContinueDelete = async () => {
     try {
       await deleteRoomType(undefined);
-      toast.success("Room type deleted successfully");
+      toast.success("Room type is deleted successfully");
       onSuccessful();
     } catch (err) {
       const axiosError = err as AxiosError<ProblemDetails>;
@@ -109,13 +109,13 @@ export function DeleteRoomTypeAlertDialog({
         <AlertDialogFooter>
           {associatedRooms && associatedRooms.length > 0 ? (
             <>
-              <AlertDialogCancel onClick={() => openOpenChange(false)}>
+              <AlertDialogCancel onClick={() => onOpenChange(false)}>
                 Close
               </AlertDialogCancel>
             </>
           ) : (
             <>
-              <AlertDialogCancel onClick={() => openOpenChange(false)}>
+              <AlertDialogCancel onClick={() => onOpenChange(false)}>
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction

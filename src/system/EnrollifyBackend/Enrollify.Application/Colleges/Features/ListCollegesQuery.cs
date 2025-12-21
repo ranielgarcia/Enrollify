@@ -25,6 +25,7 @@ public class ListCollegesQueryHandler : IQueryHandler<ListCollegesQuery, Result<
                 Code = c.Code.Value,
                 Name = c.Name,
                 Description = c.Description,
+                Dean = c.Dean,
                 CreatedAt = c.CreatedAt,
                 CreatedBy = c.CreatedBy,
                 CreatedByUser = BaseUserDTO.FromUser(c.CreatedByUser),
