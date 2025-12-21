@@ -110,15 +110,13 @@ public class CollegeRepository : ICollegeRepository
 
     private bool IsDuplicateCollegeCodeException(DbUpdateException ex)
     {
-        return ex.InnerException?.Message.Contains("duplicate") == true ||
-               ex.InnerException?.Message.Contains("UQ__College__") == true ||
-               ex.InnerException?.Message.Contains("Code") == true;
+        var message = ex.InnerException?.Message;
+        return message?.Contains("UQ_Colleges_Code") == true;
     }
 
     private bool IsDuplicateCollegeNameException(DbUpdateException ex)
     {
-        return ex.InnerException?.Message.Contains("duplicate") == true ||
-               ex.InnerException?.Message.Contains("UQ__College__") == true ||
-               ex.InnerException?.Message.Contains("Name") == true;
+        var message = ex.InnerException?.Message;
+        return message?.Contains("UQ_Colleges_Name") == true;
     }
 }

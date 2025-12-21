@@ -92,8 +92,8 @@ public class RoomTypeRepository : IRoomTypeRepository
 
     private bool IsDuplicateRoomTypeException(DbUpdateException ex)
     {
-        return ex.InnerException?.Message.Contains("duplicate") == true ||
-               ex.InnerException?.Message.Contains("UQ__RoomType__") == true;
+        var message = ex.InnerException?.Message;
+        return message?.Contains("UQ_RoomTypes_Name") == true;
     }
 
     private bool IsForeignKeyConstraintException(DbUpdateException ex)
