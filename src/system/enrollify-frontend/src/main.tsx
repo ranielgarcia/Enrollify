@@ -1,4 +1,4 @@
-import { StrictMode, use } from "react";
+import { StrictMode, use, useMemo, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import "./index.css";
@@ -80,41 +80,56 @@ function App() {
   const msal = useMsal();
   const authorizationContext = use(AuthorizationContext);
 
-  const activeAccount = msalInstance.getActiveAccount();
-
-  if (!activeAccount) {
-    const accounts = msalInstance.getAllAccounts();
-    if (accounts.length > 0) {
-      msalInstance.setActiveAccount(accounts[0]);
+  // Set active account on initial mount
+  useEffect(() => {
+    const activeAccount = msalInstance.getActiveAccount();
+    if (!activeAccount) {
+      const accounts = msalInstance.getAllAccounts();
+      if (accounts.length > 0) {
+        msalInstance.setActiveAccount(accounts[0]);
+      }
     }
-  }
+  }, []);
 
-  msalInstance.addEventCallback(async (event) => {
-    if (event.eventType === EventType.LOGIN_SUCCESS && event.payload) {
-      const payload = event.payload as AuthenticationResult;
-      const account = payload.account;
-      msalInstance.setActiveAccount(account);
-    }
+  // Handle MSAL events with proper cleanup
+  useEffect(() => {
+    const callbackId = msalInstance.addEventCallback(async (event) => {
+      if (event.eventType === EventType.LOGIN_SUCCESS && event.payload) {
+        const payload = event.payload as AuthenticationResult;
+        const account = payload.account;
+        msalInstance.setActiveAccount(account);
+      }
 
-    // To prevent: BrowserAuthError: monitor_window_timeout: Token acquisition in iframe failed due to timeout.
-    // http://github.com/AzureAD/microsoft-authentication-library-for-js/issues/5724#issuecomment-2406003107
-    if (
-      event.eventType === EventType.ACQUIRE_TOKEN_FAILURE &&
-      event.interactionType === InteractionType.Silent
-    ) {
-      handleLogin();
-    }
-  });
+      // To prevent: BrowserAuthError: monitor_window_timeout: Token acquisition in iframe failed due to timeout.
+      // http://github.com/AzureAD/microsoft-authentication-library-for-js/issues/5724#issuecomment-2406003107
+      if (
+        event.eventType === EventType.ACQUIRE_TOKEN_FAILURE &&
+        event.interactionType === InteractionType.Silent
+      ) {
+        handleLogin();
+      }
+    });
 
-  //enable account storage event
-  msalInstance.enableAccountStorageEvents();
+    // Enable account storage event
+    msalInstance.enableAccountStorageEvents();
+
+    // Cleanup: remove event callback when component unmounts
+    return () => {
+      if (callbackId) {
+        msalInstance.removeEventCallback(callbackId);
+      }
+    };
+  }, []);
+
+  // Memoize the router context to prevent unnecessary re-renders
+  const routerContext = useMemo(
+    () => ({ msal, authorization: authorizationContext }),
+    [msal, authorizationContext]
+  );
 
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-      <RouterProvider
-        router={router}
-        context={{ msal, authorization: authorizationContext }}
-      />
+      <RouterProvider router={router} context={routerContext} />
       <ReactQueryDevtools initialIsOpen={false} />
     </ThemeProvider>
   );

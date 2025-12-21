@@ -39,7 +39,8 @@ const data = {
         },
         {
           title: "Colleges",
-          url: "#",
+          url: "/portal/master-data/colleges",
+          viewAuthorizationPolicies: [PolicyNames.canViewColleges],
         },
       ],
     } as NavMainItemProp,

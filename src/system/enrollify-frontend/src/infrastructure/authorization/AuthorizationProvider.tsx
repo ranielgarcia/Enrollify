@@ -13,6 +13,7 @@ import type { PolicyName } from "./models/PolicyNames";
 import type { Permission } from "./models/PermissionsEnum";
 import type { Role } from "./models/Roles";
 import { registerRoomPolicies } from "./policies/rooms-policies";
+import { registerCollegesPolicies } from "./policies/colleges-policies";
 
 export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
   children,
@@ -34,6 +35,7 @@ export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
     // Initialize authorization service with handlers and policies
     const policyRegistry = new PolicyRegistry();
     registerRoomPolicies(policyRegistry);
+    registerCollegesPolicies(policyRegistry);
 
     const handlers: IAuthorizationHandler[] = [
       new RoleHandler(),

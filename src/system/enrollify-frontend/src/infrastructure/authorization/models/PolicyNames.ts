@@ -8,6 +8,9 @@ export const PolicyNames = {
   canUpdateRooms: "canUpdateRooms",
   canDeleteRooms: "canDeleteRooms",
   canViewColleges: "canViewColleges",
+  canCreateCollege: "canCreateCollege",
+  canUpdateCollege: "canUpdateCollege",
+  canDeleteCollege: "canDeleteCollege",
 } as const;
 
 export type PolicyName = keyof typeof PolicyNames;

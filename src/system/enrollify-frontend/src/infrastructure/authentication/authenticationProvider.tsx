@@ -69,7 +69,7 @@ export const AuthenticationProvider = ({
         instance.removeEventCallback(callbackId);
       }
     };
-  });
+  }, [instance]);
 
   useEffect(() => {
     if (

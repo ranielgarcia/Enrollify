@@ -53,6 +53,7 @@ export const registerRoomPolicies = (registry: PolicyRegistry) => {
       .build()
   );
 
+  // Rooms
   registry.register(
     new PolicyBuilder("canViewRooms")
       .requireRole(
