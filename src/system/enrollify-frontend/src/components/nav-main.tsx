@@ -18,6 +18,8 @@ import {
 import type { FileRouteTypes } from "@/routeTree.gen";
 import { Link, useLocation } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import type { PolicyName } from "@/infrastructure/authorization/models/PolicyNames";
+import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
 
 export interface NavMainItemProp {
   title: string;
@@ -28,6 +30,7 @@ export interface NavMainItemProp {
     title: string;
     url: FileRouteTypes["to"] & {};
     params?: Record<string, string>;
+    viewAuthorizationPolicies: PolicyName[];
   }[];
 }
 
@@ -38,6 +41,7 @@ export interface NavMainProps {
 export function NavMain({ items }: NavMainProps) {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { checkPolicy } = useAuthorization();
 
   // Normalize path by removing trailing slash (except for root "/")
   const normalizePath = (path: string) =>
@@ -74,23 +78,34 @@ export function NavMain({ items }: NavMainProps) {
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarMenuSub>
-                  {item.items?.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton
-                        asChild
-                        className={cn(
-                          "transition-colors",
-                          isSubItemActive(subItem.url)
-                            ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground hover:bg-sidebar-accent/10"
-                        )}
-                      >
-                        <Link to={subItem.url} params={subItem.params}>
-                          <span>{subItem.title}</span>
-                        </Link>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
+                  {item.items?.map(async (subItem) => {
+                    const canView = !subItem.viewAuthorizationPolicies
+                      ? false
+                      : await Promise.all(
+                          subItem.viewAuthorizationPolicies?.map((policy) =>
+                            checkPolicy(policy)
+                          )
+                        ).then((results) => results.every((res) => res));
+                    if (!canView) return null;
+
+                    return (
+                      <SidebarMenuSubItem key={subItem.title}>
+                        <SidebarMenuSubButton
+                          asChild
+                          className={cn(
+                            "transition-colors",
+                            isSubItemActive(subItem.url)
+                              ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                              : "text-sidebar-foreground hover:bg-sidebar-accent/10"
+                          )}
+                        >
+                          <Link to={subItem.url} params={subItem.params}>
+                            <span>{subItem.title}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    );
+                  })}
                 </SidebarMenuSub>
               </CollapsibleContent>
             </SidebarMenuItem>

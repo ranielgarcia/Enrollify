@@ -2,25 +2,14 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoomsTab } from "./rooms-tab";
 import type { Room } from "./rooms-table";
-import { RoomTypeTab } from "./room-type-tab";
+import { RoomTypeTab } from "./room-types-components/room-type-tab";
 import useAppQuery from "@/hooks/use-app-query-v2";
 import type BasicUserInfo from "@/api/models/AuditInfo";
 import { parseDateTime } from "@/lib/dateutils";
 import type { RoomType } from "./models/RoomType";
 import { OverlayLoader } from "@/components/app-loading-overlay";
-import { useNavigate, useParams } from "@tanstack/react-router";
 
 export default function RoomsPage() {
-  const { tab } = useParams({ strict: false });
-  const navigate = useNavigate();
-
-  const handleTabChange = (value: string) => {
-    navigate({
-      to: "/portal/master-data/rooms/$tab",
-      params: { tab: value },
-    });
-  };
-
   const [rooms] = useState<Room[]>([
     {
       id: 1,
@@ -79,8 +68,7 @@ export default function RoomsPage() {
   } = useAppQuery({
     path: "/api/room-types",
     queryOptions: {
-      queryKey: ["room-types", tab],
-      enabled: !!tab,
+      queryKey: ["room-types"],
     },
   });
 
@@ -108,10 +96,6 @@ export default function RoomsPage() {
       )
     : [];
 
-  if (!tab) {
-    return null;
-  }
-
   return (
     <main>
       <OverlayLoader
@@ -129,7 +113,7 @@ export default function RoomsPage() {
           </p>
         </div>
 
-        <Tabs value={tab} onValueChange={handleTabChange} className="space-y-4">
+        <Tabs defaultValue="rooms" className="space-y-4">
           <TabsList>
             <TabsTrigger value="rooms">Rooms</TabsTrigger>
             <TabsTrigger value="room-types">Room Types</TabsTrigger>

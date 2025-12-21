@@ -107,10 +107,10 @@ export function scopeMatches(
  * @param resource - Optional resource (if provided, checks permission within that scope)
  *
  * @example
- * // Check if user has View permission on Rooms feature
+ * Check if user has View permission on Rooms feature
  * userHasPermission(user, createPermission("View"), { scope: "Rooms" })
  *
- * // Check if user has Update permission (any scope)
+ * Check if user has Update permission (any scope)
  * userHasPermission(user, createPermission("Update"))
  */
 export function userHasPermission(

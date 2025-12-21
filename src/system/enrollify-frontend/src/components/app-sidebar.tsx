@@ -18,6 +18,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { useAuthenticationContext } from "@/infrastructure/authentication/authenticationContext";
+import { PolicyNames } from "@/infrastructure/authorization/models/PolicyNames";
 
 // This is sample data.
 const data = {
@@ -30,8 +31,11 @@ const data = {
       items: [
         {
           title: "Rooms",
-          url: "/portal/master-data/rooms/$tab",
-          params: { tab: "rooms" },
+          url: "/portal/master-data/rooms",
+          viewAuthorizationPolicies: [
+            PolicyNames.canViewRooms,
+            PolicyNames.canViewRoomTypes,
+          ],
         },
         {
           title: "Colleges",

@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { RoomForm } from "./room-form";
 import { RoomsTable, type Room } from "./rooms-table";
-import type { RoomType } from "./room-types-table";
+import type { RoomType } from "./models/RoomType";
 
 interface RoomsTabProps {
   rooms: Room[];

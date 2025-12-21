@@ -21,7 +21,9 @@ import {
   parseApiError,
   type ProblemDetails,
 } from "@/lib/axios-utils";
-import type { RoomType } from "./models/RoomType";
+import type { RoomType } from "../models/RoomType";
+import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
+import { Unauthorized } from "@/components/unauthorized";
 
 type FormMeta = {
   submitAction: "create" | "update" | null;
@@ -136,106 +138,122 @@ export function RoomTypeFormDrawer({
         </Button>
       </DrawerTrigger>
       <DrawerContent>
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
+        <AuthorizeView
+          policy="canViewColleges"
+          unauthorized={
+            <Unauthorized
+              message="Your current role does not have the necessary permissions to create room type."
+              buttonLabel="Back to Home"
+              backOptions={{
+                to: "/portal/master-data/rooms/room-types",
+              }}
+              redirectOptions={{
+                to: "/portal",
+              }}
+            />
+          }
         >
-          <div className="mx-auto w-full max-w-sm">
-            <DrawerHeader>
-              <DrawerTitle>Create Room Type</DrawerTitle>
-              <DrawerDescription>Set room type details.</DrawerDescription>
-            </DrawerHeader>
-            <div className="p-4 pb-0">
-              <div>
-                <label className="text-sm font-medium text-foreground block mb-1">
-                  Type Name
-                </label>
-                <form.Field
-                  name="name"
-                  children={(field) => (
-                    <>
-                      <input
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                        placeholder="e.g., Lecture Hall"
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                      />
-                      <em role="alert" className="text-red-800">
-                        {field.state.meta.errors
-                          .map((e) => e?.message)
-                          .join(", ")}
-                      </em>
-                    </>
-                  )}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground block mb-1">
-                  Description
-                </label>
-                <form.Field
-                  name="description"
-                  children={(field) => (
-                    <>
-                      <input
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                        placeholder="e.g., Large classroom for lectures"
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                      />
-                      {!field.state.meta.isValid && (
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            <div className="mx-auto w-full max-w-sm">
+              <DrawerHeader>
+                <DrawerTitle>Create Room Type</DrawerTitle>
+                <DrawerDescription>Set room type details.</DrawerDescription>
+              </DrawerHeader>
+              <div className="p-4 pb-0">
+                <div>
+                  <label className="text-sm font-medium text-foreground block mb-1">
+                    Type Name
+                  </label>
+                  <form.Field
+                    name="name"
+                    children={(field) => (
+                      <>
+                        <input
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
+                          placeholder="e.g., Lecture Hall"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                        />
                         <em role="alert" className="text-red-800">
                           {field.state.meta.errors
                             .map((e) => e?.message)
                             .join(", ")}
                         </em>
+                      </>
+                    )}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground block mb-1">
+                    Description
+                  </label>
+                  <form.Field
+                    name="description"
+                    children={(field) => (
+                      <>
+                        <input
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
+                          placeholder="e.g., Large classroom for lectures"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                        />
+                        {!field.state.meta.isValid && (
+                          <em role="alert" className="text-red-800">
+                            {field.state.meta.errors
+                              .map((e) => e?.message)
+                              .join(", ")}
+                          </em>
+                        )}
+                      </>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <DrawerFooter>
+                <form.Subscribe
+                  selector={(state) => [state.canSubmit, state.isSubmitting]}
+                  children={([canSubmit, isSubmitting]) => (
+                    <Button
+                      className=" cursor-pointer"
+                      disabled={!canSubmit}
+                      type="submit"
+                      onClick={() =>
+                        form.handleSubmit({
+                          submitAction: isUpdateRoomType ? "update" : "create",
+                          formAction: "close",
+                        })
+                      }
+                    >
+                      {isSubmitting ? (
+                        <Loader2 />
+                      ) : isUpdateRoomType ? (
+                        "Update"
+                      ) : (
+                        "Submit"
                       )}
-                    </>
+                    </Button>
                   )}
                 />
-              </div>
-            </div>
-
-            <DrawerFooter>
-              <form.Subscribe
-                selector={(state) => [state.canSubmit, state.isSubmitting]}
-                children={([canSubmit, isSubmitting]) => (
+                <DrawerClose asChild>
                   <Button
                     className=" cursor-pointer"
-                    disabled={!canSubmit}
-                    type="submit"
-                    onClick={() =>
-                      form.handleSubmit({
-                        submitAction: isUpdateRoomType ? "update" : "create",
-                        formAction: "close",
-                      })
-                    }
+                    variant="outline"
+                    onClick={() => setIsOpen(false)}
                   >
-                    {isSubmitting ? (
-                      <Loader2 />
-                    ) : isUpdateRoomType ? (
-                      "Update"
-                    ) : (
-                      "Submit"
-                    )}
+                    Cancel
                   </Button>
-                )}
-              />
-              <DrawerClose asChild>
-                <Button
-                  className=" cursor-pointer"
-                  variant="outline"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Cancel
-                </Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </div>
-        </form>
+                </DrawerClose>
+              </DrawerFooter>
+            </div>
+          </form>
+        </AuthorizeView>
       </DrawerContent>
     </Drawer>
   );
