@@ -45,7 +45,7 @@ export function DeleteCollegeAlertDialog({
   const handleContinueDelete = async () => {
     try {
       await deleteCollegeAsync(undefined);
-      toast.success("College is deleted successfully");
+      toast.success("College deleted successfully");
       onSuccessful();
     } catch (err) {
       const axiosError = err as AxiosError<ProblemDetails>;
