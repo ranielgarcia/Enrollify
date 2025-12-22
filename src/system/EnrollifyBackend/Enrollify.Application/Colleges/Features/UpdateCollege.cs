@@ -19,7 +19,7 @@ public static class UpdateCollege
             var existingCollege = await _collegeRepository.GetById(command.id, cancellationToken);
             if (existingCollege == null)
             {
-                return Result.NotFound($"College with an ID of '{command.id}' was not found.");
+                return Result.NotFound($"College with an ID of {command.id.Value} was not found.");
             }
 
             existingCollege

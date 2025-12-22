@@ -39,7 +39,7 @@ public class UpdateCollegeRequestValidator : Validator<UpdateCollegeRequest>
             .GreaterThan(0).WithMessage("Please provide a valid college ID.");
         RuleFor(x => x.Code)
             .NotEmpty().WithMessage("Please provide a college code.")
-            .MaximumLength(10).WithMessage("Name must be 10 characters or fewer.");
+            .MaximumLength(10).WithMessage("Code must be 10 characters or fewer.");
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Please provide a college name.")
             .MaximumLength(100).WithMessage("Name must be 100 characters or fewer.");

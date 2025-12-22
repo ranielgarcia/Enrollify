@@ -4,7 +4,7 @@ import { RoomsTab } from "./rooms-tab";
 import type { Room } from "./rooms-table";
 import { RoomTypeTab } from "./room-types-components/room-type-tab";
 import useAppQuery from "@/hooks/use-app-query-v2";
-import type BasicUserInfo from "@/api/models/AuditInfo";
+import type BasicUserInfo from "@/api/models/BasicUserInfo";
 import { parseDateTime } from "@/lib/dateutils";
 import type { RoomType } from "./models/RoomType";
 import { OverlayLoader } from "@/components/app-loading-overlay";

@@ -75,11 +75,9 @@ export function Unauthorized({
 // />
 
 // With search params
-{
-  /* <Unauthorized 
+/* <Unauthorized 
   redirectOptions={{ 
     to: "/portal", 
     search: { filter: "active" } 
   }} 
 /> */
-}

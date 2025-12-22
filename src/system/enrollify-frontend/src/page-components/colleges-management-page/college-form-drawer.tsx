@@ -145,7 +145,7 @@ export function CollegeFormDrawer({
               message="Your current role does not have the necessary permissions to create college."
               buttonLabel="Back to Home"
               backOptions={{
-                to: "/portal/master-data/rooms/room-types",
+                to: "/portal/master-data/colleges",
               }}
               redirectOptions={{
                 to: "/portal",

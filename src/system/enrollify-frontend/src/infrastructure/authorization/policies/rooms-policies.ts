@@ -85,7 +85,7 @@ export const registerRoomPolicies = (registry: PolicyRegistry) => {
         createRole("SystemAdmin"),
         createRole("Registrar")
       )
-      .requirePermission(createPermission("Create"), "Rooms")
+      .requirePermission(createPermission("Update"), "Rooms")
       .requireAll()
       .build()
   );
