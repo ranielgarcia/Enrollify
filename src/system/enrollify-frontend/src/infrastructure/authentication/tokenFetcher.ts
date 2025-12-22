@@ -1,10 +1,19 @@
-import { PublicClientApplication } from "@azure/msal-browser";
+import {
+  InteractionRequiredAuthError,
+  type IPublicClientApplication,
+} from "@azure/msal-browser";
 
-import { Config } from "../Configurations/app-config";
+import { loginRequest } from "./authConfig";
 
-export async function getCurrentToken(
-  msalInstance: PublicClientApplication
-): Promise<string | null> {
+interface getCurrentTokenProps {
+  msalInstance: IPublicClientApplication;
+  forceRefreshToken?: boolean;
+}
+
+export async function getCurrentAccessToken({
+  msalInstance,
+  forceRefreshToken,
+}: getCurrentTokenProps): Promise<string | undefined | null> {
   const acquireAccessToken = async () => {
     const activeAccount = msalInstance.getActiveAccount();
     const accounts = msalInstance.getAllAccounts();
@@ -17,19 +26,21 @@ export async function getCurrentToken(
       return null;
     }
     const request = {
-      scopes: [Config.Auth.Scope],
+      ...loginRequest,
       account: activeAccount || accounts[0],
+      forceRefresh: forceRefreshToken,
     };
 
     try {
-      const authResult = await msalInstance.acquireTokenSilent(request);
-      return authResult.accessToken;
+      const tokenResponse = await msalInstance.acquireTokenSilent(request);
+      return tokenResponse.accessToken;
     } catch (error) {
       console.error("Error acquiring token:", error);
-      // If silent acquisition fails, try acquiring token through popup or redirect
       try {
-        const authResult = await msalInstance.acquireTokenPopup(request);
-        return authResult.accessToken;
+        if (error instanceof InteractionRequiredAuthError) {
+          const tokenResponse = await msalInstance.acquireTokenPopup(request);
+          return tokenResponse.accessToken;
+        }
       } catch (error) {
         console.error("Error acquiring token:", error);
         return null;
@@ -37,11 +48,18 @@ export async function getCurrentToken(
     }
   };
 
-  let token = null;
+  let accessToken = null;
 
   if (typeof window !== "undefined") {
-    token = await acquireAccessToken();
+    accessToken = await acquireAccessToken();
   }
 
-  return token;
+  if (!accessToken) {
+    // Either throw to set error state...
+    throw new Error("Failed to acquire access token.");
+    // Or return an empty shape:
+    // return {} as TData;
+  }
+
+  return accessToken;
 }

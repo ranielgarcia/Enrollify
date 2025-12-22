@@ -1,12 +1,5 @@
 import { Config } from "../Configurations/app-config";
 import { loginRequest, msalInstance } from "./authConfig";
-import { getCurrentToken } from "./tokenFetcher";
-
-export async function getToken() {
-  const authToken = await getCurrentToken(msalInstance);
-  // console.log("AUTH TOKEN:", authToken);
-  return authToken;
-}
 
 export const handleLogin = () => {
   if (Config.SIGNIN_FLOW === "popup") {

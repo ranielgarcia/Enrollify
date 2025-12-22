@@ -1,13 +1,10 @@
-import { useMsal } from "@azure/msal-react";
-import {
-  type UseQueryOptions,
-  useQuery as useReactQuery,
-} from "@tanstack/react-query";
+import { queryOptions, type UseQueryOptions } from "@tanstack/react-query";
 import axios from "axios";
 
 import { Config } from "@/infrastructure/Configurations/app-config";
 import type { paths as ApiPaths } from "@/api/generated/api";
 import { getCurrentAccessToken } from "@/infrastructure/authentication/tokenFetcher";
+import { msalInstance } from "@/infrastructure/authentication/authConfig";
 
 type ApiPath = keyof ApiPaths;
 
@@ -38,31 +35,29 @@ type QueryParamsForPath<P extends ApiPath> = ApiPaths[P] extends {
 interface useQueryParams<P extends ApiPath, TError = unknown> {
   path: P;
   params?: QueryParamsForPath<P>;
-  queryOptions?: UseQueryOptions<JsonResponseForPath<P>, TError> & {
+  options?: UseQueryOptions<JsonResponseForPath<P>, TError> & {
     queryKey?: readonly unknown[];
   };
   forceRefreshToken?: boolean;
 }
 
-const useAppQuery = <P extends ApiPath, TError = unknown>({
+const createAppQueryOptions = <P extends ApiPath, TError = unknown>({
   path,
   params,
-  queryOptions,
-  forceRefreshToken = false,
+  options,
+  forceRefreshToken,
 }: useQueryParams<P, TError>) => {
-  const { instance } = useMsal();
-
-  queryOptions = {
+  options = queryOptions({
     // default inferred queryKey based on path + params; allow override
     queryKey:
-      queryOptions?.queryKey ??
-      (params !== undefined ? [path, params] : [path]),
-    ...queryOptions,
+      options?.queryKey ?? (params !== undefined ? [path, params] : [path]),
+    ...options,
     queryFn: async () => {
       const accessToken = await getCurrentAccessToken({
-        msalInstance: instance,
-        forceRefreshToken: forceRefreshToken,
+        msalInstance,
+        forceRefreshToken,
       });
+
       const response = await axios.get<JsonResponseForPath<P>>(
         `${Config.API_URL}${path}`,
         {
@@ -75,9 +70,9 @@ const useAppQuery = <P extends ApiPath, TError = unknown>({
 
       return response.data;
     },
-  } as UseQueryOptions<JsonResponseForPath<P>, TError>;
+  });
 
-  return useReactQuery({ ...queryOptions });
+  return options;
 };
 
-export default useAppQuery;
+export default createAppQueryOptions;

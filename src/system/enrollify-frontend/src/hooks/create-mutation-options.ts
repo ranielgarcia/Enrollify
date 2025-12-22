@@ -1,12 +1,12 @@
-import { useMsal } from "@azure/msal-react";
 import {
   mutationOptions,
-  useMutation as useReactMutation,
+  type UseMutationOptions,
 } from "@tanstack/react-query";
 import axios, { AxiosError, type AxiosProgressEvent } from "axios";
 import { Config } from "@/infrastructure/Configurations/app-config";
 import type { paths as ApiPaths } from "@/api/generated/api";
 import { getCurrentAccessToken } from "@/infrastructure/authentication/tokenFetcher";
+import { msalInstance } from "@/infrastructure/authentication/authConfig";
 type HttpVerb = "post" | "put" | "delete";
 type ApiPath = keyof ApiPaths;
 
@@ -52,9 +52,14 @@ interface UseMutationParams<P extends ApiPath, V extends HttpVerb> {
   isMultipart?: boolean;
   onUploadProgressCallBack?: (progressEvent: AxiosProgressEvent) => void;
   forceRefreshToken?: boolean;
+  options?: UseMutationOptions<
+    JsonResponseForPathVerb<P, V>,
+    AxiosError,
+    JsonRequestBodyForPathVerb<P, V>
+  >;
 }
 
-const useAppMutation = <P extends ApiPath, V extends HttpVerb = "post">({
+const createMutationOptions = <P extends ApiPath, V extends HttpVerb = "post">({
   mutationKey,
   path,
   params,
@@ -62,24 +67,23 @@ const useAppMutation = <P extends ApiPath, V extends HttpVerb = "post">({
   httpVerb = "post" as V,
   isMultipart = false,
   forceRefreshToken = false,
+  options,
 }: UseMutationParams<P, V>) => {
-  const { instance } = useMsal();
-
   const appMutationOptions = mutationOptions({
     mutationKey: Array.isArray(mutationKey)
       ? mutationKey
       : [mutationKey, params],
-
+    ...options,
     onError: (err: AxiosError) => err,
     mutationFn: async (
       formData: FormData | JsonRequestBodyForPathVerb<P, V>
     ) => {
       const accessToken = await getCurrentAccessToken({
-        msalInstance: instance,
-        forceRefreshToken: forceRefreshToken,
+        msalInstance,
+        forceRefreshToken,
       });
 
-      if (isMultipart && httpVerb === "post") {
+      if (isMultipart) {
         const response = await axios.post<JsonResponseForPathVerb<P, V>>(
           `${Config.API_URL}${path}`,
           formData as FormData,
@@ -112,11 +116,7 @@ const useAppMutation = <P extends ApiPath, V extends HttpVerb = "post">({
     },
   });
 
-  return useReactMutation<
-    JsonResponseForPathVerb<P, V>,
-    AxiosError,
-    JsonRequestBodyForPathVerb<P, V>
-  >(appMutationOptions);
+  return appMutationOptions;
 };
 
-export default useAppMutation;
+export default createMutationOptions;

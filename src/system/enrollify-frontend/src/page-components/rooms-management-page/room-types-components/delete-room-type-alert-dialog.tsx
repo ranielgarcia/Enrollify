@@ -11,27 +11,18 @@ import {
 import type { RoomType } from "../models/RoomType";
 import { OverlayLoader } from "@/components/app-loading-overlay";
 import useAppQuery from "@/hooks/use-app-query-v2";
-import useAppMutation from "@/hooks/use-app-mutation-v2";
-import { toast } from "sonner";
-import {
-  formatValidationErrors,
-  parseApiError,
-  type ProblemDetails,
-} from "@/lib/axios-utils";
-import type { AxiosError } from "axios";
+import { useDeleteRoomType } from "@/api/collections/room-types-collections";
 
 interface DeleteRoomTypeAlertDialogProps {
   roomTypeToDelete?: RoomType;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccessful: () => void;
 }
 
 export function DeleteRoomTypeAlertDialog({
   roomTypeToDelete,
   isOpen,
   onOpenChange,
-  onSuccessful,
 }: DeleteRoomTypeAlertDialogProps) {
   const { data: associatedRooms, isPending: isLoadingAssociatedRooms } =
     useAppQuery({
@@ -46,32 +37,9 @@ export function DeleteRoomTypeAlertDialog({
     });
 
   const { mutateAsync: deleteRoomType, isPending: isDeletingInProgress } =
-    useAppMutation({
-      httpVerb: "delete",
-      path: "/api/room-types",
-      mutationKey: `delete-room-type-${roomTypeToDelete?.id}`,
-      params: {
-        id: roomTypeToDelete?.id ?? 0,
-      },
-    });
+    useDeleteRoomType(roomTypeToDelete?.id ?? 0);
 
-  const handleContinueDelete = async () => {
-    try {
-      await deleteRoomType(undefined);
-      toast.success("Room type is deleted successfully");
-      onSuccessful();
-    } catch (err) {
-      const axiosError = err as AxiosError<ProblemDetails>;
-      const parsed = parseApiError(axiosError);
-
-      // Show error toast with title and detail
-      toast.error(parsed.title, {
-        description: parsed.validationErrors
-          ? formatValidationErrors(parsed.validationErrors)
-          : parsed.detail || "Please try again.",
-      });
-    }
-  };
+  const handleContinueDelete = async () => await deleteRoomType(undefined);
 
   return (
     <AlertDialog onOpenChange={onOpenChange} open={isOpen}>

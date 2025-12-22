@@ -6,13 +6,9 @@ import { DeleteRoomTypeAlertDialog } from "./delete-room-type-alert-dialog";
 
 interface RoomTypeTabProps {
   roomTypes: RoomType[];
-  refreshRoomTypesTable: () => void;
 }
 
-export function RoomTypeTab({
-  roomTypes,
-  refreshRoomTypesTable,
-}: RoomTypeTabProps) {
+export function RoomTypeTab({ roomTypes }: RoomTypeTabProps) {
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [roomTypeToEdit, setRoomTypeToEdit] = useState<RoomType | undefined>();
   const [roomTypeToDelete, setRoomTypeToDelete] = useState<
@@ -43,7 +39,7 @@ export function RoomTypeTab({
           roomTypeToUpdate={roomTypeToEdit}
           isOpen={isFormOpen}
           setIsOpen={setIsFormOpen}
-          onSuccessful={refreshRoomTypesTable}
+          onSuccessful={() => console.log("delete me")}
         />
       </div>
 
@@ -57,7 +53,6 @@ export function RoomTypeTab({
         isOpen={!!roomTypeToDelete}
         onOpenChange={handleDeleteAlertDialogOnOpenChange}
         roomTypeToDelete={roomTypeToDelete}
-        onSuccessful={refreshRoomTypesTable}
       />
     </>
   );
