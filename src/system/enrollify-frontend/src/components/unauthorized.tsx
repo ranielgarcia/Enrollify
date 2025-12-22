@@ -17,6 +17,7 @@ import {
 interface UnauthorizedProps {
   buttonLabel: string;
   message?: string;
+  backCallback?: () => void;
   backOptions?: NavigateOptions<RegisteredRouter, string, string>;
   redirectOptions?: NavigateOptions<RegisteredRouter, string, string>;
 }
@@ -27,6 +28,7 @@ const DEFAULT_MESSAGE =
 export function Unauthorized({
   buttonLabel,
   message = DEFAULT_MESSAGE,
+  backCallback,
   backOptions = { to: ".." },
   redirectOptions = { to: "/" },
 }: UnauthorizedProps) {
@@ -52,7 +54,12 @@ export function Unauthorized({
           </p>
         </CardContent>
         <CardFooter className="flex justify-center gap-2">
-          <Button variant="outline" onClick={() => navigate(backOptions)}>
+          <Button
+            variant="outline"
+            onClick={() =>
+              backCallback ? backCallback() : navigate(backOptions)
+            }
+          >
             Go Back
           </Button>
           <Button onClick={() => navigate(redirectOptions)}>

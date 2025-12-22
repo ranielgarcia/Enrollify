@@ -144,9 +144,7 @@ export function CollegeFormDrawer({
             <Unauthorized
               message="Your current role does not have the necessary permissions to create college."
               buttonLabel="Back to Home"
-              backOptions={{
-                to: "/portal/master-data/colleges",
-              }}
+              backCallback={() => setIsOpen(false)}
               redirectOptions={{
                 to: "/portal",
               }}
