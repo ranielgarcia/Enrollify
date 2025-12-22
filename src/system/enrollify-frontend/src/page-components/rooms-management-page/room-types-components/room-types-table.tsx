@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table";
 import { Edit2, Trash2 } from "lucide-react";
 import { formatDateTime } from "@/lib/dateutils";
-import type { RoomType } from "./models/RoomType";
+import type { RoomType } from "../models/RoomType";
 
 interface RoomTypesTableProps {
   roomTypes: RoomType[];

@@ -68,6 +68,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/colleges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesCollegesListCollegesEndpoint"];
+        put: operations["EnrollifyWebAPIFeaturesCollegesUpdateEndpoint"];
+        post: operations["EnrollifyWebAPIFeaturesCollegesCreateEndpoint"];
+        delete: operations["EnrollifyWebAPIFeaturesCollegesDeleteEndpoint"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/WeatherForecast": {
         parameters: {
             query?: never;
@@ -179,24 +195,6 @@ export interface components {
             description?: string;
         };
         EnrollifyWebAPIFeaturesRoomTypesDeleteRequest: Record<string, never>;
-        /** @description the dto used to send an error response to the client */
-        FastEndpointsErrorResponse: {
-            /**
-             * Format: int32
-             * @description the http status code sent to the client. default is 400.
-             * @default 400
-             */
-            statusCode: number;
-            /**
-             * @description the message for the error response
-             * @default One or more errors occurred!
-             */
-            message: string;
-            /** @description the collection of errors for the current context */
-            errors?: {
-                [key: string]: string[];
-            };
-        };
         EnrollifyApplicationRoomTypesDTOsRoomTypeDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
             /**
              * Format: int32
@@ -245,6 +243,24 @@ export interface components {
             name: string;
             description?: string;
         };
+        /** @description the dto used to send an error response to the client */
+        FastEndpointsErrorResponse: {
+            /**
+             * Format: int32
+             * @description the http status code sent to the client. default is 400.
+             * @default 400
+             */
+            statusCode: number;
+            /**
+             * @description the message for the error response
+             * @default One or more errors occurred!
+             */
+            message: string;
+            /** @description the collection of errors for the current context */
+            errors?: {
+                [key: string]: string[];
+            };
+        };
         EnrollifyApplicationRoomsDTOsRoomDTO: {
             roomNumber?: string;
             /** Format: int32 */
@@ -279,6 +295,46 @@ export interface components {
         EnrollifyApplicationRolesDTOsRolePermissionDTO: {
             permissionScope?: components["schemas"]["EnrollifyCoreConstantsAuthorizationPermissionScopeEnum"];
             permissions?: components["schemas"]["EnrollifyCoreConstantsAuthorizationPermissionEnum"][];
+        };
+        EnrollifyWebAPIFeaturesCollegesCreateCollegeResponse: {
+            /** Format: int32 */
+            id?: number;
+            code?: string;
+            name?: string;
+            description?: string;
+            dean?: string;
+        };
+        EnrollifyWebAPIFeaturesCollegesCreateCollegeRequest: {
+            code: string;
+            name: string;
+            description?: string;
+            dean: string;
+        };
+        EnrollifyWebAPIFeaturesCollegesDeleteRequest: Record<string, never>;
+        EnrollifyApplicationCollegesDTOsCollegeDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            code?: string;
+            name?: string;
+            description?: string;
+            dean?: string;
+        };
+        EnrollifyWebAPIFeaturesCollegesUpdateCollegeResponse: {
+            /** Format: int32 */
+            id?: number;
+            code?: string;
+            name?: string;
+            description?: string;
+            dean?: string;
+        };
+        EnrollifyWebAPIFeaturesCollegesUpdateCollegeRequest: {
+            code: string;
+            name: string;
+            description?: string;
+            dean: string;
         };
         EnrollifyWebAPIWeatherForecast: {
             /** Format: date */
@@ -524,7 +580,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsErrorResponse"];
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
                 };
             };
             /** @description Unauthorized */
@@ -625,6 +681,217 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCollegesListCollegesEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationCollegesDTOsCollegeDTO"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCollegesUpdateEndpoint: {
+        parameters: {
+            query: {
+                id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCollegesUpdateCollegeRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCollegesUpdateCollegeResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCollegesCreateEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCollegesCreateCollegeRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCollegesCreateCollegeResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCollegesDeleteEndpoint: {
+        parameters: {
+            query: {
+                id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
             };
         };
     };

@@ -4,7 +4,7 @@
 CREATE TABLE Users
 (
     Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-    Email VARCHAR(255) NOT NULL UNIQUE,
+    Email VARCHAR(255) NOT NULL,
     FirstName VARCHAR(50) NOT NULL,
     LastName VARCHAR(50) NOT NULL,
     LastLoginAt DATETIMEOFFSET NULL,
@@ -16,7 +16,8 @@ CREATE TABLE Users
     UpdatedBy INT NULL,
     DeletedAt DATETIMEOFFSET NULL,
     DeletedBy INT NULL,
-    
+
+    CONSTRAINT UQ_Users_Email UNIQUE (Email),
     CONSTRAINT CHK_Users_Email_NotEmpty CHECK (LEN(TRIM(Email)) > 0),
     CONSTRAINT CHK_Users_FirstName_NotEmpty CHECK (LEN(TRIM(FirstName)) > 0),
     CONSTRAINT CHK_Users_LastName_NotEmpty CHECK (LEN(TRIM(LastName)) > 0),
@@ -31,7 +32,7 @@ CREATE TABLE Users
 CREATE TABLE Roles
 (
     Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-    Name VARCHAR(50) NOT NULL UNIQUE,
+    Name VARCHAR(50) NOT NULL,
     Description TEXT NOT NULL,
 
     IsActive BIT NOT NULL DEFAULT 1,
@@ -41,7 +42,8 @@ CREATE TABLE Roles
     UpdatedBy INT NULL,
     DeletedAt DATETIMEOFFSET NULL,
     DeletedBy INT NULL,
-    
+
+    CONSTRAINT UQ_Roles_Name UNIQUE (Name),
     CONSTRAINT CHK_Roles_Name_NotEmpty CHECK (LEN(TRIM(Name)) > 0),
     CONSTRAINT FK_Roles_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_Roles_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
@@ -85,7 +87,7 @@ GO
 CREATE TABLE PermissionScopes
 (
     Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-    Name VARCHAR(100) NOT NULL UNIQUE, -- e.g. Users, Courses, Enrollments
+    Name VARCHAR(100) NOT NULL, -- e.g. Users, Courses, Enrollments
 
     IsActive BIT NOT NULL DEFAULT 1,
     CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
@@ -95,6 +97,7 @@ CREATE TABLE PermissionScopes
     DeletedAt DATETIMEOFFSET NULL,
     DeletedBy INT NULL,
 
+    CONSTRAINT UQ_PermissionScopes_Name UNIQUE (Name),
     CONSTRAINT CHK_PermissionScopes_Name_NotEmpty CHECK (LEN(TRIM(Name)) > 0),
     CONSTRAINT FK_PermissionScopes_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_PermissionScopes_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),

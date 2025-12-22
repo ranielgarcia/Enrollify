@@ -1,7 +1,7 @@
 import { RoomTypesTable } from "./room-types-table";
 import { RoomTypeFormDrawer } from "./room-type-form-drawer";
 import { useState } from "react";
-import type { RoomType } from "./models/RoomType";
+import type { RoomType } from "../models/RoomType";
 import { DeleteRoomTypeAlertDialog } from "./delete-room-type-alert-dialog";
 
 interface RoomTypeTabProps {

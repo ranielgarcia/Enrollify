@@ -24,7 +24,7 @@ public class RoomTypeRepository : IRoomTypeRepository
         return roomType;
     }
 
-    public async Task<List<RoomType>> ListRoomTypesAsync(CancellationToken cancellationToken = default)
+    public async Task<List<RoomType>> ListRoomTypes(CancellationToken cancellationToken = default)
     {
         var roomTypes = await _dbContext.RoomTypes
             .Include(r => r.CreatedByUser)
@@ -37,7 +37,7 @@ public class RoomTypeRepository : IRoomTypeRepository
     {
         try
         {
-            await _dbContext.RoomTypes.AddAsync(newRoomType);
+            await _dbContext.RoomTypes.AddAsync(newRoomType, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
             return Result.Success(newRoomType.Id);
         }
@@ -69,7 +69,7 @@ public class RoomTypeRepository : IRoomTypeRepository
     {
         try
         {
-            var roomType = await _dbContext.RoomTypes.FindAsync(new object[] { id }, cancellation);
+            var roomType = await _dbContext.RoomTypes.FirstOrDefaultAsync(rt => rt.Id == id, cancellation);
             if (roomType == null)
             {
                 return Result.NotFound($"Room type with ID {id} not found.");
@@ -92,14 +92,14 @@ public class RoomTypeRepository : IRoomTypeRepository
 
     private bool IsDuplicateRoomTypeException(DbUpdateException ex)
     {
-        return ex.InnerException?.Message.Contains("duplicate") == true ||
-               ex.InnerException?.Message.Contains("UQ__RoomType__") == true;
+        var message = ex.InnerException?.Message;
+        return message?.Contains("UQ_RoomTypes_Name") == true;
     }
 
     private bool IsForeignKeyConstraintException(DbUpdateException ex)
     {
         return ex.InnerException?.Message.Contains("REFERENCE constraint") == true ||
-               ex.InnerException?.Message.Contains("FK_Rooms_RoomType") == true ||
-               ex.InnerException?.Message.Contains("FK_Courses_RoomType") == true;
+               ex.InnerException?.Message.Contains("FK_") == true ||
+               ex.InnerException?.Message.Contains("_RoomType") == true;
     }
 }

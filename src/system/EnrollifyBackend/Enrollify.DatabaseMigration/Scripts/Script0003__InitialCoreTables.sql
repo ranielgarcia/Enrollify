@@ -3,7 +3,7 @@
 CREATE TABLE RoomTypes
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	Name VARCHAR(50) NOT NULL UNIQUE,
+	Name VARCHAR(50) NOT NULL,
 	Description VARCHAR(255),
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
@@ -13,6 +13,7 @@ CREATE TABLE RoomTypes
 	DeletedAt DATETIMEOFFSET NULL,
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT UQ_RoomTypes_Name UNIQUE (Name),
 	CONSTRAINT FK_RoomTypes_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_RoomTypes_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_RoomTypes_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
@@ -22,7 +23,7 @@ CREATE TABLE RoomTypes
 CREATE TABLE Colleges
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	Code VARCHAR(10) NOT NULL UNIQUE,
+	Code VARCHAR(10) NOT NULL,
 	Name VARCHAR(100) NOT NULL,
 	Dean VARCHAR(100) NOT NULL, -- Hard coded name for now
 	Description VARCHAR(255) NULL,
@@ -34,6 +35,8 @@ CREATE TABLE Colleges
 	DeletedAt DATETIMEOFFSET NULL,
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT UQ_Colleges_Code UNIQUE (Code),
+	CONSTRAINT UQ_Colleges_Name UNIQUE (Name),
 	CONSTRAINT FK_Colleges_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Colleges_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Colleges_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
@@ -44,7 +47,7 @@ GO;
 CREATE TABLE Buildings
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	Name VARCHAR(50) NOT NULL UNIQUE,
+	Name VARCHAR(50) NOT NULL,
 	Description VARCHAR(255),
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
@@ -54,6 +57,7 @@ CREATE TABLE Buildings
 	DeletedAt DATETIMEOFFSET NULL,
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT UQ_Buildings_Name UNIQUE (Name),
 	CONSTRAINT FK_Buildings_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Buildings_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Buildings_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
@@ -119,7 +123,7 @@ GO;
 CREATE TABLE Courses -- Also known program
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	Code VARCHAR(10) NOT NULL UNIQUE,
+	Code VARCHAR(10) NOT NULL,
 	Name VARCHAR(100) NOT NULL,
 	DurationYears INT NOT NULL,
 	Description VARCHAR(255) NULL,
@@ -132,6 +136,7 @@ CREATE TABLE Courses -- Also known program
 	DeletedAt DATETIMEOFFSET NULL,
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT UQ_Courses_Code UNIQUE (Code),
 	CONSTRAINT FK_Courses_College FOREIGN KEY (CollegeId) REFERENCES Colleges(Id),
 	CONSTRAINT FK_Courses_RoomType FOREIGN KEY (PreferRoomTypeId) REFERENCES RoomTypes(Id),
 	CONSTRAINT FK_Courses_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
@@ -237,7 +242,7 @@ CREATE TABLE Teachers
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	FirstName VARCHAR(50) NOT NULL,
 	LastName VARCHAR(50) NOT NULL,
-	Email VARCHAR(255) NOT NULL UNIQUE,
+	Email VARCHAR(255) NOT NULL,
 	DepartmentId INT NOT NULL,
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -246,6 +251,7 @@ CREATE TABLE Teachers
 	DeletedAt DATETIMEOFFSET NULL,
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT UQ_Teachers_Email UNIQUE (Email),
 	CONSTRAINT FK_Teachers_Department FOREIGN KEY (DepartmentId) REFERENCES Departments(Id),
 	CONSTRAINT FK_Teachers_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Teachers_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
@@ -411,20 +417,21 @@ CREATE TABLE ClassSchedules
 -- ====================================
 CREATE TABLE StudentStatuses
 (
-    Id INT NOT NULL PRIMARY KEY,
-    Code VARCHAR(20) NOT NULL UNIQUE,
-    Name VARCHAR(50) NOT NULL,
-    Description VARCHAR(255) NULL,
-    CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
-    CreatedBy INT NOT NULL,
-    UpdatedAt DATETIMEOFFSET NULL,
-    UpdatedBy INT NULL,
-    DeletedAt DATETIMEOFFSET NULL,
-    DeletedBy INT NULL,
-    IsActive BIT NOT NULL DEFAULT 1,
-    DisplayOrder INT NOT NULL DEFAULT 0,
-    
-    CONSTRAINT FK_StudentStatuses_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	Id INT NOT NULL PRIMARY KEY,
+	Code VARCHAR(20) NOT NULL,
+	Name VARCHAR(50) NOT NULL,
+	Description VARCHAR(255) NULL,
+	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+	CreatedBy INT NOT NULL,
+	UpdatedAt DATETIMEOFFSET NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIMEOFFSET NULL,
+	DeletedBy INT NULL,
+	IsActive BIT NOT NULL DEFAULT 1,
+	DisplayOrder INT NOT NULL DEFAULT 0,
+
+	CONSTRAINT UQ_StudentStatuses_Code UNIQUE (Code),
+	CONSTRAINT FK_StudentStatuses_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_StudentStatuses_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_StudentStatuses_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
     CONSTRAINT CHK_StudentStatuses_Code_NotEmpty CHECK (LEN(TRIM(Code)) > 0),
@@ -449,22 +456,24 @@ GO
 
 CREATE TABLE Students
 (
-    Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-    StudentNumber VARCHAR(13) NOT NULL UNIQUE,
-    FirstName VARCHAR(50) NOT NULL,
-    LastName VARCHAR(50) NOT NULL,
-    Email VARCHAR(255) NOT NULL UNIQUE,
-    CourseId INT NOT NULL,
-    YearLevel INT NOT NULL,
-    Status INT NOT NULL DEFAULT 1, -- References StudentStatuses, default to ACTIVE
-    CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
-    CreatedBy INT NOT NULL,
-    UpdatedAt DATETIMEOFFSET NULL,
-    UpdatedBy INT NULL,
-    DeletedAt DATETIMEOFFSET NULL,
-    DeletedBy INT NULL,
-    IsActive BIT NOT NULL DEFAULT 1,
-    CONSTRAINT FK_Students_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
+	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	StudentNumber VARCHAR(13) NOT NULL,
+	FirstName VARCHAR(50) NOT NULL,
+	LastName VARCHAR(50) NOT NULL,
+	Email VARCHAR(255) NOT NULL,
+	CourseId INT NOT NULL,
+	YearLevel INT NOT NULL,
+	Status INT NOT NULL DEFAULT 1, -- References StudentStatuses, default to ACTIVE
+	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+	CreatedBy INT NOT NULL,
+	UpdatedAt DATETIMEOFFSET NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIMEOFFSET NULL,
+	DeletedBy INT NULL,
+	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT UQ_Students_StudentNumber UNIQUE (StudentNumber),
+	CONSTRAINT UQ_Students_Email UNIQUE (Email),
+	CONSTRAINT FK_Students_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
     CONSTRAINT FK_Students_StudentStatus FOREIGN KEY (Status) REFERENCES StudentStatuses(Id),
     CONSTRAINT FK_Students_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_Students_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
@@ -481,20 +490,21 @@ GO
 -- ====================================
 CREATE TABLE EnrollmentStatuses
 (
-    Id INT NOT NULL PRIMARY KEY,
-    Code VARCHAR(20) NOT NULL UNIQUE,
-    Name VARCHAR(50) NOT NULL,
-    Description VARCHAR(255) NULL,
-    CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
-    CreatedBy INT NOT NULL,
-    UpdatedAt DATETIMEOFFSET NULL,
-    UpdatedBy INT NULL,
-    DeletedAt DATETIMEOFFSET NULL,
-    DeletedBy INT NULL,
-    IsActive BIT NOT NULL DEFAULT 1,
-    DisplayOrder INT NOT NULL DEFAULT 0,
-    
-    CONSTRAINT FK_EnrollmentStatuses_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	Id INT NOT NULL PRIMARY KEY,
+	Code VARCHAR(20) NOT NULL,
+	Name VARCHAR(50) NOT NULL,
+	Description VARCHAR(255) NULL,
+	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+	CreatedBy INT NOT NULL,
+	UpdatedAt DATETIMEOFFSET NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIMEOFFSET NULL,
+	DeletedBy INT NULL,
+	IsActive BIT NOT NULL DEFAULT 1,
+	DisplayOrder INT NOT NULL DEFAULT 0,
+
+	CONSTRAINT UQ_EnrollmentStatuses_Code UNIQUE (Code),
+	CONSTRAINT FK_EnrollmentStatuses_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_EnrollmentStatuses_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_EnrollmentStatuses_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
     CONSTRAINT CHK_EnrollmentStatuses_Code_NotEmpty CHECK (LEN(TRIM(Code)) > 0),

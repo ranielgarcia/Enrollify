@@ -18,7 +18,7 @@ public static class CreateRoomType
         }
         public async ValueTask<Result<RoomTypeId>> Handle(Command command, CancellationToken cancellationToken)
         {
-            var roomType = RoomType.Create(command.name, command.description);
+            var roomType = new RoomType(command.name, command.description);
             var result = await _roomTypeRepository.Create(roomType, cancellationToken);
             return result;
         }

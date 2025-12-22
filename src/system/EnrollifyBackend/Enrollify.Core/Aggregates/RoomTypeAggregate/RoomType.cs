@@ -8,13 +8,14 @@ public class RoomType : EntityBase<RoomType, RoomTypeId>, IAggregateRoot, IAudit
 {
     private RoomType() { } // EF Core constructor
 
-    public RoomType(string name)
+    public RoomType(string name, string description)
     {
         Name = Guard.Against.Null(name);
+        Description = Guard.Against.Null(description);
     }
 
     public string Name { get; private set; }
-    public string Description { get; set; }
+    public string Description { get; private set; }
 
 
     public DateTimeOffset CreatedAt { get; private set; }
@@ -27,15 +28,6 @@ public class RoomType : EntityBase<RoomType, RoomTypeId>, IAggregateRoot, IAudit
     public UserId? DeletedBy { get; private set; }
     public User? DeletedByUser { get; private set; }
     public bool IsActive { get; private set; }
-
-
-
-    public static RoomType Create(string name, string description)
-    {
-        var roomType = new RoomType(name);
-        roomType.Description = description;
-        return roomType;
-    }
 
     public RoomType UpdateName(string newName)
     {

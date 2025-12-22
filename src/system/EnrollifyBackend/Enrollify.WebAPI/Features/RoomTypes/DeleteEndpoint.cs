@@ -27,7 +27,7 @@ public class DeleteRequestValidator : Validator<DeleteRequest>
 }
 
 [HttpDelete("")]
-[Group<RoomTypeEndpointGroup>]
+[Group<RoomTypeEndpointsGroup>]
 [Authorize(Policy = PolicyName.HasDeleteRoomTypesPermission)]
 public class DeleteEndpoint : Endpoint<DeleteRequest, Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
 {

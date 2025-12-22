@@ -7,14 +7,18 @@ namespace Enrollify.Core.Aggregates.CollegeAggregate;
 public class College : EntityBase<College, CollegeId>, IAggregateRoot, IAuditable 
 { 
     public College() { }
-    public College(string name, string description)
+    public College(CollegeCode code, string name, string description, string dean)
     {
-        Name = name;
-        Description = description;
+        Code = Guard.Against.Null(code);
+        Name = Guard.Against.Null(name);
+        Description = Guard.Against.Null(description);
+        Dean = Guard.Against.Null(dean);
     }
+
+    public CollegeCode Code { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
-
+    public string Dean { get; set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
@@ -27,6 +31,12 @@ public class College : EntityBase<College, CollegeId>, IAggregateRoot, IAuditabl
     public User? DeletedByUser { get; private set; }
     public bool IsActive { get; private set; }
 
+    public College UpdateCode(CollegeCode newCode)
+    {
+        if (newCode == Code) return this;
+        Code = Guard.Against.Null(newCode);
+        return this;
+    }
 
     public College UpdateName(string newName)
     {
@@ -41,4 +51,12 @@ public class College : EntityBase<College, CollegeId>, IAggregateRoot, IAuditabl
         Description = Guard.Against.Null(newDescription);
         return this;
     }
+
+    public College UpdateDean(string newDean)
+    {
+        if (newDean == Dean) return this;
+        Dean = Guard.Against.Null(newDean);
+        return this;
+    }
+
 }

@@ -5,7 +5,7 @@ using Mediator;
 
 namespace Enrollify.Application.RoomTypes.Features;
 
-public class DeleteRoomType
+public static class DeleteRoomType
 {
     public sealed record Command(RoomTypeId id) : ICommand<Result>;
 

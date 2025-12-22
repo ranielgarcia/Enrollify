@@ -30,12 +30,12 @@ public class CreateRoomTypeRequestValidator : Validator<CreateRoomTypeRequest>
             .NotEmpty().WithMessage("Please provide a room type name.")
             .MaximumLength(100).WithMessage("Name must be 100 characters or fewer.");
         RuleFor(x => x.Description)
-            .MaximumLength(500).WithMessage("Description must be 500 characters or fewer.");
+            .MaximumLength(255).WithMessage("Description must be 255 characters or fewer.");
     }
 }
 
 [HttpPost("")]
-[Group<RoomTypeEndpointGroup>]
+[Group<RoomTypeEndpointsGroup>]
 [Authorize(Policy = PolicyName.HasCreateRoomTypePermission)]
 public class CreateEndpoint : Endpoint<CreateRoomTypeRequest, Results<Created<CreateRoomTypeResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
 {

@@ -15,4 +15,10 @@ public class PolicyName
 
     // Rooms
     public const string HasViewRoomsPermission = "HasViewRoomsPermission";
+
+    // Colleges
+    public const string HasCreateCollegePermission = "HasCreateCollegePermission";
+    public const string HasUpdateCollegePermission = "HasUpdateCollegePermission";
+    public const string HasDeleteCollegePermission = "HasDeleteCollegePermission";
+    public const string HasViewCollegePermission = "HasViewCollegePermission";
 }
