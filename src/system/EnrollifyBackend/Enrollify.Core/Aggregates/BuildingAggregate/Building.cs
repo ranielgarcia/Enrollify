@@ -8,14 +8,16 @@ public class Building : EntityBase<Building, BuildingId>, IAggregateRoot, IAudit
 {
     public Building(){}
 
-    public Building(string name, string description)
+    public Building(string name, string description, string address)
     {
         Name = name;
         Description = description;
+        Address = address;
     }
 
-    public string Name { get; set; }
-    public string Description { get; set; }
+    public string Name { get; private set; }
+    public string Description { get; private set; }
+    public string Address { get; private set; }
 
 
     public DateTimeOffset CreatedAt { get; private set; }
@@ -40,6 +42,13 @@ public class Building : EntityBase<Building, BuildingId>, IAggregateRoot, IAudit
     {
         if (newDescription == Description) return this;
         Description = Guard.Against.Null(newDescription);
+        return this;
+    }
+
+    public Building UpdateAddress(string newAddress)
+    {
+        if (newAddress == Address) return this;
+        Address = Guard.Against.Null(newAddress);
         return this;
     }
 }

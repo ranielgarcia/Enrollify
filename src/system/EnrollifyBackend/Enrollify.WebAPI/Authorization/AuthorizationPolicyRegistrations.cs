@@ -1,4 +1,5 @@
-﻿using Enrollify.WebAPI.Authorization.Colleges;
+﻿using Enrollify.WebAPI.Authorization.Buildings;
+using Enrollify.WebAPI.Authorization.Colleges;
 using Enrollify.WebAPI.Authorization.Roles;
 using Enrollify.WebAPI.Authorization.Rooms;
 using Enrollify.WebAPI.Authorization.RoomTypes;
@@ -16,6 +17,7 @@ public static class AuthorizationPolicyRegistrations
         services.AddRoomTypesAuthorizationPolicyHandlers();
         services.AddRoomAuthorizationPolicyHandlers();
         services.AddCollegeAuthorizationPolicyHandlers();
+        services.AddBuildingsAuthorizationPolicyHandlers();
 
         services.AddAuthorization(options =>
         {
@@ -26,6 +28,7 @@ public static class AuthorizationPolicyRegistrations
             options.AddRoomTypesAuthorizationPolicies();
             options.AddRoomsAuthorizationPolicies();
             options.AddCollegeAuthorizationPolicies();
+            options.AddBuildingsAuthorizationPolicies();
         });
 
         return services;

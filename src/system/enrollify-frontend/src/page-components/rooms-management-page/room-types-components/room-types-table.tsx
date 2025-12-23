@@ -10,6 +10,8 @@ import { DataTable } from "@/components/data-table";
 import { Edit2, Trash2 } from "lucide-react";
 import { formatDateTime } from "@/lib/dateutils";
 import type { RoomType } from "../../../api/models/room-type";
+import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
+import { useEffect, useState } from "react";
 
 interface RoomTypesTableProps {
   roomTypes?: RoomType[];
@@ -22,7 +24,23 @@ export function RoomTypesTable({
   onEdit,
   onDelete,
 }: RoomTypesTableProps) {
+  const { checkPolicy } = useAuthorization();
   const columnHelper = createColumnHelper<RoomType>();
+  const [canUpdate, setCanUpdate] = useState(false);
+  const [canDelete, setCanDelete] = useState(false);
+
+  useEffect(() => {
+    const checkPolicies = async () => {
+      const [updatePermission, deletePermission] = await Promise.all([
+        checkPolicy("canUpdateCollege"),
+        checkPolicy("canDeleteCollege"),
+      ]);
+      setCanUpdate(updatePermission);
+      setCanDelete(deletePermission);
+    };
+
+    checkPolicies();
+  }, [checkPolicy]);
 
   const columns = [
     columnHelper.accessor("name", {
@@ -75,6 +93,7 @@ export function RoomTypesTable({
               size="sm"
               onClick={() => onEdit(item)}
               className="hover:bg-blue-500/10 text-blue-600 hover:text-blue-700"
+              disabled={!canUpdate}
             >
               <Edit2 className="size-4" />
             </Button>
@@ -83,6 +102,7 @@ export function RoomTypesTable({
               size="sm"
               onClick={() => onDelete(item)}
               className="hover:bg-destructive/10 text-destructive hover:text-destructive"
+              disabled={!canDelete}
             >
               <Trash2 className="size-4" />
             </Button>

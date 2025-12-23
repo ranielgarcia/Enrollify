@@ -10,6 +10,8 @@ import { Edit2, Trash2 } from "lucide-react";
 import { formatDateTime } from "@/lib/dateutils";
 import { DataTable } from "@/components/data-table";
 import type { College } from "@/api/models/college";
+import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
+import { useEffect, useState } from "react";
 
 interface CollegesTableProps {
   colleges?: College[];
@@ -22,7 +24,23 @@ export function CollegesTable({
   onEdit,
   onDelete,
 }: CollegesTableProps) {
+  const { checkPolicy } = useAuthorization();
   const columnHelper = createColumnHelper<College>();
+  const [canUpdate, setCanUpdate] = useState(false);
+  const [canDelete, setCanDelete] = useState(false);
+
+  useEffect(() => {
+    const checkPolicies = async () => {
+      const [updatePermission, deletePermission] = await Promise.all([
+        checkPolicy("canUpdateCollege"),
+        checkPolicy("canDeleteCollege"),
+      ]);
+      setCanUpdate(updatePermission);
+      setCanDelete(deletePermission);
+    };
+
+    checkPolicies();
+  }, [checkPolicy]);
 
   const columns = [
     columnHelper.accessor("code", {
@@ -76,6 +94,7 @@ export function CollegesTable({
       header: "Actions",
       cell: (info) => {
         const item = info.row.original;
+
         return (
           <div className="flex gap-2">
             <Button
@@ -83,6 +102,7 @@ export function CollegesTable({
               size="sm"
               onClick={() => onEdit(item)}
               className="hover:bg-blue-500/10 text-blue-600 hover:text-blue-700"
+              disabled={!canUpdate}
             >
               <Edit2 className="size-4" />
             </Button>
@@ -91,6 +111,7 @@ export function CollegesTable({
               size="sm"
               onClick={() => onDelete(item)}
               className="hover:bg-destructive/10 text-destructive hover:text-destructive"
+              disabled={!canDelete}
             >
               <Trash2 className="size-4" />
             </Button>

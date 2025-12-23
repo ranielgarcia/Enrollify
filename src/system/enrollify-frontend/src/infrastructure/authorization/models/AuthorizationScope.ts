@@ -8,6 +8,7 @@ export const Scopes = {
   Colleges: 3,
   Rooms: 4,
   RoomTypes: 5,
+  Buildings: 6,
 } as const;
 
 export type ScopeName = keyof typeof Scopes;

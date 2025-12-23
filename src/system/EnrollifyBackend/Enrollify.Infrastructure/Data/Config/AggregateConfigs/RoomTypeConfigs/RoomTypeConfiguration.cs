@@ -10,7 +10,6 @@ public class RoomTypeConfiguration : IEntityTypeConfiguration<RoomType>
 
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id)
-          .HasVogenConversion()
           .UseIdentityColumn()
           .IsRequired();
 

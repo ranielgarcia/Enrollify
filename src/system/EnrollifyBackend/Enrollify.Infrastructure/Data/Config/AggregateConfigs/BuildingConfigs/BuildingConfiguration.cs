@@ -10,7 +10,7 @@ public class BuildingConfiguration : IEntityTypeConfiguration<Building>
 
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id)
-          .ValueGeneratedOnAdd()
+          .UseIdentityColumn()
           .IsRequired();
 
         builder.Property(e => e.Name).IsRequired();

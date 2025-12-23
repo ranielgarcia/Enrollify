@@ -30,6 +30,7 @@ public class CreateRoomTypeRequestValidator : Validator<CreateRoomTypeRequest>
             .NotEmpty().WithMessage("Please provide a room type name.")
             .MaximumLength(100).WithMessage("Name must be 100 characters or fewer.");
         RuleFor(x => x.Description)
+            .NotEmpty().WithMessage("Please provide a room type description.")
             .MaximumLength(255).WithMessage("Description must be 255 characters or fewer.");
     }
 }
@@ -47,9 +48,9 @@ public class CreateEndpoint : Endpoint<CreateRoomTypeRequest, Results<Created<Cr
     }
 
     public override async Task<Results<Created<CreateRoomTypeResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>> 
-        ExecuteAsync (CreateRoomTypeRequest request, CancellationToken ct)
+        ExecuteAsync (CreateRoomTypeRequest request, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new CreateRoomType.Command(request.Name, request.Description));
+        var result = await _mediator.Send(new CreateRoomType.Command(request.Name, request.Description), cancellationToken);
 
         return result.ToCreatedResult(
             id => $"/room-types/{id}",

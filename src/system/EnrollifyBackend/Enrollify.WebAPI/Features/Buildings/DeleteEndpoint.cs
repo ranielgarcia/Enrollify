@@ -1,5 +1,5 @@
-﻿using Enrollify.Application.RoomTypes.Features;
-using Enrollify.Core.Aggregates.RoomTypeAggregate;
+﻿using Enrollify.Application.Buildings.Features;
+using Enrollify.Core.Aggregates.BuildingAggregate;
 using Enrollify.WebAPI.Authorization;
 using Enrollify.WebAPI.Extensions;
 using FastEndpoints;
@@ -8,8 +8,7 @@ using Mediator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace Enrollify.WebAPI.Features.RoomTypes;
-
+namespace Enrollify.WebAPI.Features.Buildings;
 
 public class DeleteRequest
 {
@@ -22,13 +21,13 @@ public class DeleteRequestValidator : Validator<DeleteRequest>
     public DeleteRequestValidator()
     {
         RuleFor(x => x.Id)
-            .GreaterThan(0).WithMessage("Please provide a valid room type ID.");
+            .GreaterThan(0).WithMessage("Please provide a valid building ID.");
     }
 }
 
 [HttpDelete("")]
-[Group<RoomTypeEndpointsGroup>]
-[Authorize(Policy = PolicyName.HasDeleteRoomTypesPermission)]
+[Group<BuildingEndpointGroup>]
+[Authorize(Policy = PolicyName.HasDeleteBuildingPermission)]
 public class DeleteEndpoint : Endpoint<DeleteRequest, Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
 {
     private readonly IMediator _mediator;
@@ -38,11 +37,10 @@ public class DeleteEndpoint : Endpoint<DeleteRequest, Results<NoContent, NotFoun
         _mediator = mediator;
     }
 
-
-    public override async Task<Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>> 
+    public override async Task<Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
         ExecuteAsync (DeleteRequest request, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new DeleteRoomType.Command(RoomTypeId.From(request.Id)), cancellationToken);
+        var result = await _mediator.Send(new DeleteBuilding.Command(BuildingId.From(request.Id)), cancellationToken);
         return result.ToDeleteResult();
     }
 }

@@ -1,4 +1,5 @@
-﻿using Enrollify.Core.Aggregates.CollegeAggregate;
+﻿using Enrollify.Core.Aggregates.BuildingAggregate;
+using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.RoleAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
@@ -20,18 +21,14 @@ public class EnrollifyDbContext: DbContext
     {
     }
 
-
-
-
     public DbSet<RoomType> RoomTypes => Set<RoomType>();
     public DbSet<College> Colleges => Set<College>();
     public DbSet<Room> Rooms => Set<Room> ();
 
+    public DbSet<Building> Buildings => Set<Building>();
+
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
-
-
-
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
