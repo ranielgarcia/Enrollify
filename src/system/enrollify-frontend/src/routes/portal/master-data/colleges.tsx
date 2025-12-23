@@ -13,8 +13,8 @@ export const Route = createFileRoute("/portal/master-data/colleges")({
       return;
     }
 
-    const canViewRooms = await authorization.checkPolicy("canViewColleges");
-    if (!canViewRooms) {
+    const canAccess = await authorization.checkPolicy("canViewColleges");
+    if (!canAccess) {
       throw redirect({
         to: "/portal/home",
       });

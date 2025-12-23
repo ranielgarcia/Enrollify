@@ -39,8 +39,8 @@ export function RoomTypesTable({
     }),
     columnHelper.accessor(
       (row) =>
-        row.createdBy
-          ? `${row.createdBy?.firstName} ${row.createdBy?.lastName}`
+        row.createdByUser
+          ? `${row.createdByUser?.firstName} ${row.createdByUser?.lastName}`
           : "N/A",
       {
         id: "createdBy",
@@ -54,8 +54,8 @@ export function RoomTypesTable({
     }),
     columnHelper.accessor(
       (row) =>
-        row.updatedBy?.firstName
-          ? `${row.updatedBy?.firstName} ${row.updatedBy?.lastName}`
+        row.updatedByUser?.firstName
+          ? `${row.updatedByUser?.firstName} ${row.updatedByUser?.lastName}`
           : "",
       {
         id: "updatedBy",

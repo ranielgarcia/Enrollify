@@ -1,40 +1,15 @@
 import { z } from "zod";
 import { BasicUserInfoSchema } from "./basic-user-info";
-import { parseDateTime } from "@/lib/dateutils";
+import { dateTransformer } from "./date-transformer";
 
-const dateTransformer = z
-  .string()
-  .nullish()
-  .transform((val) => parseDateTime(val));
-
-export const AuditInfoInputSchema = z.object({
+export const AuditInfoSchema = z.object({
   createdByUser: BasicUserInfoSchema.nullish(),
-  createdAt: z.string().nullish(),
+  createdAt: dateTransformer,
   updatedByUser: BasicUserInfoSchema.nullish(),
-  updatedAt: z.string().nullish(),
+  updatedAt: dateTransformer,
   deletedByUser: BasicUserInfoSchema.nullish(),
-  deletedAt: z.string().nullish(),
+  deletedAt: dateTransformer,
   isActive: z.boolean(),
 });
-
-export const AuditInfoSchema = z
-  .object({
-    createdByUser: BasicUserInfoSchema.nullish(),
-    createdAt: dateTransformer,
-    updatedByUser: BasicUserInfoSchema.nullish(),
-    updatedAt: dateTransformer,
-    deletedByUser: BasicUserInfoSchema.nullish(),
-    deletedAt: dateTransformer,
-    isActive: z.boolean(),
-  })
-  .transform((data) => ({
-    createdBy: data.createdByUser,
-    createdAt: data.createdAt,
-    updatedBy: data.updatedByUser,
-    updatedAt: data.updatedAt,
-    deletedBy: data.deletedByUser,
-    deletedAt: data.deletedAt,
-    isActive: data.isActive,
-  }));
 
 export type AuditInfo = z.infer<typeof AuditInfoSchema>;

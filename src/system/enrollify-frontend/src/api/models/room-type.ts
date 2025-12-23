@@ -1,15 +1,12 @@
 import { z } from "zod";
-import { AuditInfoSchema, AuditInfoInputSchema } from "@/api/models/audit-info";
+import { AuditInfoSchema } from "@/api/models/audit-info";
 
-export const RoomTypeSchema = AuditInfoInputSchema.extend({
-  id: z.number(),
-  name: z.string(),
-  description: z.string(),
-}).transform((data) => ({
-  id: data.id,
-  name: data.name,
-  description: data.description,
-  ...AuditInfoSchema.parse(data),
-}));
+export const RoomTypeSchema = z
+  .object({
+    id: z.number(),
+    name: z.string(),
+    description: z.string(),
+  })
+  .extend(AuditInfoSchema.shape);
 
 export type RoomType = z.infer<typeof RoomTypeSchema>;

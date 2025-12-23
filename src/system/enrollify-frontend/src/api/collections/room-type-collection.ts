@@ -7,11 +7,8 @@ import { RoomTypeSchema, type RoomType } from "@/api/models/room-type";
 const queryKeys = {
   all: () => ["room-types"],
   create: () => [...queryKeys.all(), `create`],
-  update: () => [...queryKeys.all(), `update`],
-  delete: (roomTypeId?: number) => [
-    ...queryKeys.all(),
-    `delete-room-type-${roomTypeId}`,
-  ],
+  update: (roomTypeId: number) => [...queryKeys.all(), "update", roomTypeId],
+  delete: (roomTypeId: number) => [...queryKeys.all(), "delete", roomTypeId],
 };
 
 // ** fetch all room types **
@@ -50,7 +47,7 @@ export const updateRoomTypeOptions = (roomTypeId: number) =>
   createMutationOptions({
     httpVerb: "put",
     path: "/api/room-types",
-    mutationKey: queryKeys.update(),
+    mutationKey: queryKeys.update(roomTypeId),
     params: {
       id: roomTypeId,
     },
