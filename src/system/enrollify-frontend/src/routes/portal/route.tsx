@@ -1,4 +1,5 @@
 import AppContainer from "@/components/app-container";
+import { OverlayLoader } from "@/components/app-loading-overlay";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
@@ -22,7 +23,7 @@ import {
   redirect,
   useMatches,
 } from "@tanstack/react-router";
-import React from "react";
+import React, { Suspense } from "react";
 
 export const Route = createFileRoute("/portal")({
   beforeLoad: async ({ context: { msal }, location }) => {
@@ -99,7 +100,18 @@ function RouteComponent() {
           </div>
         </header>
         <AppContainer>
-          <Outlet />
+          <Suspense
+            fallback={
+              <OverlayLoader
+                isLoading={true}
+                text="Loading data..."
+                size="lg"
+              />
+            }
+          >
+            <Outlet />
+          </Suspense>
+
           <Toaster position="bottom-center" />
         </AppContainer>
       </SidebarInset>

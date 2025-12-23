@@ -210,7 +210,7 @@ if (!rootElement.innerHTML) {
               fallback={
                 <OverlayLoader
                   isLoading={true}
-                  text="Loading, please wait..."
+                  text="Loading profile..."
                   size="lg"
                 />
               }

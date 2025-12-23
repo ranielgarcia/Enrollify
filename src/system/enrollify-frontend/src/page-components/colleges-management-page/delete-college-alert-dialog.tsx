@@ -8,56 +8,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { College } from "./models/College";
 import { OverlayLoader } from "@/components/app-loading-overlay";
-import useAppMutation from "@/hooks/deprecated/use-app-mutation-v2";
-import type { AxiosError } from "axios";
-import {
-  formatValidationErrors,
-  parseApiError,
-  type ProblemDetails,
-} from "@/lib/axios-utils";
-import { toast } from "sonner";
+import type { College } from "@/api/models/college";
+import { useDeleteCollege } from "@/api/collections/college-collection";
 
 interface DeleteCollegeAlertDialogProps {
   collegeToDelete?: College;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccessful: () => void;
 }
 
 export function DeleteCollegeAlertDialog({
   collegeToDelete,
   isOpen,
   onOpenChange,
-  onSuccessful,
 }: DeleteCollegeAlertDialogProps) {
   const { mutateAsync: deleteCollegeAsync, isPending: isDeletingInProgress } =
-    useAppMutation({
-      httpVerb: "delete",
-      path: "/api/colleges",
-      mutationKey: `delete-college-${collegeToDelete?.id}`,
-      params: {
-        id: collegeToDelete?.id ?? 0,
-      },
-    });
+    useDeleteCollege(collegeToDelete?.id ?? 0);
 
   const handleContinueDelete = async () => {
-    try {
-      await deleteCollegeAsync(undefined);
-      toast.success("College deleted successfully");
-      onSuccessful();
-    } catch (err) {
-      const axiosError = err as AxiosError<ProblemDetails>;
-      const parsed = parseApiError(axiosError);
-
-      // Show error toast with title and detail
-      toast.error(parsed.title, {
-        description: parsed.validationErrors
-          ? formatValidationErrors(parsed.validationErrors)
-          : parsed.detail || "Please try again.",
-      });
-    }
+    await deleteCollegeAsync(undefined);
   };
 
   return (

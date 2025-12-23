@@ -1,14 +1,5 @@
 import z from "zod";
-import type { College } from "./models/College";
 import { useForm } from "@tanstack/react-form";
-import useAppMutation from "@/hooks/deprecated/use-app-mutation-v2";
-import type { AxiosError } from "axios";
-import {
-  formatValidationErrors,
-  parseApiError,
-  type ProblemDetails,
-} from "@/lib/axios-utils";
-import { toast } from "sonner";
 import {
   Drawer,
   DrawerClose,
@@ -23,6 +14,11 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Plus } from "lucide-react";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Unauthorized } from "@/components/unauthorized";
+import {
+  useCreateCollege,
+  useUpdateCollege,
+} from "@/api/collections/college-collection";
+import type { College } from "@/api/models/college";
 
 type FormMeta = {
   submitAction: "create" | "update" | null;
@@ -48,7 +44,6 @@ interface CollegeFormDrawerProps {
   setIsOpen: (open: boolean) => void;
   collegeToUpdate?: College | null;
   onOpenChange: (isOpen: boolean) => void;
-  onSuccessful?: () => void;
 }
 
 export function CollegeFormDrawer({
@@ -56,7 +51,6 @@ export function CollegeFormDrawer({
   onOpenChange,
   isOpen = false,
   setIsOpen,
-  onSuccessful,
 }: CollegeFormDrawerProps) {
   const defaultFormValues: CollegeForm = {
     code: collegeToUpdate?.code ?? "",
@@ -65,22 +59,11 @@ export function CollegeFormDrawer({
     dean: collegeToUpdate?.dean ?? "",
   };
 
-  const { mutateAsync: createNewCollegeAsync } = useAppMutation({
-    httpVerb: "post",
-    path: "/api/colleges",
-    mutationKey: "create-new-college",
-  });
+  const { mutateAsync: createNewCollegeAsync } = useCreateCollege();
 
-  const { mutateAsync: updateCollegeAsync } = useAppMutation({
-    httpVerb: "put",
-    path: "/api/colleges",
-    params: collegeToUpdate
-      ? {
-          id: collegeToUpdate.id,
-        }
-      : undefined,
-    mutationKey: `update-college-${collegeToUpdate?.id}`,
-  });
+  const { mutateAsync: updateCollegeAsync } = useUpdateCollege(
+    collegeToUpdate?.id ?? 0
+  );
 
   const form = useForm({
     defaultValues: defaultFormValues,
@@ -90,36 +73,18 @@ export function CollegeFormDrawer({
     onSubmitMeta: defaultMeta,
     onSubmit: async ({ value, meta }) => {
       const formValues = collegeFormSchema.parse(value);
-
-      try {
-        if (meta.submitAction === "create") {
-          await createNewCollegeAsync(formValues);
-          toast.success("College created successfully");
-        }
-
-        if (meta.submitAction === "update" && collegeToUpdate) {
-          await updateCollegeAsync(formValues);
-          toast.success("College updated successfully");
-        }
-
-        if (meta.formAction === "close") {
-          setIsOpen(false);
-          if (onSuccessful) onSuccessful();
-          form.reset();
-        } else {
-          form.reset();
-        }
-      } catch (err) {
-        const axiosError = err as AxiosError<ProblemDetails>;
-        const parsed = parseApiError(axiosError);
-
-        // Show error toast with title and detail
-        toast.error(parsed.title, {
-          description: parsed.validationErrors
-            ? formatValidationErrors(parsed.validationErrors)
-            : parsed.detail || "Please try again.",
-        });
+      if (meta.submitAction === "create") {
+        await createNewCollegeAsync(formValues);
       }
+
+      if (meta.submitAction === "update" && collegeToUpdate) {
+        await updateCollegeAsync(formValues);
+      }
+
+      if (meta.formAction === "close") {
+        setIsOpen(false);
+      }
+      form.reset();
     },
   });
 

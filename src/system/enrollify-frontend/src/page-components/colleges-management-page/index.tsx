@@ -3,18 +3,15 @@ import { CollegesTable } from "./colleges-table";
 import { useState } from "react";
 import { CollegeFormDrawer } from "./college-form-drawer";
 import { DeleteCollegeAlertDialog } from "./delete-college-alert-dialog";
-import { useGetAllColleges } from "@/api/collections/college-collection";
+import { useGetAllCollegesSuspense } from "@/api/collections/college-collection";
 import type { College } from "@/api/models/college";
 
 export default function CollegesPage() {
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [collegeToEdit, setCollegeToEdit] = useState<College | undefined>();
   const [collegeToDelete, setCollegeToDelete] = useState<College | undefined>();
-  const {
-    data: colleges,
-    refetch: refetchColleges,
-    isPending: isLoadingColleges,
-  } = useGetAllColleges();
+  const { data: colleges, isPending: isLoadingColleges } =
+    useGetAllCollegesSuspense();
 
   const handleEdit = (college: College) => {
     setCollegeToEdit(college);
@@ -54,7 +51,6 @@ export default function CollegesPage() {
             collegeToUpdate={collegeToEdit}
             isOpen={isFormOpen}
             setIsOpen={setIsFormOpen}
-            onSuccessful={() => refetchColleges()}
           />
         </div>
 
@@ -68,7 +64,6 @@ export default function CollegesPage() {
           isOpen={!!collegeToDelete}
           onOpenChange={handleDeleteCollegeAlertDialogOnOpenChange}
           collegeToDelete={collegeToDelete}
-          onSuccessful={() => refetchColleges()}
         />
       </div>
     </main>
