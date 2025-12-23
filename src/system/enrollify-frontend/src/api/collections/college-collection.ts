@@ -47,8 +47,11 @@ export const useCreateCollege = () => useMutation(createCollegeOptions());
 
 export const updateCollegeOptions = (collegeId: number) =>
   createMutationOptions({
-    httpVerb: "post",
+    httpVerb: "put",
     path: "/api/colleges",
+    params: {
+      id: collegeId,
+    },
     mutationKey: queryKeys.update(collegeId),
     options: {
       meta: { invalidateQueries: [queryKeys.all()] },
