@@ -1,14 +1,13 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useMemo } from "react";
 
 import { useMsal } from "@azure/msal-react";
-import { useQueryClient } from "@tanstack/react-query";
 
 import {
   AuthenticationContext,
   type IAuthenticationContext,
   defaultAuthenticationContext,
 } from "./authenticationContext";
-import { EventType, type AuthenticationResult } from "@azure/msal-browser";
+import { EventType } from "@azure/msal-browser";
 import { useGetMeDetailsSuspense } from "@/api/collections/me-collection";
 
 export const AuthenticationProvider = ({
@@ -16,37 +15,55 @@ export const AuthenticationProvider = ({
 }: Readonly<{
   children: React.ReactNode;
 }>): React.ReactElement => {
-  const queryClient = useQueryClient();
-  const queryClientRef = useRef(queryClient);
-  const [contextValue, setContextValue] = useState<IAuthenticationContext>(
-    defaultAuthenticationContext
-  );
-
   const { instance, accounts } = useMsal();
 
   const {
     data: userContext,
     isSuccess: isGetUserContextSuccessful,
     isLoading: isLoadingUserContext,
-    refetch: refetchMeDetails,
+    refetch: refreshUserContext,
   } = useGetMeDetailsSuspense();
+
+  // Derive context value from state instead of using effects
+  const contextValue = useMemo<IAuthenticationContext>(() => {
+    if (
+      instance &&
+      accounts.length > 0 &&
+      isGetUserContextSuccessful &&
+      userContext
+    ) {
+      return {
+        user: userContext,
+        isLoading: isLoadingUserContext,
+        refreshUserContext,
+      };
+    } else if (instance && accounts.length > 0) {
+      const currentAccount = accounts[0];
+      return {
+        user: {
+          fullName: currentAccount?.name,
+          email: currentAccount?.username,
+        },
+        isLoading: isLoadingUserContext,
+        refreshUserContext,
+      };
+    }
+
+    return defaultAuthenticationContext;
+  }, [
+    instance,
+    accounts,
+    isGetUserContextSuccessful,
+    userContext,
+    isLoadingUserContext,
+    refreshUserContext,
+  ]);
 
   useEffect(() => {
     const callbackId = instance.addEventCallback(async (event) => {
       if (event.eventType === EventType.LOGIN_SUCCESS && event.payload) {
-        const payload = event.payload as AuthenticationResult;
-        const account = payload.account;
-
-        if (account) {
-          setContextValue({
-            user: {
-              fullName: account.name ?? "",
-              email: account.username,
-            },
-            isLoading: false,
-            refreshUserContext: refetchMeDetails,
-          } as IAuthenticationContext);
-        }
+        // Trigger a refetch when login succeeds
+        refreshUserContext();
       }
     });
 
@@ -55,49 +72,7 @@ export const AuthenticationProvider = ({
         instance.removeEventCallback(callbackId);
       }
     };
-  }, [instance, refetchMeDetails]);
-
-  useEffect(() => {
-    if (
-      instance &&
-      accounts.length > 0 &&
-      isGetUserContextSuccessful &&
-      userContext
-    ) {
-      // const currentAccount = accounts[0];
-
-      setContextValue({
-        user: userContext,
-        isLoading: isLoadingUserContext,
-        refreshUserContext: () => {
-          queryClientRef.current.invalidateQueries({
-            queryKey: ["/api/me"],
-          });
-        },
-      } as IAuthenticationContext);
-    } else if (instance && accounts.length > 0) {
-      const currentAccount = accounts[0];
-      setContextValue({
-        user: {
-          fullName: currentAccount?.name,
-          email: currentAccount?.username,
-        },
-        isLoading: isLoadingUserContext,
-        refreshUserContext: () => {
-          queryClientRef.current.invalidateQueries({
-            queryKey: ["/api/me"],
-          });
-        },
-      } as IAuthenticationContext);
-    }
-  }, [
-    instance,
-    accounts,
-    isGetUserContextSuccessful,
-    userContext,
-    isLoadingUserContext,
-    queryClientRef,
-  ]);
+  }, [instance, refreshUserContext]);
 
   return (
     <AuthenticationContext.Provider value={contextValue}>

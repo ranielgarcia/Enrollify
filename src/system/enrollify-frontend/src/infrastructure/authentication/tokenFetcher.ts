@@ -13,7 +13,7 @@ interface getCurrentTokenProps {
 export async function getCurrentAccessToken({
   msalInstance,
   forceRefreshToken,
-}: getCurrentTokenProps): Promise<string | undefined | null> {
+}: getCurrentTokenProps): Promise<string> {
   const acquireAccessToken = async () => {
     const activeAccount = msalInstance.getActiveAccount();
     const accounts = msalInstance.getAllAccounts();
@@ -35,16 +35,20 @@ export async function getCurrentAccessToken({
       const tokenResponse = await msalInstance.acquireTokenSilent(request);
       return tokenResponse.accessToken;
     } catch (error) {
-      console.error("Error acquiring token:", error);
-      try {
-        if (error instanceof InteractionRequiredAuthError) {
+      console.error("Error acquiring token silently:", error);
+
+      if (error instanceof InteractionRequiredAuthError) {
+        try {
           const tokenResponse = await msalInstance.acquireTokenPopup(request);
           return tokenResponse.accessToken;
+        } catch (popupError) {
+          console.error("Error acquiring token via popup:", popupError);
+          return null;
         }
-      } catch (error) {
-        console.error("Error acquiring token:", error);
-        return null;
       }
+
+      // For non-interaction errors, return null immediately
+      return null;
     }
   };
 

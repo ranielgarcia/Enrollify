@@ -79,10 +79,8 @@ export function RoomTypeFormDrawer({
 
       if (meta.formAction === "close") {
         setIsOpen(false);
-        form.reset();
-      } else {
-        form.reset();
       }
+      form.reset();
     },
   });
   const isUpdateRoomType = !!roomTypeToUpdate;

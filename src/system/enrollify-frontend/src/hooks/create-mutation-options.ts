@@ -74,7 +74,6 @@ const createMutationOptions = <P extends ApiPath, V extends HttpVerb = "post">({
       ? mutationKey
       : [mutationKey, params],
     ...options,
-    onError: (err: AxiosError) => err,
     mutationFn: async (
       formData: FormData | JsonRequestBodyForPathVerb<P, V>
     ) => {
@@ -84,19 +83,18 @@ const createMutationOptions = <P extends ApiPath, V extends HttpVerb = "post">({
       });
 
       if (isMultipart) {
-        const response = await axios.post<JsonResponseForPathVerb<P, V>>(
-          `${Config.API_URL}${path}`,
-          formData as FormData,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              "Content-Type": "multipart/form-data",
-              Accept: "*/*",
-            },
-            params: params as QueryParamsForPathVerb<P, V>,
-            onUploadProgress: onUploadProgressCallBack,
-          }
-        );
+        const response = await axios<JsonResponseForPathVerb<P, V>>({
+          method: httpVerb,
+          url: `${Config.API_URL}${path}`,
+          data: formData as FormData,
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "multipart/form-data",
+            Accept: "*/*",
+          },
+          params: params as QueryParamsForPathVerb<P, V>,
+          onUploadProgress: onUploadProgressCallBack,
+        });
 
         return response.data;
       }

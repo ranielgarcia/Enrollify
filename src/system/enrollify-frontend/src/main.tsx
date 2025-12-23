@@ -48,8 +48,16 @@ declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
     routeLoaderData: RouteLoaderData;
+  }
+}
+
+declare module "@tanstack/react-query" {
+  interface Register {
     mutationMeta: {
       invalidateQueries?: ReadonlyArray<QueryKey>;
+    };
+    queryMeta: {
+      persist?: boolean;
     };
   }
 }
