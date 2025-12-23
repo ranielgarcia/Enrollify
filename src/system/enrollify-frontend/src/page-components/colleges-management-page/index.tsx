@@ -1,19 +1,17 @@
 import { OverlayLoader } from "@/components/app-loading-overlay";
 import { CollegesTable } from "./colleges-table";
-import type { College } from "./models/College";
-import { parseDateTime } from "@/lib/dateutils";
-import type BasicUserInfo from "@/api/models/BasicUserInfo";
 import { useState } from "react";
 import { CollegeFormDrawer } from "./college-form-drawer";
 import { DeleteCollegeAlertDialog } from "./delete-college-alert-dialog";
 import { useGetAllColleges } from "@/api/collections/college-collection";
+import type { College } from "@/api/models/college";
 
 export default function CollegesPage() {
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [collegeToEdit, setCollegeToEdit] = useState<College | undefined>();
   const [collegeToDelete, setCollegeToDelete] = useState<College | undefined>();
   const {
-    data: collegesData,
+    data: colleges,
     refetch: refetchColleges,
     isPending: isLoadingColleges,
   } = useGetAllColleges();
@@ -31,32 +29,6 @@ export default function CollegesPage() {
     setCollegeToEdit(undefined);
     setIsFormOpen(open);
   };
-
-  const colleges: College[] = collegesData
-    ? collegesData.map(
-        (c) =>
-          ({
-            id: c.id,
-            code: c.code,
-            name: c.name,
-            description: c.description,
-            dean: c.dean,
-            createdAt: parseDateTime(c.createdAt),
-            createdBy: {
-              ...c.createdByUser,
-            } as BasicUserInfo,
-            updatedAt: parseDateTime(c.updatedAt),
-            updatedBy: {
-              ...c.updatedByUser,
-            } as BasicUserInfo,
-            deletedAt: parseDateTime(c.deletedAt),
-            deletedBy: {
-              ...c.deletedByUser,
-            } as BasicUserInfo,
-            isActive: c.isActive,
-          }) as College
-      )
-    : [];
 
   const handleDeleteCollegeAlertDialogOnOpenChange = (open: boolean) => {
     if (!open) {

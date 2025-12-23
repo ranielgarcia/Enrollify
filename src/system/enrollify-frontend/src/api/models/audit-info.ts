@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BasicUserInfoSchema } from "./BasicUserInfo";
+import { BasicUserInfoSchema } from "./basic-user-info";
 import { parseDateTime } from "@/lib/dateutils";
 
 const dateTransformer = z

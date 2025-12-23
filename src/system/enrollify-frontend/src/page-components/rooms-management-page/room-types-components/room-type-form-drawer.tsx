@@ -13,7 +13,7 @@ import { Plus } from "lucide-react";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
-import type { RoomType } from "../models/RoomType";
+import type { RoomType } from "../../../api/models/room-type";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Unauthorized } from "@/components/unauthorized";
 import {

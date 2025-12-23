@@ -5,14 +5,14 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import type { College } from "./models/College";
 import { Button } from "@/components/ui/button";
 import { Edit2, Trash2 } from "lucide-react";
 import { formatDateTime } from "@/lib/dateutils";
 import { DataTable } from "@/components/data-table";
+import type { College } from "@/api/models/college";
 
 interface CollegesTableProps {
-  colleges: College[];
+  colleges?: College[];
   onEdit: (college: College) => void;
   onDelete: (college: College) => void;
 }
@@ -102,7 +102,7 @@ export function CollegesTable({
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data: colleges,
+    data: colleges ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),

@@ -8,7 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { RoomType } from "../models/RoomType";
+import type { RoomType } from "../../../api/models/room-type";
 import { OverlayLoader } from "@/components/app-loading-overlay";
 import useAppQuery from "@/hooks/deprecated/use-app-query-v2";
 import { useDeleteRoomType } from "@/api/collections/room-type-collection";

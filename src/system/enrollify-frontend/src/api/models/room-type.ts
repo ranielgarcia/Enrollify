@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AuditInfoSchema, AuditInfoInputSchema } from "@/api/models/AuditInfo";
+import { AuditInfoSchema, AuditInfoInputSchema } from "@/api/models/audit-info";
 
 export const RoomTypeSchema = AuditInfoInputSchema.extend({
   id: z.number(),
