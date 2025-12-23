@@ -1,4 +1,4 @@
-import { StrictMode, use, useMemo, useEffect } from "react";
+import { StrictMode, use, useMemo, useEffect, Suspense } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import "./index.css";
@@ -20,6 +20,7 @@ import {
   MutationCache,
   QueryClient,
   useQueryClient,
+  type QueryKey,
 } from "@tanstack/react-query";
 import {
   PersistQueryClientProvider,
@@ -39,6 +40,24 @@ import {
   type ProblemDetails,
 } from "./lib/axios-utils";
 import { toast } from "sonner";
+import { OverlayLoader } from "./components/app-loading-overlay";
+
+// Register the router instance for type safety
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+    routeLoaderData: RouteLoaderData;
+    mutationMeta: {
+      invalidateQueries?: ReadonlyArray<QueryKey>;
+    };
+  }
+}
+
+function hasMutationMeta(
+  meta: Record<string, unknown> | undefined
+): meta is { invalidateQueries: ReadonlyArray<QueryKey> } {
+  return meta != null && "invalidateQueries" in meta;
+}
 
 const queryClient = new QueryClient({
   mutationCache: new MutationCache({
@@ -55,7 +74,9 @@ const queryClient = new QueryClient({
       });
     },
     onSettled: (_data, _error, _variables, _context, mutation) => {
-      if (mutation.meta?.invalidateQueries) {
+      // global automatic query invalidation
+      // add meta object into useMutation to trigger this
+      if (hasMutationMeta(mutation.meta)) {
         mutation.meta.invalidateQueries.forEach((queryKey) => {
           queryClient.invalidateQueries({ queryKey });
         });
@@ -100,14 +121,6 @@ const router = createRouter({
   defaultStructuralSharing: true,
   defaultPreloadStaleTime: 0,
 });
-
-// Register the router instance for type safety
-declare module "@tanstack/react-router" {
-  interface Register {
-    router: typeof router;
-    routeLoaderData: RouteLoaderData;
-  }
-}
 
 // eslint-disable-next-line react-refresh/only-export-components
 function App() {
@@ -187,11 +200,21 @@ if (!rootElement.innerHTML) {
               },
             }}
           >
-            <AuthenticationProvider>
-              <AuthorizationProvider>
-                <App />
-              </AuthorizationProvider>
-            </AuthenticationProvider>
+            <Suspense
+              fallback={
+                <OverlayLoader
+                  isLoading={true}
+                  text="Loading, please wait..."
+                  size="lg"
+                />
+              }
+            >
+              <AuthenticationProvider>
+                <AuthorizationProvider>
+                  <App />
+                </AuthorizationProvider>
+              </AuthenticationProvider>
+            </Suspense>
           </PersistQueryClientProvider>
         </MsalProvider>
       </StrictMode>

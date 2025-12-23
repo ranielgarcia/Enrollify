@@ -7,7 +7,7 @@ import type BasicUserInfo from "@/api/models/BasicUserInfo";
 import { parseDateTime } from "@/lib/dateutils";
 import type { RoomType } from "./models/RoomType";
 import { OverlayLoader } from "@/components/app-loading-overlay";
-import { useGetAllRoomTypes } from "@/api/collections/room-types-collections";
+import { useGetAllRoomTypes } from "@/api/collections/room-type-collection";
 
 export default function RoomsPage() {
   const [rooms] = useState<Room[]>([

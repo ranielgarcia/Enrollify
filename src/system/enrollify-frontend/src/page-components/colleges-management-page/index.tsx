@@ -1,5 +1,5 @@
 import { OverlayLoader } from "@/components/app-loading-overlay";
-import useAppQuery from "@/hooks/use-app-query-v2";
+import useAppQuery from "@/hooks/deprecated/use-app-query-v2";
 import { CollegesTable } from "./colleges-table";
 import type { College } from "./models/College";
 import { parseDateTime } from "@/lib/dateutils";
@@ -22,9 +22,6 @@ export default function CollegesPage() {
       queryKey: ["/api/colleges"],
     },
   });
-
-  console.log(collegeToEdit);
-  console.log(collegeToDelete);
 
   const handleEdit = (college: College) => {
     setCollegeToEdit(college);

@@ -3,16 +3,13 @@ import React, { useEffect, useState, useRef } from "react";
 import { useMsal } from "@azure/msal-react";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { OverlayLoader } from "@/components/app-loading-overlay";
-import useAppQuery from "@/hooks/use-app-query-v2";
-
 import {
   AuthenticationContext,
   type IAuthenticationContext,
   defaultAuthenticationContext,
 } from "./authenticationContext";
 import { EventType, type AuthenticationResult } from "@azure/msal-browser";
-// import useAppMutation from "@/hooks/use-app-mutation-v2";
+import { useGetMeDetailsSuspense } from "@/api/collections/me-collection";
 
 export const AuthenticationProvider = ({
   children,
@@ -31,15 +28,8 @@ export const AuthenticationProvider = ({
     data: userContext,
     isSuccess: isGetUserContextSuccessful,
     isLoading: isLoadingUserContext,
-  } = useAppQuery({
-    path: "/api/me",
-    queryOptions: {
-      meta: { persist: true },
-      queryKey: ["/api/me"],
-      staleTime: 1000 * 60 * 5, // 5 minutes - use cached data without refetching
-      gcTime: 1000 * 60 * 60 * 24, // 24 hours - keep in cache for persistence
-    },
-  });
+    refetch: refetchMeDetails,
+  } = useGetMeDetailsSuspense();
 
   useEffect(() => {
     const callbackId = instance.addEventCallback(async (event) => {
@@ -54,11 +44,7 @@ export const AuthenticationProvider = ({
               email: account.username,
             },
             isLoading: false,
-            refreshUserContext: () => {
-              queryClientRef.current.invalidateQueries({
-                queryKey: ["/api/me"],
-              });
-            },
+            refreshUserContext: refetchMeDetails,
           } as IAuthenticationContext);
         }
       }
@@ -69,7 +55,7 @@ export const AuthenticationProvider = ({
         instance.removeEventCallback(callbackId);
       }
     };
-  }, [instance]);
+  }, [instance, refetchMeDetails]);
 
   useEffect(() => {
     if (
@@ -112,16 +98,6 @@ export const AuthenticationProvider = ({
     isLoadingUserContext,
     queryClientRef,
   ]);
-
-  if (isLoadingUserContext) {
-    return (
-      <OverlayLoader
-        isLoading={isLoadingUserContext}
-        text="Loading, please wait..."
-        size="lg"
-      />
-    );
-  }
 
   return (
     <AuthenticationContext.Provider value={contextValue}>

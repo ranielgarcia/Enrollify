@@ -1,7 +1,7 @@
 import z from "zod";
 import type { College } from "./models/College";
 import { useForm } from "@tanstack/react-form";
-import useAppMutation from "@/hooks/use-app-mutation-v2";
+import useAppMutation from "@/hooks/deprecated/use-app-mutation-v2";
 import type { AxiosError } from "axios";
 import {
   formatValidationErrors,

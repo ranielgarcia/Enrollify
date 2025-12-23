@@ -1,3 +1,4 @@
+import { getMeQueryOptions } from "@/api/collections/me-collection";
 import type { IAuthorizationContextValue } from "@/infrastructure/authorization/AuthorizationContext";
 import type { IMsalContext } from "@azure/msal-react";
 import type { QueryClient } from "@tanstack/react-query";
@@ -16,6 +17,9 @@ export const Route = createRootRouteWithContext<{
         <TanStackRouterDevtools position="bottom-right" />
       </>
     );
+  },
+  beforeLoad: async ({ context: { queryClient } }) => {
+    await queryClient.prefetchQuery(getMeQueryOptions());
   },
   loader: () => ({
     crumb: undefined,

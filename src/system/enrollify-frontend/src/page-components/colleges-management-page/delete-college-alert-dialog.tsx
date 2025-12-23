@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import type { College } from "./models/College";
 import { OverlayLoader } from "@/components/app-loading-overlay";
-import useAppMutation from "@/hooks/use-app-mutation-v2";
+import useAppMutation from "@/hooks/deprecated/use-app-mutation-v2";
 import type { AxiosError } from "axios";
 import {
   formatValidationErrors,

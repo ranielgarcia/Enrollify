@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import type { RoomType } from "../models/RoomType";
 import { OverlayLoader } from "@/components/app-loading-overlay";
-import useAppQuery from "@/hooks/use-app-query-v2";
-import { useDeleteRoomType } from "@/api/collections/room-types-collections";
+import useAppQuery from "@/hooks/deprecated/use-app-query-v2";
+import { useDeleteRoomType } from "@/api/collections/room-type-collection";
 
 interface DeleteRoomTypeAlertDialogProps {
   roomTypeToDelete?: RoomType;

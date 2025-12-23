@@ -54,6 +54,18 @@ interface UseMutationParams<P extends ApiPath, V extends HttpVerb> {
   forceRefreshToken?: boolean;
 }
 
+/**
+ * @deprecated This hook is deprecated. Use `useMutation` with `createMutationOptions` instead.
+ * The new approach leverages global mutation cache handlers in main.tsx for error handling
+ * and query invalidation via mutation meta.
+ *
+ * @example
+ * // Instead of:
+ * const mutation = useAppMutation({ path: "/api/room-types", httpVerb: "delete", ... });
+ *
+ * // Use:
+ * const mutation = useMutation(deleteRoomTypeOptions(roomTypeId));
+ */
 const useAppMutation = <P extends ApiPath, V extends HttpVerb = "post">({
   mutationKey,
   path,
@@ -69,7 +81,6 @@ const useAppMutation = <P extends ApiPath, V extends HttpVerb = "post">({
     mutationKey: Array.isArray(mutationKey)
       ? mutationKey
       : [mutationKey, params],
-
     onError: (err: AxiosError) => err,
     mutationFn: async (
       formData: FormData | JsonRequestBodyForPathVerb<P, V>

@@ -1,4 +1,8 @@
-import { queryOptions, type UseQueryOptions } from "@tanstack/react-query";
+import {
+  queryOptions,
+  type UseSuspenseQueryOptions,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
 import axios from "axios";
 
 import { Config } from "@/infrastructure/Configurations/app-config";
@@ -32,47 +36,82 @@ type QueryParamsForPath<P extends ApiPath> = ApiPaths[P] extends {
     : undefined
   : undefined;
 
-interface useQueryParams<P extends ApiPath, TError = unknown> {
+interface QueryParams<P extends ApiPath, TError = unknown> {
   path: P;
   params?: QueryParamsForPath<P>;
-  options?: UseQueryOptions<JsonResponseForPath<P>, TError> & {
+  options?: Omit<UseQueryOptions<JsonResponseForPath<P>, TError>, "queryFn"> & {
     queryKey?: readonly unknown[];
   };
   forceRefreshToken?: boolean;
 }
 
+/**
+ * Creates a query function for fetching data from the API.
+ */
+const createQueryFn =
+  <P extends ApiPath>(
+    path: P,
+    params: QueryParamsForPath<P> | undefined,
+    forceRefreshToken: boolean | undefined
+  ) =>
+  async () => {
+    const accessToken = await getCurrentAccessToken({
+      msalInstance,
+      forceRefreshToken,
+    });
+
+    const response = await axios.get<JsonResponseForPath<P>>(
+      `${Config.API_URL}${path}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        params: params as QueryParamsForPath<P>,
+      }
+    );
+
+    return response.data;
+  };
+
+/**
+ * Creates query options for use with `useQuery`.
+ */
 const createAppQueryOptions = <P extends ApiPath, TError = unknown>({
   path,
   params,
   options,
   forceRefreshToken,
-}: useQueryParams<P, TError>) => {
-  options = queryOptions({
-    // default inferred queryKey based on path + params; allow override
+}: QueryParams<P, TError>) => {
+  return queryOptions({
     queryKey:
       options?.queryKey ?? (params !== undefined ? [path, params] : [path]),
     ...options,
-    queryFn: async () => {
-      const accessToken = await getCurrentAccessToken({
-        msalInstance,
-        forceRefreshToken,
-      });
-
-      const response = await axios.get<JsonResponseForPath<P>>(
-        `${Config.API_URL}${path}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-          params: params as QueryParamsForPath<P>,
-        }
-      );
-
-      return response.data;
-    },
+    queryFn: createQueryFn(path, params, forceRefreshToken),
   });
+};
 
-  return options;
+/**
+ * Creates suspense query options for use with `useSuspenseQuery`.
+ * Unlike regular query options, suspense queries cannot use `skipToken`.
+ */
+export const createAppSuspenseQueryOptions = <
+  P extends ApiPath,
+  TError = unknown,
+>({
+  path,
+  params,
+  options,
+  forceRefreshToken,
+}: QueryParams<P, TError>): UseSuspenseQueryOptions<
+  JsonResponseForPath<P>,
+  TError
+> => {
+  return {
+    queryKey:
+      options?.queryKey ?? (params !== undefined ? [path, params] : [path]),
+    ...options,
+    queryFn: createQueryFn(path, params, forceRefreshToken),
+  };
 };
 
 export default createAppQueryOptions;
