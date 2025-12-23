@@ -62,8 +62,8 @@ export function CollegesTable({
     }),
     columnHelper.accessor(
       (row) =>
-        row.createdByUser?.firstName
-          ? `${row.createdByUser?.firstName} ${row.createdByUser?.lastName}`
+        row.updatedByUser?.firstName
+          ? `${row.updatedByUser?.firstName} ${row.updatedByUser?.lastName}`
           : "Err",
       {
         id: "updatedBy",

@@ -23,7 +23,7 @@ export function RoomsTab({ roomTypes, rooms }: RoomsTabProps) {
     // Implement edit functionality as needed
   };
 
-  const roomTypeNames = roomTypes?.map((rt) => rt.name);
+  const roomTypeNames = roomTypes?.map((rt) => rt.name) ?? [];
 
   return (
     <>
