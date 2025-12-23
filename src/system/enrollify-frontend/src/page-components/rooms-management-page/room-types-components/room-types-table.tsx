@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table";
 import { Edit2, Trash2 } from "lucide-react";
 import { formatDateTime } from "@/lib/dateutils";
-import type { RoomType } from "../models/RoomType";
+import type { RoomType } from "../../../api/models/room-type";
 
 interface RoomTypesTableProps {
-  roomTypes: RoomType[];
+  roomTypes?: RoomType[];
   onEdit: (roomType: RoomType) => void;
   onDelete: (roomType: RoomType) => void;
 }
@@ -39,8 +39,8 @@ export function RoomTypesTable({
     }),
     columnHelper.accessor(
       (row) =>
-        row.createdBy
-          ? `${row.createdBy?.firstName} ${row.createdBy?.lastName}`
+        row.createdByUser
+          ? `${row.createdByUser?.firstName} ${row.createdByUser?.lastName}`
           : "N/A",
       {
         id: "createdBy",
@@ -54,8 +54,8 @@ export function RoomTypesTable({
     }),
     columnHelper.accessor(
       (row) =>
-        row.updatedBy?.firstName
-          ? `${row.updatedBy?.firstName} ${row.updatedBy?.lastName}`
+        row.updatedByUser?.firstName
+          ? `${row.updatedByUser?.firstName} ${row.updatedByUser?.lastName}`
           : "",
       {
         id: "updatedBy",
@@ -94,7 +94,7 @@ export function RoomTypesTable({
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data: roomTypes,
+    data: roomTypes ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),

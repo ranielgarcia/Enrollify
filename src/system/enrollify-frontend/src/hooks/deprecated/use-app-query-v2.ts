@@ -1,4 +1,3 @@
-import { InteractionRequiredAuthError } from "@azure/msal-browser";
 import { useMsal } from "@azure/msal-react";
 import {
   type UseQueryOptions,
@@ -6,9 +5,9 @@ import {
 } from "@tanstack/react-query";
 import axios from "axios";
 
-import { loginRequest } from "@/infrastructure/authentication/authConfig";
 import { Config } from "@/infrastructure/Configurations/app-config";
 import type { paths as ApiPaths } from "@/api/generated/api";
+import { getCurrentAccessToken } from "@/infrastructure/authentication/tokenFetcher";
 
 type ApiPath = keyof ApiPaths;
 
@@ -51,13 +50,7 @@ const useAppQuery = <P extends ApiPath, TError = unknown>({
   queryOptions,
   forceRefreshToken = false,
 }: useQueryParams<P, TError>) => {
-  const { instance, accounts } = useMsal();
-
-  const request = {
-    ...loginRequest,
-    account: accounts[0],
-    forceRefresh: forceRefreshToken,
-  };
+  const { instance } = useMsal();
 
   queryOptions = {
     // default inferred queryKey based on path + params; allow override
@@ -66,25 +59,10 @@ const useAppQuery = <P extends ApiPath, TError = unknown>({
       (params !== undefined ? [path, params] : [path]),
     ...queryOptions,
     queryFn: async () => {
-      let accessToken = null;
-
-      try {
-        const tokenResponse = await instance.acquireTokenSilent(request);
-        accessToken = tokenResponse.accessToken;
-      } catch (e) {
-        if (e instanceof InteractionRequiredAuthError) {
-          const tokenResponse = await instance.acquireTokenPopup(request);
-          accessToken = tokenResponse.accessToken;
-        }
-      }
-
-      if (!accessToken) {
-        // Either throw to set error state...
-        throw new Error("Failed to acquire access token.");
-        // Or return an empty shape:
-        // return {} as TData;
-      }
-
+      const accessToken = await getCurrentAccessToken({
+        msalInstance: instance,
+        forceRefreshToken: forceRefreshToken,
+      });
       const response = await axios.get<JsonResponseForPath<P>>(
         `${Config.API_URL}${path}`,
         {

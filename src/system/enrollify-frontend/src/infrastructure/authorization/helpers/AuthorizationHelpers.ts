@@ -1,4 +1,4 @@
-import type { UserContext } from "../../../api/models/UserContext";
+import type { UserContext } from "../../../api/api-dtos/UserContext";
 import type { ScopeName } from "../models/AuthorizationScope";
 import { Scopes } from "../models/AuthorizationScope";
 import type { AuthorizationResource } from "../models/AuthorizationResource";

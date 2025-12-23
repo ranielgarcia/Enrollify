@@ -3,11 +3,11 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { RoomForm } from "./room-form";
 import { RoomsTable, type Room } from "./rooms-table";
-import type { RoomType } from "./models/RoomType";
+import type { RoomType } from "../../api/models/room-type";
 
 interface RoomsTabProps {
   rooms: Room[];
-  roomTypes: RoomType[];
+  roomTypes?: RoomType[];
 }
 
 export function RoomsTab({ roomTypes, rooms }: RoomsTabProps) {
@@ -23,7 +23,7 @@ export function RoomsTab({ roomTypes, rooms }: RoomsTabProps) {
     // Implement edit functionality as needed
   };
 
-  const roomTypeNames = roomTypes.map((rt) => rt.name);
+  const roomTypeNames = roomTypes?.map((rt) => rt.name) ?? [];
 
   return (
     <>

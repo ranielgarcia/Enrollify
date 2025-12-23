@@ -1,11 +1,12 @@
-import { InteractionRequiredAuthError } from "@azure/msal-browser";
-import { useMsal } from "@azure/msal-react";
-import { useMutation as useReactMutation } from "@tanstack/react-query";
+import {
+  mutationOptions,
+  type UseMutationOptions,
+} from "@tanstack/react-query";
 import axios, { AxiosError, type AxiosProgressEvent } from "axios";
-
-import { loginRequest } from "@/infrastructure/authentication/authConfig";
 import { Config } from "@/infrastructure/Configurations/app-config";
 import type { paths as ApiPaths } from "@/api/generated/api";
+import { getCurrentAccessToken } from "@/infrastructure/authentication/tokenFetcher";
+import { msalInstance } from "@/infrastructure/authentication/authConfig";
 type HttpVerb = "post" | "put" | "delete";
 type ApiPath = keyof ApiPaths;
 
@@ -51,9 +52,14 @@ interface UseMutationParams<P extends ApiPath, V extends HttpVerb> {
   isMultipart?: boolean;
   onUploadProgressCallBack?: (progressEvent: AxiosProgressEvent) => void;
   forceRefreshToken?: boolean;
+  options?: UseMutationOptions<
+    JsonResponseForPathVerb<P, V>,
+    AxiosError,
+    JsonRequestBodyForPathVerb<P, V>
+  >;
 }
 
-const useAppMutation = <P extends ApiPath, V extends HttpVerb = "post">({
+const createMutationOptions = <P extends ApiPath, V extends HttpVerb = "post">({
   mutationKey,
   path,
   params,
@@ -61,60 +67,34 @@ const useAppMutation = <P extends ApiPath, V extends HttpVerb = "post">({
   httpVerb = "post" as V,
   isMultipart = false,
   forceRefreshToken = false,
+  options,
 }: UseMutationParams<P, V>) => {
-  const { instance, accounts } = useMsal();
-
-  const request = {
-    ...loginRequest,
-    account: accounts[0],
-    forceRefresh: forceRefreshToken,
-  };
-
-  return useReactMutation<
-    JsonResponseForPathVerb<P, V>,
-    AxiosError,
-    JsonRequestBodyForPathVerb<P, V>
-  >({
+  const appMutationOptions = mutationOptions({
     mutationKey: Array.isArray(mutationKey)
       ? mutationKey
       : [mutationKey, params],
-    onError: (err: AxiosError) => err,
+    ...options,
     mutationFn: async (
       formData: FormData | JsonRequestBodyForPathVerb<P, V>
     ) => {
-      let accessToken = null;
+      const accessToken = await getCurrentAccessToken({
+        msalInstance,
+        forceRefreshToken,
+      });
 
-      try {
-        const tokenResponse = await instance.acquireTokenSilent(request);
-        accessToken = tokenResponse.accessToken;
-      } catch (e) {
-        if (e instanceof InteractionRequiredAuthError) {
-          const tokenResponse = await instance.acquireTokenPopup(request);
-          accessToken = tokenResponse.accessToken;
-        }
-      }
-
-      if (!accessToken) {
-        // Either throw to set error state...
-        throw new Error("Failed to acquire access token.");
-        // Or return an empty shape:
-        // return {} as TData;
-      }
-
-      if (isMultipart && httpVerb === "post") {
-        const response = await axios.post<JsonResponseForPathVerb<P, V>>(
-          `${Config.API_URL}${path}`,
-          formData as FormData,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              "Content-Type": "multipart/form-data",
-              Accept: "*/*",
-            },
-            params: params as QueryParamsForPathVerb<P, V>,
-            onUploadProgress: onUploadProgressCallBack,
-          }
-        );
+      if (isMultipart) {
+        const response = await axios<JsonResponseForPathVerb<P, V>>({
+          method: httpVerb,
+          url: `${Config.API_URL}${path}`,
+          data: formData as FormData,
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "multipart/form-data",
+            Accept: "*/*",
+          },
+          params: params as QueryParamsForPathVerb<P, V>,
+          onUploadProgress: onUploadProgressCallBack,
+        });
 
         return response.data;
       }
@@ -133,6 +113,8 @@ const useAppMutation = <P extends ApiPath, V extends HttpVerb = "post">({
       return response.data;
     },
   });
+
+  return appMutationOptions;
 };
 
-export default useAppMutation;
+export default createMutationOptions;

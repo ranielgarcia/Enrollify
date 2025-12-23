@@ -13,17 +13,13 @@ import { Plus } from "lucide-react";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import useAppMutation from "@/hooks/use-app-mutation-v2";
-import { AxiosError } from "axios";
-import {
-  formatValidationErrors,
-  parseApiError,
-  type ProblemDetails,
-} from "@/lib/axios-utils";
-import type { RoomType } from "../models/RoomType";
+import type { RoomType } from "../../../api/models/room-type";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Unauthorized } from "@/components/unauthorized";
+import {
+  useCreateRoomType,
+  useUpdateRoomType,
+} from "@/api/collections/room-type-collection";
 
 type FormMeta = {
   submitAction: "create" | "update" | null;
@@ -47,7 +43,6 @@ interface RoomTypeFormDrawerProps {
   setIsOpen: (open: boolean) => void;
   roomTypeToUpdate?: RoomType | null;
   onOpenChange: (isOpen: boolean) => void;
-  onSuccessful?: () => void;
 }
 
 export function RoomTypeFormDrawer({
@@ -55,29 +50,16 @@ export function RoomTypeFormDrawer({
   onOpenChange,
   isOpen = false,
   setIsOpen,
-  onSuccessful,
 }: RoomTypeFormDrawerProps) {
   const defaultFormValues: RoomTypeForm = {
     name: roomTypeToUpdate?.name ?? "",
     description: roomTypeToUpdate?.description ?? "",
   };
 
-  const { mutateAsync: createNewRoomTypeAsync } = useAppMutation({
-    httpVerb: "post",
-    path: "/api/room-types",
-    mutationKey: "create-new-room-type",
-  });
-
-  const { mutateAsync: updateRoomTypeAsync } = useAppMutation({
-    httpVerb: "put",
-    path: `/api/room-types`,
-    params: roomTypeToUpdate
-      ? {
-          id: roomTypeToUpdate.id,
-        }
-      : undefined,
-    mutationKey: `update-room-type-${roomTypeToUpdate?.id}`,
-  });
+  const { mutateAsync: createNewRoomTypeAsync } = useCreateRoomType();
+  const { mutateAsync: updateRoomTypeAsync } = useUpdateRoomType(
+    roomTypeToUpdate?.id ?? 0
+  );
 
   const form = useForm({
     defaultValues: defaultFormValues,
@@ -87,36 +69,18 @@ export function RoomTypeFormDrawer({
     onSubmitMeta: defaultMeta,
     onSubmit: async ({ value, meta }) => {
       const formValues = roomTypeSchema.parse(value);
-
-      try {
-        if (meta.submitAction === "create") {
-          await createNewRoomTypeAsync(formValues);
-          toast.success("Room type created successfully");
-        }
-
-        if (meta.submitAction === "update" && roomTypeToUpdate) {
-          await updateRoomTypeAsync(formValues);
-          toast.success("Room type updated successfully");
-        }
-
-        if (meta.formAction === "close") {
-          setIsOpen(false);
-          if (onSuccessful) onSuccessful();
-          form.reset();
-        } else {
-          form.reset();
-        }
-      } catch (err) {
-        const axiosError = err as AxiosError<ProblemDetails>;
-        const parsed = parseApiError(axiosError);
-
-        // Show error toast with title and detail
-        toast.error(parsed.title, {
-          description: parsed.validationErrors
-            ? formatValidationErrors(parsed.validationErrors)
-            : parsed.detail || "Please try again.",
-        });
+      if (meta.submitAction === "create") {
+        await createNewRoomTypeAsync(formValues);
       }
+
+      if (meta.submitAction === "update" && roomTypeToUpdate) {
+        await updateRoomTypeAsync(formValues);
+      }
+
+      if (meta.formAction === "close") {
+        setIsOpen(false);
+      }
+      form.reset();
     },
   });
   const isUpdateRoomType = !!roomTypeToUpdate;

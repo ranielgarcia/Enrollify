@@ -1,4 +1,4 @@
-import { StrictMode, use, useMemo, useEffect } from "react";
+import { StrictMode, use, useMemo, useEffect, Suspense } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import "./index.css";
@@ -16,7 +16,13 @@ import { handleLogin } from "./infrastructure/authentication/msal";
 import { AuthenticationProvider } from "./infrastructure/authentication/authenticationProvider";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "./components/theming/theme-provider";
-import { QueryClient } from "@tanstack/react-query";
+import {
+  MutationCache,
+  QueryCache,
+  QueryClient,
+  useQueryClient,
+  type QueryKey,
+} from "@tanstack/react-query";
 import {
   PersistQueryClientProvider,
   type PersistedClient,
@@ -28,8 +34,69 @@ import {
   AuthorizationContext,
   type IAuthorizationContextValue,
 } from "./infrastructure/authorization/AuthorizationContext";
+import type { AxiosError } from "axios";
+import {
+  formatValidationErrors,
+  parseApiError,
+  type ProblemDetails,
+} from "./lib/axios-utils";
+import { toast } from "sonner";
+import { OverlayLoader } from "./components/app-loading-overlay";
+
+// Register the router instance for type safety
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+    routeLoaderData: RouteLoaderData;
+  }
+}
+
+declare module "@tanstack/react-query" {
+  interface Register {
+    mutationMeta: {
+      invalidateQueries?: ReadonlyArray<QueryKey>;
+    };
+    queryMeta: {
+      persist?: boolean;
+    };
+  }
+}
+
+function hasMutationMeta(
+  meta: Record<string, unknown> | undefined
+): meta is { invalidateQueries: ReadonlyArray<QueryKey> } {
+  return meta != null && "invalidateQueries" in meta;
+}
 
 const queryClient = new QueryClient({
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      console.error("Global Mutation error handler:", error);
+      const axiosError = error as AxiosError<ProblemDetails>;
+      const parsed = parseApiError(axiosError);
+
+      // Show error toast with title and detail
+      toast.error(parsed.title, {
+        description: parsed.validationErrors
+          ? formatValidationErrors(parsed.validationErrors)
+          : parsed.detail || "Please try again.",
+      });
+    },
+    onSettled: (_data, _error, _variables, _context, mutation) => {
+      // global automatic query invalidation
+      // add meta object into useMutation to trigger this
+      if (hasMutationMeta(mutation.meta)) {
+        mutation.meta.invalidateQueries.forEach((queryKey) => {
+          queryClient.invalidateQueries({ queryKey });
+        });
+      }
+    },
+  }),
+  queryCache: new QueryCache({
+    onError: (error) => {
+      console.error(error);
+    },
+  }),
   defaultOptions: {
     queries: {
       // refetchOnWindowFocus: false,
@@ -53,6 +120,7 @@ const persister: Persister = {
 
 const msal = {} as IMsalContext;
 const authorization = {} as IAuthorizationContextValue;
+const queryClientType = {} as QueryClient;
 
 // Create a new router instance
 const router = createRouter({
@@ -60,6 +128,7 @@ const router = createRouter({
   context: {
     msal,
     authorization,
+    queryClient: queryClientType,
   },
   defaultPreload: "intent",
   scrollRestoration: true,
@@ -67,18 +136,11 @@ const router = createRouter({
   defaultPreloadStaleTime: 0,
 });
 
-// Register the router instance for type safety
-declare module "@tanstack/react-router" {
-  interface Register {
-    router: typeof router;
-    routeLoaderData: RouteLoaderData;
-  }
-}
-
 // eslint-disable-next-line react-refresh/only-export-components
 function App() {
   const msal = useMsal();
   const authorizationContext = use(AuthorizationContext);
+  const queryClient = useQueryClient();
 
   // Set active account on initial mount
   useEffect(() => {
@@ -123,8 +185,8 @@ function App() {
 
   // Memoize the router context to prevent unnecessary re-renders
   const routerContext = useMemo(
-    () => ({ msal, authorization: authorizationContext }),
-    [msal, authorizationContext]
+    () => ({ msal, authorization: authorizationContext, queryClient }),
+    [msal, authorizationContext, queryClient]
   );
 
   return (
@@ -139,25 +201,37 @@ function App() {
 const rootElement = document.getElementById("root")!;
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
-  root.render(
-    <StrictMode>
-      <MsalProvider instance={msalInstance}>
-        <PersistQueryClientProvider
-          client={queryClient}
-          persistOptions={{
-            persister,
-            dehydrateOptions: {
-              shouldDehydrateQuery: (query) => query.meta?.persist === true,
-            },
-          }}
-        >
-          <AuthenticationProvider>
-            <AuthorizationProvider>
-              <App />
-            </AuthorizationProvider>
-          </AuthenticationProvider>
-        </PersistQueryClientProvider>
-      </MsalProvider>
-    </StrictMode>
-  );
+  msalInstance.initialize().then(() => {
+    root.render(
+      <StrictMode>
+        <MsalProvider instance={msalInstance}>
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{
+              persister,
+              dehydrateOptions: {
+                shouldDehydrateQuery: (query) => query.meta?.persist === true,
+              },
+            }}
+          >
+            <Suspense
+              fallback={
+                <OverlayLoader
+                  isLoading={true}
+                  text="Loading profile..."
+                  size="lg"
+                />
+              }
+            >
+              <AuthenticationProvider>
+                <AuthorizationProvider>
+                  <App />
+                </AuthorizationProvider>
+              </AuthenticationProvider>
+            </Suspense>
+          </PersistQueryClientProvider>
+        </MsalProvider>
+      </StrictMode>
+    );
+  });
 }

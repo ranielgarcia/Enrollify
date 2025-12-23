@@ -1,18 +1,14 @@
 import { RoomTypesTable } from "./room-types-table";
 import { RoomTypeFormDrawer } from "./room-type-form-drawer";
 import { useState } from "react";
-import type { RoomType } from "../models/RoomType";
+import type { RoomType } from "../../../api/models/room-type";
 import { DeleteRoomTypeAlertDialog } from "./delete-room-type-alert-dialog";
 
 interface RoomTypeTabProps {
-  roomTypes: RoomType[];
-  refreshRoomTypesTable: () => void;
+  roomTypes?: RoomType[];
 }
 
-export function RoomTypeTab({
-  roomTypes,
-  refreshRoomTypesTable,
-}: RoomTypeTabProps) {
+export function RoomTypeTab({ roomTypes }: RoomTypeTabProps) {
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [roomTypeToEdit, setRoomTypeToEdit] = useState<RoomType | undefined>();
   const [roomTypeToDelete, setRoomTypeToDelete] = useState<
@@ -43,7 +39,6 @@ export function RoomTypeTab({
           roomTypeToUpdate={roomTypeToEdit}
           isOpen={isFormOpen}
           setIsOpen={setIsFormOpen}
-          onSuccessful={refreshRoomTypesTable}
         />
       </div>
 
@@ -57,7 +52,6 @@ export function RoomTypeTab({
         isOpen={!!roomTypeToDelete}
         onOpenChange={handleDeleteAlertDialogOnOpenChange}
         roomTypeToDelete={roomTypeToDelete}
-        onSuccessful={refreshRoomTypesTable}
       />
     </>
   );

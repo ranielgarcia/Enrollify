@@ -8,7 +8,7 @@ import type { AuthorizationResource } from "./models/AuthorizationResource";
 import type { PolicyName } from "./models/PolicyNames";
 import type { Permission } from "./models/PermissionsEnum";
 import type { Role } from "./models/Roles";
-import type { UserContext } from "../../api/models/UserContext";
+import type { UserContext } from "../../api/api-dtos/UserContext";
 import {
   userHasAnyRole,
   userHasPermission,
