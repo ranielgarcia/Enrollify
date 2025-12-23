@@ -2,6 +2,10 @@ import createMutationOptions from "@/hooks/create-mutation-options";
 import createAppQueryOptions from "@/hooks/create-query-options";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import {
+  RoomTypeSchema,
+  type RoomType,
+} from "@/page-components/rooms-management-page/models/RoomType";
 
 const queryKeys = {
   all: () => ["room-types"],
@@ -19,6 +23,9 @@ export const getAllRoomTypesOptions = () =>
     path: "/api/room-types",
     options: {
       queryKey: queryKeys.all(),
+      select: (roomTypes): RoomType[] => {
+        return roomTypes.map((t) => RoomTypeSchema.parse(t));
+      },
     },
   });
 

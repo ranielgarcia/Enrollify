@@ -18,6 +18,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "./components/theming/theme-provider";
 import {
   MutationCache,
+  QueryCache,
   QueryClient,
   useQueryClient,
   type QueryKey,
@@ -81,6 +82,11 @@ const queryClient = new QueryClient({
           queryClient.invalidateQueries({ queryKey });
         });
       }
+    },
+  }),
+  queryCache: new QueryCache({
+    onError: (error) => {
+      console.error(error);
     },
   }),
   defaultOptions: {

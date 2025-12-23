@@ -13,7 +13,7 @@ interface RoomFormProps {
   roomTypes?: string[];
 }
 
-export function RoomForm({ onClose, onSave, roomTypes = [] }: RoomFormProps) {
+export function RoomForm({ onClose, roomTypes = [] }: RoomFormProps) {
   const [formData, setFormData] = useState({
     roomNumber: "",
     building: "",
@@ -23,10 +23,10 @@ export function RoomForm({ onClose, onSave, roomTypes = [] }: RoomFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      id: Date.now().toString(),
-      ...formData,
-    });
+    // onSave({
+    //   id: Date.now().toString(),
+    //   ...formData,
+    // });
     setFormData({
       roomNumber: "",
       building: "",
@@ -35,10 +35,10 @@ export function RoomForm({ onClose, onSave, roomTypes = [] }: RoomFormProps) {
     });
   };
 
-  const availableRoomTypes =
-    roomTypes.length > 0
-      ? roomTypes
-      : ["Lecture Hall", "Lab", "Seminar Room", "Tutorial Room", "Auditorium"];
+  // const availableRoomTypes =
+  //   roomTypes.length > 0
+  //     ? roomTypes
+  //     : ["Lecture Hall", "Lab", "Seminar Room", "Tutorial Room", "Auditorium"];
 
   return (
     <Card className="border-2 border-accent">
@@ -98,7 +98,7 @@ export function RoomForm({ onClose, onSave, roomTypes = [] }: RoomFormProps) {
               <label className="text-sm font-medium text-foreground block mb-1">
                 Room Type
               </label>
-              <select
+              {/* <select
                 name="roomType"
                 value={formData.type}
                 onChange={(e) =>
@@ -111,7 +111,7 @@ export function RoomForm({ onClose, onSave, roomTypes = [] }: RoomFormProps) {
                     {type}
                   </option>
                 ))}
-              </select>
+              </select> */}
             </div>
           </div>
           <div className="flex gap-2 justify-end pt-4">

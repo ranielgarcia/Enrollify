@@ -1,5 +1,4 @@
 import { OverlayLoader } from "@/components/app-loading-overlay";
-import useAppQuery from "@/hooks/deprecated/use-app-query-v2";
 import { CollegesTable } from "./colleges-table";
 import type { College } from "./models/College";
 import { parseDateTime } from "@/lib/dateutils";
@@ -7,6 +6,7 @@ import type BasicUserInfo from "@/api/models/BasicUserInfo";
 import { useState } from "react";
 import { CollegeFormDrawer } from "./college-form-drawer";
 import { DeleteCollegeAlertDialog } from "./delete-college-alert-dialog";
+import { useGetAllColleges } from "@/api/collections/college-collection";
 
 export default function CollegesPage() {
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
@@ -16,12 +16,7 @@ export default function CollegesPage() {
     data: collegesData,
     refetch: refetchColleges,
     isPending: isLoadingColleges,
-  } = useAppQuery({
-    path: "/api/colleges",
-    queryOptions: {
-      queryKey: ["/api/colleges"],
-    },
-  });
+  } = useGetAllColleges();
 
   const handleEdit = (college: College) => {
     setCollegeToEdit(college);

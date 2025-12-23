@@ -5,7 +5,7 @@ import type { RoomType } from "../models/RoomType";
 import { DeleteRoomTypeAlertDialog } from "./delete-room-type-alert-dialog";
 
 interface RoomTypeTabProps {
-  roomTypes: RoomType[];
+  roomTypes?: RoomType[];
 }
 
 export function RoomTypeTab({ roomTypes }: RoomTypeTabProps) {
@@ -39,7 +39,6 @@ export function RoomTypeTab({ roomTypes }: RoomTypeTabProps) {
           roomTypeToUpdate={roomTypeToEdit}
           isOpen={isFormOpen}
           setIsOpen={setIsFormOpen}
-          onSuccessful={() => console.log("delete me")}
         />
       </div>
 

@@ -36,10 +36,17 @@ type QueryParamsForPath<P extends ApiPath> = ApiPaths[P] extends {
     : undefined
   : undefined;
 
-interface QueryParams<P extends ApiPath, TError = unknown> {
+interface QueryParams<
+  P extends ApiPath,
+  TData = JsonResponseForPath<P>,
+  TError = unknown,
+> {
   path: P;
   params?: QueryParamsForPath<P>;
-  options?: Omit<UseQueryOptions<JsonResponseForPath<P>, TError>, "queryFn"> & {
+  options?: Omit<
+    UseQueryOptions<JsonResponseForPath<P>, TError, TData>,
+    "queryFn"
+  > & {
     queryKey?: readonly unknown[];
   };
   forceRefreshToken?: boolean;
@@ -76,12 +83,16 @@ const createQueryFn =
 /**
  * Creates query options for use with `useQuery`.
  */
-const createAppQueryOptions = <P extends ApiPath, TError = unknown>({
+const createAppQueryOptions = <
+  P extends ApiPath,
+  TData = JsonResponseForPath<P>,
+  TError = unknown,
+>({
   path,
   params,
   options,
   forceRefreshToken,
-}: QueryParams<P, TError>) => {
+}: QueryParams<P, TData, TError>) => {
   return queryOptions({
     queryKey:
       options?.queryKey ?? (params !== undefined ? [path, params] : [path]),
@@ -96,15 +107,17 @@ const createAppQueryOptions = <P extends ApiPath, TError = unknown>({
  */
 export const createAppSuspenseQueryOptions = <
   P extends ApiPath,
+  TData = JsonResponseForPath<P>,
   TError = unknown,
 >({
   path,
   params,
   options,
   forceRefreshToken,
-}: QueryParams<P, TError>): UseSuspenseQueryOptions<
+}: QueryParams<P, TData, TError>): UseSuspenseQueryOptions<
   JsonResponseForPath<P>,
-  TError
+  TError,
+  TData
 > => {
   return {
     queryKey:

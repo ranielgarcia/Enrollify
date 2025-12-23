@@ -12,7 +12,7 @@ import { formatDateTime } from "@/lib/dateutils";
 import type { RoomType } from "../models/RoomType";
 
 interface RoomTypesTableProps {
-  roomTypes: RoomType[];
+  roomTypes?: RoomType[];
   onEdit: (roomType: RoomType) => void;
   onDelete: (roomType: RoomType) => void;
 }
@@ -94,7 +94,7 @@ export function RoomTypesTable({
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data: roomTypes,
+    data: roomTypes ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),

@@ -1,5 +1,5 @@
 import React, { use } from "react";
-import type { UserContext } from "../../api/models/UserContext";
+import type { UserContext } from "../../api/api-dtos/UserContext";
 
 export interface IAuthenticationContext {
   user: UserContext;

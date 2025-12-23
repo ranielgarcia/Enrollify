@@ -1,5 +1,5 @@
 import type { AuthorizationResource } from "./AuthorizationResource";
-import type { UserContext } from "../../../api/models/UserContext";
+import type { UserContext } from "../../../api/api-dtos/UserContext";
 
 /**
  * Context for evaluating authorization requirements.

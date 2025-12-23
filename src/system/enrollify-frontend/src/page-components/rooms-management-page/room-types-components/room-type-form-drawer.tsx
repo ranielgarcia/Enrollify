@@ -43,7 +43,6 @@ interface RoomTypeFormDrawerProps {
   setIsOpen: (open: boolean) => void;
   roomTypeToUpdate?: RoomType | null;
   onOpenChange: (isOpen: boolean) => void;
-  onSuccessful?: () => void;
 }
 
 export function RoomTypeFormDrawer({
@@ -51,7 +50,6 @@ export function RoomTypeFormDrawer({
   onOpenChange,
   isOpen = false,
   setIsOpen,
-  onSuccessful,
 }: RoomTypeFormDrawerProps) {
   const defaultFormValues: RoomTypeForm = {
     name: roomTypeToUpdate?.name ?? "",
@@ -81,7 +79,6 @@ export function RoomTypeFormDrawer({
 
       if (meta.formAction === "close") {
         setIsOpen(false);
-        if (onSuccessful) onSuccessful();
         form.reset();
       } else {
         form.reset();

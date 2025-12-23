@@ -3,9 +3,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoomsTab } from "./rooms-tab";
 import type { Room } from "./rooms-table";
 import { RoomTypeTab } from "./room-types-components/room-type-tab";
-import type BasicUserInfo from "@/api/models/BasicUserInfo";
-import { parseDateTime } from "@/lib/dateutils";
-import type { RoomType } from "./models/RoomType";
 import { OverlayLoader } from "@/components/app-loading-overlay";
 import { useGetAllRoomTypes } from "@/api/collections/room-type-collection";
 
@@ -61,32 +58,8 @@ export default function RoomsPage() {
     },
   ]);
 
-  const { data: roomTypesData, isPending: isLoadingRoomTypesInProgress } =
+  const { data: roomTypes, isPending: isLoadingRoomTypesInProgress } =
     useGetAllRoomTypes();
-
-  const roomTypes: RoomType[] = roomTypesData
-    ? roomTypesData.map(
-        (t) =>
-          ({
-            id: t.id,
-            name: t.name,
-            description: t.description,
-            createdAt: parseDateTime(t.createdAt),
-            createdBy: {
-              ...t.createdByUser,
-            } as BasicUserInfo,
-            updatedAt: parseDateTime(t.updatedAt),
-            updatedBy: {
-              ...t.updatedByUser,
-            } as BasicUserInfo,
-            deletedAt: parseDateTime(t.deletedAt),
-            deletedBy: {
-              ...t.deletedByUser,
-            } as BasicUserInfo,
-            isActive: t.isActive,
-          }) as RoomType
-      )
-    : [];
 
   return (
     <main>
@@ -116,7 +89,7 @@ export default function RoomsPage() {
           </TabsContent>
 
           <TabsContent value="room-types" className="space-y-4">
-            <RoomTypeTab roomTypes={roomTypes} />
+            <RoomTypeTab roomTypes={roomTypes ?? []} />
           </TabsContent>
         </Tabs>
       </div>
