@@ -2,11 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { RoomForm } from "./room-form";
-import { RoomsTable, type Room } from "./rooms-table";
+import { RoomsTable } from "./rooms-table";
 import type { RoomType } from "../../api/models/room-type";
+import type { Room } from "@/api/models/room";
 
 interface RoomsTabProps {
-  rooms: Room[];
+  rooms?: Room[];
   roomTypes?: RoomType[];
 }
 

@@ -8,18 +8,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table";
 import { Edit2, Trash2 } from "lucide-react";
-
-export interface Room {
-  id: number;
-  roomNumber: string;
-  capacity: number;
-  type: string;
-  building: string;
-  college: string;
-}
+import type { Room } from "@/api/models/room";
 
 interface RoomsTableProps {
-  rooms: Room[];
+  rooms?: Room[];
   onEdit: (room: Room) => void;
   onDelete: (id: number) => void;
 }
@@ -86,7 +78,7 @@ export function RoomsTable({ rooms, onEdit, onDelete }: RoomsTableProps) {
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data: rooms,
+    data: rooms ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),

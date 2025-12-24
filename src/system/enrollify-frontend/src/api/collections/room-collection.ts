@@ -1,4 +1,5 @@
-// import createAppQueryOptions from "@/hooks/create-query-options";
+import createAppQueryOptions from "@/hooks/create-query-options";
+import { RoomSchema, type Room } from "../models/room";
 
 const queryKeys = {
   all: () => ["rooms"],
@@ -12,15 +13,14 @@ const queryKeys = {
   delete: (roomId: number) => [...queryKeys.all(), "delete", roomId],
 };
 
-// // ** fetch all rooms by room type **
-// export const getAllRoomsByRoomTypeOptions = (roomTypeId: number) =>
-//   createAppQueryOptions({
-//     path: "/api/rooms/list-by-room-type",
-//     params: {
-//       roomTypeId: roomTypeId,
-//     },
-//     options: {
-//       queryKey: queryKeys.listByRoomType(roomTypeId),
-//       enabled: !!roomTypeId,
-//     },
-//   });
+// ** fetch all rooms by room type **
+export const getAllRooms = () =>
+  createAppQueryOptions({
+    path: "/api/rooms",
+    options: {
+      queryKey: queryKeys.all(),
+      select: (roomTypes): Room[] => {
+        return roomTypes.map((t) => RoomSchema.parse(t));
+      },
+    },
+  });

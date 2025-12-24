@@ -4,14 +4,28 @@ import { RoomTypeSchema } from "./room-type";
 import { BuildingSchema } from "./building";
 import { CollegeSchema } from "./college";
 
+const RoomTypeMinimalSchema = RoomTypeSchema.pick({
+  id: true,
+  name: true,
+});
+
+const BuildingMinimalSchema = BuildingSchema.pick({
+  id: true,
+  name: true,
+});
+
+const CollegeMinimalSchema = CollegeSchema.pick({
+  id: true,
+  name: true,
+});
 export const RoomSchema = z
   .object({
     id: z.number(),
     RoomNumber: z.string(),
     Capacity: z.number(),
-    RoomType: RoomTypeSchema,
-    Building: BuildingSchema,
-    College: CollegeSchema,
+    RoomType: RoomTypeMinimalSchema,
+    Building: BuildingMinimalSchema,
+    College: CollegeMinimalSchema,
   })
   .extend(AuditInfoSchema.shape);
 

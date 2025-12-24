@@ -1,6 +1,6 @@
 ﻿using Enrollify.Application.Buildings.DTOs;
 using Enrollify.Application.Colleges.DTOs;
-using Enrollify.Application.Rooms.Specifications;
+using Enrollify.Application.Rooms.Models;
 using Enrollify.Application.RoomTypes.DTOs;
 using Enrollify.Core.Aggregates.RoomAggregate;
 

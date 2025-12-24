@@ -1,67 +1,19 @@
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoomsTab } from "./rooms-tab";
-import type { Room } from "./rooms-table";
 import { RoomTypeTab } from "./room-types-components/room-type-tab";
 import { OverlayLoader } from "@/components/app-loading-overlay";
 import { getAllRoomTypesOptions } from "@/api/collections/room-type-collection";
 import { useQuery } from "@tanstack/react-query";
+import { getAllRooms } from "@/api/collections/room-collection";
 
 export default function RoomsPage() {
-  const [rooms] = useState<Room[]>([
-    {
-      id: 1,
-      roomNumber: "101",
-      building: "Science Building",
-      capacity: 30,
-      type: "Lecture Hall",
-      college: "CCS",
-    },
-    {
-      id: 2,
-      roomNumber: "102",
-      building: "Science Building",
-      capacity: 50,
-      type: "Lecture Hall",
-      college: "CCS",
-    },
-    {
-      id: 3,
-      roomNumber: "201",
-      building: "Engineering Building",
-      capacity: 25,
-      type: "Lab",
-      college: "CCS",
-    },
-    {
-      id: 4,
-      roomNumber: "301",
-      building: "Arts Building",
-      capacity: 40,
-      type: "Seminar Room",
-      college: "CCS",
-    },
-    {
-      id: 5,
-      roomNumber: "501",
-      building: "Main Building",
-      capacity: 200,
-      type: "Auditorium",
-      college: "CCS",
-    },
-    {
-      id: 6,
-      roomNumber: "202",
-      building: "Engineering Building",
-      capacity: 20,
-      type: "Tutorial Room",
-      college: "CCS",
-    },
-  ]);
+  const { data: rooms } = useQuery(getAllRooms());
 
   const { data: roomTypes, isPending: isLoadingRoomTypesInProgress } = useQuery(
     getAllRoomTypesOptions()
   );
+
+  console.log(rooms);
 
   return (
     <main>
