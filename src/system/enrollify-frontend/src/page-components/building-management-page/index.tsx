@@ -44,9 +44,9 @@ export default function BuildingPage() {
       <div className="p-4 md:p-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            College Management
+            Building Management
           </h1>
-          <p className="text-muted-foreground">Manage college resources</p>
+          <p className="text-muted-foreground">Manage building resources</p>
         </div>
 
         <div className="flex justify-end">

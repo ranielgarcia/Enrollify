@@ -63,7 +63,7 @@ export function BuildingsTable({
       (row) =>
         row.createdByUser
           ? `${row.createdByUser?.firstName} ${row.createdByUser?.lastName}`
-          : "Err",
+          : "",
       {
         id: "createdBy",
         header: "Created By",

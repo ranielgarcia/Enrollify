@@ -38,7 +38,7 @@ public class BuildingRepository : IBuildingRepository
             var building = await _dbContext.Buildings.FirstOrDefaultAsync(rt => rt.Id == id, cancellationToken);
             if (building == null)
             {
-                return Result.NotFound($"Building with ID {id} not found.");
+                return Result.NotFound($"Building with ID {id.Value} not found.");
             }
             _dbContext.Buildings.Remove(building);
             await _dbContext.SaveChangesAsync(cancellationToken);

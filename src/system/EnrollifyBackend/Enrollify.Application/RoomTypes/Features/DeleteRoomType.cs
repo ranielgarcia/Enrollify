@@ -25,7 +25,7 @@ public static class DeleteRoomType
 
             if (rooms.Count > 0)
             {
-                return Result.Invalid(new ValidationError($"This room type cannot be deleted because it has {rooms.Count} room(s) associated with it. \n Please reassign or remove these rooms from this room type before deleting."));
+                return Result.Invalid(new ValidationError($"This room type cannot be deleted because it has {rooms.Count} room(s) associated with it. \n Please reassign or remove these rooms before deleting."));
             }
 
             return await _roomTypeRepository.Delete(command.id, cancellationToken);

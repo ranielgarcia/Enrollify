@@ -32,8 +32,8 @@ export function RoomTypesTable({
   useEffect(() => {
     const checkPolicies = async () => {
       const [updatePermission, deletePermission] = await Promise.all([
-        checkPolicy("canUpdateCollege"),
-        checkPolicy("canDeleteCollege"),
+        checkPolicy("canUpdateRoomTypes"),
+        checkPolicy("canDeleteRoomTypes"),
       ]);
       setCanUpdate(updatePermission);
       setCanDelete(deletePermission);
@@ -59,7 +59,7 @@ export function RoomTypesTable({
       (row) =>
         row.createdByUser
           ? `${row.createdByUser?.firstName} ${row.createdByUser?.lastName}`
-          : "N/A",
+          : "",
       {
         id: "createdBy",
         header: "Created By",

@@ -146,11 +146,13 @@ export function CollegeFormDrawer({
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
-                        <em role="alert" className="text-red-800">
-                          {field.state.meta.errors
-                            .map((e) => e?.message)
-                            .join(", ")}
-                        </em>
+                        {!field.state.meta.isValid && (
+                          <em role="alert" className="text-red-800">
+                            {field.state.meta.errors
+                              .map((e) => e?.message)
+                              .join(", ")}
+                          </em>
+                        )}
                       </>
                     )}
                   />
@@ -169,11 +171,13 @@ export function CollegeFormDrawer({
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
-                        <em role="alert" className="text-red-800">
-                          {field.state.meta.errors
-                            .map((e) => e?.message)
-                            .join(", ")}
-                        </em>
+                        {!field.state.meta.isValid && (
+                          <em role="alert" className="text-red-800">
+                            {field.state.meta.errors
+                              .map((e) => e?.message)
+                              .join(", ")}
+                          </em>
+                        )}
                       </>
                     )}
                   />
