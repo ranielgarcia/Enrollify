@@ -67,7 +67,7 @@ export function CollegesTable({
       (row) =>
         row.createdByUser
           ? `${row.createdByUser?.firstName} ${row.createdByUser?.lastName}`
-          : "",
+          : "Err",
       {
         id: "createdBy",
         header: "Created By",
@@ -82,7 +82,7 @@ export function CollegesTable({
       (row) =>
         row.updatedByUser?.firstName
           ? `${row.updatedByUser?.firstName} ${row.updatedByUser?.lastName}`
-          : "Err",
+          : "",
       {
         id: "updatedBy",
         header: "Updated By",
