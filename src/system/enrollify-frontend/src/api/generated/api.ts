@@ -52,14 +52,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/rooms/list-by-room-type": {
+    "/api/rooms": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["EnrollifyWebAPIFeaturesRoomsListByRoomTypeEndpoint"];
+        get: operations["EnrollifyWebAPIFeaturesRoomsListRoomsEndpoint"];
         put?: never;
         post?: never;
         delete?: never;
@@ -239,20 +239,13 @@ export interface components {
         EnrollifyApplicationBaseDTO: {
             /** Format: date-time */
             createdAt?: string;
-            /**
-             * Format: int32
-             * @description Value object wrapping Int32
-             */
-            createdBy?: number;
-            createdByUser?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
+            createdBy?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
             /** Format: date-time */
             updatedAt?: string | null;
-            updatedBy?: string | null;
-            updatedByUser?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
+            updatedBy?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
             /** Format: date-time */
             deletedAt?: string | null;
-            deletedBy?: string | null;
-            deletedByUser?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
+            deletedBy?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
             isActive?: boolean;
         };
         EnrollifyApplicationBaseUserDTO: {
@@ -293,7 +286,7 @@ export interface components {
                 [key: string]: string[];
             };
         };
-        EnrollifyApplicationRoomsDTOsRoomDTO: {
+        EnrollifyApplicationRoomsDTOsRoomDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
             /**
              * Format: int32
              * @description Value object wrapping Int32
@@ -302,23 +295,31 @@ export interface components {
             roomNumber?: string;
             /** Format: int32 */
             capacity?: number;
-            /**
-             * Format: int32
-             * @description Value object wrapping Int32
-             */
-            roomTypeId?: number;
-            /**
-             * Format: int32
-             * @description Value object wrapping Int32
-             */
-            buildingId?: number;
-            /**
-             * Format: int32
-             * @description Value object wrapping Int32
-             */
-            collegeId?: number;
+            roomType?: components["schemas"]["EnrollifyApplicationRoomTypesDTOsRoomTypeDTO"] | null;
+            building?: components["schemas"]["EnrollifyApplicationBuildingsDTOsBuildingDTO"] | null;
+            college?: components["schemas"]["EnrollifyApplicationCollegesDTOsCollegeDTO"] | null;
         };
-        EnrollifyWebAPIFeaturesRoomsListByRoomTypeRequest: Record<string, never>;
+        EnrollifyApplicationBuildingsDTOsBuildingDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            name?: string;
+            description?: string;
+            address?: string;
+        };
+        EnrollifyApplicationCollegesDTOsCollegeDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            code?: string;
+            name?: string;
+            description?: string;
+            dean?: string;
+        };
         EnrollifyApplicationRolesDTOsRoleDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
             /**
              * Format: int32
@@ -348,17 +349,6 @@ export interface components {
             dean: string;
         };
         EnrollifyWebAPIFeaturesCollegesDeleteRequest: Record<string, never>;
-        EnrollifyApplicationCollegesDTOsCollegeDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
-            /**
-             * Format: int32
-             * @description Value object wrapping Int32
-             */
-            id?: number;
-            code?: string;
-            name?: string;
-            description?: string;
-            dean?: string;
-        };
         EnrollifyWebAPIFeaturesCollegesUpdateCollegeResponse: {
             /** Format: int32 */
             id?: number;
@@ -386,16 +376,6 @@ export interface components {
             address: string;
         };
         EnrollifyWebAPIFeaturesBuildingsDeleteRequest: Record<string, never>;
-        EnrollifyApplicationBuildingsDTOsBuildingDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
-            /**
-             * Format: int32
-             * @description Value object wrapping Int32
-             */
-            id?: number;
-            name?: string;
-            description?: string;
-            address?: string;
-        };
         EnrollifyWebAPIFeaturesBuildingsUpdateBuildingResponse: {
             /** Format: int32 */
             id?: number;
@@ -722,11 +702,9 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesRoomsListByRoomTypeEndpoint: {
+    EnrollifyWebAPIFeaturesRoomsListRoomsEndpoint: {
         parameters: {
-            query: {
-                roomTypeId: number;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;

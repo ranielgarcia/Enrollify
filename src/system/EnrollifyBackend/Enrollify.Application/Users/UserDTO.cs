@@ -22,14 +22,11 @@ public class UserDTO : BaseDTO
             LastName = user.LastName,
             LastLoginAt = user.LastLoginAt,
             CreatedAt = user.CreatedAt,
-            CreatedBy = user.CreatedBy,
-            CreatedByUser = BaseUserDTO.FromUser(user.CreatedByUser),
+            CreatedBy = BaseUserDTO.FromUser(user.CreatedByUser),
             UpdatedAt = user.UpdatedAt,
-            UpdatedBy = user.UpdatedBy,
-            UpdatedByUser = BaseUserDTO.FromUser(user.UpdatedByUser),
+            UpdatedBy = BaseUserDTO.FromUser(user.UpdatedByUser),
             DeletedAt = user.DeletedAt,
-            DeletedBy = user.DeletedBy,
-            DeletedByUser = BaseUserDTO.FromUser(user.DeletedByUser)
+            DeletedBy = BaseUserDTO.FromUser(user.DeletedByUser)
         };
     }
 }

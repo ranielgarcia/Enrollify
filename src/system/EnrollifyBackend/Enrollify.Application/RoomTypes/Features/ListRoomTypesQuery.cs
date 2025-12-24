@@ -21,21 +21,7 @@ public class ListRoomTypesQueryHandler : IQueryHandler<ListRoomTypesQuery, Resul
         var roomTypes = await _repository.ListRoomTypes(cancellationToken);
 
         var toReturn = roomTypes
-            .Select(rt => new RoomTypeDTO
-            {
-                Id = rt.Id,
-                Name = rt.Name,
-                Description = rt.Description,
-                CreatedAt = rt.CreatedAt,
-                CreatedBy = rt.CreatedBy,
-                CreatedByUser = BaseUserDTO.FromUser(rt.CreatedByUser),
-                UpdatedByUser = BaseUserDTO.FromUser(rt.UpdatedByUser),
-                UpdatedAt = rt.UpdatedAt,
-                UpdatedBy = rt.UpdatedBy,
-                DeletedAt = rt.DeletedAt,
-                DeletedBy = rt.DeletedBy,
-                IsActive = rt.IsActive
-            }).ToList();
+            .Select(RoomTypeDTO.FromEntity).ToList();
 
         return Result.Success(toReturn);
     }

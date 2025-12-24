@@ -65,8 +65,8 @@ export function CollegesTable({
     }),
     columnHelper.accessor(
       (row) =>
-        row.createdByUser
-          ? `${row.createdByUser?.firstName} ${row.createdByUser?.lastName}`
+        row.createdBy
+          ? `${row.createdBy.firstName} ${row.createdBy.lastName}`
           : "",
       {
         id: "createdBy",
@@ -80,8 +80,8 @@ export function CollegesTable({
     }),
     columnHelper.accessor(
       (row) =>
-        row.updatedByUser?.firstName
-          ? `${row.updatedByUser?.firstName} ${row.updatedByUser?.lastName}`
+        row.updatedBy?.firstName
+          ? `${row.updatedBy.firstName} ${row.updatedBy.lastName}`
           : "",
       {
         id: "updatedBy",

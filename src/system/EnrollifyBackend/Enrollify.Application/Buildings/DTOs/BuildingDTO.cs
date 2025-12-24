@@ -8,4 +8,21 @@ public class BuildingDTO : BaseDTO
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
+
+    public static BuildingDTO FromEntity (Building entity)
+    {
+        return new BuildingDTO
+        {
+            Id = entity.Id,
+            Name = entity.Name,
+            Description = entity.Description,
+            Address = entity.Address,
+            CreatedAt = entity.CreatedAt,
+            CreatedBy = BaseUserDTO.FromUser(entity.CreatedByUser),
+            UpdatedBy = BaseUserDTO.FromUser(entity.UpdatedByUser),
+            UpdatedAt = entity.UpdatedAt,
+            DeletedAt = entity.DeletedAt,
+            IsActive = entity.IsActive
+        };
+    }
 }

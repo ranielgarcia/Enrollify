@@ -22,22 +22,7 @@ public class ListBuildingsQueryHandler : IQueryHandler<ListBuildingsQuery, Resul
         var buildings = await _buildingRepository.ListBuildings(cancellationToken);
 
         var toReturn = buildings
-            .Select(b => new BuildingDTO
-            {
-                Id = b.Id,
-                Name = b.Name,
-                Description = b.Description,
-                Address = b.Address,
-                CreatedAt = b.CreatedAt,
-                CreatedBy = b.CreatedBy,
-                CreatedByUser = BaseUserDTO.FromUser(b.CreatedByUser),
-                UpdatedByUser = BaseUserDTO.FromUser(b.UpdatedByUser),
-                UpdatedAt = b.UpdatedAt,
-                UpdatedBy = b.UpdatedBy,
-                DeletedAt = b.DeletedAt,
-                DeletedBy = b.DeletedBy,
-                IsActive = b.IsActive
-            }).ToList();
+            .Select(BuildingDTO.FromEntity).ToList();
 
         return Result.Success(toReturn);
     }

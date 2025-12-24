@@ -19,23 +19,7 @@ public class ListCollegesQueryHandler : IQueryHandler<ListCollegesQuery, Result<
     {
         var colleges = await _repository.ListColleges(cancellationToken);
         var toReturn = colleges
-            .Select(c => new CollegeDTO
-            {
-                Id = c.Id,
-                Code = c.Code.Value,
-                Name = c.Name,
-                Description = c.Description,
-                Dean = c.Dean,
-                CreatedAt = c.CreatedAt,
-                CreatedBy = c.CreatedBy,
-                CreatedByUser = BaseUserDTO.FromUser(c.CreatedByUser),
-                UpdatedByUser = BaseUserDTO.FromUser(c.UpdatedByUser),
-                UpdatedAt = c.UpdatedAt,
-                UpdatedBy = c.UpdatedBy,
-                DeletedAt = c.DeletedAt,
-                DeletedBy = c.DeletedBy,
-                IsActive = c.IsActive
-            }).ToList();
+            .Select(CollegeDTO.FromEntity).ToList();
         return Result.Success(toReturn);
     }
 }
