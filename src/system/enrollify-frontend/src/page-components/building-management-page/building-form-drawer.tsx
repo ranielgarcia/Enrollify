@@ -1,3 +1,8 @@
+import {
+  createBuildingOptions,
+  updateBuildingOptions,
+} from "@/api/collections/building-collection";
+import type { Building } from "@/api/models/building";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -9,18 +14,12 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Plus } from "lucide-react";
-import { useForm } from "@tanstack/react-form";
-import { z } from "zod";
-import { Loader2 } from "lucide-react";
-import type { RoomType } from "../../../api/models/room-type";
-import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Unauthorized } from "@/components/unauthorized";
-import {
-  createRoomTypeOptions,
-  updateRoomTypeOptions,
-} from "@/api/collections/room-type-collection";
+import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
+import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
+import { Loader2, Plus } from "lucide-react";
+import z from "zod";
 
 type FormMeta = {
   submitAction: "create" | "update" | null;
@@ -33,51 +32,52 @@ const defaultMeta: FormMeta = {
   formAction: null,
 };
 
-const roomTypeSchema = z.object({
+const buildingFormSchema = z.object({
   name: z.string().min(3, "Name is required"),
   description: z.string().min(3, "Description is required"),
+  address: z.string().min(3, "Address is required"),
 });
-type RoomTypeForm = z.infer<typeof roomTypeSchema>;
+type BuildingForm = z.infer<typeof buildingFormSchema>;
 
-interface RoomTypeFormDrawerProps {
+interface BuildingFormDrawerProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  roomTypeToUpdate?: RoomType | null;
+  buildingToUpdate?: Building | null;
   onOpenChange: (isOpen: boolean) => void;
 }
 
-export function RoomTypeFormDrawer({
-  roomTypeToUpdate,
+export function BuildingFormDrawer({
+  buildingToUpdate,
   onOpenChange,
   isOpen = false,
   setIsOpen,
-}: RoomTypeFormDrawerProps) {
-  const defaultFormValues: RoomTypeForm = {
-    name: roomTypeToUpdate?.name ?? "",
-    description: roomTypeToUpdate?.description ?? "",
+}: BuildingFormDrawerProps) {
+  const defaultFormValues: BuildingForm = {
+    name: buildingToUpdate?.name ?? "",
+    description: buildingToUpdate?.description ?? "",
+    address: buildingToUpdate?.address ?? "",
   };
 
-  const { mutateAsync: createNewRoomTypeAsync } = useMutation(
-    createRoomTypeOptions()
+  const { mutateAsync: createNewBuildingAsync } = useMutation(
+    createBuildingOptions()
   );
-  const { mutateAsync: updateRoomTypeAsync } = useMutation(
-    updateRoomTypeOptions(roomTypeToUpdate?.id ?? 0)
+
+  const { mutateAsync: updateBuildingAsync } = useMutation(
+    updateBuildingOptions(buildingToUpdate?.id ?? 0)
   );
 
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
-      onChange: roomTypeSchema,
+      onChange: buildingFormSchema,
     },
     onSubmitMeta: defaultMeta,
     onSubmit: async ({ value, meta }) => {
-      const formValues = roomTypeSchema.parse(value);
+      const formValues = buildingFormSchema.parse(value);
       if (meta.submitAction === "create") {
-        await createNewRoomTypeAsync(formValues);
-      }
-
-      if (meta.submitAction === "update" && roomTypeToUpdate) {
-        await updateRoomTypeAsync(formValues);
+        await createNewBuildingAsync(formValues);
+      } else if (meta.submitAction === "update" && buildingToUpdate) {
+        await updateBuildingAsync(formValues);
       }
 
       if (meta.formAction === "close") {
@@ -86,7 +86,8 @@ export function RoomTypeFormDrawer({
       form.reset();
     },
   });
-  const isUpdateRoomType = !!roomTypeToUpdate;
+
+  const isUpdateBuilding = !!buildingToUpdate;
 
   return (
     <Drawer
@@ -98,19 +99,17 @@ export function RoomTypeFormDrawer({
       <DrawerTrigger asChild>
         <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer">
           <Plus className="size-4" />
-          Add Room Type
+          Add Building
         </Button>
       </DrawerTrigger>
       <DrawerContent>
         <AuthorizeView
-          policy="canCreateRoomTypes"
+          policy="canCreateBuilding"
           unauthorized={
             <Unauthorized
-              message="Your current role does not have the necessary permissions to create room type."
+              message="Your current role does not have the necessary permissions to create building."
               buttonLabel="Back to Home"
-              backOptions={{
-                to: "/portal/master-data/rooms/room-types",
-              }}
+              backCallback={() => setIsOpen(false)}
               redirectOptions={{
                 to: "/portal",
               }}
@@ -127,14 +126,14 @@ export function RoomTypeFormDrawer({
             <div className="mx-auto w-full max-w-sm">
               <DrawerHeader>
                 <DrawerTitle>
-                  {isUpdateRoomType ? "Update" : "Create"} Room Type
+                  {isUpdateBuilding ? "Update" : "Create"} Building
                 </DrawerTitle>
-                <DrawerDescription>Set room type details.</DrawerDescription>
+                <DrawerDescription>Set building details.</DrawerDescription>
               </DrawerHeader>
               <div className="p-4 pb-0">
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-1">
-                    Type Name
+                    Name
                   </label>
                   <form.Field
                     name="name"
@@ -142,7 +141,7 @@ export function RoomTypeFormDrawer({
                       <>
                         <input
                           className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., Lecture Hall"
+                          placeholder="e.g., Main Building"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -167,7 +166,32 @@ export function RoomTypeFormDrawer({
                       <>
                         <input
                           className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., Large classroom for lectures"
+                          placeholder="e.g., Main Building"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                        />
+                        {!field.state.meta.isValid && (
+                          <em role="alert" className="text-red-800">
+                            {field.state.meta.errors
+                              .map((e) => e?.message)
+                              .join(", ")}
+                          </em>
+                        )}
+                      </>
+                    )}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground block mb-1">
+                    Address
+                  </label>
+                  <form.Field
+                    name="address"
+                    children={(field) => (
+                      <>
+                        <input
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
+                          placeholder="e.g., 123 Main St."
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -194,14 +218,14 @@ export function RoomTypeFormDrawer({
                       type="submit"
                       onClick={() =>
                         form.handleSubmit({
-                          submitAction: isUpdateRoomType ? "update" : "create",
+                          submitAction: isUpdateBuilding ? "update" : "create",
                           formAction: "close",
                         })
                       }
                     >
                       {isSubmitting ? (
                         <Loader2 />
-                      ) : isUpdateRoomType ? (
+                      ) : isUpdateBuilding ? (
                         "Update"
                       ) : (
                         "Submit"

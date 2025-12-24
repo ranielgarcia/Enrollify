@@ -84,6 +84,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/buildings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesBuildingsListBuildingsEndpoint"];
+        put: operations["EnrollifyWebAPIFeaturesBuildingsUpdateEndpoint"];
+        post: operations["EnrollifyWebAPIFeaturesBuildingsCreateEndpoint"];
+        delete: operations["EnrollifyWebAPIFeaturesBuildingsDeleteEndpoint"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/WeatherForecast": {
         parameters: {
             query?: never;
@@ -192,7 +208,7 @@ export interface components {
         };
         EnrollifyWebAPIFeaturesRoomTypesCreateRoomTypeRequest: {
             name: string;
-            description?: string;
+            description: string;
         };
         EnrollifyWebAPIFeaturesRoomTypesDeleteRequest: Record<string, never>;
         EnrollifyApplicationRoomTypesDTOsRoomTypeDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
@@ -335,6 +351,41 @@ export interface components {
             name: string;
             description?: string;
             dean: string;
+        };
+        EnrollifyWebAPIFeaturesBuildingsCreateBuildingResponse: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            description?: string;
+            address?: string;
+        };
+        EnrollifyWebAPIFeaturesBuildingsCreateBuildingRequest: {
+            name: string;
+            description: string;
+            address: string;
+        };
+        EnrollifyWebAPIFeaturesBuildingsDeleteRequest: Record<string, never>;
+        EnrollifyApplicationBuildingsDTOsBuildingDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            name?: string;
+            description?: string;
+            address?: string;
+        };
+        EnrollifyWebAPIFeaturesBuildingsUpdateBuildingResponse: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+            description?: string;
+            address?: string;
+        };
+        EnrollifyWebAPIFeaturesBuildingsUpdateBuildingRequest: {
+            name: string;
+            description: string;
+            address: string;
         };
         EnrollifyWebAPIWeatherForecast: {
             /** Format: date */
@@ -838,6 +889,217 @@ export interface operations {
         };
     };
     EnrollifyWebAPIFeaturesCollegesDeleteEndpoint: {
+        parameters: {
+            query: {
+                id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesBuildingsListBuildingsEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationBuildingsDTOsBuildingDTO"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesBuildingsUpdateEndpoint: {
+        parameters: {
+            query: {
+                id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesBuildingsUpdateBuildingRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyWebAPIFeaturesBuildingsUpdateBuildingResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesBuildingsCreateEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesBuildingsCreateBuildingRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyWebAPIFeaturesBuildingsCreateBuildingResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesBuildingsDeleteEndpoint: {
         parameters: {
             query: {
                 id: number;

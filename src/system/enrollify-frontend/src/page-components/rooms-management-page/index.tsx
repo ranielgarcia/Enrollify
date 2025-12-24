@@ -4,7 +4,8 @@ import { RoomsTab } from "./rooms-tab";
 import type { Room } from "./rooms-table";
 import { RoomTypeTab } from "./room-types-components/room-type-tab";
 import { OverlayLoader } from "@/components/app-loading-overlay";
-import { useGetAllRoomTypes } from "@/api/collections/room-type-collection";
+import { getAllRoomTypesOptions } from "@/api/collections/room-type-collection";
+import { useQuery } from "@tanstack/react-query";
 
 export default function RoomsPage() {
   const [rooms] = useState<Room[]>([
@@ -58,8 +59,9 @@ export default function RoomsPage() {
     },
   ]);
 
-  const { data: roomTypes, isPending: isLoadingRoomTypesInProgress } =
-    useGetAllRoomTypes();
+  const { data: roomTypes, isPending: isLoadingRoomTypesInProgress } = useQuery(
+    getAllRoomTypesOptions()
+  );
 
   return (
     <main>

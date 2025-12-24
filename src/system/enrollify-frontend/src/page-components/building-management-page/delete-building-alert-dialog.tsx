@@ -1,3 +1,6 @@
+import { deleteBuildingOptions } from "@/api/collections/building-collection";
+import type { Building } from "@/api/models/building";
+import { OverlayLoader } from "@/components/app-loading-overlay";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,27 +11,24 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { OverlayLoader } from "@/components/app-loading-overlay";
-import type { College } from "@/api/models/college";
-import { deleteCollegeOptions } from "@/api/collections/college-collection";
 import { useMutation } from "@tanstack/react-query";
 
-interface DeleteCollegeAlertDialogProps {
-  collegeToDelete?: College;
+interface DeleteBuildingAlertDialogProps {
+  buildingToDelete?: Building;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function DeleteCollegeAlertDialog({
-  collegeToDelete,
+export function DeleteBuildingAlertDialog({
+  buildingToDelete,
   isOpen,
   onOpenChange,
-}: DeleteCollegeAlertDialogProps) {
-  const { mutateAsync: deleteCollegeAsync, isPending: isDeletingInProgress } =
-    useMutation(deleteCollegeOptions(collegeToDelete?.id ?? 0));
+}: DeleteBuildingAlertDialogProps) {
+  const { mutateAsync: deleteBuildingAsync, isPending: isDeletingInProgress } =
+    useMutation(deleteBuildingOptions(buildingToDelete?.id ?? 0));
 
   const handleContinueDelete = async () => {
-    await deleteCollegeAsync(undefined);
+    await deleteBuildingAsync(undefined);
   };
 
   return (
@@ -43,9 +43,9 @@ export function DeleteCollegeAlertDialog({
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
 
           <AlertDialogDescription>
-            Deleting college <strong>{collegeToDelete?.name}</strong> <br />
+            Deleting building <strong>{buildingToDelete?.name}</strong> <br />
             This action cannot be undone. This will permanently delete your
-            college and remove your data from our servers.
+            building and remove your data from our servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -1,6 +1,5 @@
 import createMutationOptions from "@/hooks/create-mutation-options";
 import createAppQueryOptions from "@/hooks/create-query-options";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { RoomTypeSchema, type RoomType } from "@/api/models/room-type";
 
@@ -23,8 +22,6 @@ export const getAllRoomTypesOptions = () =>
     },
   });
 
-export const useGetAllRoomTypes = () => useQuery(getAllRoomTypesOptions());
-
 // ** Create new room type **
 export const createRoomTypeOptions = () =>
   createMutationOptions({
@@ -38,8 +35,6 @@ export const createRoomTypeOptions = () =>
       },
     },
   });
-
-export const useCreateRoomType = () => useMutation(createRoomTypeOptions());
 
 // ** Update room type **
 
@@ -59,9 +54,6 @@ export const updateRoomTypeOptions = (roomTypeId: number) =>
     },
   });
 
-export const useUpdateRoomType = (roomTypeId: number) =>
-  useMutation(updateRoomTypeOptions(roomTypeId));
-
 // ** Delete room type **
 export const deleteRoomTypeOptions = (roomTypeId: number) =>
   createMutationOptions({
@@ -78,6 +70,3 @@ export const deleteRoomTypeOptions = (roomTypeId: number) =>
       },
     },
   });
-
-export const useDeleteRoomType = (roomTypeId: number) =>
-  useMutation(deleteRoomTypeOptions(roomTypeId));

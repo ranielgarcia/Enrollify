@@ -15,10 +15,11 @@ import { Loader2, Plus } from "lucide-react";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Unauthorized } from "@/components/unauthorized";
 import {
-  useCreateCollege,
-  useUpdateCollege,
+  createCollegeOptions,
+  updateCollegeOptions,
 } from "@/api/collections/college-collection";
 import type { College } from "@/api/models/college";
+import { useMutation } from "@tanstack/react-query";
 
 type FormMeta = {
   submitAction: "create" | "update" | null;
@@ -59,10 +60,12 @@ export function CollegeFormDrawer({
     dean: collegeToUpdate?.dean ?? "",
   };
 
-  const { mutateAsync: createNewCollegeAsync } = useCreateCollege();
+  const { mutateAsync: createNewCollegeAsync } = useMutation(
+    createCollegeOptions()
+  );
 
-  const { mutateAsync: updateCollegeAsync } = useUpdateCollege(
-    collegeToUpdate?.id ?? 0
+  const { mutateAsync: updateCollegeAsync } = useMutation(
+    updateCollegeOptions(collegeToUpdate?.id ?? 0)
   );
 
   const form = useForm({
@@ -75,9 +78,7 @@ export function CollegeFormDrawer({
       const formValues = collegeFormSchema.parse(value);
       if (meta.submitAction === "create") {
         await createNewCollegeAsync(formValues);
-      }
-
-      if (meta.submitAction === "update" && collegeToUpdate) {
+      } else if (meta.submitAction === "update" && collegeToUpdate) {
         await updateCollegeAsync(formValues);
       }
 
@@ -145,11 +146,13 @@ export function CollegeFormDrawer({
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
-                        <em role="alert" className="text-red-800">
-                          {field.state.meta.errors
-                            .map((e) => e?.message)
-                            .join(", ")}
-                        </em>
+                        {!field.state.meta.isValid && (
+                          <em role="alert" className="text-red-800">
+                            {field.state.meta.errors
+                              .map((e) => e?.message)
+                              .join(", ")}
+                          </em>
+                        )}
                       </>
                     )}
                   />
@@ -168,11 +171,13 @@ export function CollegeFormDrawer({
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
-                        <em role="alert" className="text-red-800">
-                          {field.state.meta.errors
-                            .map((e) => e?.message)
-                            .join(", ")}
-                        </em>
+                        {!field.state.meta.isValid && (
+                          <em role="alert" className="text-red-800">
+                            {field.state.meta.errors
+                              .map((e) => e?.message)
+                              .join(", ")}
+                          </em>
+                        )}
                       </>
                     )}
                   />

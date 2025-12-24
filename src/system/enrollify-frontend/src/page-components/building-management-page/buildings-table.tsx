@@ -1,3 +1,8 @@
+import type { Building } from "@/api/models/building";
+import { DataTable } from "@/components/data-table";
+import { Button } from "@/components/ui/button";
+import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
+import { formatDateTime } from "@/lib/dateutils";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -5,35 +10,30 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
 import { Edit2, Trash2 } from "lucide-react";
-import { formatDateTime } from "@/lib/dateutils";
-import { DataTable } from "@/components/data-table";
-import type { College } from "@/api/models/college";
-import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
 import { useEffect, useState } from "react";
 
-interface CollegesTableProps {
-  colleges?: College[];
-  onEdit: (college: College) => void;
-  onDelete: (college: College) => void;
+interface BuildingsTableProps {
+  buildings?: Building[];
+  onEdit: (building: Building) => void;
+  onDelete: (building: Building) => void;
 }
 
-export function CollegesTable({
-  colleges,
+export function BuildingsTable({
+  buildings,
   onEdit,
   onDelete,
-}: CollegesTableProps) {
+}: BuildingsTableProps) {
   const { checkPolicy } = useAuthorization();
-  const columnHelper = createColumnHelper<College>();
+  const columnHelper = createColumnHelper<Building>();
   const [canUpdate, setCanUpdate] = useState(false);
   const [canDelete, setCanDelete] = useState(false);
 
   useEffect(() => {
     const checkPolicies = async () => {
       const [updatePermission, deletePermission] = await Promise.all([
-        checkPolicy("canUpdateCollege"),
-        checkPolicy("canDeleteCollege"),
+        checkPolicy("canUpdateBuilding"),
+        checkPolicy("canDeleteBuilding"),
       ]);
       setCanUpdate(updatePermission);
       setCanDelete(deletePermission);
@@ -43,10 +43,6 @@ export function CollegesTable({
   }, [checkPolicy]);
 
   const columns = [
-    columnHelper.accessor("code", {
-      header: "Code",
-      cell: (info) => <span>{info.getValue()}</span>,
-    }),
     columnHelper.accessor("name", {
       header: "Name",
       cell: (info) => <span>{info.getValue()}</span>,
@@ -55,8 +51,8 @@ export function CollegesTable({
       header: "Description",
       cell: (info) => <span>{info.getValue()}</span>,
     }),
-    columnHelper.accessor("dean", {
-      header: "Dean",
+    columnHelper.accessor("address", {
+      header: "Address",
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("createdAt", {
@@ -123,7 +119,7 @@ export function CollegesTable({
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data: colleges ?? [],
+    data: buildings ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),

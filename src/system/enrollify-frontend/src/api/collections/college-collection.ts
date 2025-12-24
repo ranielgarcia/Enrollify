@@ -1,5 +1,4 @@
 import { createAppSuspenseQueryOptions } from "@/hooks/create-query-options";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { CollegeSchema, type College } from "../models/college";
 import createMutationOptions from "@/hooks/create-mutation-options";
 import { toast } from "sonner";
@@ -23,11 +22,7 @@ export const getAllCollegesOptions = () =>
     },
   });
 
-export const useGetAllCollegesSuspense = () =>
-  useSuspenseQuery(getAllCollegesOptions());
-
 // ** Create **
-
 export const createCollegeOptions = () =>
   createMutationOptions({
     httpVerb: "post",
@@ -41,10 +36,7 @@ export const createCollegeOptions = () =>
     },
   });
 
-export const useCreateCollege = () => useMutation(createCollegeOptions());
-
 // ** Update **
-
 export const updateCollegeOptions = (collegeId: number) =>
   createMutationOptions({
     httpVerb: "put",
@@ -61,11 +53,7 @@ export const updateCollegeOptions = (collegeId: number) =>
     },
   });
 
-export const useUpdateCollege = (collegeId: number) =>
-  useMutation(updateCollegeOptions(collegeId));
-
 // ** Delete **
-
 export const deleteCollegeOptions = (collegeId: number) =>
   createMutationOptions({
     httpVerb: "delete",
@@ -81,6 +69,3 @@ export const deleteCollegeOptions = (collegeId: number) =>
       },
     },
   });
-
-export const useDeleteCollege = (collegeId: number) =>
-  useMutation(deleteCollegeOptions(collegeId));

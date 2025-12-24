@@ -1,6 +1,7 @@
 ﻿using Ardalis.SmartEnum;
 using Ardalis.SmartEnum.Dapper;
 using Dapper;
+using Enrollify.Application.Buildings;
 using Enrollify.Application.Colleges;
 using Enrollify.Application.Roles.Features.List;
 using Enrollify.Application.Rooms;
@@ -65,6 +66,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
         services.AddScoped<ICollegeRepository, CollegeRepository>();
+        services.AddScoped<IBuildingRepository, BuildingRepository>();
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 

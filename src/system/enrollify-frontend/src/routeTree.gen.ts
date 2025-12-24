@@ -16,6 +16,7 @@ import { Route as PortalHomeRouteImport } from './routes/portal/home'
 import { Route as PortalMasterDataRouteRouteImport } from './routes/portal/master-data/route'
 import { Route as PortalMasterDataRoomsRouteImport } from './routes/portal/master-data/rooms'
 import { Route as PortalMasterDataCollegesRouteImport } from './routes/portal/master-data/colleges'
+import { Route as PortalMasterDataBuildingsRouteImport } from './routes/portal/master-data/buildings'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -53,6 +54,12 @@ const PortalMasterDataCollegesRoute =
     path: '/colleges',
     getParentRoute: () => PortalMasterDataRouteRoute,
   } as any)
+const PortalMasterDataBuildingsRoute =
+  PortalMasterDataBuildingsRouteImport.update({
+    id: '/buildings',
+    path: '/buildings',
+    getParentRoute: () => PortalMasterDataRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/portal/master-data': typeof PortalMasterDataRouteRouteWithChildren
   '/portal/home': typeof PortalHomeRoute
+  '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/portal/master-data': typeof PortalMasterDataRouteRouteWithChildren
   '/portal/home': typeof PortalHomeRoute
+  '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
 }
@@ -79,6 +88,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/portal/master-data': typeof PortalMasterDataRouteRouteWithChildren
   '/portal/home': typeof PortalHomeRoute
+  '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
 }
@@ -90,6 +100,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal/master-data'
     | '/portal/home'
+    | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
     | '/portal/master-data/rooms'
   fileRoutesByTo: FileRoutesByTo
@@ -99,6 +110,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal/master-data'
     | '/portal/home'
+    | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
     | '/portal/master-data/rooms'
   id:
@@ -108,6 +120,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal/master-data'
     | '/portal/home'
+    | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
     | '/portal/master-data/rooms'
   fileRoutesById: FileRoutesById
@@ -169,15 +182,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalMasterDataCollegesRouteImport
       parentRoute: typeof PortalMasterDataRouteRoute
     }
+    '/portal/master-data/buildings': {
+      id: '/portal/master-data/buildings'
+      path: '/buildings'
+      fullPath: '/portal/master-data/buildings'
+      preLoaderRoute: typeof PortalMasterDataBuildingsRouteImport
+      parentRoute: typeof PortalMasterDataRouteRoute
+    }
   }
 }
 
 interface PortalMasterDataRouteRouteChildren {
+  PortalMasterDataBuildingsRoute: typeof PortalMasterDataBuildingsRoute
   PortalMasterDataCollegesRoute: typeof PortalMasterDataCollegesRoute
   PortalMasterDataRoomsRoute: typeof PortalMasterDataRoomsRoute
 }
 
 const PortalMasterDataRouteRouteChildren: PortalMasterDataRouteRouteChildren = {
+  PortalMasterDataBuildingsRoute: PortalMasterDataBuildingsRoute,
   PortalMasterDataCollegesRoute: PortalMasterDataCollegesRoute,
   PortalMasterDataRoomsRoute: PortalMasterDataRoomsRoute,
 }
