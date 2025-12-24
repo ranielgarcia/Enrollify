@@ -17,9 +17,10 @@ import type { RoomType } from "../../../api/models/room-type";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Unauthorized } from "@/components/unauthorized";
 import {
-  useCreateRoomType,
-  useUpdateRoomType,
+  createRoomTypeOptions,
+  updateRoomTypeOptions,
 } from "@/api/collections/room-type-collection";
+import { useMutation } from "@tanstack/react-query";
 
 type FormMeta = {
   submitAction: "create" | "update" | null;
@@ -56,9 +57,11 @@ export function RoomTypeFormDrawer({
     description: roomTypeToUpdate?.description ?? "",
   };
 
-  const { mutateAsync: createNewRoomTypeAsync } = useCreateRoomType();
-  const { mutateAsync: updateRoomTypeAsync } = useUpdateRoomType(
-    roomTypeToUpdate?.id ?? 0
+  const { mutateAsync: createNewRoomTypeAsync } = useMutation(
+    createRoomTypeOptions()
+  );
+  const { mutateAsync: updateRoomTypeAsync } = useMutation(
+    updateRoomTypeOptions(roomTypeToUpdate?.id ?? 0)
   );
 
   const form = useForm({

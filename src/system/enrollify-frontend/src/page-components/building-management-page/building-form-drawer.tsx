@@ -1,5 +1,9 @@
-import z from "zod";
-import { useForm } from "@tanstack/react-form";
+import {
+  createBuildingOptions,
+  updateBuildingOptions,
+} from "@/api/collections/building-collection";
+import type { Building } from "@/api/models/building";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerClose,
@@ -10,16 +14,12 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
-import { Loader2, Plus } from "lucide-react";
-import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Unauthorized } from "@/components/unauthorized";
-import {
-  createCollegeOptions,
-  updateCollegeOptions,
-} from "@/api/collections/college-collection";
-import type { College } from "@/api/models/college";
+import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
+import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
+import { Loader2, Plus } from "lucide-react";
+import z from "zod";
 
 type FormMeta = {
   submitAction: "create" | "update" | null;
@@ -32,54 +32,52 @@ const defaultMeta: FormMeta = {
   formAction: null,
 };
 
-const collegeFormSchema = z.object({
-  code: z.string().min(3, "Code is required"),
+const buildingFormSchema = z.object({
   name: z.string().min(3, "Name is required"),
   description: z.string().min(3, "Description is required"),
-  dean: z.string().min(3, "Dean is required"),
+  address: z.string().min(3, "Address is required"),
 });
-type CollegeForm = z.infer<typeof collegeFormSchema>;
+type BuildingForm = z.infer<typeof buildingFormSchema>;
 
-interface CollegeFormDrawerProps {
+interface BuildingFormDrawerProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  collegeToUpdate?: College | null;
+  buildingToUpdate?: Building | null;
   onOpenChange: (isOpen: boolean) => void;
 }
 
-export function CollegeFormDrawer({
-  collegeToUpdate,
+export function BuildingFormDrawer({
+  buildingToUpdate,
   onOpenChange,
   isOpen = false,
   setIsOpen,
-}: CollegeFormDrawerProps) {
-  const defaultFormValues: CollegeForm = {
-    code: collegeToUpdate?.code ?? "",
-    name: collegeToUpdate?.name ?? "",
-    description: collegeToUpdate?.description ?? "",
-    dean: collegeToUpdate?.dean ?? "",
+}: BuildingFormDrawerProps) {
+  const defaultFormValues: BuildingForm = {
+    name: buildingToUpdate?.name ?? "",
+    description: buildingToUpdate?.description ?? "",
+    address: buildingToUpdate?.address ?? "",
   };
 
-  const { mutateAsync: createNewCollegeAsync } = useMutation(
-    createCollegeOptions()
+  const { mutateAsync: createNewBuildingAsync } = useMutation(
+    createBuildingOptions()
   );
 
-  const { mutateAsync: updateCollegeAsync } = useMutation(
-    updateCollegeOptions(collegeToUpdate?.id ?? 0)
+  const { mutateAsync: updateBuildingAsync } = useMutation(
+    updateBuildingOptions(buildingToUpdate?.id ?? 0)
   );
 
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
-      onChange: collegeFormSchema,
+      onChange: buildingFormSchema,
     },
     onSubmitMeta: defaultMeta,
     onSubmit: async ({ value, meta }) => {
-      const formValues = collegeFormSchema.parse(value);
+      const formValues = buildingFormSchema.parse(value);
       if (meta.submitAction === "create") {
-        await createNewCollegeAsync(formValues);
-      } else if (meta.submitAction === "update" && collegeToUpdate) {
-        await updateCollegeAsync(formValues);
+        await createNewBuildingAsync(formValues);
+      } else if (meta.submitAction === "update" && buildingToUpdate) {
+        await updateBuildingAsync(formValues);
       }
 
       if (meta.formAction === "close") {
@@ -89,7 +87,8 @@ export function CollegeFormDrawer({
     },
   });
 
-  const isUpdateCollege = !!collegeToUpdate;
+  const isUpdateBuilding = !!buildingToUpdate;
+
   return (
     <Drawer
       direction="right"
@@ -100,15 +99,15 @@ export function CollegeFormDrawer({
       <DrawerTrigger asChild>
         <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer">
           <Plus className="size-4" />
-          Add College
+          Add Building
         </Button>
       </DrawerTrigger>
       <DrawerContent>
         <AuthorizeView
-          policy="canCreateCollege"
+          policy="canCreateBuilding"
           unauthorized={
             <Unauthorized
-              message="Your current role does not have the necessary permissions to create college."
+              message="Your current role does not have the necessary permissions to create building."
               buttonLabel="Back to Home"
               backCallback={() => setIsOpen(false)}
               redirectOptions={{
@@ -127,34 +126,11 @@ export function CollegeFormDrawer({
             <div className="mx-auto w-full max-w-sm">
               <DrawerHeader>
                 <DrawerTitle>
-                  {isUpdateCollege ? "Update" : "Create"} College
+                  {isUpdateBuilding ? "Update" : "Create"} Building
                 </DrawerTitle>
-                <DrawerDescription>Set college details.</DrawerDescription>
+                <DrawerDescription>Set building details.</DrawerDescription>
               </DrawerHeader>
               <div className="p-4 pb-0">
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1">
-                    Code
-                  </label>
-                  <form.Field
-                    name="code"
-                    children={(field) => (
-                      <>
-                        <input
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., CCS"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        <em role="alert" className="text-red-800">
-                          {field.state.meta.errors
-                            .map((e) => e?.message)
-                            .join(", ")}
-                        </em>
-                      </>
-                    )}
-                  />
-                </div>
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-1">
                     Name
@@ -165,7 +141,7 @@ export function CollegeFormDrawer({
                       <>
                         <input
                           className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., College of Computer Studies"
+                          placeholder="e.g., Main Building"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -188,7 +164,7 @@ export function CollegeFormDrawer({
                       <>
                         <input
                           className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., College of Computer Studies"
+                          placeholder="e.g., Main Building"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -205,15 +181,15 @@ export function CollegeFormDrawer({
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-1">
-                    Dean
+                    Address
                   </label>
                   <form.Field
-                    name="dean"
+                    name="address"
                     children={(field) => (
                       <>
                         <input
                           className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., Raniel Garcia"
+                          placeholder="e.g., 123 Main St."
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -240,14 +216,14 @@ export function CollegeFormDrawer({
                       type="submit"
                       onClick={() =>
                         form.handleSubmit({
-                          submitAction: isUpdateCollege ? "update" : "create",
+                          submitAction: isUpdateBuilding ? "update" : "create",
                           formAction: "close",
                         })
                       }
                     >
                       {isSubmitting ? (
                         <Loader2 />
-                      ) : isUpdateCollege ? (
+                      ) : isUpdateBuilding ? (
                         "Update"
                       ) : (
                         "Submit"

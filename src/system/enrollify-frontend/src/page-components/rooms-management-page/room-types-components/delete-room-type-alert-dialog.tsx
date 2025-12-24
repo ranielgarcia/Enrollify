@@ -11,7 +11,8 @@ import {
 import type { RoomType } from "../../../api/models/room-type";
 import { OverlayLoader } from "@/components/app-loading-overlay";
 import useAppQuery from "@/hooks/deprecated/use-app-query-v2";
-import { useDeleteRoomType } from "@/api/collections/room-type-collection";
+import { deleteRoomTypeOptions } from "@/api/collections/room-type-collection";
+import { useMutation } from "@tanstack/react-query";
 
 interface DeleteRoomTypeAlertDialogProps {
   roomTypeToDelete?: RoomType;
@@ -37,7 +38,7 @@ export function DeleteRoomTypeAlertDialog({
     });
 
   const { mutateAsync: deleteRoomType, isPending: isDeletingInProgress } =
-    useDeleteRoomType(roomTypeToDelete?.id ?? 0);
+    useMutation(deleteRoomTypeOptions(roomTypeToDelete?.id ?? 0));
 
   const handleContinueDelete = async () => await deleteRoomType(undefined);
 

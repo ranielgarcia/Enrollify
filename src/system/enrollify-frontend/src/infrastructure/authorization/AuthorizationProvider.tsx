@@ -14,6 +14,7 @@ import type { Permission } from "./models/PermissionsEnum";
 import type { Role } from "./models/Roles";
 import { registerRoomPolicies } from "./policies/rooms-policies";
 import { registerCollegesPolicies } from "./policies/colleges-policies";
+import { registerBuildingsPolicies } from "./policies/buildings-policies";
 
 export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
   children,
@@ -36,6 +37,7 @@ export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
     const policyRegistry = new PolicyRegistry();
     registerRoomPolicies(policyRegistry);
     registerCollegesPolicies(policyRegistry);
+    registerBuildingsPolicies(policyRegistry);
 
     const handlers: IAuthorizationHandler[] = [
       new RoleHandler(),

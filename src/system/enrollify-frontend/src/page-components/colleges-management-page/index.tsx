@@ -3,15 +3,17 @@ import { CollegesTable } from "./colleges-table";
 import { useState } from "react";
 import { CollegeFormDrawer } from "./college-form-drawer";
 import { DeleteCollegeAlertDialog } from "./delete-college-alert-dialog";
-import { useGetAllCollegesSuspense } from "@/api/collections/college-collection";
 import type { College } from "@/api/models/college";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { getAllCollegesOptions } from "@/api/collections/college-collection";
 
 export default function CollegesPage() {
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [collegeToEdit, setCollegeToEdit] = useState<College | undefined>();
   const [collegeToDelete, setCollegeToDelete] = useState<College | undefined>();
-  const { data: colleges, isPending: isLoadingColleges } =
-    useGetAllCollegesSuspense();
+  const { data: colleges, isPending: isLoadingColleges } = useSuspenseQuery(
+    getAllCollegesOptions()
+  );
 
   const handleEdit = (college: College) => {
     setCollegeToEdit(college);

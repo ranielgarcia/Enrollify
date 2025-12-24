@@ -30,17 +30,22 @@ const data = {
       isActive: true,
       items: [
         {
+          title: "Colleges",
+          url: "/portal/master-data/colleges",
+          viewAuthorizationPolicies: [PolicyNames.canViewColleges],
+        },
+        {
+          title: "Buildings",
+          url: "/portal/master-data/buildings",
+          viewAuthorizationPolicies: [PolicyNames.canViewBuildings],
+        },
+        {
           title: "Rooms",
           url: "/portal/master-data/rooms",
           viewAuthorizationPolicies: [
             PolicyNames.canViewRooms,
             PolicyNames.canViewRoomTypes,
           ],
-        },
-        {
-          title: "Colleges",
-          url: "/portal/master-data/colleges",
-          viewAuthorizationPolicies: [PolicyNames.canViewColleges],
         },
       ],
     } as NavMainItemProp,
