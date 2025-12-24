@@ -7,6 +7,7 @@ namespace Enrollify.Application.Rooms.DTOs;
 
 public class RoomDTO
 {
+    public RoomId Id { get; set; }
     public string RoomNumber { get; set; }
     public int Capacity { get; set; }
     public RoomTypeId RoomTypeId { get; set; }
@@ -17,6 +18,7 @@ public class RoomDTO
     {
         return new RoomDTO
         {
+            Id = room.Id,
             RoomNumber = room.RoomNumber,
             Capacity = room.Capacity,
             RoomTypeId = room.RoomTypeId,
@@ -24,5 +26,4 @@ public class RoomDTO
             CollegeId = room.CollegeId
         };
     }
-
 }

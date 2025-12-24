@@ -130,6 +130,7 @@ CREATE TABLE Courses -- Also known program
 	Description VARCHAR(255) NULL,
 	CollegeId INT NOT NULL, -- Or department, but for now use collegeId,
 	PreferRoomTypeId INT NOT NULL,
+
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
 	UpdatedAt DATETIMEOFFSET NULL,

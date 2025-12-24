@@ -10,6 +10,18 @@ const queryKeys = {
   delete: (roomTypeId: number) => [...queryKeys.all(), "delete", roomTypeId],
 };
 
+// ** count rooms by room type
+export const countRoomsByRoomTypeOptions = (roomTypeId: number) =>
+  createAppQueryOptions({
+    path: "/api/room-types/{roomTypeId}/rooms/count",
+    pathParams: {
+      roomTypeId: roomTypeId.toString(),
+    },
+    options: {
+      queryKey: queryKeys.all(),
+    },
+  });
+
 // ** fetch all room types **
 export const getAllRoomTypesOptions = () =>
   createAppQueryOptions({

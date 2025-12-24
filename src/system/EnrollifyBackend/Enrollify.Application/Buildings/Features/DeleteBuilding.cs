@@ -1,5 +1,6 @@
 ﻿using Ardalis.Result;
 using Enrollify.Application.Rooms;
+using Enrollify.Application.Rooms.Features;
 using Enrollify.Core.Aggregates.BuildingAggregate;
 using Mediator;
 
@@ -12,21 +13,21 @@ public static class DeleteBuilding
     public sealed class Handler : ICommandHandler<Command, Result>
     {
         private readonly IBuildingRepository _buildingRepository;
-        private readonly IRoomRepository _roomRepository;
+        private readonly IMediator _mediator;
 
-        public Handler(IBuildingRepository buildingRepository, IRoomRepository roomRepository)
+        public Handler(IBuildingRepository buildingRepository, IMediator mediator)
         {
             _buildingRepository = buildingRepository;
-            _roomRepository = roomRepository;
+            _mediator = mediator;
         }
 
         public async ValueTask<Result> Handle (Command command, CancellationToken cancellationToken)
         {
-            var rooms = await _roomRepository.GetAllByBuilding(command.id, cancellationToken);
+            var countRooms = await _mediator.Send(new CountRoomsByBuildingQuery { BuildingId = command.id }, cancellationToken);
 
-            if (rooms.Count > 0)
+            if (countRooms.Value > 0)
             {
-                return Result.Invalid(new ValidationError($"This building cannot be deleted because it has {rooms.Count} room(s) associated with it. \n Please reassign or remove these rooms before deleting."));
+                return Result.Invalid(new ValidationError($"This building cannot be deleted because it has {countRooms.Value} room(s) associated with it. \n Please reassign or remove these rooms before deleting."));
             }
 
             return await _buildingRepository.Delete(command.id, cancellationToken);

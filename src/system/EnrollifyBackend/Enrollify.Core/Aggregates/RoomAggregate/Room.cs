@@ -2,6 +2,7 @@
 using Enrollify.Core.Aggregates.BuildingAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate.Events;
+using Enrollify.Core.Aggregates.RoomAggregate.Models;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.SharedKernel;
@@ -12,11 +13,13 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable
 {
     private Room() { } // EF Core constructor
 
-    public Room(string roomNumber, int capacity, RoomTypeId roomTypeId)
+    public Room(RoomForCreation roomForCreation)
     {
-        RoomNumber = Guard.Against.Null(roomNumber);
-        Capacity = capacity;
-        RoomTypeId = Guard.Against.Null(roomTypeId);
+        RoomNumber = Guard.Against.Null(roomForCreation.RoomNumber);
+        Capacity = Guard.Against.NegativeOrZero(roomForCreation.Capacity);
+        RoomTypeId = Guard.Against.Null(roomForCreation.RoomTypeId);
+        BuildingId = Guard.Against.Null(roomForCreation.BuildingId);
+        CollegeId = Guard.Against.Null(roomForCreation.CollegeId);
 
         RegisterDomainEvent(new RoomCreatedEvent(this));
     }
@@ -45,7 +48,14 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable
     private RoomType? _roomType;
     public RoomType? RoomType => _roomType;
 
-    public Room UpdateName(string newRoomNumber)
+    private Building? _building;
+    public Building? Building => _building;
+
+    private College? _college;
+    public College? College => _college;
+
+
+    public Room UpdateRoomNumber(string newRoomNumber)
     {
         if (RoomNumber == newRoomNumber) return this;
         RoomNumber = Guard.Against.Null(newRoomNumber);
@@ -63,6 +73,13 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable
     {
         if (RoomTypeId == newRoomTypeId) return this;
         RoomTypeId = Guard.Against.Null(newRoomTypeId);
+        return this;
+    }
+
+    public Room UpdateBuilding (BuildingId newBuildingId)
+    {
+        if (BuildingId == newBuildingId) return this;
+        BuildingId = Guard.Against.Null(newBuildingId);
         return this;
     }
 
