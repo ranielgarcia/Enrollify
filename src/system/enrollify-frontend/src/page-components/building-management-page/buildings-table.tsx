@@ -55,6 +55,11 @@ export function BuildingsTable({
       header: "Address",
       cell: (info) => <span>{info.getValue()}</span>,
     }),
+    columnHelper.accessor((row) => row.college.name, {
+      header: "College",
+      id: "college",
+      cell: (info) => <span>{info.getValue()}</span>,
+    }),
     columnHelper.accessor("createdAt", {
       header: "Created At",
       cell: (info) => <span>{formatDateTime(info.getValue())}</span>,

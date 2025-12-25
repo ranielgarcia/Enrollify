@@ -23,7 +23,8 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
         // Don't expose navigation property publicly
         builder.HasOne<RoomType>()
           .WithMany()
-          .HasForeignKey(r => r.RoomTypeId);
+          .HasForeignKey(r => r.RoomTypeId)
+          .OnDelete(DeleteBehavior.NoAction);
 
         builder.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
         builder.Property(a => a.CreatedBy).HasColumnName("CreatedBy");

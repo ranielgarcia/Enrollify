@@ -9,6 +9,5 @@ public class ListBuildingsSpec : Specification<Building>
         Query
         .Include(r => r.CreatedByUser)
         .Include(r => r.UpdatedByUser)
-        .Include(b => b.College)
-        .AsSplitQuery();
+        .Include(r => r.College);
 }

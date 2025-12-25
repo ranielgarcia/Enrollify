@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { Building } from "@/api/models/building";
 import { BuildingFormDrawer } from "./building-form-drawer";
 import { DeleteBuildingAlertDialog } from "./delete-building-alert-dialog";
+import { getAllCollegesOptions } from "@/api/collections/college-collection";
 
 export default function BuildingPage() {
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
@@ -16,6 +17,8 @@ export default function BuildingPage() {
   const { data: buildings, isPending: isLoadingBuildings } = useSuspenseQuery(
     getAllBuildingsOptions()
   );
+
+  const { data: colleges } = useSuspenseQuery(getAllCollegesOptions());
 
   const handleEdit = (building: Building) => {
     setBuildingToEdit(building);
@@ -51,6 +54,7 @@ export default function BuildingPage() {
 
         <div className="flex justify-end">
           <BuildingFormDrawer
+            colleges={colleges}
             onOpenChange={handleDrawerOnOpenChange}
             buildingToUpdate={buildingToEdit}
             isOpen={isFormOpen}

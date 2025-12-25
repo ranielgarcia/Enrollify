@@ -15,8 +15,8 @@
   --muted-foreground: oklch(0.552 0.016 285.938);
 
   /* Accent - Teal for highlights */
-  --accent: oklch(0.56 0.145 163.5);
-  --accent-foreground: oklch(1 0 0);
+  --accent: oklch(0.606 0.25 292.717);
+  --accent-foreground: oklch(0.969 0.016 293.756);
 
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.92 0.004 286.32);

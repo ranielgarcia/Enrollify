@@ -21,10 +21,8 @@ public class Building : EntityBase<Building, BuildingId>, IAggregateRoot, IAudit
     public string Description { get; private set; }
     public string Address { get; private set; }
 
-    public CollegeId CollegeId { get; set; }
-
-    private College? _college;
-    public College? College => _college;
+    public CollegeId CollegeId { get; private set; }
+    public College? College { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }

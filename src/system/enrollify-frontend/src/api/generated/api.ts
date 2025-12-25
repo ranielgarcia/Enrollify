@@ -295,30 +295,33 @@ export interface components {
             roomNumber?: string;
             /** Format: int32 */
             capacity?: number;
-            roomType?: components["schemas"]["EnrollifyApplicationRoomTypesDTOsRoomTypeDTO"] | null;
-            building?: components["schemas"]["EnrollifyApplicationBuildingsDTOsBuildingDTO"] | null;
-            college?: components["schemas"]["EnrollifyApplicationCollegesDTOsCollegeDTO"] | null;
+            roomType?: components["schemas"]["EnrollifyApplicationRoomsDTOsRoomTypeSummaryDTO"] | null;
+            building?: components["schemas"]["EnrollifyApplicationRoomsDTOsBuildingSummaryDTO"] | null;
+            college?: components["schemas"]["EnrollifyApplicationRoomsDTOsCollegeSummaryDTO"] | null;
         };
-        EnrollifyApplicationBuildingsDTOsBuildingDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+        EnrollifyApplicationRoomsDTOsRoomTypeSummaryDTO: {
             /**
              * Format: int32
              * @description Value object wrapping Int32
              */
             id?: number;
             name?: string;
-            description?: string;
-            address?: string;
         };
-        EnrollifyApplicationCollegesDTOsCollegeDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+        EnrollifyApplicationRoomsDTOsBuildingSummaryDTO: {
             /**
              * Format: int32
              * @description Value object wrapping Int32
              */
             id?: number;
-            code?: string;
             name?: string;
-            description?: string;
-            dean?: string;
+        };
+        EnrollifyApplicationRoomsDTOsCollegeSummaryDTO: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            name?: string;
         };
         EnrollifyApplicationRolesDTOsRoleDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
             /**
@@ -349,6 +352,17 @@ export interface components {
             dean: string;
         };
         EnrollifyWebAPIFeaturesCollegesDeleteRequest: Record<string, never>;
+        EnrollifyApplicationCollegesDTOsCollegeDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            code?: string;
+            name?: string;
+            description?: string;
+            dean?: string;
+        };
         EnrollifyWebAPIFeaturesCollegesUpdateCollegeResponse: {
             /** Format: int32 */
             id?: number;
@@ -369,24 +383,51 @@ export interface components {
             name?: string;
             description?: string;
             address?: string;
+            /** Format: int32 */
+            collegeId?: number;
         };
         EnrollifyWebAPIFeaturesBuildingsCreateBuildingRequest: {
             name: string;
             description: string;
             address: string;
+            /** Format: int32 */
+            collegeId: number;
         };
         EnrollifyWebAPIFeaturesBuildingsDeleteRequest: Record<string, never>;
+        EnrollifyApplicationBuildingsDTOsBuildingDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            name?: string;
+            description?: string;
+            address?: string;
+            college?: components["schemas"]["EnrollifyApplicationBuildingsDTOsCollegeSummaryDTO"] | null;
+        };
+        EnrollifyApplicationBuildingsDTOsCollegeSummaryDTO: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            name?: string;
+        };
         EnrollifyWebAPIFeaturesBuildingsUpdateBuildingResponse: {
             /** Format: int32 */
             id?: number;
             name?: string;
             description?: string;
             address?: string;
+            /** Format: int32 */
+            collegeId?: number;
         };
         EnrollifyWebAPIFeaturesBuildingsUpdateBuildingRequest: {
             name: string;
             description: string;
             address: string;
+            /** Format: int32 */
+            collegeId: number;
         };
         EnrollifyWebAPIWeatherForecast: {
             /** Format: date */

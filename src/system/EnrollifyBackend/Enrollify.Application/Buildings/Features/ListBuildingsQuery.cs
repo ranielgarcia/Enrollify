@@ -13,17 +13,17 @@ public class ListBuildingsQuery : IQuery<Result<List<BuildingDTO>>>
 
 public class ListBuildingsQueryHandler : IQueryHandler<ListBuildingsQuery, Result<List<BuildingDTO>>>
 {
-    private readonly IReadRepository<Building> _roomRepository;
+    private readonly IReadRepository<Building> _buildingRepository;
 
-    public ListBuildingsQueryHandler(IReadRepository<Building> roomRepository)
+    public ListBuildingsQueryHandler(IReadRepository<Building> buildingRepository)
     {
-        _roomRepository = roomRepository;
+        _buildingRepository = buildingRepository;
     }
 
     public async ValueTask<Result<List<BuildingDTO>>> Handle (ListBuildingsQuery request, CancellationToken cancellationToken)
     {
         var spec = new ListBuildingsSpec();
-        var buildings = await _roomRepository.ListAsync(spec, cancellationToken);
+        var buildings = await _buildingRepository.ListAsync(spec, cancellationToken);
 
         var toReturn = buildings
             .Select(BuildingDTO.FromEntity).ToList();
