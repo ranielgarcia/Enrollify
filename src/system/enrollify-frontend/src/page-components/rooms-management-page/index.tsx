@@ -1,24 +1,25 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RoomsTab } from "./rooms-tab";
+import { RoomsTab } from "./room-components/rooms-tab";
 import { RoomTypeTab } from "./room-types-components/room-type-tab";
 import { OverlayLoader } from "@/components/app-loading-overlay";
 import { getAllRoomTypesOptions } from "@/api/collections/room-type-collection";
 import { useQuery } from "@tanstack/react-query";
 import { getAllRooms } from "@/api/collections/room-collection";
+import { getAllBuildingsOptions } from "@/api/collections/building-collection";
 
 export default function RoomsPage() {
-  const { data: rooms } = useQuery(getAllRooms());
-
-  const { data: roomTypes, isPending: isLoadingRoomTypesInProgress } = useQuery(
+  const { data: rooms, isPending: isLoadingRooms } = useQuery(getAllRooms());
+  const { data: roomTypes, isPending: isLoadingRoomTypes } = useQuery(
     getAllRoomTypesOptions()
   );
-
-  console.log(rooms);
+  const { data: buildings, isPending: isLoadingBuildings } = useQuery(
+    getAllBuildingsOptions()
+  );
 
   return (
     <main>
       <OverlayLoader
-        isLoading={isLoadingRoomTypesInProgress}
+        isLoading={isLoadingRooms || isLoadingRoomTypes || isLoadingBuildings}
         text="Loading"
         size="sm"
       />
@@ -39,7 +40,11 @@ export default function RoomsPage() {
           </TabsList>
 
           <TabsContent value="rooms" className="space-y-4">
-            <RoomsTab rooms={rooms} roomTypes={roomTypes} />
+            <RoomsTab
+              rooms={rooms}
+              roomTypes={roomTypes}
+              buildings={buildings}
+            />
           </TabsContent>
 
           <TabsContent value="room-types" className="space-y-4">

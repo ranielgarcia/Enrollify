@@ -2,7 +2,6 @@ import type { Building } from "@/api/models/building";
 import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
-import { formatDateTime } from "@/lib/dateutils";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -62,7 +61,7 @@ export function BuildingsTable({
     }),
     columnHelper.accessor("createdAt", {
       header: "Created At",
-      cell: (info) => <span>{formatDateTime(info.getValue())}</span>,
+      cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
       (row) =>
@@ -77,7 +76,7 @@ export function BuildingsTable({
     ),
     columnHelper.accessor("updatedAt", {
       header: "Updated At",
-      cell: (info) => <span>{formatDateTime(info.getValue())}</span>,
+      cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
       (row) =>

@@ -8,7 +8,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table";
 import { Edit2, Trash2 } from "lucide-react";
-import { formatDateTime } from "@/lib/dateutils";
 import type { RoomType } from "../../../api/models/room-type";
 import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
 import { useEffect, useState } from "react";
@@ -53,7 +52,7 @@ export function RoomTypesTable({
     }),
     columnHelper.accessor("createdAt", {
       header: "Created At",
-      cell: (info) => <span>{formatDateTime(info.getValue())}</span>,
+      cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
       (row) =>
@@ -68,7 +67,7 @@ export function RoomTypesTable({
     ),
     columnHelper.accessor("updatedAt", {
       header: "Updated At",
-      cell: (info) => <span>{formatDateTime(info.getValue())}</span>,
+      cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
       (row) =>

@@ -1,38 +1,34 @@
 import {
-  createColumnHelper,
+  useReactTable,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
-  useReactTable,
+  createColumnHelper,
 } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { Edit2, Trash2 } from "lucide-react";
 import { DataTable } from "@/components/data-table";
-import type { College } from "@/api/models/college";
-import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
+import { Edit2, Trash2 } from "lucide-react";
+import type { Room } from "@/api/models/room";
 import { useEffect, useState } from "react";
+import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
 
-interface CollegesTableProps {
-  colleges?: College[];
-  onEdit: (college: College) => void;
-  onDelete: (college: College) => void;
+interface RoomsTableProps {
+  rooms?: Room[];
+  onEdit: (room: Room) => void;
+  onDelete: (room: Room) => void;
 }
 
-export function CollegesTable({
-  colleges,
-  onEdit,
-  onDelete,
-}: CollegesTableProps) {
+export function RoomsTable({ rooms, onEdit, onDelete }: RoomsTableProps) {
+  const columnHelper = createColumnHelper<Room>();
   const { checkPolicy } = useAuthorization();
-  const columnHelper = createColumnHelper<College>();
   const [canUpdate, setCanUpdate] = useState(false);
   const [canDelete, setCanDelete] = useState(false);
 
   useEffect(() => {
     const checkPolicies = async () => {
       const [updatePermission, deletePermission] = await Promise.all([
-        checkPolicy("canUpdateCollege"),
-        checkPolicy("canDeleteCollege"),
+        checkPolicy("canUpdateRooms"),
+        checkPolicy("canDeleteRooms"),
       ]);
       setCanUpdate(updatePermission);
       setCanDelete(deletePermission);
@@ -42,20 +38,22 @@ export function CollegesTable({
   }, [checkPolicy]);
 
   const columns = [
-    columnHelper.accessor("code", {
-      header: "Code",
+    columnHelper.accessor("roomNumber", {
+      header: "Room Number",
       cell: (info) => <span>{info.getValue()}</span>,
     }),
-    columnHelper.accessor("name", {
-      header: "Name",
+    columnHelper.accessor("capacity", {
+      header: "Capacity",
       cell: (info) => <span>{info.getValue()}</span>,
     }),
-    columnHelper.accessor("description", {
-      header: "Description",
+    columnHelper.accessor((row) => row.roomType.name, {
+      id: "roomType",
+      header: "Room Type",
       cell: (info) => <span>{info.getValue()}</span>,
     }),
-    columnHelper.accessor("dean", {
-      header: "Dean",
+    columnHelper.accessor((row) => row.college.name, {
+      id: "college",
+      header: "College",
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("createdAt", {
@@ -93,7 +91,6 @@ export function CollegesTable({
       header: "Actions",
       cell: (info) => {
         const item = info.row.original;
-
         return (
           <div className="flex gap-2">
             <Button
@@ -122,7 +119,7 @@ export function CollegesTable({
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data: colleges ?? [],
+    data: rooms ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),

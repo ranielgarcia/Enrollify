@@ -21,11 +21,11 @@ const CollegeSummarySchema = CollegeSchema.pick({
 export const RoomSchema = z
   .object({
     id: z.number(),
-    RoomNumber: z.string(),
-    Capacity: z.number(),
-    RoomType: RoomTypeSummarySchema,
-    Building: BuildingSummarySchema,
-    College: CollegeSummarySchema,
+    roomNumber: z.string(),
+    capacity: z.number(),
+    roomType: RoomTypeSummarySchema,
+    building: BuildingSummarySchema,
+    college: CollegeSummarySchema,
   })
   .extend(AuditInfoSchema.shape);
 
