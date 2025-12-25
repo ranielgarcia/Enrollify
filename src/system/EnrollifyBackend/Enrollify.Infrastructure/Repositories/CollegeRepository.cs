@@ -62,24 +62,6 @@ public class CollegeRepository : ICollegeRepository
         }
     }
 
-    public async Task<College?> GetById(CollegeId collegeId, CancellationToken cancellationToken)
-    {
-        var college = await _dbContext.Colleges
-            .FirstOrDefaultAsync(c => c.Id == collegeId, cancellationToken);
-        return college;
-    }
-
-    public async Task<List<College>> ListColleges(CancellationToken cancellationToken = default)
-    {
-        var colleges = await _dbContext.Colleges
-            .Include(r => r.CreatedByUser)
-            .Include(r => r.UpdatedByUser)
-            .OrderBy(c => c.Name)
-            .ToListAsync(cancellationToken);
-
-        return colleges;
-    }
-
     public async Task<Result<CollegeId>> Update(College updatedCollege, CancellationToken cancellationToken)
     {
         try

@@ -50,6 +50,7 @@ CREATE TABLE Buildings
 	Name VARCHAR(50) NOT NULL,
 	Description VARCHAR(255),
 	Address VARCHAR(255),
+	CollegeId INT NOT NULL,
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -59,6 +60,7 @@ CREATE TABLE Buildings
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT UQ_Buildings_Name UNIQUE (Name),
+	CONSTRAINT FK_Buildings_College FOREIGN KEY (CollegeId) REFERENCES Colleges(Id),
 	CONSTRAINT FK_Buildings_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Buildings_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Buildings_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
@@ -72,7 +74,6 @@ CREATE TABLE Rooms
 	Capacity INT NOT NULL,
 	RoomTypeId INT NOT NULL,
 	BuildingId INT NOT NULL,
-	CollegeId INT NOT NULL,
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -83,7 +84,6 @@ CREATE TABLE Rooms
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_Rooms_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomTypes(Id),
 	CONSTRAINT FK_Rooms_Building FOREIGN KEY (BuildingId) REFERENCES Buildings(Id),
-	CONSTRAINT FK_Rooms_College FOREIGN KEY (CollegeId) REFERENCES Colleges(Id),
 	CONSTRAINT FK_Rooms_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Rooms_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Rooms_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
@@ -92,7 +92,10 @@ CREATE TABLE Rooms
 GO;
 
 
-
+CREATE UNIQUE NONCLUSTERED INDEX UIdx_Rooms_RoomNumber_Building_IsActive
+ON Rooms(RoomNumber, BuildingId)
+WHERE IsActive = 1;
+GO
 
 -- ************************************
 

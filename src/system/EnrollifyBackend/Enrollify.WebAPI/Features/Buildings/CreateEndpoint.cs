@@ -1,4 +1,5 @@
 ﻿using Enrollify.Application.Buildings.Features;
+using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.WebAPI.Authorization;
 using Enrollify.WebAPI.Extensions;
 using FastEndpoints;
@@ -15,6 +16,7 @@ public class CreateBuildingResponse
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
+    public int CollegeId { get; set; }
 }
 
 public class CreateBuildingRequest
@@ -22,6 +24,7 @@ public class CreateBuildingRequest
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
+    public int CollegeId { get; set; }
 }
 
 public class CreateBuildingRequestValidator : Validator<CreateBuildingRequest>
@@ -39,6 +42,9 @@ public class CreateBuildingRequestValidator : Validator<CreateBuildingRequest>
         RuleFor(x => x.Address)
             .NotEmpty().WithMessage("Please provide a building address.")
             .MaximumLength(255).WithMessage("Address must be 255 characters or fewer.");
+
+        RuleFor(x => x.CollegeId)
+            .NotNull().WithMessage("Please provide a valid college ID.");
     }
 }
 
@@ -58,7 +64,8 @@ public class CreateEndpoint : Endpoint<CreateBuildingRequest, Results<Created<Cr
     public override async Task<Results<Created<CreateBuildingResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
         ExecuteAsync (CreateBuildingRequest request, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new CreateBuilding.Command(request.Name, request.Description, request.Address), cancellationToken);
+        var result = await _mediator.Send
+            (new CreateBuilding.Command(request.Name, request.Description, request.Address, CollegeId.From(request.CollegeId)), cancellationToken);
 
         return result.ToCreatedResult(
             id => $"/buildings/{id}",
@@ -68,6 +75,7 @@ public class CreateEndpoint : Endpoint<CreateBuildingRequest, Results<Created<Cr
                 Name = request.Name,
                 Description = request.Description,
                 Address = request.Address,
+                CollegeId = request.CollegeId,
             });
     }
 }

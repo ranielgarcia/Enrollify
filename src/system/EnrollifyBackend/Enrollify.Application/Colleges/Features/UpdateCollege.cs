@@ -1,5 +1,6 @@
 ﻿using Ardalis.Result;
 using Enrollify.Core.Aggregates.CollegeAggregate;
+using Enrollify.SharedKernel;
 using Mediator;
 
 namespace Enrollify.Application.Colleges.Features;
@@ -10,13 +11,16 @@ public static class UpdateCollege
     public sealed class Handler : ICommandHandler<Command, Result<CollegeId>>
     {
         private readonly ICollegeRepository _collegeRepository;
-        public Handler(ICollegeRepository collegeRepository)
+        private readonly IReadRepository<College> _collegeReadRepository;
+
+        public Handler(ICollegeRepository collegeRepository, IReadRepository<College> collegeReadRepository)
         {
             _collegeRepository = collegeRepository;
+            _collegeReadRepository = collegeReadRepository;
         }
         public async ValueTask<Result<CollegeId>> Handle(Command command, CancellationToken cancellationToken)
         {
-            var existingCollege = await _collegeRepository.GetById(command.id, cancellationToken);
+            var existingCollege = await _collegeReadRepository.GetByIdAsync(command.id, cancellationToken);
             if (existingCollege == null)
             {
                 return Result.NotFound($"College with an ID of {command.id.Value} was not found.");

@@ -9,6 +9,8 @@ public class BuildingDTO : BaseDTO
     public string Description { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
 
+    public CollegeSummaryDTO? College { get; set; }
+
     public static BuildingDTO FromEntity (Building entity)
     {
         return new BuildingDTO
@@ -17,6 +19,7 @@ public class BuildingDTO : BaseDTO
             Name = entity.Name,
             Description = entity.Description,
             Address = entity.Address,
+            College = entity.College != null ? CollegeSummaryDTO.FromEntity(entity.College) : null,
             CreatedAt = entity.CreatedAt,
             CreatedBy = BaseUserDTO.FromUser(entity.CreatedByUser),
             UpdatedBy = BaseUserDTO.FromUser(entity.UpdatedByUser),
