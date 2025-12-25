@@ -15,5 +15,4 @@ public class RoomProjection
     public bool IsActive { get; set; }
     public RoomTypeProjection? RoomType { get; set; }
     public BuildingProjection? Building { get; set; }
-    public CollegeProjection? College { get; set; }
 }

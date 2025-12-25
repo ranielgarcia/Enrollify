@@ -66,6 +66,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
         services.AddScoped<ICollegeRepository, CollegeRepository>();
         services.AddScoped<IBuildingRepository, BuildingRepository>();
+        services.AddScoped<IRoomRepository, RoomRepository>();
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 

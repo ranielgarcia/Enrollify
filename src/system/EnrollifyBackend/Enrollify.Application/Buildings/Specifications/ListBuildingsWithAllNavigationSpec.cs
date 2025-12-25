@@ -3,9 +3,9 @@ using Enrollify.Core.Aggregates.BuildingAggregate;
 
 namespace Enrollify.Application.Buildings.Specifications;
 
-public class ListBuildingsSpec : Specification<Building>
+public class ListBuildingsWithAllNavigationSpec : Specification<Building>
 {
-    public ListBuildingsSpec() =>
+    public ListBuildingsWithAllNavigationSpec() =>
         Query
         .Include(r => r.CreatedByUser)
         .Include(r => r.UpdatedByUser)

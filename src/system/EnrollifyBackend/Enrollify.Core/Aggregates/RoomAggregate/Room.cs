@@ -19,7 +19,6 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable
         Capacity = Guard.Against.NegativeOrZero(roomForCreation.Capacity);
         RoomTypeId = Guard.Against.Null(roomForCreation.RoomTypeId);
         BuildingId = Guard.Against.Null(roomForCreation.BuildingId);
-        CollegeId = Guard.Against.Null(roomForCreation.CollegeId);
 
         RegisterDomainEvent(new RoomCreatedEvent(this));
     }
@@ -28,7 +27,6 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable
     public int Capacity { get; private set; }
     public RoomTypeId RoomTypeId { get; private set; }
     public BuildingId BuildingId { get; private set; }
-    public CollegeId CollegeId { get; private set; }
 
 
     public DateTimeOffset CreatedAt { get; private set; }
@@ -44,16 +42,8 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable
 
 
 
-    // Navigation property - not exposed publicly
-    private RoomType? _roomType;
-    public RoomType? RoomType => _roomType;
-
-    private Building? _building;
-    public Building? Building => _building;
-
-    private College? _college;
-    public College? College => _college;
-
+    public RoomType? RoomType { get; private set; }
+    public Building? Building { get; private set; }
 
     public Room UpdateRoomNumber(string newRoomNumber)
     {
@@ -80,13 +70,6 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable
     {
         if (BuildingId == newBuildingId) return this;
         BuildingId = Guard.Against.Null(newBuildingId);
-        return this;
-    }
-
-    public Room UpdateCollege(CollegeId newCollegeId)
-    {
-        if (CollegeId == newCollegeId) return this;
-        CollegeId = Guard.Against.Null(newCollegeId);
         return this;
     }
 }

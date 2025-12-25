@@ -1,29 +1,31 @@
 ﻿using Ardalis.Result;
 using Enrollify.Core.Aggregates.BuildingAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate;
-using Enrollify.Core.Aggregates.RoomAggregate.Models;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.SharedKernel;
 using Mediator;
 
 namespace Enrollify.Application.Rooms.Features;
 
-public static class CreateRoom
+public static class UpdateRoom
 {
-    public sealed record Command(string roomNumber, int capacity, RoomTypeId roomTypeId, BuildingId buildingId)
+    public sealed record Command(RoomId id, string roomNumber, int capacity, RoomTypeId roomTypeId, BuildingId buildingId)
         : ICommand<Result<RoomId>>;
 
     public sealed class Handler : ICommandHandler<Command, Result<RoomId>>
     {
         private readonly IRoomRepository _roomRepository;
+        private readonly IReadRepository<Room> _roomReadRepository;
         private readonly IReadRepository<RoomType> _roomTypeReadRepository;
         private readonly IReadRepository<Building> _buildingReadRepository;
 
-        public Handler(IRoomRepository roomRepository, 
+        public Handler(IRoomRepository roomRepository,
+            IReadRepository<Room> roomReadRepository,
             IReadRepository<RoomType> roomTypeReadRepository,
             IReadRepository<Building> buildingReadRepository)
         {
             _roomRepository = roomRepository;
+            _roomReadRepository = roomReadRepository;
             _roomTypeReadRepository = roomTypeReadRepository;
             _buildingReadRepository = buildingReadRepository;
         }
@@ -43,14 +45,20 @@ public static class CreateRoom
                 return Result.NotFound($"Building with ID {command.buildingId} not found.");
             }
 
-            var newRoom = new Room(new RoomForCreation
+            var existing = await _roomReadRepository.GetByIdAsync(command.id, cancellationToken);
+            if (existing == null)
             {
-                RoomNumber = command.roomNumber,
-                Capacity = command.capacity,
-                RoomTypeId = command.roomTypeId,
-                BuildingId = command.buildingId
-            });
-            return await _roomRepository.Create(newRoom, cancellationToken);
+                return Result.NotFound($"Room with an ID of {command.id.Value} not found");
+            }
+
+            existing.UpdateCapacity(command.capacity);
+            existing.UpdateRoomNumber(command.roomNumber);
+            existing.UpdateBuilding(building.Id);
+            existing.UpdateRoomType(roomType.Id);
+
+            var updatedResult = await _roomRepository.Update(existing, cancellationToken);
+            return updatedResult;
+
         }
     }
 }

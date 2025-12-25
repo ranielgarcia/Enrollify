@@ -10,7 +10,6 @@ public class RoomDTO : BaseDTO
     public int Capacity { get; set; }
     public RoomTypeSummaryDTO? RoomType { get; set; }
     public BuildingSummaryDTO? Building { get; set; }
-    public CollegeSummaryDTO? College { get; set; }
 
     public static RoomDTO FromProjection (RoomProjection room)
     {
@@ -26,7 +25,6 @@ public class RoomDTO : BaseDTO
             IsActive = room.IsActive,
             RoomType = room.RoomType != null ? RoomTypeSummaryDTO.FromEntity(room.RoomType) : null,
             Building = room.Building != null ? BuildingSummaryDTO.FromEntity(room.Building) : null,
-            College = room.College != null ? CollegeSummaryDTO.FromEntity(room.College) : null
         };
     }
 }

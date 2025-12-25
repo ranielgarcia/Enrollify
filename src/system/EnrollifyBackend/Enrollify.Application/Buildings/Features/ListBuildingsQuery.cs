@@ -22,7 +22,7 @@ public class ListBuildingsQueryHandler : IQueryHandler<ListBuildingsQuery, Resul
 
     public async ValueTask<Result<List<BuildingDTO>>> Handle (ListBuildingsQuery request, CancellationToken cancellationToken)
     {
-        var spec = new ListBuildingsSpec();
+        var spec = new ListBuildingsWithAllNavigationSpec();
         var buildings = await _buildingRepository.ListAsync(spec, cancellationToken);
 
         var toReturn = buildings

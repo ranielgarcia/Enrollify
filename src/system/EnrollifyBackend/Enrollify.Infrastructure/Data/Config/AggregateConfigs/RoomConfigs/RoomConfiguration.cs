@@ -18,7 +18,6 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
         builder.Property(e => e.Capacity).IsRequired();
         builder.Property(e => e.RoomTypeId).IsRequired();
         builder.Property(e => e.BuildingId).IsRequired();
-        builder.Property(e => e.CollegeId).IsRequired();
 
         // Don't expose navigation property publicly
         builder.HasOne<RoomType>()

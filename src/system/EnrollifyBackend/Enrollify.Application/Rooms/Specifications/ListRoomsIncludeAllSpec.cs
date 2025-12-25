@@ -27,11 +27,6 @@ public class ListRoomsIncludeAllSpec : Specification<Room, RoomProjection>
             {
                 Id = r.Building.Id,
                 Name = r.Building.Name
-            },
-            College = r.College == null ? null : new CollegeProjection
-            {
-                Id = r.College.Id,
-                Name = r.College.Name
             }
         });
 }

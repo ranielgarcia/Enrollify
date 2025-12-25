@@ -1,6 +1,5 @@
 ﻿using Ardalis.Result;
-using Enrollify.Application.Rooms;
-using Enrollify.Application.Rooms.Features;
+using Enrollify.Application.Buildings.Features;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Mediator;
 
@@ -22,10 +21,10 @@ public static class DeleteCollege
         }
         public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
         {
-            var count = await _mediator.Send(new CountRoomsByCollegeQuery { CollegeId = command.id}, cancellationToken);
-            if (count.Value > 0)
+            var countBuildings = await _mediator.Send(new CountBuildingsByCollegeQuery { CollegeId = command.id}, cancellationToken);
+            if (countBuildings.Value > 0)
             {
-                return Result.Invalid(new ValidationError($"This college cannot be deleted because it has {count.Value} room(s) associated with it. \n Please reassign or remove these rooms from this college before deleting."));
+                return Result.Invalid(new ValidationError($"This college cannot be deleted because it has {countBuildings.Value} building(s) associated with it. \n Please reassign or remove these buildings from this college before deleting."));
             }
             // TODO: Implement this:
             //var courses = await _courseRepository.GetAllByCollege(command.id, cancellationToken);

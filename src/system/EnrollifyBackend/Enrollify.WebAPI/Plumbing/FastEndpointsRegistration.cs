@@ -1,7 +1,5 @@
-﻿using FastEndpoints;
-using FastEndpoints.Swagger;
+﻿using FastEndpoints.Swagger;
 using System.Text.Json;
-using Vogen;
 
 namespace Enrollify.WebAPI.Plumbing;
 
@@ -33,6 +31,7 @@ public static class FastEndpointsRegistration
             c.Endpoints.RoutePrefix = "api";
             c.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             c.Serializer.Options.WriteIndented = true;
+            c.Errors.UseProblemDetails();
         }).UseSwaggerGen();
 
         return app;
