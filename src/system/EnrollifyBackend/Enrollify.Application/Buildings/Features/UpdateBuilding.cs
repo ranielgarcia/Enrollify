@@ -15,15 +15,25 @@ public static class UpdateBuilding
     {
         private readonly IBuildingRepository _buildingRepository;
         private readonly IReadRepository<Building> _buildingReadRepository;
+        private readonly IReadRepository<College> _collegeReadRepository;
 
-        public Handler(IBuildingRepository buildingRepository, IReadRepository<Building> buildingReadRepository)
+        public Handler(IBuildingRepository buildingRepository, IReadRepository<Building> buildingReadRepository, 
+            IReadRepository<College> collegeReadRepository)
         {
             _buildingRepository = buildingRepository;
             _buildingReadRepository = buildingReadRepository;
+            _collegeReadRepository = collegeReadRepository;
         }
 
         public async ValueTask<Result<BuildingId>> Handle(Command command, CancellationToken cancellationToken)
         {
+            var college = await _collegeReadRepository.GetByIdAsync(command.collegeId, cancellationToken);
+            if (college == null)
+            {
+                return Result.NotFound($"College with an id of {command.collegeId} not found");
+            }
+
+
             var existing = await _buildingReadRepository.GetByIdAsync(command.id, cancellationToken);
             if (existing is null)
             {

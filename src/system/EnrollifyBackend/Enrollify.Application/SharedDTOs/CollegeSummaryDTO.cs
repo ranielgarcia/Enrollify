@@ -1,6 +1,6 @@
 ﻿using Enrollify.Core.Aggregates.CollegeAggregate;
 
-namespace Enrollify.Application.Buildings.DTOs;
+namespace Enrollify.Application.SharedDTOs;
 
 public class CollegeSummaryDTO
 {

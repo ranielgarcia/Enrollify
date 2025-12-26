@@ -1,13 +1,6 @@
 ﻿using Enrollify.Application.Buildings.Features;
 using Enrollify.Core.Aggregates.BuildingAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
-using Enrollify.WebAPI.Authorization;
-using Enrollify.WebAPI.Extensions;
-using FastEndpoints;
-using FluentValidation;
-using Mediator;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Enrollify.WebAPI.Features.Buildings;
 
@@ -71,8 +64,14 @@ public class UpdateEndpoint : Endpoint<UpdateBuildingRequest, Results<Ok<UpdateB
         ExecuteAsync (UpdateBuildingRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(
-            new UpdateBuilding.Command
-                (BuildingId.From(request.Id), request.Name, request.Description, request.Address, CollegeId.From(request.CollegeId)), cancellationToken);
+            new UpdateBuilding.Command(
+                BuildingId.From(request.Id), 
+                request.Name, 
+                request.Description,
+                request.Address, 
+                CollegeId.From(request.CollegeId)
+            ),
+            cancellationToken);
 
         return result.ToUpdateResult(
              id => new UpdateBuildingResponse

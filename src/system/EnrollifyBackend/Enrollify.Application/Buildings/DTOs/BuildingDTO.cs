@@ -1,4 +1,5 @@
-﻿using Enrollify.Core.Aggregates.BuildingAggregate;
+﻿using Enrollify.Application.SharedDTOs;
+using Enrollify.Core.Aggregates.BuildingAggregate;
 
 namespace Enrollify.Application.Buildings.DTOs;
 

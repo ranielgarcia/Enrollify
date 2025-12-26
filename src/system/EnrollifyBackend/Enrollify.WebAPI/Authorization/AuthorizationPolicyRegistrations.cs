@@ -1,10 +1,10 @@
 ﻿using Enrollify.WebAPI.Authorization.Buildings;
 using Enrollify.WebAPI.Authorization.Colleges;
+using Enrollify.WebAPI.Authorization.Departments;
 using Enrollify.WebAPI.Authorization.Roles;
 using Enrollify.WebAPI.Authorization.Rooms;
 using Enrollify.WebAPI.Authorization.RoomTypes;
 using Enrollify.WebAPI.Authorization.Shared;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Enrollify.WebAPI.Authorization;
 
@@ -18,6 +18,7 @@ public static class AuthorizationPolicyRegistrations
         services.AddRoomAuthorizationPolicyHandlers();
         services.AddCollegeAuthorizationPolicyHandlers();
         services.AddBuildingsAuthorizationPolicyHandlers();
+        services.AddDepartmentAuthorizationPolicyHandlers();
 
         services.AddAuthorization(options =>
         {
@@ -29,6 +30,7 @@ public static class AuthorizationPolicyRegistrations
             options.AddRoomsAuthorizationPolicies();
             options.AddCollegeAuthorizationPolicies();
             options.AddBuildingsAuthorizationPolicies();
+            options.AddDepartmentAuthorizationPolicies();
         });
 
         return services;
