@@ -1,28 +1,30 @@
-﻿using Enrollify.Core.Aggregates.BuildingAggregate;
-using Enrollify.Core.Aggregates.CollegeAggregate;
+﻿using Enrollify.Application.Rooms.Models;
 using Enrollify.Core.Aggregates.RoomAggregate;
-using Enrollify.Core.Aggregates.RoomTypeAggregate;
 
 namespace Enrollify.Application.Rooms.DTOs;
 
-public class RoomDTO
+public class RoomDTO : BaseDTO
 {
-    public string RoomNumber { get; set; }
+    public RoomId Id { get; set; }
+    public string RoomNumber { get; set; } = string.Empty;
     public int Capacity { get; set; }
-    public RoomTypeId RoomTypeId { get; set; }
-    public BuildingId BuildingId { get; set; }
-    public CollegeId CollegeId { get; set; }
+    public RoomTypeSummaryDTO? RoomType { get; set; }
+    public BuildingSummaryDTO? Building { get; set; }
 
-    public static RoomDTO FromRoomEntity (Room room)
+    public static RoomDTO FromProjection (RoomProjection room)
     {
         return new RoomDTO
         {
+            Id = room.Id,
             RoomNumber = room.RoomNumber,
             Capacity = room.Capacity,
-            RoomTypeId = room.RoomTypeId,
-            BuildingId = room.BuildingId,
-            CollegeId = room.CollegeId
+            CreatedAt = room.CreatedAt,
+            CreatedBy = BaseUserDTO.FromUser(room.CreatedBy),
+            UpdatedAt = room.UpdatedAt,
+            UpdatedBy = BaseUserDTO.FromUser(room.UpdatedBy),
+            IsActive = room.IsActive,
+            RoomType = room.RoomType != null ? RoomTypeSummaryDTO.FromEntity(room.RoomType) : null,
+            Building = room.Building != null ? BuildingSummaryDTO.FromEntity(room.Building) : null,
         };
     }
-
 }

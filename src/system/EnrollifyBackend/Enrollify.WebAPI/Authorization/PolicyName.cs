@@ -2,6 +2,7 @@
 
 public class PolicyName
 {
+    // Shared Policies
     public const string HasAnyValidRoleAndPermission = "HasAnyValidRoleAndPermission";
 
     // Roles
@@ -15,6 +16,9 @@ public class PolicyName
 
     // Rooms
     public const string HasViewRoomsPermission = "HasViewRoomsPermission";
+    public const string HasCreateRoomPermission = "HasCreateRoomPermission";
+    public const string HasUpdateRoomPermission = "HasUpdateRoomPermission";
+    public const string HasDeleteRoomPermission = "HasDeleteRoomPermission";
 
     // Colleges
     public const string HasCreateCollegePermission = "HasCreateCollegePermission";

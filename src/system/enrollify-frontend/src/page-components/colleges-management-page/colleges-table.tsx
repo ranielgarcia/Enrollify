@@ -7,7 +7,6 @@ import {
 } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Edit2, Trash2 } from "lucide-react";
-import { formatDateTime } from "@/lib/dateutils";
 import { DataTable } from "@/components/data-table";
 import type { College } from "@/api/models/college";
 import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
@@ -61,12 +60,12 @@ export function CollegesTable({
     }),
     columnHelper.accessor("createdAt", {
       header: "Created At",
-      cell: (info) => <span>{formatDateTime(info.getValue())}</span>,
+      cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
       (row) =>
-        row.createdByUser
-          ? `${row.createdByUser?.firstName} ${row.createdByUser?.lastName}`
+        row.createdBy
+          ? `${row.createdBy.firstName} ${row.createdBy.lastName}`
           : "",
       {
         id: "createdBy",
@@ -76,12 +75,12 @@ export function CollegesTable({
     ),
     columnHelper.accessor("updatedAt", {
       header: "Updated At",
-      cell: (info) => <span>{formatDateTime(info.getValue())}</span>,
+      cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
       (row) =>
-        row.updatedByUser?.firstName
-          ? `${row.updatedByUser?.firstName} ${row.updatedByUser?.lastName}`
+        row.updatedBy?.firstName
+          ? `${row.updatedBy.firstName} ${row.updatedBy.lastName}`
           : "",
       {
         id: "updatedBy",

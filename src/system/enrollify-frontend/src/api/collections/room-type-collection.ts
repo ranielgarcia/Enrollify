@@ -5,10 +5,28 @@ import { RoomTypeSchema, type RoomType } from "@/api/models/room-type";
 
 const queryKeys = {
   all: () => ["room-types"],
+  countRooms: (roomTypeId: number) => [
+    ...queryKeys.all(),
+    "count-rooms",
+    roomTypeId,
+  ],
   create: () => [...queryKeys.all(), `create`],
   update: (roomTypeId: number) => [...queryKeys.all(), "update", roomTypeId],
   delete: (roomTypeId: number) => [...queryKeys.all(), "delete", roomTypeId],
 };
+
+// ** count rooms by room type
+export const countRoomsByRoomTypeOptions = (roomTypeId: number) =>
+  createAppQueryOptions({
+    path: "/api/room-types/{roomTypeId}/rooms/count",
+    pathParams: {
+      roomTypeId: roomTypeId.toString(),
+    },
+    options: {
+      queryKey: queryKeys.countRooms(roomTypeId),
+      enabled: !!roomTypeId && roomTypeId > 0,
+    },
+  });
 
 // ** fetch all room types **
 export const getAllRoomTypesOptions = () =>

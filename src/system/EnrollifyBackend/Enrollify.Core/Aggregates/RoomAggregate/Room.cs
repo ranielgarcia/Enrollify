@@ -2,6 +2,7 @@
 using Enrollify.Core.Aggregates.BuildingAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate.Events;
+using Enrollify.Core.Aggregates.RoomAggregate.Models;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.SharedKernel;
@@ -12,11 +13,12 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable
 {
     private Room() { } // EF Core constructor
 
-    public Room(string roomNumber, int capacity, RoomTypeId roomTypeId)
+    public Room(RoomForCreation roomForCreation)
     {
-        RoomNumber = Guard.Against.Null(roomNumber);
-        Capacity = capacity;
-        RoomTypeId = Guard.Against.Null(roomTypeId);
+        RoomNumber = Guard.Against.Null(roomForCreation.RoomNumber);
+        Capacity = Guard.Against.NegativeOrZero(roomForCreation.Capacity);
+        RoomTypeId = Guard.Against.Null(roomForCreation.RoomTypeId);
+        BuildingId = Guard.Against.Null(roomForCreation.BuildingId);
 
         RegisterDomainEvent(new RoomCreatedEvent(this));
     }
@@ -25,7 +27,6 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable
     public int Capacity { get; private set; }
     public RoomTypeId RoomTypeId { get; private set; }
     public BuildingId BuildingId { get; private set; }
-    public CollegeId CollegeId { get; private set; }
 
 
     public DateTimeOffset CreatedAt { get; private set; }
@@ -41,11 +42,10 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable
 
 
 
-    // Navigation property - not exposed publicly
-    private RoomType? _roomType;
-    public RoomType? RoomType => _roomType;
+    public RoomType? RoomType { get; private set; }
+    public Building? Building { get; private set; }
 
-    public Room UpdateName(string newRoomNumber)
+    public Room UpdateRoomNumber(string newRoomNumber)
     {
         if (RoomNumber == newRoomNumber) return this;
         RoomNumber = Guard.Against.Null(newRoomNumber);
@@ -66,10 +66,10 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable
         return this;
     }
 
-    public Room UpdateCollege(CollegeId newCollegeId)
+    public Room UpdateBuilding (BuildingId newBuildingId)
     {
-        if (CollegeId == newCollegeId) return this;
-        CollegeId = Guard.Against.Null(newCollegeId);
+        if (BuildingId == newBuildingId) return this;
+        BuildingId = Guard.Against.Null(newBuildingId);
         return this;
     }
 }

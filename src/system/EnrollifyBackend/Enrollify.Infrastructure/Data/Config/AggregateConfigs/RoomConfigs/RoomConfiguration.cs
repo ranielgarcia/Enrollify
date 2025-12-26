@@ -18,12 +18,17 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
         builder.Property(e => e.Capacity).IsRequired();
         builder.Property(e => e.RoomTypeId).IsRequired();
         builder.Property(e => e.BuildingId).IsRequired();
-        builder.Property(e => e.CollegeId).IsRequired();
 
         // Don't expose navigation property publicly
-        builder.HasOne<RoomType>()
+        builder.HasOne(e => e.RoomType)
           .WithMany()
-          .HasForeignKey(r => r.RoomTypeId);
+          .HasForeignKey(r => r.RoomTypeId)
+          .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne(e => e.Building)
+            .WithMany()
+            .HasForeignKey(r => r.BuildingId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         builder.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
         builder.Property(a => a.CreatedBy).HasColumnName("CreatedBy");

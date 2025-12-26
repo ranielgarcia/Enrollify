@@ -36,12 +36,22 @@ type QueryParamsForPath<P extends ApiPath> = ApiPaths[P] extends {
     : undefined
   : undefined;
 
+// Extract the path params type for a GET operation on a given path.
+type PathParamsForPath<P extends ApiPath> = ApiPaths[P] extends {
+  get: infer GetOp;
+}
+  ? GetOp extends { parameters: { path: infer PathP } }
+    ? PathP
+    : undefined
+  : undefined;
+
 interface QueryParams<
   P extends ApiPath,
   TData = JsonResponseForPath<P>,
   TError = unknown,
 > {
   path: P;
+  pathParams?: PathParamsForPath<P>;
   params?: QueryParamsForPath<P>;
   options?: Omit<
     UseQueryOptions<JsonResponseForPath<P>, TError, TData>,
@@ -53,11 +63,30 @@ interface QueryParams<
 }
 
 /**
+ * Interpolates path parameters into the URL path.
+ * e.g., "/api/room-types/{roomTypeId}/rooms/count" with { roomTypeId: "123" }
+ * becomes "/api/room-types/123/rooms/count"
+ */
+const interpolatePath = <P extends ApiPath>(
+  path: P,
+  pathParams: Record<string, string | number> | undefined
+): string => {
+  if (!pathParams) return path;
+
+  let interpolatedPath: string = path;
+  for (const [key, value] of Object.entries(pathParams)) {
+    interpolatedPath = interpolatedPath.replace(`{${key}}`, String(value));
+  }
+  return interpolatedPath;
+};
+
+/**
  * Creates a query function for fetching data from the API.
  */
 const createQueryFn =
   <P extends ApiPath>(
     path: P,
+    pathParams: PathParamsForPath<P> | undefined,
     params: QueryParamsForPath<P> | undefined,
     forceRefreshToken: boolean | undefined
   ) =>
@@ -67,8 +96,13 @@ const createQueryFn =
       forceRefreshToken,
     });
 
+    const interpolatedPath = interpolatePath(
+      path,
+      pathParams as Record<string, string | number> | undefined
+    );
+
     const response = await axios.get<JsonResponseForPath<P>>(
-      `${Config.API_URL}${path}`,
+      `${Config.API_URL}${interpolatedPath}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -89,15 +123,21 @@ const createAppQueryOptions = <
   TError = unknown,
 >({
   path,
+  pathParams,
   params,
   options,
   forceRefreshToken,
 }: QueryParams<P, TData, TError>) => {
+  // Build query key including path params for proper cache isolation
+  const baseKey = pathParams !== undefined ? [path, pathParams] : [path];
+  const queryKey =
+    options?.queryKey ??
+    (params !== undefined ? [...baseKey, params] : baseKey);
+
   return queryOptions({
-    queryKey:
-      options?.queryKey ?? (params !== undefined ? [path, params] : [path]),
+    queryKey,
     ...options,
-    queryFn: createQueryFn(path, params, forceRefreshToken),
+    queryFn: createQueryFn(path, pathParams, params, forceRefreshToken),
   });
 };
 
@@ -111,6 +151,7 @@ export const createAppSuspenseQueryOptions = <
   TError = unknown,
 >({
   path,
+  pathParams,
   params,
   options,
   forceRefreshToken,
@@ -119,11 +160,16 @@ export const createAppSuspenseQueryOptions = <
   TError,
   TData
 > => {
+  // Build query key including path params for proper cache isolation
+  const baseKey = pathParams !== undefined ? [path, pathParams] : [path];
+  const queryKey =
+    options?.queryKey ??
+    (params !== undefined ? [...baseKey, params] : baseKey);
+
   return {
-    queryKey:
-      options?.queryKey ?? (params !== undefined ? [path, params] : [path]),
+    queryKey,
     ...options,
-    queryFn: createQueryFn(path, params, forceRefreshToken),
+    queryFn: createQueryFn(path, pathParams, params, forceRefreshToken),
   };
 };
 

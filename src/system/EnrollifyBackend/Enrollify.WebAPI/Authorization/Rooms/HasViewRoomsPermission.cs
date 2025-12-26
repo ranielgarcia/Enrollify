@@ -15,7 +15,6 @@ public class HasViewRoomsPermissionHandler : UserAuthorizationHandler<HasViewRoo
 
     protected override Task CheckRequirement(UserContext user, AuthorizationHandlerContext context, HasViewRoomsPermission requirement)
     {
-        // Check if the user has the 'Update' permission for the 'RoomTypes' scope
         if (user.HasPermissionToTheScope(PermissionScopeEnum.Rooms, PermissionEnum.View))
         {
             context.Succeed(requirement);

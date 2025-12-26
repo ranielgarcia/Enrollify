@@ -3,6 +3,11 @@ import {
   updateBuildingOptions,
 } from "@/api/collections/building-collection";
 import type { Building } from "@/api/models/building";
+import type { College } from "@/api/models/college";
+import {
+  SearchableSelect,
+  type SearchableSelectOption,
+} from "@/components/searchable-select";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -36,10 +41,12 @@ const buildingFormSchema = z.object({
   name: z.string().min(3, "Name is required"),
   description: z.string().min(3, "Description is required"),
   address: z.string().min(3, "Address is required"),
+  collegeId: z.number().nonnegative(),
 });
 type BuildingForm = z.infer<typeof buildingFormSchema>;
 
 interface BuildingFormDrawerProps {
+  colleges: College[];
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   buildingToUpdate?: Building | null;
@@ -47,6 +54,7 @@ interface BuildingFormDrawerProps {
 }
 
 export function BuildingFormDrawer({
+  colleges,
   buildingToUpdate,
   onOpenChange,
   isOpen = false,
@@ -56,6 +64,7 @@ export function BuildingFormDrawer({
     name: buildingToUpdate?.name ?? "",
     description: buildingToUpdate?.description ?? "",
     address: buildingToUpdate?.address ?? "",
+    collegeId: buildingToUpdate?.college.id ?? 0,
   };
 
   const { mutateAsync: createNewBuildingAsync } = useMutation(
@@ -86,6 +95,11 @@ export function BuildingFormDrawer({
       form.reset();
     },
   });
+
+  const collegesOptions: SearchableSelectOption[] = colleges.map((college) => ({
+    value: college.id.toString(),
+    label: college.name,
+  }));
 
   const isUpdateBuilding = !!buildingToUpdate;
 
@@ -203,6 +217,25 @@ export function BuildingFormDrawer({
                           </em>
                         )}
                       </>
+                    )}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground block mb-1">
+                    College
+                  </label>
+                  <form.Field
+                    name="collegeId"
+                    children={(field) => (
+                      <SearchableSelect
+                        options={collegesOptions}
+                        value={field.state.value.toString()}
+                        onValueChange={(val) => field.handleChange(Number(val))}
+                        name={field.name}
+                        placeholder="Select a college"
+                        searchPlaceholder="Search college"
+                        emptyMessage="No college found"
+                      />
                     )}
                   />
                 </div>

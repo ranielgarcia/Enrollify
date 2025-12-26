@@ -1,4 +1,5 @@
 ﻿using Enrollify.Core.Aggregates.BuildingAggregate;
+using Enrollify.Core.Aggregates.CollegeAggregate;
 
 namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.BuildingConfigs;
 
@@ -15,6 +16,12 @@ public class BuildingConfiguration : IEntityTypeConfiguration<Building>
 
         builder.Property(e => e.Name).IsRequired();
         builder.Property(e => e.Description).IsRequired();
+        builder.Property(e => e.Address).IsRequired();
+
+        builder.HasOne(e => e.College)
+            .WithMany()
+            .HasForeignKey(e => e.CollegeId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         // Audit fields
 

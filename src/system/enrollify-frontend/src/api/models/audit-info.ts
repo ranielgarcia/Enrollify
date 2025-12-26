@@ -3,11 +3,11 @@ import { BasicUserInfoSchema } from "./basic-user-info";
 import { dateTransformer } from "./date-transformer";
 
 export const AuditInfoSchema = z.object({
-  createdByUser: BasicUserInfoSchema.nullish(),
+  createdBy: BasicUserInfoSchema.nullish(),
   createdAt: dateTransformer,
-  updatedByUser: BasicUserInfoSchema.nullish(),
+  updatedBy: BasicUserInfoSchema.nullish(),
   updatedAt: dateTransformer,
-  deletedByUser: BasicUserInfoSchema.nullish(),
+  deletedBy: BasicUserInfoSchema.nullish(),
   deletedAt: dateTransformer,
   isActive: z.boolean(),
 });

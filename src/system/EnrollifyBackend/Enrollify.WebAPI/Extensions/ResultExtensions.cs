@@ -1,5 +1,4 @@
 ﻿using Ardalis.Result;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Enrollify.WebAPI.Extensions;
 

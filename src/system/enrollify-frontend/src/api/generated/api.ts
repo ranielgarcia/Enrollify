@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/room-types/{roomTypeId}/rooms/count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesRoomTypesCountAssociatedRoomsEndpoint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/room-types": {
         parameters: {
             query?: never;
@@ -36,17 +52,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/rooms/list-by-room-type": {
+    "/api/rooms": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["EnrollifyWebAPIFeaturesRoomsListByRoomTypeEndpoint"];
-        put?: never;
-        post?: never;
-        delete?: never;
+        get: operations["EnrollifyWebAPIFeaturesRoomsListRoomsEndpoint"];
+        put: operations["EnrollifyWebAPIFeaturesRoomsUpdateEndpoint"];
+        post: operations["EnrollifyWebAPIFeaturesRoomsCreateEndpoint"];
+        delete: operations["EnrollifyWebAPIFeaturesRoomsDeleteEndpoint"];
         options?: never;
         head?: never;
         patch?: never;
@@ -95,22 +111,6 @@ export interface paths {
         put: operations["EnrollifyWebAPIFeaturesBuildingsUpdateEndpoint"];
         post: operations["EnrollifyWebAPIFeaturesBuildingsCreateEndpoint"];
         delete: operations["EnrollifyWebAPIFeaturesBuildingsDeleteEndpoint"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/WeatherForecast": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["WeatherForecast_Get"];
-        put?: never;
-        post?: never;
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -223,20 +223,13 @@ export interface components {
         EnrollifyApplicationBaseDTO: {
             /** Format: date-time */
             createdAt?: string;
-            /**
-             * Format: int32
-             * @description Value object wrapping Int32
-             */
-            createdBy?: number;
-            createdByUser?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
+            createdBy?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
             /** Format: date-time */
             updatedAt?: string | null;
-            updatedBy?: string | null;
-            updatedByUser?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
+            updatedBy?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
             /** Format: date-time */
             deletedAt?: string | null;
-            deletedBy?: string | null;
-            deletedByUser?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
+            deletedBy?: components["schemas"]["EnrollifyApplicationBaseUserDTO"] | null;
             isActive?: boolean;
         };
         EnrollifyApplicationBaseUserDTO: {
@@ -259,45 +252,114 @@ export interface components {
             name: string;
             description?: string;
         };
-        /** @description the dto used to send an error response to the client */
-        FastEndpointsErrorResponse: {
+        /**
+         * @description RFC7807 compatible problem details/ error response class. this can be used by configuring startup like so:
+         *     app.UseFastEndpoints(c => c.Errors.UseProblemDetails())
+         */
+        FastEndpointsProblemDetails: {
+            /** @default https://www.rfc-editor.org/rfc/rfc7231#section-6.5.1 */
+            type: string;
+            /** @default One or more validation errors occurred. */
+            title: string;
             /**
              * Format: int32
-             * @description the http status code sent to the client. default is 400.
              * @default 400
              */
-            statusCode: number;
-            /**
-             * @description the message for the error response
-             * @default One or more errors occurred!
-             */
-            message: string;
-            /** @description the collection of errors for the current context */
-            errors?: {
-                [key: string]: string[];
-            };
+            status: number;
+            /** @default /api/route */
+            instance: string;
+            /** @default 0HMPNHL0JHL76:00000001 */
+            traceId: string;
+            /** @description the details of the error */
+            detail?: string | null;
+            errors?: components["schemas"]["FastEndpointsProblemDetails_Error"][];
         };
-        EnrollifyApplicationRoomsDTOsRoomDTO: {
+        /** @description the error details object */
+        FastEndpointsProblemDetails_Error: {
+            /**
+             * @description the name of the error or property of the dto that caused the error
+             * @default Error or field name
+             */
+            name: string;
+            /**
+             * @description the reason for the error
+             * @default Error reason
+             */
+            reason: string;
+            /** @description the code of the error */
+            code?: string | null;
+            /** @description the severity of the error */
+            severity?: string | null;
+        };
+        EnrollifyWebAPIFeaturesRoomsCreateRoomResponse: {
+            /** Format: int32 */
+            id?: number;
             roomNumber?: string;
             /** Format: int32 */
             capacity?: number;
-            /**
-             * Format: int32
-             * @description Value object wrapping Int32
-             */
+            /** Format: int32 */
             roomTypeId?: number;
-            /**
-             * Format: int32
-             * @description Value object wrapping Int32
-             */
+            /** Format: int32 */
             buildingId?: number;
+        };
+        EnrollifyWebAPIFeaturesRoomsCreateRoomRequest: {
+            roomNumber: string;
+            /** Format: int32 */
+            capacity?: number;
+            /** Format: int32 */
+            roomTypeId: number;
+            /** Format: int32 */
+            buildingId: number;
+        };
+        EnrollifyWebAPIFeaturesRoomsDeleteRoomRequest: Record<string, never>;
+        EnrollifyApplicationRoomsDTOsRoomDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
             /**
              * Format: int32
              * @description Value object wrapping Int32
              */
-            collegeId?: number;
+            id?: number;
+            roomNumber?: string;
+            /** Format: int32 */
+            capacity?: number;
+            roomType?: components["schemas"]["EnrollifyApplicationRoomsDTOsRoomTypeSummaryDTO"] | null;
+            building?: components["schemas"]["EnrollifyApplicationRoomsDTOsBuildingSummaryDTO"] | null;
         };
-        EnrollifyWebAPIFeaturesRoomsListByRoomTypeRequest: Record<string, never>;
+        EnrollifyApplicationRoomsDTOsRoomTypeSummaryDTO: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            name?: string;
+        };
+        EnrollifyApplicationRoomsDTOsBuildingSummaryDTO: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            name?: string;
+        };
+        EnrollifyWebAPIFeaturesRoomsUpdateRoomResponse: {
+            /** Format: int32 */
+            id?: number;
+            roomNumber?: string;
+            /** Format: int32 */
+            capacity?: number;
+            /** Format: int32 */
+            roomTypeId?: number;
+            /** Format: int32 */
+            buildingId?: number;
+        };
+        EnrollifyWebAPIFeaturesRoomsUpdateRoomRequest: {
+            roomNumber: string;
+            /** Format: int32 */
+            capacity?: number;
+            /** Format: int32 */
+            roomTypeId: number;
+            /** Format: int32 */
+            buildingId: number;
+        };
         EnrollifyApplicationRolesDTOsRoleDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
             /**
              * Format: int32
@@ -358,11 +420,15 @@ export interface components {
             name?: string;
             description?: string;
             address?: string;
+            /** Format: int32 */
+            collegeId?: number;
         };
         EnrollifyWebAPIFeaturesBuildingsCreateBuildingRequest: {
             name: string;
             description: string;
             address: string;
+            /** Format: int32 */
+            collegeId: number;
         };
         EnrollifyWebAPIFeaturesBuildingsDeleteRequest: Record<string, never>;
         EnrollifyApplicationBuildingsDTOsBuildingDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
@@ -374,6 +440,15 @@ export interface components {
             name?: string;
             description?: string;
             address?: string;
+            college?: components["schemas"]["EnrollifyApplicationBuildingsDTOsCollegeSummaryDTO"] | null;
+        };
+        EnrollifyApplicationBuildingsDTOsCollegeSummaryDTO: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            name?: string;
         };
         EnrollifyWebAPIFeaturesBuildingsUpdateBuildingResponse: {
             /** Format: int32 */
@@ -381,20 +456,15 @@ export interface components {
             name?: string;
             description?: string;
             address?: string;
+            /** Format: int32 */
+            collegeId?: number;
         };
         EnrollifyWebAPIFeaturesBuildingsUpdateBuildingRequest: {
             name: string;
             description: string;
             address: string;
-        };
-        EnrollifyWebAPIWeatherForecast: {
-            /** Format: date */
-            date?: string;
             /** Format: int32 */
-            temperatureC?: number;
-            /** Format: int32 */
-            temperatureF?: number;
-            summary?: string | null;
+            collegeId: number;
         };
     };
     responses: never;
@@ -451,6 +521,42 @@ export interface operations {
                 content: {
                     "application/json": string[];
                 };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesRoomTypesCountAssociatedRoomsEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                roomTypeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -518,7 +624,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsErrorResponse"];
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
                 };
             };
             /** @description Unauthorized */
@@ -665,11 +771,9 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesRoomsListByRoomTypeEndpoint: {
+    EnrollifyWebAPIFeaturesRoomsListRoomsEndpoint: {
         parameters: {
-            query: {
-                roomTypeId: number;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -698,6 +802,183 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesRoomsUpdateEndpoint: {
+        parameters: {
+            query: {
+                id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesRoomsUpdateRoomRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyWebAPIFeaturesRoomsUpdateRoomResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesRoomsCreateEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesRoomsCreateRoomRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyWebAPIFeaturesRoomsCreateRoomResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesRoomsDeleteEndpoint: {
+        parameters: {
+            query: {
+                id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
             };
         };
     };
@@ -799,7 +1080,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsErrorResponse"];
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
                 };
             };
             /** @description Unauthorized */
@@ -1010,7 +1291,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsErrorResponse"];
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
                 };
             };
             /** @description Unauthorized */
@@ -1153,25 +1434,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": string[];
-                };
-            };
-        };
-    };
-    WeatherForecast_Get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EnrollifyWebAPIWeatherForecast"][];
                 };
             };
         };

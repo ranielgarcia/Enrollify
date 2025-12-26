@@ -57,22 +57,6 @@ public class BuildingRepository : IBuildingRepository
         }
     }
 
-    public async Task<Building?> GetById(BuildingId id, CancellationToken cancellationToken)
-    {
-        var building = await _dbContext.Buildings
-            .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
-        return building;
-    }
-
-    public async Task<List<Building>> ListBuildings(CancellationToken cancellationToken)
-    {
-        var buildings = await _dbContext.Buildings
-            .Include(r => r.CreatedByUser)
-            .Include(r => r.UpdatedByUser)
-            .ToListAsync(cancellationToken);
-        return buildings;
-    }
-
     public async Task<Result<BuildingId>> Update(Building newBuilding, CancellationToken cancellationToken)
     {
         try

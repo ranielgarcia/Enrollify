@@ -1,5 +1,6 @@
 ﻿using Enrollify.Application.Buildings.Features;
 using Enrollify.Core.Aggregates.BuildingAggregate;
+using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.WebAPI.Authorization;
 using Enrollify.WebAPI.Extensions;
 using FastEndpoints;
@@ -17,6 +18,7 @@ public class UpdateBuildingResponse
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
+    public int CollegeId { get; set; }
 }
 
 public class UpdateBuildingRequest
@@ -26,6 +28,7 @@ public class UpdateBuildingRequest
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
+    public int CollegeId { get; set; }
 }
 
 public class UpdateBuildingRequestValidator : Validator<UpdateBuildingRequest>
@@ -46,6 +49,9 @@ public class UpdateBuildingRequestValidator : Validator<UpdateBuildingRequest>
         RuleFor(x => x.Address)
             .NotEmpty().WithMessage("Please provide a building address.")
             .MaximumLength(255).WithMessage("Address must be 255 characters or fewer.");
+
+        RuleFor(x => x.CollegeId)
+            .NotNull().WithMessage("Please provide a valid college ID.");
     }
 }
 
@@ -65,7 +71,8 @@ public class UpdateEndpoint : Endpoint<UpdateBuildingRequest, Results<Ok<UpdateB
         ExecuteAsync (UpdateBuildingRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(
-            new UpdateBuilding.Command(BuildingId.From(request.Id), request.Name, request.Description, request.Address), cancellationToken);
+            new UpdateBuilding.Command
+                (BuildingId.From(request.Id), request.Name, request.Description, request.Address, CollegeId.From(request.CollegeId)), cancellationToken);
 
         return result.ToUpdateResult(
              id => new UpdateBuildingResponse
@@ -74,6 +81,7 @@ public class UpdateEndpoint : Endpoint<UpdateBuildingRequest, Results<Ok<UpdateB
                  Name = request.Name,
                  Description = request.Description,
                  Address = request.Address,
+                 CollegeId = request.CollegeId
              });
     }
 }

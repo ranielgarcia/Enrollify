@@ -1,4 +1,5 @@
 ﻿using Ardalis.GuardClauses;
+using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.SharedKernel;
 
@@ -8,17 +9,20 @@ public class Building : EntityBase<Building, BuildingId>, IAggregateRoot, IAudit
 {
     public Building(){}
 
-    public Building(string name, string description, string address)
+    public Building(string name, string description, string address, CollegeId collegeId)
     {
         Name = name;
         Description = description;
         Address = address;
+        CollegeId = collegeId;
     }
 
     public string Name { get; private set; }
     public string Description { get; private set; }
     public string Address { get; private set; }
 
+    public CollegeId CollegeId { get; private set; }
+    public College? College { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
@@ -30,6 +34,13 @@ public class Building : EntityBase<Building, BuildingId>, IAggregateRoot, IAudit
     public UserId? DeletedBy { get; private set; }
     public User? DeletedByUser { get; private set; }
     public bool IsActive { get; private set; }
+
+    public Building UpdateCollege(CollegeId newCollegeId)
+    {
+        if (newCollegeId == CollegeId) return this;
+        CollegeId = newCollegeId;
+        return this;
+    }
 
     public Building UpdateName (string newName)
     {
