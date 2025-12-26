@@ -217,6 +217,7 @@ export function RoomFormDrawer({
                         <Label htmlFor={field.name}>Room Type:</Label>
                         <SearchableSelect
                           options={roomTypeOptions}
+                          value={field.state.value.toString()}
                           onValueChange={(val) =>
                             field.handleChange(Number(val))
                           }
@@ -245,6 +246,7 @@ export function RoomFormDrawer({
                         <Label htmlFor={field.name}>Building:</Label>
                         <SearchableSelect
                           options={buildingOptions}
+                          value={field.state.value.toString()}
                           onValueChange={(val) =>
                             field.handleChange(Number(val))
                           }

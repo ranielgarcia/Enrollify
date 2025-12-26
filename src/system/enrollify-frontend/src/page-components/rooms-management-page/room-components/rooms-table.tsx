@@ -51,9 +51,9 @@ export function RoomsTable({ rooms, onEdit, onDelete }: RoomsTableProps) {
       header: "Room Type",
       cell: (info) => <span>{info.getValue()}</span>,
     }),
-    columnHelper.accessor((row) => row.college.name, {
-      id: "college",
-      header: "College",
+    columnHelper.accessor((row) => row.building.name, {
+      id: "building",
+      header: "Building",
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("createdAt", {

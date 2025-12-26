@@ -16,8 +16,9 @@ export const getAllRooms = () =>
     path: "/api/rooms",
     options: {
       queryKey: queryKeys.all(),
-      select: (roomTypes): Room[] => {
-        return roomTypes.map((t) => RoomSchema.parse(t));
+      select: (rooms): Room[] => {
+        console.log(rooms);
+        return rooms.map((t) => RoomSchema.parse(t));
       },
     },
   });
@@ -39,6 +40,9 @@ export const UpdateRoomOptions = (roomId: number) =>
   createMutationOptions({
     httpVerb: "put",
     path: "/api/rooms",
+    params: {
+      id: roomId,
+    },
     mutationKey: queryKeys.update(roomId),
     options: {
       meta: { invalidateQueries: [queryKeys.all()] },
@@ -52,6 +56,9 @@ export const DeleteRoomOptions = (roomId: number) =>
   createMutationOptions({
     httpVerb: "delete",
     path: "/api/rooms",
+    params: {
+      id: roomId,
+    },
     mutationKey: queryKeys.delete(roomId),
     options: {
       meta: { invalidateQueries: [queryKeys.all()] },

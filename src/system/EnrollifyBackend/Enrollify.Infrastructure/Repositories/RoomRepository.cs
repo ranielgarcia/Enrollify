@@ -35,7 +35,7 @@ public class RoomRepository : IRoomRepository
     {
         try
         {
-            var room = await _dbContext.Rooms.FindAsync(new object[] { id.Value }, cancellationToken);
+            var room = await _dbContext.Rooms.FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
             if (room == null)
             {
                 return Result.NotFound($"Room with ID {id.Value} not found.");

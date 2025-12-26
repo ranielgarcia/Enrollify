@@ -1,9 +1,5 @@
 ﻿using Enrollify.Application.Rooms.DTOs;
 using Enrollify.Application.Rooms.Features;
-using Enrollify.WebAPI.Authorization;
-using FastEndpoints;
-using Mediator;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Enrollify.WebAPI.Features.Rooms;
 

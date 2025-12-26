@@ -2,7 +2,6 @@ import { z } from "zod";
 import { AuditInfoSchema } from "@/api/models/audit-info";
 import { RoomTypeSchema } from "./room-type";
 import { BuildingSchema } from "./building";
-import { CollegeSchema } from "./college";
 
 const RoomTypeSummarySchema = RoomTypeSchema.pick({
   id: true,
@@ -14,10 +13,6 @@ const BuildingSummarySchema = BuildingSchema.pick({
   name: true,
 });
 
-const CollegeSummarySchema = CollegeSchema.pick({
-  id: true,
-  name: true,
-});
 export const RoomSchema = z
   .object({
     id: z.number(),
@@ -25,7 +20,6 @@ export const RoomSchema = z
     capacity: z.number(),
     roomType: RoomTypeSummarySchema,
     building: BuildingSummarySchema,
-    college: CollegeSummarySchema,
   })
   .extend(AuditInfoSchema.shape);
 

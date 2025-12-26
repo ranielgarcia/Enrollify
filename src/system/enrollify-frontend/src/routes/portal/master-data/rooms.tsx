@@ -1,3 +1,5 @@
+import { getAllBuildingsOptions } from "@/api/collections/building-collection";
+import { getAllRooms } from "@/api/collections/room-collection";
 import { getAllRoomTypesOptions } from "@/api/collections/room-type-collection";
 import RoomManagement from "@/page-components/rooms-management-page";
 import type { RouteLoaderData } from "@/types/route.types";
@@ -20,7 +22,11 @@ export const Route = createFileRoute("/portal/master-data/rooms")({
       });
     }
 
-    await queryClient.prefetchQuery(getAllRoomTypesOptions());
+    await Promise.all([
+      queryClient.prefetchQuery(getAllRoomTypesOptions()),
+      queryClient.prefetchQuery(getAllBuildingsOptions()),
+      queryClient.prefetchQuery(getAllRooms()),
+    ]);
   },
   loader: (): RouteLoaderData => ({
     crumb: "Rooms",
