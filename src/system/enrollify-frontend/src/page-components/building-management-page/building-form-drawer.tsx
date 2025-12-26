@@ -229,6 +229,7 @@ export function BuildingFormDrawer({
                     children={(field) => (
                       <SearchableSelect
                         options={collegesOptions}
+                        value={field.state.value.toString()}
                         onValueChange={(val) => field.handleChange(Number(val))}
                         name={field.name}
                         placeholder="Select a college"

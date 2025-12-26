@@ -18,7 +18,7 @@ public class CountBuildingsByCollegeQueryHandler(IReadRepository<Building> build
     public async ValueTask<Result<int>> Handle(CountBuildingsByCollegeQuery query, CancellationToken cancellationToken)
     {
         var spec = new ListBuildingsByCollegeSpec(query.CollegeId);
-        var count = await buildingRepository.CountAsync(cancellationToken);
+        var count = await buildingRepository.CountAsync(spec, cancellationToken);
         return Result<int>.Success(count);
     }
 }
