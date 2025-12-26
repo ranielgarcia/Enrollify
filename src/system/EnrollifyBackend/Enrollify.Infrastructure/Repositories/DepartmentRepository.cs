@@ -81,13 +81,13 @@ public class DepartmentRepository : IDepartmentRepository
 
     private bool IsDuplicateCodeInACollegeException(DbUpdateException ex)
     {
-        return ex.InnerException?.Message.Contains("duplicate") == true ||
+        return ex.InnerException?.Message.Contains("duplicate") == true &&
                ex.InnerException?.Message.Contains("UIdx_Departments_Code_College_IsActive") == true;
     }
 
     private bool IsDuplicateNameInACollegeException(DbUpdateException ex)
     {
-        return ex.InnerException?.Message.Contains("duplicate") == true ||
+        return ex.InnerException?.Message.Contains("duplicate") == true &&
                ex.InnerException?.Message.Contains("UIdx_Departments_Name_College_IsActive") == true;
     }
 
