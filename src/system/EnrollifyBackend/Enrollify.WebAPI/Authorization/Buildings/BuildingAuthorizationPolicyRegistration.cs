@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-
-namespace Enrollify.WebAPI.Authorization.Buildings;
+﻿namespace Enrollify.WebAPI.Authorization.Buildings;
 
 public static class BuildingAuthorizationPolicyRegistration
 {

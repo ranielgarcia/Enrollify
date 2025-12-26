@@ -1,6 +1,4 @@
-﻿using FastEndpoints;
-
-namespace Enrollify.WebAPI.Features.Buildings;
+﻿namespace Enrollify.WebAPI.Features.Buildings;
 
 public class BuildingEndpointGroup : Group
 {

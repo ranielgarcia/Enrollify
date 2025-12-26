@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PortalHomeRouteImport } from './routes/portal/home'
 import { Route as PortalMasterDataRouteRouteImport } from './routes/portal/master-data/route'
 import { Route as PortalMasterDataRoomsRouteImport } from './routes/portal/master-data/rooms'
+import { Route as PortalMasterDataDepartmentsRouteImport } from './routes/portal/master-data/departments'
 import { Route as PortalMasterDataCollegesRouteImport } from './routes/portal/master-data/colleges'
 import { Route as PortalMasterDataBuildingsRouteImport } from './routes/portal/master-data/buildings'
 
@@ -48,6 +49,12 @@ const PortalMasterDataRoomsRoute = PortalMasterDataRoomsRouteImport.update({
   path: '/rooms',
   getParentRoute: () => PortalMasterDataRouteRoute,
 } as any)
+const PortalMasterDataDepartmentsRoute =
+  PortalMasterDataDepartmentsRouteImport.update({
+    id: '/departments',
+    path: '/departments',
+    getParentRoute: () => PortalMasterDataRouteRoute,
+  } as any)
 const PortalMasterDataCollegesRoute =
   PortalMasterDataCollegesRouteImport.update({
     id: '/colleges',
@@ -69,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/portal/home': typeof PortalHomeRoute
   '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
+  '/portal/master-data/departments': typeof PortalMasterDataDepartmentsRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
 }
 export interface FileRoutesByTo {
@@ -79,6 +87,7 @@ export interface FileRoutesByTo {
   '/portal/home': typeof PortalHomeRoute
   '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
+  '/portal/master-data/departments': typeof PortalMasterDataDepartmentsRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
 }
 export interface FileRoutesById {
@@ -90,6 +99,7 @@ export interface FileRoutesById {
   '/portal/home': typeof PortalHomeRoute
   '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
+  '/portal/master-data/departments': typeof PortalMasterDataDepartmentsRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
 }
 export interface FileRouteTypes {
@@ -102,6 +112,7 @@ export interface FileRouteTypes {
     | '/portal/home'
     | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
+    | '/portal/master-data/departments'
     | '/portal/master-data/rooms'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -112,6 +123,7 @@ export interface FileRouteTypes {
     | '/portal/home'
     | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
+    | '/portal/master-data/departments'
     | '/portal/master-data/rooms'
   id:
     | '__root__'
@@ -122,6 +134,7 @@ export interface FileRouteTypes {
     | '/portal/home'
     | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
+    | '/portal/master-data/departments'
     | '/portal/master-data/rooms'
   fileRoutesById: FileRoutesById
 }
@@ -175,6 +188,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalMasterDataRoomsRouteImport
       parentRoute: typeof PortalMasterDataRouteRoute
     }
+    '/portal/master-data/departments': {
+      id: '/portal/master-data/departments'
+      path: '/departments'
+      fullPath: '/portal/master-data/departments'
+      preLoaderRoute: typeof PortalMasterDataDepartmentsRouteImport
+      parentRoute: typeof PortalMasterDataRouteRoute
+    }
     '/portal/master-data/colleges': {
       id: '/portal/master-data/colleges'
       path: '/colleges'
@@ -195,12 +215,14 @@ declare module '@tanstack/react-router' {
 interface PortalMasterDataRouteRouteChildren {
   PortalMasterDataBuildingsRoute: typeof PortalMasterDataBuildingsRoute
   PortalMasterDataCollegesRoute: typeof PortalMasterDataCollegesRoute
+  PortalMasterDataDepartmentsRoute: typeof PortalMasterDataDepartmentsRoute
   PortalMasterDataRoomsRoute: typeof PortalMasterDataRoomsRoute
 }
 
 const PortalMasterDataRouteRouteChildren: PortalMasterDataRouteRouteChildren = {
   PortalMasterDataBuildingsRoute: PortalMasterDataBuildingsRoute,
   PortalMasterDataCollegesRoute: PortalMasterDataCollegesRoute,
+  PortalMasterDataDepartmentsRoute: PortalMasterDataDepartmentsRoute,
   PortalMasterDataRoomsRoute: PortalMasterDataRoomsRoute,
 }
 

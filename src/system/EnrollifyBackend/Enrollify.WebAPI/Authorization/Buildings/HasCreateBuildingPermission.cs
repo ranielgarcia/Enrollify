@@ -1,7 +1,5 @@
 ﻿using Enrollify.Core.Authentication;
 using Enrollify.Core.Constants.Authorization;
-using Mediator;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Enrollify.WebAPI.Authorization.Buildings;
 

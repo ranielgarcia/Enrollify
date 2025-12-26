@@ -35,6 +35,11 @@ const data = {
           viewAuthorizationPolicies: [PolicyNames.canViewColleges],
         },
         {
+          title: "Departments",
+          url: "/portal/master-data/departments",
+          viewAuthorizationPolicies: [PolicyNames.canViewDepartments],
+        },
+        {
           title: "Buildings",
           url: "/portal/master-data/buildings",
           viewAuthorizationPolicies: [PolicyNames.canViewBuildings],

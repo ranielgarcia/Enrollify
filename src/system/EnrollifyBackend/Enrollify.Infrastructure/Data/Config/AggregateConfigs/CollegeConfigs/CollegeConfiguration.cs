@@ -13,9 +13,10 @@ public class CollegeConfiguration : IEntityTypeConfiguration<College>
           .ValueGeneratedOnAdd()
           .IsRequired();
 
+        builder.Property(e => e.Code).IsRequired();
         builder.Property(e => e.Name).IsRequired();
         builder.Property(e => e.Description).IsRequired();
-
+        builder.Property(e => e.Dean).IsRequired();
 
 
         builder.Property(a => a.CreatedAt).HasColumnName("CreatedAt");

@@ -31,4 +31,10 @@ public class PolicyName
     public const string HasCreateBuildingPermission = "HasCreateBuildingPermission";
     public const string HasUpdateBuildingPermission = "HasUpdateBuildingPermission";
     public const string HasDeleteBuildingPermission = "HasDeleteBuildingPermission";
+
+    // Departments
+    public const string HasViewDepartmentPermission = "HasViewDepartmentPermission";
+    public const string HasCreateDepartmentPermission = "HasCreateDepartmentPermission";
+    public const string HasUpdateDepartmentPermission = "HasUpdateDepartmentPermission";
+    public const string HasDeleteDepartmentPermission = "HasDeleteDepartmentPermission";
 }
