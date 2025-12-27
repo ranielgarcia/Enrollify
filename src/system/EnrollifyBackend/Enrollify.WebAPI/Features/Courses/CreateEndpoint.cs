@@ -1,0 +1,82 @@
+﻿using Enrollify.Application.Courses.Features;
+using Enrollify.Core.Aggregates.CollegeAggregate;
+using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.Core.Aggregates.RoomTypeAggregate;
+
+namespace Enrollify.WebAPI.Features.Courses;
+
+public class CreateCourseResponse
+{
+    public int Id { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public int DurationYears { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public int CollegeId { get; set; }
+    public int PreferRoomTypeId { get; set; }
+}
+
+public class CreateCourseRequest
+{
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public int DurationYears { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public int CollegeId { get; set; }
+    public int PreferRoomTypeId { get; set; }
+}
+
+public class CreateCourseRequestValidator : Validator<CreateCourseRequest>
+{
+    public CreateCourseRequestValidator()
+    {
+        RuleFor(x => x.Code)
+            .NotEmpty().WithMessage("Please provide a course code.")
+            .MaximumLength(10).WithMessage("Code must be 10 characters or fewer.");
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Please provide a course name.")
+            .MaximumLength(100).WithMessage("Name must be 100 characters or fewer.");
+        RuleFor(x => x.Description)
+            .MaximumLength(255).WithMessage("Description must be 255 characters or fewer.");
+        RuleFor(x => x.DurationYears)
+            .NotNull().WithMessage("Please provide the duration in years.")
+            .LessThanOrEqualTo(10).WithMessage("Duration must be 10 years or fewer.");
+        RuleFor(x => x.CollegeId)
+            .NotNull().WithMessage("Please provide a valid college ID.");
+        RuleFor(x => x.PreferRoomTypeId)
+            .NotNull().WithMessage("Please provide a valid prefer room type ID.");
+    }
+}
+
+[HttpPost("")]
+[Group<CourseEndpointGroup>]
+[Authorize(Policy = PolicyName.HasCreateCoursePermission)]
+public class CreateEndpoint(IMediator mediator)
+    : Endpoint<CreateCourseRequest, Results<Created<CreateCourseResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+{
+    public override async Task<Results<Created<CreateCourseResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+        ExecuteAsync(CreateCourseRequest request, CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(new CreateCourse.Command(
+            CourseCode.From(request.Code),
+            request.Name,
+            request.DurationYears,
+            request.Description,
+            CollegeId.From(request.CollegeId),
+            RoomTypeId.From(request.PreferRoomTypeId)
+        ), cancellationToken);
+
+        return result.ToCreatedResult(
+            id => $"/courses/{id}",
+            id => new CreateCourseResponse
+            {
+                Id = id.Value,
+                Code = request.Code,
+                Name = request.Name,
+                Description = request.Description,
+                DurationYears = request.DurationYears,
+                CollegeId = request.CollegeId,
+                PreferRoomTypeId = request.PreferRoomTypeId
+            });
+    }
+}

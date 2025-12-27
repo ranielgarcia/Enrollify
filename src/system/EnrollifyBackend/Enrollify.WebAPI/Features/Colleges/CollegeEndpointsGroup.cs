@@ -1,6 +1,4 @@
-﻿using FastEndpoints;
-
-namespace Enrollify.WebAPI.Features.Colleges;
+﻿namespace Enrollify.WebAPI.Features.Colleges;
 
 public class CollegeEndpointsGroup : Group
 {
