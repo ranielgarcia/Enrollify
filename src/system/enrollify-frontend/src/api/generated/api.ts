@@ -100,6 +100,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/courses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesCoursesListCoursesEndpoint"];
+        put: operations["EnrollifyWebAPIFeaturesCoursesUpdateEndpoint"];
+        post: operations["EnrollifyWebAPIFeaturesCoursesCreateEndpoint"];
+        delete: operations["EnrollifyWebAPIFeaturesCoursesDeleteEndpoint"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/colleges": {
         parameters: {
             query?: never;
@@ -337,10 +353,10 @@ export interface components {
             roomNumber?: string;
             /** Format: int32 */
             capacity?: number;
-            roomType?: components["schemas"]["EnrollifyApplicationRoomsDTOsRoomTypeSummaryDTO"] | null;
-            building?: components["schemas"]["EnrollifyApplicationRoomsDTOsBuildingSummaryDTO"] | null;
+            roomType?: components["schemas"]["EnrollifyApplicationSharedDTOsRoomTypeSummaryDTO"] | null;
+            building?: components["schemas"]["EnrollifyApplicationSharedDTOsBuildingSummaryDTO"] | null;
         };
-        EnrollifyApplicationRoomsDTOsRoomTypeSummaryDTO: {
+        EnrollifyApplicationSharedDTOsRoomTypeSummaryDTO: {
             /**
              * Format: int32
              * @description Value object wrapping Int32
@@ -348,7 +364,7 @@ export interface components {
             id?: number;
             name?: string;
         };
-        EnrollifyApplicationRoomsDTOsBuildingSummaryDTO: {
+        EnrollifyApplicationSharedDTOsBuildingSummaryDTO: {
             /**
              * Format: int32
              * @description Value object wrapping Int32
@@ -448,6 +464,71 @@ export interface components {
             description: string;
             /** Format: int32 */
             collegeId: number;
+        };
+        EnrollifyWebAPIFeaturesCoursesCreateCourseResponse: {
+            /** Format: int32 */
+            id?: number;
+            code?: string;
+            name?: string;
+            /** Format: int32 */
+            durationYears?: number;
+            description?: string;
+            /** Format: int32 */
+            collegeId?: number;
+            /** Format: int32 */
+            preferRoomTypeId?: number;
+        };
+        EnrollifyWebAPIFeaturesCoursesCreateCourseRequest: {
+            code: string;
+            name: string;
+            /** Format: int32 */
+            durationYears?: number;
+            description?: string;
+            /** Format: int32 */
+            collegeId: number;
+            /** Format: int32 */
+            preferRoomTypeId: number;
+        };
+        EnrollifyWebAPIFeaturesCoursesDeleteCourseRequest: Record<string, never>;
+        EnrollifyApplicationCoursesDTOsCourseDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            code?: components["schemas"]["EnrollifyCoreAggregatesCourseAggregateCourseCode"];
+            name?: string;
+            /** Format: int32 */
+            durationYears?: number;
+            description?: string;
+            college?: components["schemas"]["EnrollifyApplicationSharedDTOsCollegeSummaryDTO"] | null;
+            roomType?: components["schemas"]["EnrollifyApplicationSharedDTOsRoomTypeSummaryDTO"] | null;
+        };
+        /** @description Value object wrapping String */
+        EnrollifyCoreAggregatesCourseAggregateCourseCode: string;
+        EnrollifyWebAPIFeaturesCoursesUpdateCourseResponse: {
+            /** Format: int32 */
+            id?: number;
+            code?: string;
+            name?: string;
+            /** Format: int32 */
+            durationYears?: number;
+            description?: string;
+            /** Format: int32 */
+            collegeId?: number;
+            /** Format: int32 */
+            preferRoomTypeId?: number;
+        };
+        EnrollifyWebAPIFeaturesCoursesUpdateCourseRequest: {
+            code: string;
+            name: string;
+            /** Format: int32 */
+            durationYears?: number;
+            description?: string;
+            /** Format: int32 */
+            collegeId: number;
+            /** Format: int32 */
+            preferRoomTypeId: number;
         };
         EnrollifyWebAPIFeaturesCollegesCreateCollegeResponse: {
             /** Format: int32 */
@@ -1237,6 +1318,217 @@ export interface operations {
         };
     };
     EnrollifyWebAPIFeaturesDepartmentsDeleteEndpoint: {
+        parameters: {
+            query: {
+                id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCoursesListCoursesEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationCoursesDTOsCourseDTO"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCoursesUpdateEndpoint: {
+        parameters: {
+            query: {
+                id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCoursesUpdateCourseRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCoursesUpdateCourseResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCoursesCreateEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCoursesCreateCourseRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCoursesCreateCourseResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCoursesDeleteEndpoint: {
         parameters: {
             query: {
                 id: number;

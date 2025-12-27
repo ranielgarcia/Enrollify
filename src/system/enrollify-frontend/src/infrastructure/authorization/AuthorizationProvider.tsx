@@ -16,6 +16,7 @@ import { registerRoomPolicies } from "./policies/rooms-policies";
 import { registerCollegesPolicies } from "./policies/colleges-policies";
 import { registerBuildingsPolicies } from "./policies/buildings-policies";
 import { registerDepartmentPolicies } from "./policies/department-policies";
+import { registerCoursesPolicies } from "./policies/courses-policies";
 
 export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
   children,
@@ -40,6 +41,7 @@ export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
     registerCollegesPolicies(policyRegistry);
     registerBuildingsPolicies(policyRegistry);
     registerDepartmentPolicies(policyRegistry);
+    registerCoursesPolicies(policyRegistry);
 
     const handlers: IAuthorizationHandler[] = [
       new RoleHandler(),

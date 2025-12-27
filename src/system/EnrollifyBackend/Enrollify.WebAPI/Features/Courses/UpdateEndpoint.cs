@@ -44,8 +44,8 @@ public class UpdateCourseRequestValidator : Validator<UpdateCourseRequest>
         RuleFor(x => x.Description)
             .MaximumLength(255).WithMessage("Description must be 255 characters or fewer.");
         RuleFor(x => x.DurationYears)
-            .NotNull().WithMessage("Please provide the duration in years.")
-            .LessThanOrEqualTo(10).WithMessage("Duration must be 10 years or fewer.");
+            .InclusiveBetween(1, 10)
+            .WithMessage("Duration must be between 1 and 10 years.");
         RuleFor(x => x.CollegeId)
             .NotNull().WithMessage("Please provide a valid college ID.");
         RuleFor(x => x.PreferRoomTypeId)
