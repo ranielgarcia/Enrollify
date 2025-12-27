@@ -2,7 +2,7 @@
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Mediator;
 
-namespace Enrollify.Application.Courses.Specifications;
+namespace Enrollify.Application.Courses.Features;
 
 public static class DeleteCourse
 {

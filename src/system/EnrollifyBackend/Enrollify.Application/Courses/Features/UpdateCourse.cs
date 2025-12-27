@@ -5,24 +5,28 @@ using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.SharedKernel;
 using Mediator;
 
-namespace Enrollify.Application.Courses.Specifications;
+namespace Enrollify.Application.Courses.Features;
 
-public static class CreateCourse
+public static class UpdateCourse
 {
-    public sealed record Command(CourseCode code, string name, int durationYears, string description, CollegeId collegeId, RoomTypeId preferRoomTypeId) 
+    public sealed record Command(CourseId id, CourseCode code, string name, int durationYears, string description, CollegeId collegeId, RoomTypeId preferRoomTypeId)
         : ICommand<Result<CourseId>>;
 
     public sealed class Handler : ICommandHandler<Command, Result<CourseId>>
     {
         private readonly ICourseRepository _courseRepository;
+        private readonly IReadRepository<Course> _courseReadRepository;
         private readonly IReadRepository<College> _collegeReadRepository;
         private readonly IReadRepository<RoomType> _roomTypeReadRepository;
 
-        public Handler(ICourseRepository courseRepository, 
+        public Handler(
+            ICourseRepository courseRepository,
+            IReadRepository<Course> courseReadRepository,
             IReadRepository<College> collegeReadRepository,
             IReadRepository<RoomType> roomTypeReadRepository)
         {
             _courseRepository = courseRepository;
+            _courseReadRepository = courseReadRepository;
             _collegeReadRepository = collegeReadRepository;
             _roomTypeReadRepository = roomTypeReadRepository;
         }
@@ -41,9 +45,21 @@ public static class CreateCourse
                 return Result.NotFound($"RoomType with an id of {command.preferRoomTypeId} not found");
             }
 
-            var course = new Course(command.code, command.name, command.durationYears, command.description, command.collegeId, command.preferRoomTypeId);
-            var result = await _courseRepository.Create(course, cancellationToken);
-            return result;
+            var existing = await _courseReadRepository.GetByIdAsync(command.id, cancellationToken);
+            if (existing == null)
+            {
+                return Result.NotFound($"Course with an id of {command.id} not found");
+            }
+
+            existing.UpdateCode(command.code);
+            existing.UpdateName(command.name);
+            existing.UpdateDurationYears(command.durationYears);
+            existing.UpdateDescription(command.description);
+            existing.UpdateCollegeId(command.collegeId);
+            existing.UpdatePreferRoomTypeId(command.preferRoomTypeId);
+
+            var updateResult = await _courseRepository.Update(existing, cancellationToken);
+            return updateResult;
         }
     }
 }

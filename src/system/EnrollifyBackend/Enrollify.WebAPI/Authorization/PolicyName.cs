@@ -37,4 +37,11 @@ public class PolicyName
     public const string HasCreateDepartmentPermission = "HasCreateDepartmentPermission";
     public const string HasUpdateDepartmentPermission = "HasUpdateDepartmentPermission";
     public const string HasDeleteDepartmentPermission = "HasDeleteDepartmentPermission";
+
+
+    // Courses
+    public const string HasViewCoursesPermission = "HasViewCoursesPermission";
+    public const string HasCreateCoursePermission = "HasCreateCoursePermission";
+    public const string HasUpdateCoursePermission = "HasUpdateCoursePermission";
+    public const string HasDeleteCoursePermission = "HasDeleteCoursePermission";
 }
