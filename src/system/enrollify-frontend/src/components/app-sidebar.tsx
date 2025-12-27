@@ -40,6 +40,11 @@ const data = {
           viewAuthorizationPolicies: [PolicyNames.canViewDepartments],
         },
         {
+          title: "Courses",
+          url: "/portal/master-data/courses",
+          viewAuthorizationPolicies: [PolicyNames.canViewCourses],
+        },
+        {
           title: "Buildings",
           url: "/portal/master-data/buildings",
           viewAuthorizationPolicies: [PolicyNames.canViewBuildings],
