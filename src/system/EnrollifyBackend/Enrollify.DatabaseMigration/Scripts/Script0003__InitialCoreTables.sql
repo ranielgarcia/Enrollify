@@ -135,6 +135,7 @@ GO
 
 -- ************************************
 
+
 CREATE TABLE Courses -- Also known program
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
@@ -161,6 +162,16 @@ CREATE TABLE Courses -- Also known program
 	CONSTRAINT CHK_Courses_DurationYears_Valid CHECK (DurationYears > 0 AND DurationYears <= 10)
 );
 GO;
+
+CREATE UNIQUE NONCLUSTERED INDEX UIdx_Course_Code_College_IsActive
+ON Courses(Code, CollegeId)
+WHERE IsActive = 1;
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX UIdx_Course_Name_College_IsActive
+ON Courses(Name, CollegeId)
+WHERE IsActive = 1;
+GO
 
 -- ************************************
 

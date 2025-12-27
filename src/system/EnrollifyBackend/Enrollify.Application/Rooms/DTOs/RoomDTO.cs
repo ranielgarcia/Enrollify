@@ -1,4 +1,5 @@
 ﻿using Enrollify.Application.Rooms.Models;
+using Enrollify.Application.SharedDTOs;
 using Enrollify.Core.Aggregates.RoomAggregate;
 
 namespace Enrollify.Application.Rooms.DTOs;
@@ -23,7 +24,7 @@ public class RoomDTO : BaseDTO
             UpdatedAt = room.UpdatedAt,
             UpdatedBy = BaseUserDTO.FromUser(room.UpdatedBy),
             IsActive = room.IsActive,
-            RoomType = room.RoomType != null ? RoomTypeSummaryDTO.FromEntity(room.RoomType) : null,
+            RoomType = room.RoomType != null ? RoomTypeSummaryDTO.FromProject(room.RoomType) : null,
             Building = room.Building != null ? BuildingSummaryDTO.FromEntity(room.Building) : null,
         };
     }
