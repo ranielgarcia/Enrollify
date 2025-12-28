@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { useForm } from "@tanstack/react-form";
@@ -207,8 +208,7 @@ export function CourseFormDrawer({
                     children={(field) => (
                       <div className="grid w-full max-w-sm items-center gap-3">
                         <Label htmlFor={field.name}>Description:</Label>
-                        <Input
-                          type="text"
+                        <Textarea
                           placeholder="Description:"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}

@@ -19,6 +19,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { Textarea } from "@/components/ui/textarea";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { useForm } from "@tanstack/react-form";
@@ -172,15 +173,14 @@ export function BuildingFormDrawer({
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-1">
-                    Description
+                    Short Description
                   </label>
                   <form.Field
                     name="description"
                     children={(field) => (
                       <>
-                        <input
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., Main Building"
+                        <Textarea
+                          placeholder="Short Description:"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />

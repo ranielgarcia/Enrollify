@@ -11,6 +11,7 @@ import { DataTable } from "@/components/data-table";
 import type { College } from "@/api/models/college";
 import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
 import { useEffect, useState } from "react";
+import { truncateText } from "@/lib/text-utils";
 
 interface CollegesTableProps {
   colleges?: College[];
@@ -52,7 +53,7 @@ export function CollegesTable({
     }),
     columnHelper.accessor("description", {
       header: "Description",
-      cell: (info) => <span>{info.getValue()}</span>,
+      cell: (info) => <span>{truncateText(info.getValue(), 30)}</span>,
     }),
     columnHelper.accessor("dean", {
       header: "Dean",

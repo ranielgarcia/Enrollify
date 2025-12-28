@@ -142,7 +142,7 @@ CREATE TABLE Courses -- Also known program
 	Code VARCHAR(10) NOT NULL,
 	Name VARCHAR(100) NOT NULL,
 	DurationYears INT NOT NULL,
-	Description VARCHAR(255) NULL,
+	Description TEXT NULL,
 	CollegeId INT NOT NULL, -- Or department, but for now use collegeId,
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),

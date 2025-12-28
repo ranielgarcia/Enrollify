@@ -2,6 +2,7 @@ import type { Course } from "@/api/models/course";
 import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
+import { truncateText } from "@/lib/text-utils";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -48,7 +49,7 @@ export function CoursesTable({ courses, onEdit, onDelete }: CoursesTableProps) {
     }),
     columnHelper.accessor("description", {
       header: "Description",
-      cell: (info) => <span>{info.getValue()}</span>,
+      cell: (info) => <span>{truncateText(info.getValue(), 30)}</span>,
     }),
     columnHelper.accessor("durationYears", {
       header: "Duration Years",
