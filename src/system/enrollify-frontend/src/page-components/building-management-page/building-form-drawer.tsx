@@ -19,6 +19,8 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
@@ -146,17 +148,16 @@ export function BuildingFormDrawer({
                 <DrawerDescription>Set building details.</DrawerDescription>
               </DrawerHeader>
               <div className="p-4 pb-0">
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1">
-                    Name
-                  </label>
+                <div className="pb-4">
                   <form.Field
                     name="name"
                     children={(field) => (
-                      <>
-                        <input
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., Main Building"
+                      <div className="grid w-full max-w-sm items-center gap-3">
+                        <Label htmlFor={field.name}>Name:</Label>
+                        <Input
+                          type="text"
+                          id={field.name}
+                          placeholder="Name:"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -167,11 +168,11 @@ export function BuildingFormDrawer({
                               .join(", ")}
                           </em>
                         )}
-                      </>
+                      </div>
                     )}
                   />
                 </div>
-                <div>
+                <div className="pb-4">
                   <label className="text-sm font-medium text-foreground block mb-1">
                     Short Description
                   </label>
@@ -195,17 +196,16 @@ export function BuildingFormDrawer({
                     )}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1">
-                    Address
-                  </label>
+                <div className="pb-4">
                   <form.Field
                     name="address"
                     children={(field) => (
-                      <>
-                        <input
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., 123 Main St."
+                      <div className="grid w-full max-w-sm items-center gap-3">
+                        <Label htmlFor={field.name}>Address:</Label>
+                        <Input
+                          type="text"
+                          id={field.name}
+                          placeholder="Address:"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -216,26 +216,28 @@ export function BuildingFormDrawer({
                               .join(", ")}
                           </em>
                         )}
-                      </>
+                      </div>
                     )}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1">
-                    College
-                  </label>
+                <div className="pb-4">
                   <form.Field
                     name="collegeId"
                     children={(field) => (
-                      <SearchableSelect
-                        options={collegesOptions}
-                        value={field.state.value.toString()}
-                        onValueChange={(val) => field.handleChange(Number(val))}
-                        name={field.name}
-                        placeholder="Select a college"
-                        searchPlaceholder="Search college"
-                        emptyMessage="No college found"
-                      />
+                      <div className="grid w-full max-w-sm items-center gap-3">
+                        <Label htmlFor={field.name}>College:</Label>
+                        <SearchableSelect
+                          options={collegesOptions}
+                          value={field.state.value.toString()}
+                          onValueChange={(val) =>
+                            field.handleChange(Number(val))
+                          }
+                          name={field.name}
+                          placeholder="Select a college"
+                          searchPlaceholder="Search college"
+                          emptyMessage="No college found"
+                        />
+                      </div>
                     )}
                   />
                 </div>
