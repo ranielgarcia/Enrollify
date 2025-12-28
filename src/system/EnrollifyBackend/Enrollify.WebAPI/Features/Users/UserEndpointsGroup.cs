@@ -1,7 +1,4 @@
-﻿
-using FastEndpoints;
-
-namespace Enrollify.WebAPI.Features.Users;
+﻿namespace Enrollify.WebAPI.Features.Users;
 
 public class UserEndpointsGroup : Group
 {

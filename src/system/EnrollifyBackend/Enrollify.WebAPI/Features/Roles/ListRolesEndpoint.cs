@@ -1,9 +1,5 @@
 ﻿using Enrollify.Application.Roles.DTOs;
 using Enrollify.Application.Roles.Features.List;
-using Enrollify.WebAPI.Authorization;
-using FastEndpoints;
-using Mediator;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Enrollify.WebAPI.Features.Roles;
 
