@@ -26,7 +26,7 @@ CREATE TABLE Colleges
 	Code VARCHAR(10) NOT NULL,
 	Name VARCHAR(100) NOT NULL,
 	Dean VARCHAR(100) NOT NULL, -- Hard coded name for now
-	Description VARCHAR(255) NULL,
+	Description TEXT,
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -144,7 +144,6 @@ CREATE TABLE Courses -- Also known program
 	DurationYears INT NOT NULL,
 	Description VARCHAR(255) NULL,
 	CollegeId INT NOT NULL, -- Or department, but for now use collegeId,
-	PreferRoomTypeId INT NOT NULL,
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -155,7 +154,6 @@ CREATE TABLE Courses -- Also known program
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT UQ_Courses_Code UNIQUE (Code),
 	CONSTRAINT FK_Courses_College FOREIGN KEY (CollegeId) REFERENCES Colleges(Id),
-	CONSTRAINT FK_Courses_RoomType FOREIGN KEY (PreferRoomTypeId) REFERENCES RoomTypes(Id),
 	CONSTRAINT FK_Courses_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Courses_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Courses_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
@@ -650,9 +648,6 @@ CREATE NONCLUSTERED INDEX IX_Courses_CollegeId
 ON Courses(CollegeId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_Courses_PreferRoomTypeId 
-ON Courses(PreferRoomTypeId);
-GO
 
 -- Subjects indexes
 CREATE NONCLUSTERED INDEX IX_Subjects_CourseId 
