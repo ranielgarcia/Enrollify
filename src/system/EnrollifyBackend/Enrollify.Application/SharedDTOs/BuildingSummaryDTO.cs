@@ -1,7 +1,7 @@
 ﻿using Enrollify.Application.Rooms.Models;
 using Enrollify.Core.Aggregates.BuildingAggregate;
 
-namespace Enrollify.Application.Rooms.DTOs;
+namespace Enrollify.Application.SharedDTOs;
 
 public class BuildingSummaryDTO
 {

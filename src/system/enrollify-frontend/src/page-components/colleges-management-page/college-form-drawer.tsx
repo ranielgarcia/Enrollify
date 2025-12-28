@@ -20,6 +20,7 @@ import {
 } from "@/api/collections/college-collection";
 import type { College } from "@/api/models/college";
 import { useMutation } from "@tanstack/react-query";
+import { Textarea } from "@/components/ui/textarea";
 
 type FormMeta = {
   submitAction: "create" | "update" | null;
@@ -134,7 +135,7 @@ export function CollegeFormDrawer({
               <div className="p-4 pb-0">
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-1">
-                    Code
+                    Code:
                   </label>
                   <form.Field
                     name="code"
@@ -159,7 +160,7 @@ export function CollegeFormDrawer({
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-1">
-                    Name
+                    Name:
                   </label>
                   <form.Field
                     name="name"
@@ -184,15 +185,14 @@ export function CollegeFormDrawer({
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-1">
-                    Description
+                    Description:
                   </label>
                   <form.Field
                     name="description"
                     children={(field) => (
                       <>
-                        <input
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., College of Computer Studies"
+                        <Textarea
+                          placeholder="Description:"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -209,7 +209,7 @@ export function CollegeFormDrawer({
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground block mb-1">
-                    Dean
+                    Dean:
                   </label>
                   <form.Field
                     name="dean"

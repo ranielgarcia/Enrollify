@@ -21,7 +21,7 @@ public class DepartmentRepository : IDepartmentRepository
         try
         {
             await _dbContext.Departments.AddAsync(newDepartment, cancellationToken);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
             return Result.Success(newDepartment.Id);
         }
         catch (DbUpdateException ex) when (IsDuplicateCodeInACollegeException(ex))
@@ -44,7 +44,7 @@ public class DepartmentRepository : IDepartmentRepository
             if (department == null) return Result.NotFound($"Department with ID {id.Value} not found");
 
             _dbContext.Departments.Remove(department);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
             return Result.Success();
         }
         catch (DbUpdateException ex) when (IsForeignKeyConstraintException(ex))
@@ -64,7 +64,7 @@ public class DepartmentRepository : IDepartmentRepository
         try
         {
             _dbContext.Departments.Update(newDepartment);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
             return Result.Success(newDepartment.Id);
         }
         catch (DbUpdateException ex) when (IsDuplicateCodeInACollegeException(ex))

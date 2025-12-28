@@ -6,7 +6,7 @@ namespace Enrollify.Core.Aggregates.CollegeAggregate;
 
 public class College : EntityBase<College, CollegeId>, IAggregateRoot, IAuditable 
 { 
-    public College() { }
+    private College() { }
     public College(CollegeCode code, string name, string description, string dean)
     {
         Code = Guard.Against.Null(code);

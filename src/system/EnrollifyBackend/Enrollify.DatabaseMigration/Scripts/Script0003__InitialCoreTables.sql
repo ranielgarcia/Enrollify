@@ -26,7 +26,7 @@ CREATE TABLE Colleges
 	Code VARCHAR(10) NOT NULL,
 	Name VARCHAR(100) NOT NULL,
 	Dean VARCHAR(100) NOT NULL, -- Hard coded name for now
-	Description VARCHAR(255) NULL,
+	Description TEXT,
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -135,15 +135,15 @@ GO
 
 -- ************************************
 
+
 CREATE TABLE Courses -- Also known program
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	Code VARCHAR(10) NOT NULL,
 	Name VARCHAR(100) NOT NULL,
 	DurationYears INT NOT NULL,
-	Description VARCHAR(255) NULL,
+	Description TEXT NULL,
 	CollegeId INT NOT NULL, -- Or department, but for now use collegeId,
-	PreferRoomTypeId INT NOT NULL,
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -154,13 +154,22 @@ CREATE TABLE Courses -- Also known program
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT UQ_Courses_Code UNIQUE (Code),
 	CONSTRAINT FK_Courses_College FOREIGN KEY (CollegeId) REFERENCES Colleges(Id),
-	CONSTRAINT FK_Courses_RoomType FOREIGN KEY (PreferRoomTypeId) REFERENCES RoomTypes(Id),
 	CONSTRAINT FK_Courses_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Courses_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Courses_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
 	CONSTRAINT CHK_Courses_DurationYears_Valid CHECK (DurationYears > 0 AND DurationYears <= 10)
 );
 GO;
+
+CREATE UNIQUE NONCLUSTERED INDEX UIdx_Course_Code_College_IsActive
+ON Courses(Code, CollegeId)
+WHERE IsActive = 1;
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX UIdx_Course_Name_College_IsActive
+ON Courses(Name, CollegeId)
+WHERE IsActive = 1;
+GO
 
 -- ************************************
 
@@ -639,9 +648,6 @@ CREATE NONCLUSTERED INDEX IX_Courses_CollegeId
 ON Courses(CollegeId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_Courses_PreferRoomTypeId 
-ON Courses(PreferRoomTypeId);
-GO
 
 -- Subjects indexes
 CREATE NONCLUSTERED INDEX IX_Subjects_CourseId 

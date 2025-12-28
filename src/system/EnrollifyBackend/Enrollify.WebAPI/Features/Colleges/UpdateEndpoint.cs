@@ -1,12 +1,5 @@
 ﻿using Enrollify.Application.Colleges.Features;
 using Enrollify.Core.Aggregates.CollegeAggregate;
-using Enrollify.WebAPI.Authorization;
-using Enrollify.WebAPI.Extensions;
-using FastEndpoints;
-using FluentValidation;
-using Mediator;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Enrollify.WebAPI.Features.Colleges;
 

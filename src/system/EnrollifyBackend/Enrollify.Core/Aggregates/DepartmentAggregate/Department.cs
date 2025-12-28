@@ -26,6 +26,7 @@ public class Department : EntityBase<Department, DepartmentId>, IAggregateRoot, 
 
     public College? College { get; private set; }
 
+
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
     public User? CreatedByUser { get; private set; }

@@ -3,6 +3,4 @@
 namespace Enrollify.Core.Aggregates.DepartmentAggregate;
 
 [ValueObject<int>]
-public readonly partial struct DepartmentId
-{
-}
+public readonly partial struct DepartmentId;

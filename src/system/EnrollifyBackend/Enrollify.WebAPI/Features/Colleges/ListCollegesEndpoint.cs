@@ -1,9 +1,5 @@
 ﻿using Enrollify.Application.Colleges.DTOs;
 using Enrollify.Application.Colleges.Features;
-using Enrollify.WebAPI.Authorization;
-using FastEndpoints;
-using Mediator;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Enrollify.WebAPI.Features.Colleges;
 
