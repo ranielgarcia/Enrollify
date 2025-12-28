@@ -7,6 +7,5 @@ public class ListCoursesWithAllNavigationSpec : Specification<Course>
 {
     public ListCoursesWithAllNavigationSpec()
         => Query
-            .Include(c => c.College)
-            .Include(c => c.PreferRoomType);
+            .Include(c => c.College);
 }

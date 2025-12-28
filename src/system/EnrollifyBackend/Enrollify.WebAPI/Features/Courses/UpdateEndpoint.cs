@@ -14,7 +14,6 @@ public class UpdateCourseResponse
     public int DurationYears { get; set; }
     public string Description { get; set; } = string.Empty;
     public int CollegeId { get; set; }
-    public int PreferRoomTypeId { get; set; }
 }
 
 public class UpdateCourseRequest
@@ -26,7 +25,6 @@ public class UpdateCourseRequest
     public int DurationYears { get; set; }
     public string Description { get; set; } = string.Empty;
     public int CollegeId { get; set; }
-    public int PreferRoomTypeId { get; set; }
 }
 
 public class UpdateCourseRequestValidator : Validator<UpdateCourseRequest>
@@ -42,14 +40,12 @@ public class UpdateCourseRequestValidator : Validator<UpdateCourseRequest>
             .NotEmpty().WithMessage("Please provide a course name.")
             .MaximumLength(100).WithMessage("Name must be 100 characters or fewer.");
         RuleFor(x => x.Description)
-            .MaximumLength(255).WithMessage("Description must be 255 characters or fewer.");
+            .MaximumLength(1500).WithMessage("Description must be 1500 characters or fewer.");
         RuleFor(x => x.DurationYears)
             .InclusiveBetween(1, 10)
             .WithMessage("Duration must be between 1 and 10 years.");
         RuleFor(x => x.CollegeId)
             .NotNull().WithMessage("Please provide a valid college ID.");
-        RuleFor(x => x.PreferRoomTypeId)
-            .NotNull().WithMessage("Please provide a valid prefer room type ID.");
     }
 }
 
@@ -68,8 +64,7 @@ public class UpdateEndpoint (IMediator mediator)
             request.Name,
             request.DurationYears,
             request.Description,
-            CollegeId.From(request.CollegeId),
-            RoomTypeId.From(request.PreferRoomTypeId)
+            CollegeId.From(request.CollegeId)
         ), cancellationToken);
 
         return result.ToUpdateResult(
@@ -80,8 +75,7 @@ public class UpdateEndpoint (IMediator mediator)
                 Name = request.Name,
                 DurationYears = request.DurationYears,
                 Description = request.Description,
-                CollegeId = request.CollegeId,
-                PreferRoomTypeId = request.PreferRoomTypeId
+                CollegeId = request.CollegeId
             });
     }
 }

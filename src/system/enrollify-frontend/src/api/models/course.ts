@@ -1,14 +1,8 @@
 import { z } from "zod";
 import { AuditInfoSchema } from "@/api/models/audit-info";
 import { CollegeSchema } from "./college";
-import { RoomTypeSchema } from "./room-type";
 
 const CollegeSummarySchema = CollegeSchema.pick({
-  id: true,
-  name: true,
-});
-
-const RoomTypeSummarySchema = RoomTypeSchema.pick({
   id: true,
   name: true,
 });
@@ -21,7 +15,6 @@ export const CourseSchema = z
     durationYears: z.number(),
     description: z.string(),
     college: CollegeSummarySchema.nullable(),
-    preferRoomType: RoomTypeSummarySchema.nullable(),
   })
   .extend(AuditInfoSchema.shape);
 

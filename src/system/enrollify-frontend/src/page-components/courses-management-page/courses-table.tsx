@@ -59,11 +59,6 @@ export function CoursesTable({ courses, onEdit, onDelete }: CoursesTableProps) {
       header: "College",
       cell: (info) => <span>{info.getValue()}</span>,
     }),
-    columnHelper.accessor((row) => row.preferRoomType?.name, {
-      id: "preferRoomType",
-      header: "Prefer Room Type",
-      cell: (info) => <span>{info.getValue()}</span>,
-    }),
     columnHelper.accessor("createdAt", {
       header: "Created At",
       cell: (info) => <span>{info.getValue()}</span>,

@@ -475,8 +475,6 @@ export interface components {
             description?: string;
             /** Format: int32 */
             collegeId?: number;
-            /** Format: int32 */
-            preferRoomTypeId?: number;
         };
         EnrollifyWebAPIFeaturesCoursesCreateCourseRequest: {
             code: string;
@@ -486,8 +484,6 @@ export interface components {
             description?: string;
             /** Format: int32 */
             collegeId: number;
-            /** Format: int32 */
-            preferRoomTypeId: number;
         };
         EnrollifyWebAPIFeaturesCoursesDeleteCourseRequest: Record<string, never>;
         EnrollifyApplicationCoursesDTOsCourseDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
@@ -502,7 +498,6 @@ export interface components {
             durationYears?: number;
             description?: string;
             college?: components["schemas"]["EnrollifyApplicationSharedDTOsCollegeSummaryDTO"] | null;
-            roomType?: components["schemas"]["EnrollifyApplicationSharedDTOsRoomTypeSummaryDTO"] | null;
         };
         /** @description Value object wrapping String */
         EnrollifyCoreAggregatesCourseAggregateCourseCode: string;
@@ -516,8 +511,6 @@ export interface components {
             description?: string;
             /** Format: int32 */
             collegeId?: number;
-            /** Format: int32 */
-            preferRoomTypeId?: number;
         };
         EnrollifyWebAPIFeaturesCoursesUpdateCourseRequest: {
             code: string;
@@ -527,8 +520,6 @@ export interface components {
             description?: string;
             /** Format: int32 */
             collegeId: number;
-            /** Format: int32 */
-            preferRoomTypeId: number;
         };
         EnrollifyWebAPIFeaturesCollegesCreateCollegeResponse: {
             /** Format: int32 */

@@ -1,6 +1,5 @@
 ﻿using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.CollegeAggregate;
-using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.SharedKernel;
 
@@ -10,14 +9,13 @@ public class Course : EntityBase<Course, CourseId>, IAggregateRoot, IAuditable
 {
     private Course() { } // EF Core constructor
 
-    public Course(CourseCode code, string name, int durationYears, string description, CollegeId collegeId, RoomTypeId preferRoomTypeId)
+    public Course(CourseCode code, string name, int durationYears, string description, CollegeId collegeId)
     {
         Code = Guard.Against.Null(code);
         Name = Guard.Against.Null(name);
         DurationYears = Guard.Against.NegativeOrZero(durationYears);
         Description = Guard.Against.Null(description);
         CollegeId = Guard.Against.Null(collegeId);
-        PreferRoomTypeId = Guard.Against.Null(preferRoomTypeId);
     }
 
     public CourseCode Code { get; private set; }
@@ -27,9 +25,6 @@ public class Course : EntityBase<Course, CourseId>, IAggregateRoot, IAuditable
     public CollegeId CollegeId { get; private set; }
 
     public College? College { get; private set; }
-
-    public RoomTypeId PreferRoomTypeId { get; private set; }
-    public RoomType? PreferRoomType { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
@@ -75,13 +70,6 @@ public class Course : EntityBase<Course, CourseId>, IAggregateRoot, IAuditable
     {
         if (newCollegeId == CollegeId) return this;
         CollegeId = Guard.Against.Null(newCollegeId);
-        return this;
-    }
-
-    public Course UpdatePreferRoomTypeId(RoomTypeId newRoomTypeId)
-    {
-        if (newRoomTypeId == PreferRoomTypeId) return this;
-        PreferRoomTypeId = Guard.Against.Null(newRoomTypeId);
         return this;
     }
 

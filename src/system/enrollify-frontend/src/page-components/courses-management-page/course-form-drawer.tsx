@@ -4,7 +4,6 @@ import {
 } from "@/api/collections/course-collection";
 import type { College } from "@/api/models/college";
 import type { Course } from "@/api/models/course";
-import type { RoomType } from "@/api/models/room-type";
 import {
   SearchableSelect,
   type SearchableSelectOption,
@@ -49,14 +48,12 @@ const courseFormSchema = z.object({
     .min(1, "Duration must be at least 1 year")
     .max(10, "Duration cannot exceed 10 years"),
   collegeId: z.number().min(1, "College is required"),
-  preferRoomTypeId: z.number().min(1, "Prefer Room Type is required"),
 });
 
 type CourseFormData = z.infer<typeof courseFormSchema>;
 
 interface CourseFormDrawerProps {
   colleges: College[];
-  roomTypes: RoomType[];
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   courseToUpdate?: Course | undefined;
@@ -65,7 +62,6 @@ interface CourseFormDrawerProps {
 
 export function CourseFormDrawer({
   colleges,
-  roomTypes,
   isOpen,
   setIsOpen,
   courseToUpdate,
@@ -77,7 +73,6 @@ export function CourseFormDrawer({
     description: courseToUpdate?.description ?? "",
     durationYears: courseToUpdate?.durationYears ?? 1,
     collegeId: courseToUpdate?.college?.id ?? 0,
-    preferRoomTypeId: courseToUpdate?.preferRoomType?.id ?? 0,
   };
 
   const { mutateAsync: createNewCourseAsync } = useMutation(
@@ -112,12 +107,6 @@ export function CourseFormDrawer({
     colleges?.map((college) => ({
       value: college.id.toString(),
       label: college.name,
-    })) ?? [];
-
-  const roomTypesOptions: SearchableSelectOption[] =
-    roomTypes?.map((roomType) => ({
-      value: roomType.id.toString(),
-      label: roomType.name,
     })) ?? [];
 
   const isUpdateCourse = !!courseToUpdate;
@@ -279,34 +268,6 @@ export function CourseFormDrawer({
                           placeholder="Select a college"
                           searchPlaceholder="Search colleges..."
                           emptyMessage="No college found"
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
-                    )}
-                  />
-                </div>
-                <div className="pb-4">
-                  <form.Field
-                    name="preferRoomTypeId"
-                    children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Prefer Room Type:</Label>
-                        <SearchableSelect
-                          options={roomTypesOptions}
-                          value={field.state.value.toString()}
-                          onValueChange={(val) =>
-                            field.handleChange(Number(val))
-                          }
-                          name={field.name}
-                          placeholder="Select a room type"
-                          searchPlaceholder="Search room types..."
-                          emptyMessage="No room type found"
                         />
                         {!field.state.meta.isValid && (
                           <em role="alert" className="text-red-800">

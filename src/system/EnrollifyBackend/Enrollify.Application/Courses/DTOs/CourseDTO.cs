@@ -12,8 +12,7 @@ public class CourseDTO : BaseDTO
     public string Description { get; private set; } = null!;
 
     public CollegeSummaryDTO? College { get; set; }
-    public RoomTypeSummaryDTO? RoomType { get; set; }
-
+   
     public static CourseDTO FromEntity (Course entity)
     {
         return new CourseDTO
@@ -29,7 +28,6 @@ public class CourseDTO : BaseDTO
             UpdatedBy = BaseUserDTO.FromUser(entity.UpdatedByUser),
             IsActive = entity.IsActive,
             College = entity.College != null ? CollegeSummaryDTO.FromEntity(entity.College) : null,
-            RoomType = entity.PreferRoomType != null ? RoomTypeSummaryDTO.FromEntity(entity.PreferRoomType) : null,
         };
     }
 }

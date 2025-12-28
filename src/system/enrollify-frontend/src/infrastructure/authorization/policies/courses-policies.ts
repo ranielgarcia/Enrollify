@@ -17,7 +17,7 @@ export const registerCoursesPolicies = (registry: PolicyRegistry) => {
   );
 
   registry.register(
-    new PolicyBuilder("canCreateCollege")
+    new PolicyBuilder("canCreateCourse")
       .requireRole(
         createRole("Admin"),
         createRole("SystemAdmin"),
@@ -29,7 +29,7 @@ export const registerCoursesPolicies = (registry: PolicyRegistry) => {
   );
 
   registry.register(
-    new PolicyBuilder("canUpdateCollege")
+    new PolicyBuilder("canUpdateCourse")
       .requireRole(
         createRole("Admin"),
         createRole("SystemAdmin"),
@@ -41,7 +41,7 @@ export const registerCoursesPolicies = (registry: PolicyRegistry) => {
   );
 
   registry.register(
-    new PolicyBuilder("canDeleteCollege")
+    new PolicyBuilder("canDeleteCourse")
       .requireRole(
         createRole("Admin"),
         createRole("SystemAdmin"),

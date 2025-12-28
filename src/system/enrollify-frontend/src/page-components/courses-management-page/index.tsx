@@ -4,7 +4,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { CourseFormDrawer } from "./course-form-drawer";
 import { getAllCollegesOptions } from "@/api/collections/college-collection";
-import { getAllRoomTypesOptions } from "@/api/collections/room-type-collection";
 import { CoursesTable } from "./courses-table";
 import { DeleteCourseAlertDialog } from "./delete-course-alert-dialog";
 
@@ -16,7 +15,6 @@ export default function CoursesManagementPage() {
   const { data: courses } = useSuspenseQuery(getAllCoursesOptions());
 
   const { data: colleges } = useSuspenseQuery(getAllCollegesOptions());
-  const { data: roomTypes } = useSuspenseQuery(getAllRoomTypesOptions());
 
   const handleEdit = (course: Course) => {
     setCourseToEdit(course);
@@ -51,7 +49,6 @@ export default function CoursesManagementPage() {
         <div className="flex justify-end">
           <CourseFormDrawer
             colleges={colleges}
-            roomTypes={roomTypes}
             onOpenChange={handleDrawerOnOpenChange}
             courseToUpdate={courseToEdit}
             isOpen={isFormOpen}

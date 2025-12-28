@@ -17,18 +17,11 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
         builder.Property(d => d.DurationYears).IsRequired();
         builder.Property(d => d.Description).IsRequired();
         builder.Property(d => d.CollegeId).IsRequired();
-        builder.Property(d => d.PreferRoomTypeId).IsRequired();
 
         builder.HasOne(d => d.College)
                .WithMany()
                .HasForeignKey(d => d.CollegeId)
                .OnDelete(DeleteBehavior.NoAction);
-
-        builder.HasOne(d => d.PreferRoomType)
-               .WithMany()
-               .HasForeignKey(d => d.PreferRoomTypeId)
-               .OnDelete(DeleteBehavior.NoAction);
-
 
         // Audit fields
         builder.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
