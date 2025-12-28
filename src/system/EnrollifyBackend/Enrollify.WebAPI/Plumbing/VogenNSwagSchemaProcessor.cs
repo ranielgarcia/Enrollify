@@ -1,4 +1,3 @@
-using NJsonSchema;
 using NJsonSchema.Generation;
 using System.Reflection;
 using Vogen;

@@ -1,10 +1,5 @@
 ﻿using Enrollify.Application.Rooms.Features;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
-using Enrollify.WebAPI.Authorization;
-using Enrollify.WebAPI.Features.Rooms;
-using FastEndpoints;
-using Mediator;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Enrollify.WebAPI.Features.RoomTypes;
 

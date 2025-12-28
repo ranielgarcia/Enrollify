@@ -21,6 +21,9 @@ import {
   updateRoomTypeOptions,
 } from "@/api/collections/room-type-collection";
 import { useMutation } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 type FormMeta = {
   submitAction: "create" | "update" | null;
@@ -132,17 +135,16 @@ export function RoomTypeFormDrawer({
                 <DrawerDescription>Set room type details.</DrawerDescription>
               </DrawerHeader>
               <div className="p-4 pb-0">
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1">
-                    Type Name
-                  </label>
+                <div className="pb-4">
                   <form.Field
                     name="name"
                     children={(field) => (
-                      <>
-                        <input
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., Lecture Hall"
+                      <div className="grid w-full max-w-sm items-center gap-3">
+                        <Label htmlFor={field.name}>Type Name:</Label>
+                        <Input
+                          type="text"
+                          id={field.name}
+                          placeholder="Type Name:"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -153,20 +155,17 @@ export function RoomTypeFormDrawer({
                               .join(", ")}
                           </em>
                         )}
-                      </>
+                      </div>
                     )}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1">
-                    Description
-                  </label>
+                <div className="pb-4">
                   <form.Field
                     name="description"
                     children={(field) => (
-                      <>
-                        <input
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
+                      <div className="grid w-full max-w-sm items-center gap-3">
+                        <Label htmlFor={field.name}>Description:</Label>
+                        <Textarea
                           placeholder="e.g., Large classroom for lectures"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
@@ -178,7 +177,7 @@ export function RoomTypeFormDrawer({
                               .join(", ")}
                           </em>
                         )}
-                      </>
+                      </div>
                     )}
                   />
                 </div>

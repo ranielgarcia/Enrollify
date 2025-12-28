@@ -21,6 +21,8 @@ import {
 import type { College } from "@/api/models/college";
 import { useMutation } from "@tanstack/react-query";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type FormMeta = {
   submitAction: "create" | "update" | null;
@@ -133,17 +135,16 @@ export function CollegeFormDrawer({
                 <DrawerDescription>Set college details.</DrawerDescription>
               </DrawerHeader>
               <div className="p-4 pb-0">
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1">
-                    Code:
-                  </label>
+                <div className="pb-4">
                   <form.Field
                     name="code"
                     children={(field) => (
-                      <>
-                        <input
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., CCS"
+                      <div className="grid w-full max-w-sm items-center gap-3">
+                        <Label htmlFor={field.name}>Code:</Label>
+                        <Input
+                          type="text"
+                          id={field.name}
+                          placeholder="Code:"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -154,21 +155,20 @@ export function CollegeFormDrawer({
                               .join(", ")}
                           </em>
                         )}
-                      </>
+                      </div>
                     )}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1">
-                    Name:
-                  </label>
+                <div className="pb-4">
                   <form.Field
                     name="name"
                     children={(field) => (
-                      <>
-                        <input
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., College of Computer Studies"
+                      <div className="grid w-full max-w-sm items-center gap-3">
+                        <Label htmlFor={field.name}>Name:</Label>
+                        <Input
+                          type="text"
+                          id={field.name}
+                          placeholder="Name:"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -179,20 +179,19 @@ export function CollegeFormDrawer({
                               .join(", ")}
                           </em>
                         )}
-                      </>
+                      </div>
                     )}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1">
-                    Description:
-                  </label>
+                <div className="pb-4">
                   <form.Field
                     name="description"
                     children={(field) => (
-                      <>
+                      <div className="grid w-full max-w-sm items-center gap-3">
+                        <Label htmlFor={field.name}>Description:</Label>
                         <Textarea
                           placeholder="Description:"
+                          id={field.name}
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -203,21 +202,20 @@ export function CollegeFormDrawer({
                               .join(", ")}
                           </em>
                         )}
-                      </>
+                      </div>
                     )}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground block mb-1">
-                    Dean:
-                  </label>
+                <div className="pb-4">
                   <form.Field
                     name="dean"
                     children={(field) => (
-                      <>
-                        <input
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
-                          placeholder="e.g., Raniel Garcia"
+                      <div className="grid w-full max-w-sm items-center gap-3">
+                        <Label htmlFor={field.name}>Dean:</Label>
+                        <Input
+                          type="text"
+                          id={field.name}
+                          placeholder="Dean:"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
@@ -228,7 +226,7 @@ export function CollegeFormDrawer({
                               .join(", ")}
                           </em>
                         )}
-                      </>
+                      </div>
                     )}
                   />
                 </div>

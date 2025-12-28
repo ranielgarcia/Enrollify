@@ -1,6 +1,4 @@
-﻿using FastEndpoints;
-
-namespace Enrollify.WebAPI.Features.RoomTypes;
+﻿namespace Enrollify.WebAPI.Features.RoomTypes;
 
 public class RoomTypeEndpointsGroup : Group
 {

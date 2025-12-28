@@ -1,11 +1,5 @@
 ﻿using Enrollify.Application.Authentication.GetContext;
 using Enrollify.Core.Authentication;
-using Enrollify.WebAPI.Authorization;
-using Enrollify.WebAPI.Extensions;
-using FastEndpoints;
-using Mediator;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Enrollify.WebAPI.Features.Users;
 

@@ -1,7 +1,6 @@
 ﻿using Enrollify.Application.Courses.Features;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
-using Enrollify.Core.Aggregates.RoomTypeAggregate;
 
 namespace Enrollify.WebAPI.Features.Courses;
 

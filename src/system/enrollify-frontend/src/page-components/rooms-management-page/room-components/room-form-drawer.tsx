@@ -128,7 +128,7 @@ export function RoomFormDrawer({
       <DrawerTrigger asChild>
         <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer">
           <Plus className="size-4" />
-          Add Building
+          Add Room
         </Button>
       </DrawerTrigger>
       <DrawerContent>
