@@ -14,6 +14,7 @@ using Enrollify.Infrastructure.Data.Config.AggregateConfigs.PermissionScopeConfi
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoleConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoomConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoomTypeConfigs;
+using Enrollify.Infrastructure.Data.Config.AggregateConfigs.SubjectConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.UserConfigs;
 using SmartEnum.EFCore;
 
@@ -64,5 +65,6 @@ public class EnrollifyDbContext: DbContext
         configurationBuilder.RegisterAllInRoomTypeVogenEfCoreConverters();
         configurationBuilder.RegisterAllInDepartmentVogenEfCoreConverters();
         configurationBuilder.RegisterAllInCourseVogenEfCoreConverters();
+        configurationBuilder.RegisterAllInSubjectVogenEfCoreConverters();
     }
 }

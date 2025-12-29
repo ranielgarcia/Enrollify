@@ -7,7 +7,7 @@ namespace Enrollify.Core.Aggregates.BuildingAggregate;
 
 public class Building : EntityBase<Building, BuildingId>, IAggregateRoot, IAuditable
 {
-    public Building(){}
+    private Building(){}
 
     public Building(string name, string description, string address, CollegeId collegeId)
     {
