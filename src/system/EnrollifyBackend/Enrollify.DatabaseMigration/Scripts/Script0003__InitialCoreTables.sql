@@ -274,6 +274,7 @@ CREATE TABLE EquivalentSubjectMapping
 	SourceSubjectId INT NOT NULL,
 	EquivalentSubjectId INT NOT NULL,
 	Reason VARCHAR(255) NOT NULL,
+
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
 	UpdatedAt DATETIMEOFFSET NULL,
@@ -408,6 +409,7 @@ CREATE TABLE ClassSections
 	SemesterId INT NOT NULL,
 	AdviserId INT NOT NULL,
 	StudentCapacity INT NOT NULL, -- Soft rule
+
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
 	UpdatedAt DATETIMEOFFSET NULL,
@@ -456,6 +458,7 @@ CREATE TABLE ClassSectionSubjectOffering
 	DaysPerWeek INT NULL,              -- 2, 3, 5, etc.
 	HoursPerDay DECIMAL(3,1) NULL,     -- 1.5, 2.0, 3.0, etc.
 	MaxNumberOfStudents INT NULL, -- Optional, soft rule, this to allow us to override the room student capacity
+
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
 	UpdatedAt DATETIMEOFFSET NULL,

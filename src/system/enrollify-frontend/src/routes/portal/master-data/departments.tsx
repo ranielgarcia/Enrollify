@@ -1,5 +1,5 @@
 import { getAllCollegesOptions } from "@/api/collections/college-collection";
-import DepartmentPage from "@/page-components/department-management-page";
+import DepartmentPage from "@/page-components/departments-management-page";
 import type { RouteLoaderData } from "@/types/route.types";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 

@@ -57,6 +57,11 @@ const data = {
             PolicyNames.canViewRoomTypes,
           ],
         },
+        {
+          title: "Subjects",
+          url: "/portal/master-data/subjects",
+          viewAuthorizationPolicies: [PolicyNames.canViewSubjects],
+        },
       ],
     } as NavMainItemProp,
     {

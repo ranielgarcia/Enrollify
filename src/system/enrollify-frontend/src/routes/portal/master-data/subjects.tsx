@@ -1,11 +1,11 @@
-import BuildingPage from "@/page-components/buildings-management-page";
+import SubjectsManagementPage from "@/page-components/subjects-management-page";
 import type { RouteLoaderData } from "@/types/route.types";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/portal/master-data/buildings")({
-  component: BuildingPage,
+export const Route = createFileRoute("/portal/master-data/subjects")({
+  component: SubjectsManagementPage,
   loader: (): RouteLoaderData => ({
-    crumb: "Buildings",
+    crumb: "Subjects",
   }),
   beforeLoad: async ({ context: { authorization } }): Promise<void> => {
     // Wait for authorization to be ready before making authorization decisions
@@ -14,13 +14,11 @@ export const Route = createFileRoute("/portal/master-data/buildings")({
       return;
     }
 
-    const canAccess = await authorization.checkPolicy("canViewBuildings");
+    const canAccess = await authorization.checkPolicy("canViewSubjects");
     if (!canAccess) {
       throw redirect({
         to: "/portal/home",
       });
     }
-
-    // await queryClient.prefetchQuery(getAllCollegesOptions());
   },
 });
