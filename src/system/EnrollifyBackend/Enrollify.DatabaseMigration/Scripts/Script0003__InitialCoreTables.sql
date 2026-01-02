@@ -225,11 +225,13 @@ GO
 
 -- ************************************
 
+-- A subject can have multiple prerequisite subjects
+-- Many-to-Many relationship between Subjects
 CREATE TABLE SubjectPrerequisites
 (
 	SourceSubjectId INT NOT NULL,
 	PrerequisiteSubjectId INT NOT NULL,
-	
+
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
 	UpdatedAt DATETIMEOFFSET NULL,
@@ -269,12 +271,29 @@ WHERE IsActive = 1;
 
 -- ************************************
 
--- Links multiple Subjects across Colleges or Department
-CREATE TABLE EquivalentSubjectMapping
+CREATE TABLE SubjectEquivalenceGroups
 (
-	SourceSubjectId INT NOT NULL,
-	EquivalentSubjectId INT NOT NULL,
-	Reason VARCHAR(255) NOT NULL,
+	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	Name VARCHAR(255) NOT NULL,
+	
+	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+	CreatedBy INT NOT NULL,
+	UpdatedAt DATETIMEOFFSET NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIMEOFFSET NULL,
+	DeletedBy INT NULL,
+	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT FK_EquivalentSubjectMapping_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_EquivalentSubjectMapping_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_EquivalentSubjectMapping_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
+)
+
+-- Links multiple Subjects across Colleges or Department
+CREATE TABLE SubjectEquivalence
+(
+	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	SubjectId INT NOT NULL,
+	EquivalenceGroupId INT NOT NULL,
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -283,12 +302,11 @@ CREATE TABLE EquivalentSubjectMapping
 	DeletedAt DATETIMEOFFSET NULL,
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT PK_EquivalentSubjectMappings PRIMARY KEY(SourceSubjectId, EquivalentSubjectId),
-	CONSTRAINT FK_EquivalentSubjectMapping_SourceSubject FOREIGN KEY (SourceSubjectId) REFERENCES Subjects(Id),
-	CONSTRAINT FK_EquivalentSubjectMapping_EquivalentSubject FOREIGN KEY (EquivalentSubjectId) REFERENCES Subjects(Id),
-	CONSTRAINT FK_EquivalentSubjectMapping_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_EquivalentSubjectMapping_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_EquivalentSubjectMapping_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
+	CONSTRAINT FK_SubjectEquivalence_Subject FOREIGN KEY (SubjectId) REFERENCES Subjects(Id),
+	CONSTRAINT FK_SubjectEquivalence_EquivalenceGroup FOREIGN KEY (EquivalenceGroupId) REFERENCES SubjectEquivalenceGroups(Id),
+	CONSTRAINT FK_SubjectEquivalence_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_SubjectEquivalence_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_SubjectEquivalence_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
 );
 GO;
 
@@ -297,17 +315,17 @@ GO;
 --You can still insert historical/inactive rows (IsActive = 0), so soft-deletion works.
 --Ensures that at most one active mapping per (SourceSubjectId, EquivalentSubjectId) exists.
 CREATE UNIQUE NONCLUSTERED INDEX UIdx_Subject_EquivalentSubject_IsActive
-ON EquivalentSubjectMapping(SourceSubjectId, EquivalentSubjectId)
+ON SubjectEquivalence(SubjectId, EquivalenceGroupId)
 WHERE IsActive = 1;
 
 
--- EquivalentSubjectMapping indexes
-CREATE NONCLUSTERED INDEX IX_EquivalentSubjectMapping_SourceSubjectId 
-ON EquivalentSubjectMapping(SourceSubjectId);
+-- SubjectEquivalence indexes
+CREATE NONCLUSTERED INDEX IX_SubjectEquivalence_SubjectId 
+ON SubjectEquivalence(SubjectId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_EquivalentSubjectMapping_EquivalentSubjectId 
-ON EquivalentSubjectMapping(EquivalentSubjectId);
+CREATE NONCLUSTERED INDEX IX_SubjectEquivalence_EquivalenceGroupId 
+ON SubjectEquivalence(EquivalenceGroupId);
 GO
 
 
@@ -744,11 +762,6 @@ CREATE NONCLUSTERED INDEX IX_EnrollmentAcademicRecords_EnrollmentId
 ON EnrollmentAcademicRecords(EnrollmentId);
 GO
 
--- EnrollmentPayments indexes
-CREATE NONCLUSTERED INDEX IX_EnrollmentPayments_EnrollmentId 
-ON EnrollmentPayments(EnrollmentId);
-GO
-
 CREATE TABLE EnrollmentPayments
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
@@ -771,3 +784,8 @@ CREATE TABLE EnrollmentPayments
 	CONSTRAINT FK_EnrollmentPayments_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
 );
 GO;
+
+-- EnrollmentPayments indexes
+CREATE NONCLUSTERED INDEX IX_EnrollmentPayments_EnrollmentId 
+ON EnrollmentPayments(EnrollmentId);
+GO

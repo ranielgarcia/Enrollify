@@ -10,6 +10,22 @@ public class Subject : EntityBase<Subject, SubjectId>, IAggregateRoot, IAuditabl
 {
     private Subject() { }// EF Core constructor
 
+
+    public Subject(SubjectForCreation newSubject)
+    {
+        Code = Guard.Against.Null(newSubject.Code);
+        Title = Guard.Against.NullOrWhiteSpace(newSubject.Title);
+        Units = Guard.Against.NegativeOrZero(newSubject.Units);
+        Description = Guard.Against.NullOrWhiteSpace(newSubject.Description);
+        CourseId = Guard.Against.Null(newSubject.CourseId);
+        PreferRoomTypeId = Guard.Against.Null(newSubject.PreferRoomTypeId);
+
+        foreach (var prerequisiteId in newSubject.Prerequisites)
+        {
+            AddPrerequisite(prerequisiteId);
+        }
+    }
+
     public SubjectCode Code { get; private set; }
     public string Title { get; private set; }
     public decimal Units { get; private set; }
