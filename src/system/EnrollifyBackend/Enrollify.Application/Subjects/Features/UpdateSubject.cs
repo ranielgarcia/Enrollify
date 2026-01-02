@@ -5,7 +5,6 @@ using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.SharedKernel;
 using Mediator;
-using System.Windows.Input;
 
 namespace Enrollify.Application.Subjects.Features;
 
@@ -82,6 +81,24 @@ public static class UpdateSubject
                 .UpdateCourse(command.CourseId)
                 .UpdatePreferRoomType(command.PreferRoomTypeId);
 
+            var currentPrerequisiteIds = existing.Prerequisites.Select(p => p.PrerequisiteSubjectId).ToHashSet();
+            var newPrerequisiteIds = command.Prerequisites.Distinct().ToHashSet();
+
+            var prerequisitesToRemove = currentPrerequisiteIds.Except(newPrerequisiteIds).ToList();
+            foreach (var prerequisiteId in prerequisitesToRemove)
+            {
+                existing.RemovePrerequisite(prerequisiteId);
+            }
+
+            var prerequisitesToAdd = newPrerequisiteIds.Except(currentPrerequisiteIds).ToList();
+            foreach (var prerequisiteId in prerequisitesToAdd)
+            {
+                existing.AddPrerequisite(prerequisiteId);
+            }
+
+            await _subjectRepository.Update(existing, cancellationToken);
+
+            return Result.Success(existing.Id);
         }
     }
 }

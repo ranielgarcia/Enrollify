@@ -64,6 +64,17 @@ public class Subject : EntityBase<Subject, SubjectId>, IAggregateRoot, IAuditabl
         return this;
     }
 
+    public Subject RemovePrerequisite(SubjectId prerequisiteSubjectId)
+    {
+        Guard.Against.Null(prerequisiteSubjectId);
+        var prerequisite = _subjectPrerequisites.FirstOrDefault(sp => sp.PrerequisiteSubjectId == prerequisiteSubjectId);
+        if (prerequisite != null)
+        {
+            _subjectPrerequisites.Remove(prerequisite);
+        }
+        return this;
+    }
+
     public Subject UpdateCode(SubjectCode newCode)
     {
         if (Code == newCode) return this;
