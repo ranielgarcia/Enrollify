@@ -34,10 +34,10 @@ public class Subject : EntityBase<Subject, SubjectId>, IAggregateRoot, IAuditabl
     public Course? Course { get; private set; } = null;
 
     public RoomTypeId PreferRoomTypeId { get; private set; }
-    public RoomType PreferRoomType { get; private set; }
+    public RoomType? PreferRoomType { get; private set; }
 
     private readonly List<SubjectPrerequisite> _subjectPrerequisites = new();
-    public IReadOnlyCollection<SubjectPrerequisite> SubjectPrerequisites => _subjectPrerequisites.AsReadOnly();
+    public IReadOnlyCollection<SubjectPrerequisite> Prerequisites => _subjectPrerequisites.AsReadOnly();
 
 
     public DateTimeOffset CreatedAt { get; private set; }

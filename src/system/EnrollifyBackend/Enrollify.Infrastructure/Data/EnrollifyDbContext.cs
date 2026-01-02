@@ -5,6 +5,7 @@ using Enrollify.Core.Aggregates.DepartmentAggregate;
 using Enrollify.Core.Aggregates.RoleAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.BuildingConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CollegeConfigs;
@@ -34,6 +35,7 @@ public class EnrollifyDbContext: DbContext
     public DbSet<Department> Departments => Set<Department>();
 
     public DbSet<Course> Courses => Set<Course>(); 
+    public DbSet<Subject> Subjects => Set<Subject>();
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();

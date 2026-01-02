@@ -206,21 +206,23 @@ CREATE TABLE Subjects
 	DeletedAt DATETIMEOFFSET NULL,
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
+	
+	CONSTRAINT UQ_Subjects_Code_Course UNIQUE (Code, CourseId),
+	CONSTRAINT CHK_Subjects_Units_Valid CHECK (Units > 0 AND Units <= 12),
 	CONSTRAINT FK_Subjects_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
 	CONSTRAINT FK_Subjects_RoomType FOREIGN KEY (PreferRoomTypeId) REFERENCES RoomTypes(Id),
 	CONSTRAINT FK_Subjects_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Subjects_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Subjects_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
-	CONSTRAINT UQ_Subjects_Code_Course UNIQUE (Code, CourseId),
-	CONSTRAINT CHK_Subjects_Units_Valid CHECK (Units > 0 AND Units <= 12)
 );
-GO;
-
 
 -- Subjects indexes
 CREATE NONCLUSTERED INDEX IX_Subjects_CourseId 
 ON Subjects(CourseId);
-GO
+
+CREATE NONCLUSTERED INDEX IX_Subjects_PreferRoomTypeId
+ON Subjects(PreferRoomTypeId);
+GO;
 
 
 -- ************************************
@@ -239,7 +241,7 @@ CREATE TABLE SubjectPrerequisites
 	DeletedAt DATETIMEOFFSET NULL,
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT PK_SubjectPrerequisiteSubjectsMappings PRIMARY KEY(SourceSubjectId, PrerequisiteSubjectId),
+	CONSTRAINT PK_SubjectPrerequisites PRIMARY KEY(SourceSubjectId, PrerequisiteSubjectId),
 	CONSTRAINT FK_SubjectPrerequisites_SourceSubject FOREIGN KEY (SourceSubjectId) REFERENCES Subjects(Id),
 	CONSTRAINT FK_SubjectPrerequisites_PrerequisiteSubject FOREIGN KEY (PrerequisiteSubjectId) REFERENCES Subjects(Id),
 	CONSTRAINT FK_SubjectPrerequisites_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),

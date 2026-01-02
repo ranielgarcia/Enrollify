@@ -55,7 +55,7 @@ public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
           .HasForeignKey(e => e.DeletedBy)
           .OnDelete(DeleteBehavior.NoAction);
 
-        builder.OwnsMany<SubjectPrerequisite>(r => r.SubjectPrerequisites, p =>
+        builder.OwnsMany<SubjectPrerequisite>(r => r.Prerequisites, p =>
         {
             p.ToTable("SubjectPrerequisites");
 
@@ -64,6 +64,10 @@ public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
 
             p.Property(e => e.PrerequisiteSubjectId).IsRequired();
 
+            p.HasOne(e => e.PrerequisiteSubject)
+                .WithMany()
+                .HasForeignKey(e => e.PrerequisiteSubjectId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             p.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
             p.Property(a => a.CreatedBy).HasColumnName("CreatedBy");

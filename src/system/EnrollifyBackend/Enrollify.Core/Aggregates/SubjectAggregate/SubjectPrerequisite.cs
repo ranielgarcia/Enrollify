@@ -15,6 +15,7 @@ public class SubjectPrerequisite : IAuditable
     public SubjectId SourceSubjectId { get; private set; }
     public SubjectId PrerequisiteSubjectId { get; private set; }
 
+    public Subject? PrerequisiteSubject { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }

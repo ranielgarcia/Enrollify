@@ -1,0 +1,58 @@
+﻿using Ardalis.Result;
+using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.Core.Aggregates.RoomTypeAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate;
+using Enrollify.SharedKernel;
+using Mediator;
+
+namespace Enrollify.Application.Subjects.Features;
+
+public static class CreateSubject
+{
+    public sealed record Command(SubjectForCreation subject) : ICommand<Result<SubjectId>>;
+
+    public sealed class Handler : ICommandHandler<Command, Result<SubjectId>>
+    {
+        private readonly ISubjectRepository _subjectRepository;
+        private readonly IReadRepository<Course> _courseReadRepository;
+        private readonly IReadRepository<RoomType> _roomTypeReadRepository;
+
+        public Handler(ISubjectRepository subjectRepository,
+            IReadRepository<Course> courseReadRepository,
+            IReadRepository<RoomType> roomTypeReadRepository)
+        {
+            _subjectRepository = subjectRepository;
+            _courseReadRepository = courseReadRepository;
+            _roomTypeReadRepository = roomTypeReadRepository;
+        }
+        public async ValueTask<Result<SubjectId>> Handle(Command command, CancellationToken cancellationToken)
+        {
+            var course = await _courseReadRepository.GetByIdAsync(command.subject.CourseId, cancellationToken);
+            if (course is null)
+            {
+                return Result.Invalid(new ValidationError { ErrorMessage = $"Course with an ID of {command.subject.CourseId} not found." });
+            }
+            
+            var preferRoomType = await _roomTypeReadRepository.GetByIdAsync(command.subject.PreferRoomTypeId, cancellationToken);
+            if (preferRoomType == null) return Result.Invalid(new ValidationError { ErrorMessage = $"Room type with an ID of {command.subject.PreferRoomTypeId} not found." });
+
+            if (command.subject.Prerequisites.Count > 0)
+            {
+                var uniqueSubjectIds = command.subject.Prerequisites.Distinct().ToList();
+                var prerequisiteSubjects = await _subjectRepository.GetSubjectsById(uniqueSubjectIds, cancellationToken);
+
+                if (prerequisiteSubjects.Count != uniqueSubjectIds.Count)
+                    {
+                        var foundIds = prerequisiteSubjects.Select(s => s.Id).ToHashSet();
+                        var notFoundIds = uniqueSubjectIds.Where(id => !foundIds.Contains(id)).ToList();
+                        return Result.NotFound($"Prerequisite Subjects with IDs {string.Join(", ", notFoundIds)} not found.");
+                    }
+
+            }
+
+            var subject = new Subject(command.subject);
+            var result = await _subjectRepository.Create(subject, cancellationToken);
+            return result;
+        }
+    }
+}
