@@ -16,14 +16,6 @@ public class RoomTypeRepository : IRoomTypeRepository
         _logger = logger;
     }
 
-    public async Task<RoomType?> GetById(RoomTypeId id, CancellationToken cancellationToken)
-    {
-        var roomType = await _dbContext.RoomTypes
-            .Where(rt => rt.Id == id)
-            .FirstOrDefaultAsync(cancellationToken);
-        return roomType;
-    }
-
     public async Task<List<RoomType>> ListRoomTypes(CancellationToken cancellationToken = default)
     {
         var roomTypes = await _dbContext.RoomTypes

@@ -1,5 +1,6 @@
 ﻿using Ardalis.Result;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
+using Enrollify.SharedKernel;
 using Mediator;
 
 namespace Enrollify.Application.RoomTypes.Features;
@@ -10,22 +11,25 @@ public static class UpdateRoomType
     public sealed class Handler : ICommandHandler<Command, Result<RoomTypeId>>
     {
         private readonly IRoomTypeRepository _roomTypeRepository;
-        public Handler(IRoomTypeRepository roomTypeRepository)
+        private readonly IReadRepository<RoomType> _roomTypeReadRepository;
+
+        public Handler(IRoomTypeRepository roomTypeRepository, IReadRepository<RoomType> roomTypeReadRepository)
         {
             _roomTypeRepository = roomTypeRepository;
+            _roomTypeReadRepository = roomTypeReadRepository;
         }
         public async ValueTask<Result<RoomTypeId>> Handle(Command command, CancellationToken cancellationToken)
         {
-            var existingRoomType = await _roomTypeRepository.GetById(command.id, cancellationToken);
-            if (existingRoomType == null)
+            var existing = await _roomTypeReadRepository.GetByIdAsync(command.id, cancellationToken);
+            if (existing == null)
             {
                 return Result.NotFound($"Room type with an ID of {command.id.Value} not found.");
             }
 
-            existingRoomType.UpdateName(command.name);
-            existingRoomType.UpdateDescription(command.description);
+            existing.UpdateName(command.name);
+            existing.UpdateDescription(command.description);
 
-            var updateResult = await _roomTypeRepository.Update(existingRoomType, cancellationToken);
+            var updateResult = await _roomTypeRepository.Update(existing, cancellationToken);
             return updateResult;
         }
     }
