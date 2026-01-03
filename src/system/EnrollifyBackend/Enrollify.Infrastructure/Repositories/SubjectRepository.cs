@@ -16,20 +16,6 @@ public class SubjectRepository : ISubjectRepository
         _logger = logger;
     }
 
-    public async Task<List<Subject?>> ListSubjectPrerequisite(SubjectId subjectId, CancellationToken cancellationToken)
-    {
-        var subject = await _dbContext.Subjects
-            .Include(s => s.Prerequisites)
-            .ThenInclude(sp => sp.PrerequisiteSubject)
-            .FirstOrDefaultAsync(s => s.Id == subjectId, cancellationToken);
-        if (subject == null)
-        {
-            return Enumerable.Empty<Subject?>().ToList();
-        }
-        var prerequisites = subject.Prerequisites.Select(sp => sp.PrerequisiteSubject).ToList();
-        return prerequisites;
-    }
-
     public async Task<List<Subject>> GetSubjectsById(List<SubjectId> subjectIds, CancellationToken cancellationToken)
     {
         var uniqueSubjectIds = subjectIds.Distinct();

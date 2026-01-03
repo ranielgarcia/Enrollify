@@ -36,20 +36,6 @@ public static class CreateSubject
             var preferRoomType = await _roomTypeReadRepository.GetByIdAsync(command.subject.PreferRoomTypeId, cancellationToken);
             if (preferRoomType == null) return Result.Invalid(new ValidationError { ErrorMessage = $"Room type with an ID of {command.subject.PreferRoomTypeId} not found." });
 
-            if (command.subject.Prerequisites.Count > 0)
-            {
-                var uniqueSubjectIds = command.subject.Prerequisites.Distinct().ToList();
-                var prerequisiteSubjects = await _subjectRepository.GetSubjectsById(uniqueSubjectIds, cancellationToken);
-
-                if (prerequisiteSubjects.Count != uniqueSubjectIds.Count)
-                    {
-                        var foundIds = prerequisiteSubjects.Select(s => s.Id).ToHashSet();
-                        var notFoundIds = uniqueSubjectIds.Where(id => !foundIds.Contains(id)).ToList();
-                        return Result.NotFound($"Prerequisite Subjects with IDs {string.Join(", ", notFoundIds)} not found.");
-                    }
-
-            }
-
             var subject = new Subject(command.subject);
             var result = await _subjectRepository.Create(subject, cancellationToken);
             return result;

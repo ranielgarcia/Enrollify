@@ -19,11 +19,6 @@ public class Subject : EntityBase<Subject, SubjectId>, IAggregateRoot, IAuditabl
         Description = Guard.Against.NullOrWhiteSpace(newSubject.Description);
         CourseId = Guard.Against.Null(newSubject.CourseId);
         PreferRoomTypeId = Guard.Against.Null(newSubject.PreferRoomTypeId);
-
-        foreach (var prerequisiteId in newSubject.Prerequisites)
-        {
-            AddPrerequisite(prerequisiteId);
-        }
     }
 
     public SubjectCode Code { get; private set; }
@@ -36,10 +31,6 @@ public class Subject : EntityBase<Subject, SubjectId>, IAggregateRoot, IAuditabl
     public RoomTypeId PreferRoomTypeId { get; private set; }
     public RoomType? PreferRoomType { get; private set; }
 
-    private readonly List<SubjectPrerequisite> _subjectPrerequisites = new();
-    public IReadOnlyCollection<SubjectPrerequisite> Prerequisites => _subjectPrerequisites.AsReadOnly();
-
-
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
     public User? CreatedByUser { get; private set; }
@@ -50,30 +41,6 @@ public class Subject : EntityBase<Subject, SubjectId>, IAggregateRoot, IAuditabl
     public UserId? DeletedBy { get; private set; }
     public User? DeletedByUser { get; private set; }
     public bool IsActive { get; private set; }
-
-
-    public Subject AddPrerequisite(SubjectId prerequisiteSubjectId)
-    {
-        Guard.Against.Null(prerequisiteSubjectId);
-        if (_subjectPrerequisites.Any(sp => sp.PrerequisiteSubjectId == prerequisiteSubjectId))
-        {
-            return this;
-        }
-        var prerequisite = new SubjectPrerequisite(this.Id, prerequisiteSubjectId);
-        _subjectPrerequisites.Add(prerequisite);
-        return this;
-    }
-
-    public Subject RemovePrerequisite(SubjectId prerequisiteSubjectId)
-    {
-        Guard.Against.Null(prerequisiteSubjectId);
-        var prerequisite = _subjectPrerequisites.FirstOrDefault(sp => sp.PrerequisiteSubjectId == prerequisiteSubjectId);
-        if (prerequisite != null)
-        {
-            _subjectPrerequisites.Remove(prerequisite);
-        }
-        return this;
-    }
 
     public Subject UpdateCode(SubjectCode newCode)
     {

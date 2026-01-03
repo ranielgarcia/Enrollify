@@ -44,8 +44,7 @@ public static class UpdateSubject
 
         public async ValueTask<Result<SubjectId>> Handle(Command command, CancellationToken cancellationToken)
         {
-            var spec = new GetSubjectByIdWithPrerequisitesSpec(command.Id);
-            var existing = await _subjectReadRepository.FirstOrDefaultAsync(spec, cancellationToken);
+            var existing = await _subjectReadRepository.GetByIdAsync(command.Id, cancellationToken);
             if (existing == null)
             {
                 return Result.NotFound($"Subject with an ID of {command.Id} not found.");
@@ -80,21 +79,6 @@ public static class UpdateSubject
                 .UpdateUnits(command.Units)
                 .UpdateCourse(command.CourseId)
                 .UpdatePreferRoomType(command.PreferRoomTypeId);
-
-            var currentPrerequisiteIds = existing.Prerequisites.Select(p => p.PrerequisiteSubjectId).ToHashSet();
-            var newPrerequisiteIds = command.Prerequisites.Distinct().ToHashSet();
-
-            var prerequisitesToRemove = currentPrerequisiteIds.Except(newPrerequisiteIds).ToList();
-            foreach (var prerequisiteId in prerequisitesToRemove)
-            {
-                existing.RemovePrerequisite(prerequisiteId);
-            }
-
-            var prerequisitesToAdd = newPrerequisiteIds.Except(currentPrerequisiteIds).ToList();
-            foreach (var prerequisiteId in prerequisitesToAdd)
-            {
-                existing.AddPrerequisite(prerequisiteId);
-            }
 
             await _subjectRepository.Update(existing, cancellationToken);
 

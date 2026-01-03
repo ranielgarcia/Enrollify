@@ -54,46 +54,5 @@ public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
           .WithMany()
           .HasForeignKey(e => e.DeletedBy)
           .OnDelete(DeleteBehavior.NoAction);
-
-        builder.OwnsMany<SubjectPrerequisite>(r => r.Prerequisites, p =>
-        {
-            p.ToTable("SubjectPrerequisites");
-
-            p.WithOwner().HasForeignKey(e => e.SourceSubjectId);
-            p.HasKey(e => new { e.SourceSubjectId, e.PrerequisiteSubjectId });
-
-            p.Property(e => e.PrerequisiteSubjectId).IsRequired();
-
-            p.HasOne(e => e.PrerequisiteSubject)
-                .WithMany()
-                .HasForeignKey(e => e.PrerequisiteSubjectId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            p.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
-            p.Property(a => a.CreatedBy).HasColumnName("CreatedBy");
-            p.Property(a => a.UpdatedAt).HasColumnName("UpdatedAt");
-            p.Property(a => a.UpdatedBy).HasColumnName("UpdatedBy");
-            p.Property(a => a.DeletedAt).HasColumnName("DeletedAt");
-            p.Property(a => a.DeletedBy).HasColumnName("DeletedBy");
-            p.Property(a => a.IsActive).HasColumnName("IsActive");
-
-            // Foreign key relationships for audit fields
-            p.HasOne(e => e.CreatedByUser)
-              .WithMany()
-              .HasForeignKey(e => e.CreatedBy)
-              .OnDelete(DeleteBehavior.NoAction);
-
-            p.HasOne(e => e.UpdatedByUser)
-              .WithMany()
-              .HasForeignKey(e => e.UpdatedBy)
-              .OnDelete(DeleteBehavior.NoAction);
-
-            p.HasOne(e => e.DeletedByUser)
-              .WithMany()
-              .HasForeignKey(e => e.DeletedBy)
-              .OnDelete(DeleteBehavior.NoAction);
-        });
-
-
     }
 }

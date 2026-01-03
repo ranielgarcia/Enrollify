@@ -11,6 +11,4 @@ public class SubjectForCreation
     public string Description { get; set; } = null!;
     public CourseId CourseId { get; set; }
     public RoomTypeId PreferRoomTypeId { get; set; }
-
-    public List<SubjectId> Prerequisites { get; set; } = new List<SubjectId>();
 }
