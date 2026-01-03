@@ -31,7 +31,25 @@ export const getAllSubjectsPaginatedOptions = (
     options: {
       queryKey: queryKeys.paginated(page, pageSize),
       select: (pagedResults): PagedResult<Subject> => {
-        return pagedSubjectsSchema.parse(pagedResults);
+        console.log("pagedResults", pagedResults, typeof pagedResults);
+        // Handle empty response or string response
+        if (
+          !pagedResults ||
+          (typeof pagedResults === "string" && pagedResults === "")
+        ) {
+          return {
+            items: [],
+            page,
+            pageSize,
+            totalCount: 0,
+            totalPages: 0,
+          };
+        }
+        const data =
+          typeof pagedResults === "string"
+            ? JSON.parse(pagedResults)
+            : pagedResults;
+        return pagedSubjectsSchema.parse(data);
       },
     },
   });
@@ -53,6 +71,9 @@ export const updateSubjectOptions = (id: number) =>
   createMutationOptions({
     httpVerb: "put",
     path: "/api/subjects",
+    params: {
+      id,
+    },
     mutationKey: queryKeys.update(id),
     options: {
       meta: { invalidateQueries: [queryKeys.base()] },
@@ -66,6 +87,9 @@ export const deleteSubjectOptions = (id: number) =>
   createMutationOptions({
     httpVerb: "delete",
     path: "/api/subjects",
+    params: {
+      id,
+    },
     mutationKey: queryKeys.delete(id),
     options: {
       meta: { invalidateQueries: [queryKeys.base()] },

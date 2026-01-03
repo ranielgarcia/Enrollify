@@ -22,9 +22,28 @@ interface DataTableProps<TData> {
   table: TableType<TData>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   columns: ColumnDef<TData, any>[];
+  showSelectedRows?: boolean;
+  showPaginationButtons?: boolean;
+  /** Custom handler for previous page navigation (for manual pagination) */
+  onPreviousPage?: () => void;
+  /** Custom handler for next page navigation (for manual pagination) */
+  onNextPage?: () => void;
+  /** Current page number (1-indexed, for display purposes) */
+  currentPage?: number;
+  /** Total number of pages */
+  totalPages?: number;
 }
 
-export function DataTable<TData>({ table, columns }: DataTableProps<TData>) {
+export function DataTable<TData>({
+  table,
+  columns,
+  showSelectedRows = false,
+  showPaginationButtons = false,
+  onPreviousPage,
+  onNextPage,
+  currentPage,
+  totalPages,
+}: DataTableProps<TData>) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -106,6 +125,49 @@ export function DataTable<TData>({ table, columns }: DataTableProps<TData>) {
             )}
           </TableBody>
         </Table>
+      </div>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        {showSelectedRows && (
+          <div className="text-muted-foreground flex-1 text-sm">
+            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+            {table.getFilteredRowModel().rows.length} row(s) selected.
+          </div>
+        )}
+        {showPaginationButtons && (
+          <div className="flex items-center space-x-2">
+            {currentPage !== undefined && totalPages !== undefined && (
+              <span className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </span>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onPreviousPage ?? (() => table.previousPage())}
+              disabled={
+                onPreviousPage
+                  ? currentPage !== undefined && currentPage <= 1
+                  : !table.getCanPreviousPage()
+              }
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onNextPage ?? (() => table.nextPage())}
+              disabled={
+                onNextPage
+                  ? currentPage !== undefined &&
+                    totalPages !== undefined &&
+                    currentPage >= totalPages
+                  : !table.getCanNextPage()
+              }
+            >
+              Next
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

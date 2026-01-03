@@ -7,13 +7,13 @@ namespace Enrollify.WebAPI.Features.Subjects;
 [HttpGet("{page}/{pageSize}")]
 [Group<SubjectEndpointGroup>]
 [Authorize(Policy = PolicyName.HasViewSubjectsPermission)]
-public class ListPaginatedSubjectsEndpoint (IMediator mediator) : EndpointWithoutRequest<Result<Application.PagedResult<SubjectDTO>>>
+public class ListPaginatedSubjectsEndpoint (IMediator mediator) : EndpointWithoutRequest<Application.PagedResult<SubjectDTO>>
 {
-    public override async Task<Result<Application.PagedResult<SubjectDTO>>> HandleAsync(CancellationToken cancellationToken)
+    public override async Task HandleAsync(CancellationToken cancellationToken)
     {
         var page = Route<int>("page");
         var pageSize = Route<int>("pageSize");
         var result = await mediator.Send(new ListSubjectsQuery(page, pageSize), cancellationToken);
-        return result;
+        await Send.OkAsync(result.Value);
     }
 }

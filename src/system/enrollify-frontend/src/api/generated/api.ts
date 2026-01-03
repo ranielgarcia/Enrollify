@@ -285,16 +285,6 @@ export interface components {
             preferRoomTypeId: number;
         };
         EnrollifyWebAPIFeaturesSubjectsDeleteSubjectRequest: Record<string, never>;
-        ArdalisResultResultOfPagedResultOfSubjectDTO: {
-            value?: components["schemas"]["EnrollifyApplicationPagedResultOfSubjectDTO"] | null;
-            status?: components["schemas"]["ArdalisResultResultStatus"];
-            isSuccess?: boolean;
-            successMessage?: string | null;
-            correlationId?: string | null;
-            location?: string | null;
-            errors?: string[] | null;
-            validationErrors?: components["schemas"]["ArdalisResultValidationError"][] | null;
-        };
         EnrollifyApplicationPagedResultOfSubjectDTO: {
             items?: components["schemas"]["EnrollifyApplicationSubjectsDTOsSubjectDTO"][];
             /** Format: int32 */
@@ -351,16 +341,6 @@ export interface components {
             firstName?: string;
             lastName?: string;
         };
-        /** @enum {integer} */
-        ArdalisResultResultStatus: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
-        ArdalisResultValidationError: {
-            identifier?: string | null;
-            errorMessage?: string | null;
-            errorCode?: string | null;
-            severity?: components["schemas"]["ArdalisResultValidationSeverity"];
-        };
-        /** @enum {integer} */
-        ArdalisResultValidationSeverity: 0 | 1 | 2;
         EnrollifyWebAPIFeaturesSubjectsUpdateSubjectResponse: {
             /** Format: int32 */
             id?: number;
@@ -977,7 +957,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ArdalisResultResultOfPagedResultOfSubjectDTO"];
+                    "application/json": components["schemas"]["EnrollifyApplicationPagedResultOfSubjectDTO"];
                 };
             };
             /** @description Unauthorized */

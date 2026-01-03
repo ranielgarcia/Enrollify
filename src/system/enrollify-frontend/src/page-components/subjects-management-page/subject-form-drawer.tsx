@@ -1,10 +1,9 @@
 import {
-  createRoomOptions,
-  UpdateRoomOptions,
-} from "@/api/collections/room-collection";
-import type { Building } from "@/api/models/building";
-import type { Room } from "@/api/models/room";
+  createSubjectOptions,
+  updateSubjectOptions,
+} from "@/api/collections/subject-collection";
 import type { RoomType } from "@/api/models/room-type";
+import type { Subject } from "@/api/models/subject";
 import {
   SearchableSelect,
   type SearchableSelectOption,
@@ -40,62 +39,67 @@ const defaultMeta: FormMeta = {
   formAction: null,
 };
 
-const roomFormSchema = z.object({
-  roomNumber: z.string().min(1, "Room number is required"),
-  capacity: z.number().min(1, "Capacity must be at least 1"),
-  buildingId: z
+const subjectFormSchema = z.object({
+  code: z
+    .string()
+    .min(3, "Subject code must be at least 3 characters")
+    .max(20, "Subject code must not exceed 20 characters"),
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  units: z
     .number()
-    .nonnegative("Building is required")
-    .min(1, "Building is required"),
-  roomTypeId: z
+    .min(1, "Units must be greater than 0")
+    .max(12, "Units must not exceed 12"),
+  preferRoomTypeId: z
     .number()
     .nonnegative("Room Type is required")
     .min(1, "Room Type is required"),
 });
-type RoomFormData = z.infer<typeof roomFormSchema>;
+type SubjectFormData = z.infer<typeof subjectFormSchema>;
 
-interface RoomFormDrawerProps {
-  buildings?: Building[];
+interface SubjectFormDrawerProps {
   roomTypes?: RoomType[];
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  roomToUpdate?: Room | null;
+  subjectToUpdate?: Subject | null;
   onOpenChange: (isOpen: boolean) => void;
 }
 
-export function RoomFormDrawer({
-  buildings,
+export function SubjectFormDrawer({
   roomTypes,
   isOpen,
   setIsOpen,
-  roomToUpdate,
+  subjectToUpdate,
   onOpenChange,
-}: RoomFormDrawerProps) {
-  const defaultFormValues: RoomFormData = {
-    roomNumber: roomToUpdate?.roomNumber ?? "",
-    capacity: roomToUpdate?.capacity ?? 1,
-    buildingId: roomToUpdate?.building?.id ?? 0,
-    roomTypeId: roomToUpdate?.roomType?.id ?? 0,
+}: SubjectFormDrawerProps) {
+  const defaultFormValues: SubjectFormData = {
+    code: subjectToUpdate?.code ?? "",
+    title: subjectToUpdate?.title ?? "",
+    description: subjectToUpdate?.description ?? "",
+    units: subjectToUpdate?.units ?? 1,
+    preferRoomTypeId: subjectToUpdate?.preferRoomType?.id ?? 0,
   };
 
-  const { mutateAsync: createNewRoomAsync } = useMutation(createRoomOptions());
-  const { mutateAsync: updateRoomAsync } = useMutation(
-    UpdateRoomOptions(roomToUpdate?.id ?? 0)
+  const { mutateAsync: createNewSubjectAsync } = useMutation(
+    createSubjectOptions()
+  );
+  const { mutateAsync: updateSubjectAsync } = useMutation(
+    updateSubjectOptions(subjectToUpdate?.id ?? 0)
   );
 
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
-      onChange: roomFormSchema,
+      onSubmit: subjectFormSchema,
     },
     onSubmitMeta: defaultMeta,
     onSubmit: async ({ value, meta }) => {
-      const formValues = roomFormSchema.parse(value);
+      const formValues = subjectFormSchema.parse(value);
 
       if (meta.submitAction === "create") {
-        await createNewRoomAsync(formValues);
+        await createNewSubjectAsync(formValues);
       } else if (meta.submitAction === "update") {
-        await updateRoomAsync(formValues);
+        await updateSubjectAsync(formValues);
       }
 
       if (meta.formAction === "close") {
@@ -105,19 +109,13 @@ export function RoomFormDrawer({
     },
   });
 
-  const buildingOptions: SearchableSelectOption[] =
-    buildings?.map((building) => ({
-      value: building.id.toString(),
-      label: building.name,
-    })) ?? [];
-
   const roomTypeOptions: SearchableSelectOption[] =
     roomTypes?.map((roomType) => ({
       value: roomType.id.toString(),
       label: roomType.name,
     })) ?? [];
 
-  const isUpdatingRoom = !!roomToUpdate;
+  const isUpdatingSubject = !!subjectToUpdate;
   return (
     <Drawer
       direction="right"
@@ -128,15 +126,16 @@ export function RoomFormDrawer({
       <DrawerTrigger asChild>
         <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer">
           <Plus className="size-4" />
-          Add Room
+          Add Subject
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="sm:max-w-[600px]!">
+      {/*  className="sm:max-w-[600px]!" */}
+      <DrawerContent>
         <AuthorizeView
-          policy="canCreateRooms"
+          policy="canCreateSubject"
           unauthorized={
             <Unauthorized
-              message="Your current role does not have the necessary permissions to create room."
+              message="Your current role does not have the necessary permissions to create subject."
               buttonLabel="Back to Home"
               backCallback={() => setIsOpen(false)}
               redirectOptions={{
@@ -155,20 +154,20 @@ export function RoomFormDrawer({
             <div className="w-full">
               <DrawerHeader>
                 <DrawerTitle>
-                  {isUpdatingRoom ? "Update" : "Create"} Room
+                  {isUpdatingSubject ? "Update" : "Create"} Subject
                 </DrawerTitle>
-                <DrawerDescription>Set building details.</DrawerDescription>
+                <DrawerDescription>Set subject details.</DrawerDescription>
               </DrawerHeader>
               <div className="p-4 pb-0">
                 <div className="pb-4">
                   <form.Field
-                    name="roomNumber"
+                    name="code"
                     children={(field) => (
                       <div className="grid w-full items-center gap-3">
-                        <Label htmlFor={field.name}>Room Number:</Label>
+                        <Label htmlFor={field.name}>Code:</Label>
                         <Input
                           type="text"
-                          placeholder="Room Number:"
+                          placeholder="Code:"
                           value={field.state.value}
                           onChange={(e) => field.handleChange(e.target.value)}
                           id={field.name}
@@ -186,14 +185,62 @@ export function RoomFormDrawer({
                 </div>
                 <div className="pb-4">
                   <form.Field
-                    name="capacity"
+                    name="title"
                     children={(field) => (
                       <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Capacity:</Label>
+                        <Label htmlFor={field.name}>Title:</Label>
+                        <Input
+                          type="text"
+                          value={field.state.value}
+                          placeholder="Title:"
+                          onChange={(e) => field.handleChange(e.target.value)}
+                        />
+                        {!field.state.meta.isValid && (
+                          <em role="alert" className="text-red-800">
+                            {field.state.meta.errors
+                              .map((e) => e?.message)
+                              .join(", ")}
+                          </em>
+                        )}
+                      </div>
+                    )}
+                  />
+                </div>
+                <div className="pb-4">
+                  <form.Field
+                    name="description"
+                    children={(field) => (
+                      <div className="grid w-full max-w-sm items-center gap-3">
+                        <Label htmlFor={field.name}>Description:</Label>
+                        <Input
+                          type="text"
+                          value={field.state.value}
+                          placeholder="Description:"
+                          onChange={(e) => field.handleChange(e.target.value)}
+                        />
+                        {!field.state.meta.isValid && (
+                          <em role="alert" className="text-red-800">
+                            {field.state.meta.errors
+                              .map((e) => e?.message)
+                              .join(", ")}
+                          </em>
+                        )}
+                      </div>
+                    )}
+                  />
+                </div>
+
+                <div className="pb-4">
+                  <form.Field
+                    name="units"
+                    children={(field) => (
+                      <div className="grid w-full max-w-sm items-center gap-3">
+                        <Label htmlFor={field.name}>Units:</Label>
                         <Input
                           type="number"
+                          step="0.5"
                           value={field.state.value}
-                          placeholder="Capacity:"
+                          placeholder="Units:"
                           onChange={(e) =>
                             field.handleChange(Number(e.target.value))
                           }
@@ -211,10 +258,10 @@ export function RoomFormDrawer({
                 </div>
                 <div className="pb-4">
                   <form.Field
-                    name="roomTypeId"
+                    name="preferRoomTypeId"
                     children={(field) => (
                       <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Room Type:</Label>
+                        <Label htmlFor={field.name}>Prefer Room Type:</Label>
                         <SearchableSelect
                           options={roomTypeOptions}
                           value={field.state.value.toString()}
@@ -222,38 +269,9 @@ export function RoomFormDrawer({
                             field.handleChange(Number(val))
                           }
                           name={field.name}
-                          placeholder="Select a room type"
-                          searchPlaceholder="Search room types..."
-                          emptyMessage="No room type found"
-                        />
-
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
-                    )}
-                  />
-                </div>
-                <div className="pb-4">
-                  <form.Field
-                    name="buildingId"
-                    children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Building:</Label>
-                        <SearchableSelect
-                          options={buildingOptions}
-                          value={field.state.value.toString()}
-                          onValueChange={(val) =>
-                            field.handleChange(Number(val))
-                          }
-                          name={field.name}
-                          placeholder="Select a building"
-                          searchPlaceholder="Search buildings..."
-                          emptyMessage="No building found"
+                          placeholder="Select a prefer room type"
+                          searchPlaceholder="Search prefer room types..."
+                          emptyMessage="No prefer room type found"
                         />
 
                         {!field.state.meta.isValid && (
@@ -279,14 +297,14 @@ export function RoomFormDrawer({
                       type="submit"
                       onClick={() =>
                         form.handleSubmit({
-                          submitAction: isUpdatingRoom ? "update" : "create",
+                          submitAction: isUpdatingSubject ? "update" : "create",
                           formAction: "close",
                         })
                       }
                     >
                       {isSubmitting ? (
                         <Loader2 />
-                      ) : isUpdatingRoom ? (
+                      ) : isUpdatingSubject ? (
                         "Update"
                       ) : (
                         "Submit"
