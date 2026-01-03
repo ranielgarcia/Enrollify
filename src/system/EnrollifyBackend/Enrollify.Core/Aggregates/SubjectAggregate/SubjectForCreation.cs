@@ -9,6 +9,5 @@ public class SubjectForCreation
     public string Title { get; set; } = null!;
     public decimal Units { get; set; }
     public string Description { get; set; } = null!;
-    public CourseId CourseId { get; set; }
     public RoomTypeId PreferRoomTypeId { get; set; }
 }

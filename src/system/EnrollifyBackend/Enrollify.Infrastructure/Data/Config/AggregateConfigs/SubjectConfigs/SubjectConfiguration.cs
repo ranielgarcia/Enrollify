@@ -18,16 +18,10 @@ public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
         builder.Property(e => e.Units).IsRequired();
         builder.Property(e => e.Description).IsRequired();
 
-        builder.HasOne(e => e.Course)
-            .WithMany()
-            .HasForeignKey(e => e.CourseId)
-            .OnDelete(DeleteBehavior.NoAction);
-
         builder.HasOne(e => e.PreferRoomType)
             .WithMany()
             .HasForeignKey(e => e.PreferRoomTypeId)
             .OnDelete(DeleteBehavior.NoAction);
-
 
         // Audit fields
         builder.Property(a => a.CreatedAt).HasColumnName("CreatedAt");

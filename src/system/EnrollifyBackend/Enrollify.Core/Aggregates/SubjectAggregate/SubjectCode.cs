@@ -5,7 +5,7 @@ namespace Enrollify.Core.Aggregates.SubjectAggregate;
 [ValueObject<string>(conversions: Conversions.SystemTextJson)]
 public readonly partial struct SubjectCode
 {
-    public const int MaxLength = 10;
+    public const int MaxLength = 20;
     private static Validation Validate(in string name)
     {
         if (string.IsNullOrWhiteSpace(name))

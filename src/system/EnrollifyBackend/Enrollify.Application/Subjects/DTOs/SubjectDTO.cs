@@ -10,7 +10,6 @@ public class SubjectDTO : BaseDTO
     public string Title { get; set; } = null!;
     public decimal Units { get; set; }
     public string Description { get; set; } = null!;
-    public CourseSummaryDTO? Course { get; set; }
     public RoomTypeSummaryDTO? PreferRoomType { get; set; }
 
     public static SubjectDTO FromEntity(Subject subject)
@@ -22,7 +21,6 @@ public class SubjectDTO : BaseDTO
             Title = subject.Title,
             Units = subject.Units,
             Description = subject.Description,
-            Course = subject.Course != null ? CourseSummaryDTO.FromEntity(subject.Course) : null,
             PreferRoomType = subject.PreferRoomType != null ? RoomTypeSummaryDTO.FromEntity(subject.PreferRoomType) : null,
             CreatedAt = subject.CreatedAt,
             CreatedBy = BaseUserDTO.FromUser(subject.CreatedByUser),

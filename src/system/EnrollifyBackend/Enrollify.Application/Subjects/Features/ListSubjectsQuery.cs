@@ -7,10 +7,8 @@ using Mediator;
 
 namespace Enrollify.Application.Subjects.Features;
 
-public class ListSubjectsQuery : IQuery<Result<PagedResult<SubjectDTO>>>
+public record ListSubjectsQuery (int page = 1, int pageSize = 10) : IQuery<Result<PagedResult<SubjectDTO>>>
 {
-    public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 10;
 }
 
 public class ListSubjectsQueryHandler : IQueryHandler<ListSubjectsQuery, Result<PagedResult<SubjectDTO>>>
@@ -24,7 +22,7 @@ public class ListSubjectsQueryHandler : IQueryHandler<ListSubjectsQuery, Result<
 
         public async ValueTask<Result<PagedResult<SubjectDTO>>> Handle(ListSubjectsQuery request, CancellationToken cancellationToken)
         {
-            var spec = new ListSubjectsSpec(request.Page, request.PageSize);
+            var spec = new ListSubjectsSpec(request.page, request.pageSize);
             var subjects = await _readRepository.ListAsync(spec, cancellationToken);
             var totalCount = await _readRepository.CountAsync(cancellationToken);
 
@@ -32,7 +30,7 @@ public class ListSubjectsQueryHandler : IQueryHandler<ListSubjectsQuery, Result<
                 .Select(SubjectDTO.FromEntity)
                 .ToList();
 
-            var totalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize);
-            return new PagedResult<SubjectDTO>(items.AsReadOnly(), request.Page, request.PageSize, totalCount, totalPages);
+            var totalPages = (int)Math.Ceiling(totalCount / (double)request.pageSize);
+            return new PagedResult<SubjectDTO>(items.AsReadOnly(), request.page, request.pageSize, totalCount, totalPages);
         }
     }

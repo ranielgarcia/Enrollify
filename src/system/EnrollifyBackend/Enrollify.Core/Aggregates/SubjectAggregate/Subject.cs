@@ -1,5 +1,4 @@
 ﻿using Ardalis.GuardClauses;
-using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.SharedKernel;
@@ -17,7 +16,6 @@ public class Subject : EntityBase<Subject, SubjectId>, IAggregateRoot, IAuditabl
         Title = Guard.Against.NullOrWhiteSpace(newSubject.Title);
         Units = Guard.Against.NegativeOrZero(newSubject.Units);
         Description = Guard.Against.NullOrWhiteSpace(newSubject.Description);
-        CourseId = Guard.Against.Null(newSubject.CourseId);
         PreferRoomTypeId = Guard.Against.Null(newSubject.PreferRoomTypeId);
     }
 
@@ -25,8 +23,6 @@ public class Subject : EntityBase<Subject, SubjectId>, IAggregateRoot, IAuditabl
     public string Title { get; private set; }
     public decimal Units { get; private set; }
     public string Description { get; private set; }
-    public CourseId CourseId { get; private set; }
-    public Course? Course { get; private set; } = null;
 
     public RoomTypeId PreferRoomTypeId { get; private set; }
     public RoomType? PreferRoomType { get; private set; }
@@ -67,13 +63,6 @@ public class Subject : EntityBase<Subject, SubjectId>, IAggregateRoot, IAuditabl
     {
         if (Description == newDescription) return this;
         Description = Guard.Against.NullOrWhiteSpace(newDescription);
-        return this;
-    }
-
-    public Subject UpdateCourse(CourseId newCourseId)
-    {
-        if (CourseId == newCourseId) return this;
-        CourseId = Guard.Against.Null(newCourseId);
         return this;
     }
 

@@ -2,7 +2,9 @@ import SubjectsManagementPage from "@/page-components/subjects-management-page";
 import type { RouteLoaderData } from "@/types/route.types";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/portal/master-data/subjects")({
+export const Route = createFileRoute(
+  "/portal/master-data/subjects/{-$page}/{-$pageSize}"
+)({
   component: SubjectsManagementPage,
   loader: (): RouteLoaderData => ({
     crumb: "Subjects",

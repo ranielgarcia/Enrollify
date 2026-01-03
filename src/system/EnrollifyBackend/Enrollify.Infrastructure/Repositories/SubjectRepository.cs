@@ -16,16 +16,6 @@ public class SubjectRepository : ISubjectRepository
         _logger = logger;
     }
 
-    public async Task<List<Subject>> GetSubjectsById(List<SubjectId> subjectIds, CancellationToken cancellationToken)
-    {
-        var uniqueSubjectIds = subjectIds.Distinct();
-        var subjects = await _dbContext.Subjects
-            .Where(s => uniqueSubjectIds.Contains(s.Id))
-            .ToListAsync(cancellationToken);
-
-        return subjects;
-    }
-
     public async Task<Result<SubjectId>> Create(Subject newSubject, CancellationToken cancellationToken)
     {
         try
@@ -34,7 +24,7 @@ public class SubjectRepository : ISubjectRepository
             await _dbContext.SaveChangesAsync(cancellationToken);
             return Result.Success(newSubject.Id);
         }
-        catch (DbUpdateException ex) when (IsDuplicateCodeInACourseException(ex))
+        catch (DbUpdateException ex) when (IsDuplicateCodeException(ex))
         {
             _logger.LogError(ex, "Duplicate subject code: {SubjectCode}", newSubject.Code);
             return Result.Conflict($"The subject code '{newSubject.Code}' is already in use. Please choose a different code.");
@@ -74,22 +64,16 @@ public class SubjectRepository : ISubjectRepository
 
     public async Task<Result<SubjectId>> Update(Subject newSubject, CancellationToken cancellationToken)
     {
-        var course = await _dbContext.Courses.FirstOrDefaultAsync(x => x.Id == newSubject.CourseId, cancellationToken);
-        if (course == null) return Result.Invalid(new ValidationError { ErrorMessage = $"Course with an ID of {newSubject.CourseId} not found." });
-
-        var preferRoomType = await _dbContext.RoomTypes.FirstOrDefaultAsync(x => x.Id == newSubject.PreferRoomTypeId, cancellationToken);
-        if (preferRoomType == null) return Result.Invalid(new ValidationError { ErrorMessage = $"Room type with an ID of {newSubject.PreferRoomTypeId} not found." });
-
         try
         {
             _dbContext.Subjects.Update(newSubject);
             await _dbContext.SaveChangesAsync(cancellationToken);
             return Result.Success(newSubject.Id);
         }
-        catch (DbUpdateException ex) when (IsDuplicateCodeInACourseException(ex))
+        catch (DbUpdateException ex) when (IsDuplicateCodeException(ex))
         {
             _logger.LogError(ex, "Duplicate subject code: {SubjectCode}", newSubject.Code);
-            return Result.Conflict($"The subject code '{newSubject.Code}' in {course.Name} college is already in use. Please choose a different code.");
+            return Result.Conflict($"The subject code '{newSubject.Code}' already in use. Please choose a different code.");
         }
         catch (DbUpdateException ex) when (IsSubjectsUnitsInvalid(ex))
         {
@@ -98,10 +82,10 @@ public class SubjectRepository : ISubjectRepository
         }
     }
 
-    private bool IsDuplicateCodeInACourseException(DbUpdateException ex)
+    private bool IsDuplicateCodeException(DbUpdateException ex)
     {
         var message = ex.InnerException?.Message;
-        return message?.Contains("UQ_Subjects_Code_Course") == true;
+        return message?.Contains("UQ_Subjects_Code") == true;
     }
 
     private bool IsSubjectsUnitsInvalid(DbUpdateException ex)
