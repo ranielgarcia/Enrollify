@@ -189,6 +189,56 @@ GO
 
 -- ************************************
 
+-- Curriculum versioning - each course can have multiple curriculum versions
+-- Students are assigned to a curriculum when they enroll
+-- Prerequisites are defined at the curriculum level, not the subject level
+CREATE TABLE Curricula
+(
+	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	CourseId INT NOT NULL,
+	EffectiveYear INT NOT NULL,           -- Academic year when this curriculum takes effect (e.g., 2024)
+	Version VARCHAR(20) NOT NULL,          -- Version identifier (e.g., '2024-A', '2024-REV1')
+	Status VARCHAR(20) NOT NULL DEFAULT 'DRAFT', -- DRAFT, ACTIVE, PHASED_OUT, ARCHIVED
+	Description VARCHAR(500) NULL,
+	ApprovedDate DATE NULL,                -- When the curriculum was officially approved
+
+	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+	CreatedBy INT NOT NULL,
+	UpdatedAt DATETIMEOFFSET NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIMEOFFSET NULL,
+	DeletedBy INT NULL,
+	IsActive BIT NOT NULL DEFAULT 1,
+
+	CONSTRAINT FK_Curricula_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
+	CONSTRAINT FK_Curricula_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Curricula_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Curricula_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
+	CONSTRAINT CHK_Curricula_Status_Valid CHECK (Status IN ('DRAFT', 'ACTIVE', 'PHASED_OUT', 'ARCHIVED')),
+	CONSTRAINT CHK_Curricula_EffectiveYear_Valid CHECK (EffectiveYear >= 2000)
+);
+GO;
+
+-- Curricula indexes
+CREATE NONCLUSTERED INDEX IX_Curricula_CourseId 
+ON Curricula(CourseId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_Curricula_Status 
+ON Curricula(Status);
+GO
+
+-- Unique curriculum version per course (only for active records)
+CREATE UNIQUE NONCLUSTERED INDEX UIdx_Curricula_Course_Version_IsActive
+ON Curricula(CourseId, Version)
+WHERE IsActive = 1;
+GO
+
+-- ************************************
+
+-- Subjects are now course-agnostic catalog entries
+-- They can be reused across multiple curricula/courses
+-- The relationship to a course is through CurriculumSubjects
 CREATE TABLE Subjects
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
@@ -196,8 +246,9 @@ CREATE TABLE Subjects
 	Title VARCHAR(100) NOT NULL,
 	Units DECIMAL(3,1) NULL,
 	Description VARCHAR(255) NULL,
-	CourseId INT NOT NULL,
 	PreferRoomTypeId INT NOT NULL,
+	-- Note: CourseId removed - subjects are now course-agnostic
+	-- The relationship to courses is through CurriculumSubjects
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -207,9 +258,8 @@ CREATE TABLE Subjects
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	
-	CONSTRAINT UQ_Subjects_Code_Course UNIQUE (Code, CourseId),
+	CONSTRAINT UQ_Subjects_Code UNIQUE (Code),
 	CONSTRAINT CHK_Subjects_Units_Valid CHECK (Units > 0 AND Units <= 12),
-	CONSTRAINT FK_Subjects_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
 	CONSTRAINT FK_Subjects_RoomType FOREIGN KEY (PreferRoomTypeId) REFERENCES RoomTypes(Id),
 	CONSTRAINT FK_Subjects_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Subjects_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
@@ -217,9 +267,6 @@ CREATE TABLE Subjects
 );
 
 -- Subjects indexes
-CREATE NONCLUSTERED INDEX IX_Subjects_CourseId 
-ON Subjects(CourseId);
-
 CREATE NONCLUSTERED INDEX IX_Subjects_PreferRoomTypeId
 ON Subjects(PreferRoomTypeId);
 GO;
@@ -227,12 +274,17 @@ GO;
 
 -- ************************************
 
--- A subject can have multiple prerequisite subjects
--- Many-to-Many relationship between Subjects
-CREATE TABLE SubjectPrerequisites
+-- CurriculumSubjects: Links subjects to a specific curriculum with year/semester placement
+-- This is where subjects become part of a course's curriculum
+CREATE TABLE CurriculumSubjects
 (
-	SourceSubjectId INT NOT NULL,
-	PrerequisiteSubjectId INT NOT NULL,
+	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	CurriculumId INT NOT NULL,
+	SubjectId INT NOT NULL,
+	YearLevel INT NOT NULL,                -- Which year this subject is typically taken (1-6)
+	Semester INT NOT NULL,                 -- Which semester (1, 2, or 3 for summer)
+	IsElective BIT NOT NULL DEFAULT 0,     -- Whether this is an elective slot
+	ElectiveGroupName VARCHAR(50) NULL,    -- Group name for electives (e.g., 'Major Elective', 'Free Elective')
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -241,33 +293,78 @@ CREATE TABLE SubjectPrerequisites
 	DeletedAt DATETIMEOFFSET NULL,
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT PK_SubjectPrerequisites PRIMARY KEY(SourceSubjectId, PrerequisiteSubjectId),
-	CONSTRAINT FK_SubjectPrerequisites_SourceSubject FOREIGN KEY (SourceSubjectId) REFERENCES Subjects(Id),
-	CONSTRAINT FK_SubjectPrerequisites_PrerequisiteSubject FOREIGN KEY (PrerequisiteSubjectId) REFERENCES Subjects(Id),
-	CONSTRAINT FK_SubjectPrerequisites_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_SubjectPrerequisites_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_SubjectPrerequisites_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
-	CONSTRAINT CHK_SubjectPrerequisites_NoSelfReference CHECK (SourceSubjectId <> PrerequisiteSubjectId)
+
+	CONSTRAINT FK_CurriculumSubjects_Curriculum FOREIGN KEY (CurriculumId) REFERENCES Curricula(Id),
+	CONSTRAINT FK_CurriculumSubjects_Subject FOREIGN KEY (SubjectId) REFERENCES Subjects(Id),
+	CONSTRAINT FK_CurriculumSubjects_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_CurriculumSubjects_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_CurriculumSubjects_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
+	CONSTRAINT CHK_CurriculumSubjects_YearLevel_Valid CHECK (YearLevel BETWEEN 1 AND 6),
+	CONSTRAINT CHK_CurriculumSubjects_Semester_Valid CHECK (Semester IN (1, 2, 3))
 );
 GO;
 
--- SubjectPrerequisites indexes
-CREATE NONCLUSTERED INDEX IX_SubjectPrerequisites_SourceSubjectId 
-ON SubjectPrerequisites(SourceSubjectId);
+-- CurriculumSubjects indexes
+CREATE NONCLUSTERED INDEX IX_CurriculumSubjects_CurriculumId 
+ON CurriculumSubjects(CurriculumId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_CurriculumSubjects_SubjectId 
+ON CurriculumSubjects(SubjectId);
+GO
+
+-- Ensure a subject appears only once per curriculum (active records only)
+CREATE UNIQUE NONCLUSTERED INDEX UIdx_CurriculumSubjects_Curriculum_Subject_IsActive
+ON CurriculumSubjects(CurriculumId, SubjectId)
+WHERE IsActive = 1;
 GO
 
 
-CREATE NONCLUSTERED INDEX IX_SubjectPrerequisites_PrerequisiteSubjectId 
-ON SubjectPrerequisites(PrerequisiteSubjectId);
+-- ************************************
+
+-- Prerequisites are now scoped to the curriculum level
+-- This allows the same subject to have different prerequisites in different curriculum versions
+-- Example: "Data Structures" in Curriculum 2023 requires only "Programming 1"
+--          "Data Structures" in Curriculum 2024 requires "Programming 1" AND "Discrete Math"
+CREATE TABLE CurriculumSubjectPrerequisites
+(
+	CurriculumSubjectId INT NOT NULL,              -- The subject that has prerequisites
+	PrerequisiteCurriculumSubjectId INT NOT NULL,  -- The prerequisite subject (must be in same curriculum)
+	MinimumGrade DECIMAL(3,2) NULL,                -- Optional: minimum grade required (e.g., 2.0)
+
+	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+	CreatedBy INT NOT NULL,
+	UpdatedAt DATETIMEOFFSET NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIMEOFFSET NULL,
+	DeletedBy INT NULL,
+	IsActive BIT NOT NULL DEFAULT 1,
+
+	CONSTRAINT PK_CurriculumSubjectPrerequisites PRIMARY KEY(CurriculumSubjectId, PrerequisiteCurriculumSubjectId),
+	CONSTRAINT FK_CurriculumSubjectPrereqs_CurriculumSubject FOREIGN KEY (CurriculumSubjectId) REFERENCES CurriculumSubjects(Id),
+	CONSTRAINT FK_CurriculumSubjectPrereqs_PrereqCurriculumSubject FOREIGN KEY (PrerequisiteCurriculumSubjectId) REFERENCES CurriculumSubjects(Id),
+	CONSTRAINT FK_CurriculumSubjectPrereqs_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_CurriculumSubjectPrereqs_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_CurriculumSubjectPrereqs_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
+	CONSTRAINT CHK_CurriculumSubjectPrereqs_NoSelfReference CHECK (CurriculumSubjectId <> PrerequisiteCurriculumSubjectId),
+	CONSTRAINT CHK_CurriculumSubjectPrereqs_MinGrade_Valid CHECK (MinimumGrade IS NULL OR (MinimumGrade >= 1.0 AND MinimumGrade <= 5.0))
+);
+GO;
+
+-- CurriculumSubjectPrerequisites indexes
+CREATE NONCLUSTERED INDEX IX_CurriculumSubjectPrereqs_CurriculumSubjectId 
+ON CurriculumSubjectPrerequisites(CurriculumSubjectId);
 GO
 
+CREATE NONCLUSTERED INDEX IX_CurriculumSubjectPrereqs_PrereqCurriculumSubjectId 
+ON CurriculumSubjectPrerequisites(PrerequisiteCurriculumSubjectId);
+GO
 
---Supports multiple prerequisites subjects per subject
---It only applies the uniqueness check to rows where IsActive = 1.
---You can still insert historical/inactive rows (IsActive = 0), so soft-deletion works.
---Ensures that at most one active mapping per (SourceSubjectId, PrerequisiteSubjectId) exists.
-CREATE UNIQUE NONCLUSTERED INDEX UIdx_Subject_PrerequisiteSubject_IsActive
-ON SubjectPrerequisites(SourceSubjectId, PrerequisiteSubjectId)
+-- Supports multiple prerequisites per curriculum subject
+-- It only applies the uniqueness check to rows where IsActive = 1.
+-- You can still insert historical/inactive rows (IsActive = 0), so soft-deletion works.
+CREATE UNIQUE NONCLUSTERED INDEX UIdx_CurriculumSubjectPrereqs_IsActive
+ON CurriculumSubjectPrerequisites(CurriculumSubjectId, PrerequisiteCurriculumSubjectId)
 WHERE IsActive = 1;
 
 
@@ -606,6 +703,7 @@ CREATE TABLE Students
 	LastName VARCHAR(50) NOT NULL,
 	Email VARCHAR(255) NOT NULL,
 	CourseId INT NOT NULL,
+	CurriculumId INT NOT NULL,             -- Which curriculum version the student follows
 	YearLevel INT NOT NULL,
 	Status INT NOT NULL DEFAULT 1, -- References StudentStatuses, default to ACTIVE
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
@@ -618,6 +716,7 @@ CREATE TABLE Students
 	CONSTRAINT UQ_Students_StudentNumber UNIQUE (StudentNumber),
 	CONSTRAINT UQ_Students_Email UNIQUE (Email),
 	CONSTRAINT FK_Students_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
+	CONSTRAINT FK_Students_Curriculum FOREIGN KEY (CurriculumId) REFERENCES Curricula(Id),
     CONSTRAINT FK_Students_StudentStatus FOREIGN KEY (Status) REFERENCES StudentStatuses(Id),
     CONSTRAINT FK_Students_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_Students_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
@@ -630,6 +729,10 @@ GO
 -- Students indexes
 CREATE NONCLUSTERED INDEX IX_Students_CourseId 
 ON Students(CourseId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_Students_CurriculumId 
+ON Students(CurriculumId);
 GO
 
 CREATE NONCLUSTERED INDEX IX_Students_Status 
