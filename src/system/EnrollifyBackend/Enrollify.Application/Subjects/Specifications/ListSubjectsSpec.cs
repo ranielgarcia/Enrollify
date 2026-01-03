@@ -5,8 +5,12 @@ namespace Enrollify.Application.Subjects.Specifications;
 
 public class ListSubjectsSpec : Specification<Subject>
 {
-    public ListSubjectsSpec() =>
+    public ListSubjectsSpec(int pageNumber, int pageSize)
+    {
         Query
-        .Include(s => s.Course)
-        .Include(s => s.PreferRoomType);
+            .Include(s => s.Course)
+            .Include(s => s.PreferRoomType)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize);
+    }
 }
