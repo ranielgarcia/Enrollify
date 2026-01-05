@@ -25,9 +25,6 @@ export default function SubjectsManagementPage() {
 
   const { data: roomTypes } = useSuspenseQuery(getAllRoomTypesOptions());
 
-  console.log(pagedSubjects);
-  console.log(roomTypes);
-
   const handlePreviousPage = useCallback(() => {
     if (currentPage > 1) {
       navigate({

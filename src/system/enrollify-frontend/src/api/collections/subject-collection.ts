@@ -31,7 +31,6 @@ export const getAllSubjectsPaginatedOptions = (
     options: {
       queryKey: queryKeys.paginated(page, pageSize),
       select: (pagedResults): PagedResult<Subject> => {
-        console.log("pagedResults", pagedResults, typeof pagedResults);
         // Handle empty response or string response
         if (
           !pagedResults ||
