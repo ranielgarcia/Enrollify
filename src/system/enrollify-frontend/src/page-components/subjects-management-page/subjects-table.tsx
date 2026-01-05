@@ -62,7 +62,7 @@ export function SubjectsTable({
     }),
     columnHelper.accessor("units", {
       header: "Units",
-      cell: (info) => <span>{info.getValue()}</span>,
+      cell: (info) => <span>{Number(info.getValue()).toFixed(1)}</span>,
     }),
     columnHelper.accessor((row) => row.preferRoomType?.name, {
       id: "preferRoomType",

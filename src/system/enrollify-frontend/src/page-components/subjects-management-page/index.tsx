@@ -6,6 +6,7 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { SubjectsTable } from "./subjects-table";
 import { SubjectFormDrawer } from "./subject-form-drawer";
+import { DeleteSubjectAlertDialog } from "./delete-subject-alert-dialog";
 
 export default function SubjectsManagementPage() {
   const { page, pageSize } = useParams({ strict: false });
@@ -98,12 +99,12 @@ export default function SubjectsManagementPage() {
           onPreviousPage={handlePreviousPage}
           onNextPage={handleNextPage}
         />
-        {/* 
-        <DeleteCourseAlertDialog
-          isOpen={!!courseToDelete}
-          onOpenChange={handleDeleteCourseAlertDialogOnOpenChange}
-          courseToDelete={courseToDelete}
-        /> */}
+
+        <DeleteSubjectAlertDialog
+          isOpen={!!subjectToDelete}
+          onOpenChange={handleDeleteSubjectAlertDialogOnOpenChange}
+          subjectToDelete={subjectToDelete}
+        />
       </div>
     </main>
   );
