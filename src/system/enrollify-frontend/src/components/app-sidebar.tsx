@@ -62,6 +62,11 @@ const data = {
           url: "/portal/master-data/subjects",
           viewAuthorizationPolicies: [PolicyNames.canViewSubjects],
         },
+        {
+          title: "Curriculum",
+          url: "/portal/master-data/curriculum",
+          viewAuthorizationPolicies: [PolicyNames.canManageCurriculum],
+        },
       ],
     } as NavMainItemProp,
     {

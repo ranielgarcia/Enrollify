@@ -16,6 +16,7 @@ import { Route as PortalHomeRouteImport } from './routes/portal/home'
 import { Route as PortalMasterDataRouteRouteImport } from './routes/portal/master-data/route'
 import { Route as PortalMasterDataRoomsRouteImport } from './routes/portal/master-data/rooms'
 import { Route as PortalMasterDataDepartmentsRouteImport } from './routes/portal/master-data/departments'
+import { Route as PortalMasterDataCurriculumRouteImport } from './routes/portal/master-data/curriculum'
 import { Route as PortalMasterDataCoursesRouteImport } from './routes/portal/master-data/courses'
 import { Route as PortalMasterDataCollegesRouteImport } from './routes/portal/master-data/colleges'
 import { Route as PortalMasterDataBuildingsRouteImport } from './routes/portal/master-data/buildings'
@@ -57,6 +58,12 @@ const PortalMasterDataDepartmentsRoute =
     path: '/departments',
     getParentRoute: () => PortalMasterDataRouteRoute,
   } as any)
+const PortalMasterDataCurriculumRoute =
+  PortalMasterDataCurriculumRouteImport.update({
+    id: '/curriculum',
+    path: '/curriculum',
+    getParentRoute: () => PortalMasterDataRouteRoute,
+  } as any)
 const PortalMasterDataCoursesRoute = PortalMasterDataCoursesRouteImport.update({
   id: '/courses',
   path: '/courses',
@@ -92,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
   '/portal/master-data/courses': typeof PortalMasterDataCoursesRoute
+  '/portal/master-data/curriculum': typeof PortalMasterDataCurriculumRoute
   '/portal/master-data/departments': typeof PortalMasterDataDepartmentsRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
   '/portal/master-data/subjects/{-$page}/{-$pageSize}': typeof PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route
@@ -105,6 +113,7 @@ export interface FileRoutesByTo {
   '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
   '/portal/master-data/courses': typeof PortalMasterDataCoursesRoute
+  '/portal/master-data/curriculum': typeof PortalMasterDataCurriculumRoute
   '/portal/master-data/departments': typeof PortalMasterDataDepartmentsRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
   '/portal/master-data/subjects/{-$page}/{-$pageSize}': typeof PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route
@@ -119,6 +128,7 @@ export interface FileRoutesById {
   '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
   '/portal/master-data/courses': typeof PortalMasterDataCoursesRoute
+  '/portal/master-data/curriculum': typeof PortalMasterDataCurriculumRoute
   '/portal/master-data/departments': typeof PortalMasterDataDepartmentsRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
   '/portal/master-data/subjects/{-$page}/{-$pageSize}': typeof PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
     | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
     | '/portal/master-data/courses'
+    | '/portal/master-data/curriculum'
     | '/portal/master-data/departments'
     | '/portal/master-data/rooms'
     | '/portal/master-data/subjects/{-$page}/{-$pageSize}'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
     | '/portal/master-data/courses'
+    | '/portal/master-data/curriculum'
     | '/portal/master-data/departments'
     | '/portal/master-data/rooms'
     | '/portal/master-data/subjects/{-$page}/{-$pageSize}'
@@ -160,6 +172,7 @@ export interface FileRouteTypes {
     | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
     | '/portal/master-data/courses'
+    | '/portal/master-data/curriculum'
     | '/portal/master-data/departments'
     | '/portal/master-data/rooms'
     | '/portal/master-data/subjects/{-$page}/{-$pageSize}'
@@ -222,6 +235,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalMasterDataDepartmentsRouteImport
       parentRoute: typeof PortalMasterDataRouteRoute
     }
+    '/portal/master-data/curriculum': {
+      id: '/portal/master-data/curriculum'
+      path: '/curriculum'
+      fullPath: '/portal/master-data/curriculum'
+      preLoaderRoute: typeof PortalMasterDataCurriculumRouteImport
+      parentRoute: typeof PortalMasterDataRouteRoute
+    }
     '/portal/master-data/courses': {
       id: '/portal/master-data/courses'
       path: '/courses'
@@ -257,6 +277,7 @@ interface PortalMasterDataRouteRouteChildren {
   PortalMasterDataBuildingsRoute: typeof PortalMasterDataBuildingsRoute
   PortalMasterDataCollegesRoute: typeof PortalMasterDataCollegesRoute
   PortalMasterDataCoursesRoute: typeof PortalMasterDataCoursesRoute
+  PortalMasterDataCurriculumRoute: typeof PortalMasterDataCurriculumRoute
   PortalMasterDataDepartmentsRoute: typeof PortalMasterDataDepartmentsRoute
   PortalMasterDataRoomsRoute: typeof PortalMasterDataRoomsRoute
   PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route: typeof PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route
@@ -266,6 +287,7 @@ const PortalMasterDataRouteRouteChildren: PortalMasterDataRouteRouteChildren = {
   PortalMasterDataBuildingsRoute: PortalMasterDataBuildingsRoute,
   PortalMasterDataCollegesRoute: PortalMasterDataCollegesRoute,
   PortalMasterDataCoursesRoute: PortalMasterDataCoursesRoute,
+  PortalMasterDataCurriculumRoute: PortalMasterDataCurriculumRoute,
   PortalMasterDataDepartmentsRoute: PortalMasterDataDepartmentsRoute,
   PortalMasterDataRoomsRoute: PortalMasterDataRoomsRoute,
   PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route:
