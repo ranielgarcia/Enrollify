@@ -244,7 +244,7 @@ CREATE TABLE Subjects
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	Code VARCHAR(20) NOT NULL,
 	Title VARCHAR(100) NOT NULL,
-	Units DECIMAL(3,1) NULL,
+	Units DECIMAL(3,1) NOT NULL,
 	Description VARCHAR(255) NULL,
 	PreferRoomTypeId INT NOT NULL,
 	-- Note: CourseId removed - subjects are now course-agnostic
