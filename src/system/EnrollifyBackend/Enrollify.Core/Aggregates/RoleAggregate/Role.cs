@@ -42,7 +42,7 @@ public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable
     public Role UpdateName (RoleName newName)
     {
         if (Name == newName) return this;
-        Name = newName;
+        Name = Guard.Against.Null(newName);
 
         return this;
     }
@@ -50,7 +50,7 @@ public class Role : EntityBase<Role, RoleId>, IAggregateRoot, IAuditable
     public Role UpdateDescription (RoleDescription newDescription)
     {
         if (Description == newDescription) return this;
-        Description = newDescription;
+        Description = Guard.Against.Null(newDescription);
 
         return this;
     }

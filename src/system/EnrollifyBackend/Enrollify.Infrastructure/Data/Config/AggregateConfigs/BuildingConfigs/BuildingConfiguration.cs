@@ -1,5 +1,4 @@
 ﻿using Enrollify.Core.Aggregates.BuildingAggregate;
-using Enrollify.Core.Aggregates.CollegeAggregate;
 
 namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.BuildingConfigs;
 

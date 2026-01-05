@@ -1,6 +1,4 @@
-﻿using Enrollify.Application;
-using Enrollify.Application.Roles;
-using Enrollify.Application.Roles.DTOs;
+﻿using Enrollify.Application.Roles.DTOs;
 using Enrollify.Application.Roles.Features.List;
 using Enrollify.Core.Constants.Authorization;
 

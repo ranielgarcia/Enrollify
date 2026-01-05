@@ -4,7 +4,7 @@ public static class BuildingAuthorizationPolicyRegistration
 {
     public static IServiceCollection AddBuildingsAuthorizationPolicyHandlers(this IServiceCollection services)
     {
-        services.AddScoped< IAuthorizationHandler, HasCreateBuildingPermissionHandler>();
+        services.AddScoped<IAuthorizationHandler, HasCreateBuildingPermissionHandler>();
         services.AddScoped<IAuthorizationHandler, HasUpdateBuildingPermissionHandler>();
         services.AddScoped<IAuthorizationHandler, HasDeleteBuildingPermissionHandler>();
         services.AddScoped<IAuthorizationHandler, HasViewBuildingPermissionHandler>();

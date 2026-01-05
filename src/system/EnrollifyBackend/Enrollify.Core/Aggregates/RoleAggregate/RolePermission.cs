@@ -6,7 +6,7 @@ namespace Enrollify.Core.Aggregates.RoleAggregate;
 
 public class RolePermission : IAuditable
 {
-    public RolePermission() { } // EF Core constructor
+    private RolePermission() { } // EF Core constructor
 
     public RolePermission(RoleId roleId, PermissionScopeEnum permissionScopeId, PermissionEnum bitmaskPermission, UserId addedBy)
     {

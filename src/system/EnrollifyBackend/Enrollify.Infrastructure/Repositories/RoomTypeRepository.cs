@@ -16,23 +16,6 @@ public class RoomTypeRepository : IRoomTypeRepository
         _logger = logger;
     }
 
-    public async Task<RoomType?> GetById(RoomTypeId id, CancellationToken cancellationToken)
-    {
-        var roomType = await _dbContext.RoomTypes
-            .Where(rt => rt.Id == id)
-            .FirstOrDefaultAsync(cancellationToken);
-        return roomType;
-    }
-
-    public async Task<List<RoomType>> ListRoomTypes(CancellationToken cancellationToken = default)
-    {
-        var roomTypes = await _dbContext.RoomTypes
-            .Include(r => r.CreatedByUser)
-            .Include(r => r.UpdatedByUser)
-            .ToListAsync(cancellationToken);
-        return roomTypes;
-    }
-
     public async Task<Result<RoomTypeId>> Create(RoomType newRoomType, CancellationToken cancellationToken)
     {
         try

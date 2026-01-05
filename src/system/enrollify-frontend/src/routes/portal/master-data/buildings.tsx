@@ -1,4 +1,4 @@
-import BuildingPage from "@/page-components/building-management-page";
+import BuildingPage from "@/page-components/buildings-management-page";
 import type { RouteLoaderData } from "@/types/route.types";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
