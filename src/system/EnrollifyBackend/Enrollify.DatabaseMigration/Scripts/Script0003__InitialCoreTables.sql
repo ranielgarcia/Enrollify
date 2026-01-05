@@ -189,6 +189,14 @@ GO
 
 -- ************************************
 
+CREATE TABLE CurriculaStatuses
+(
+	Id INT NOT NULL PRIMARY KEY,
+	Name VARCHAR(20) NOT NULL,
+	CONSTRAINT UQ_CurriculaStatuses_Name UNIQUE (Name),
+);
+GO
+
 -- Curriculum versioning - each course can have multiple curriculum versions
 -- Students are assigned to a curriculum when they enroll
 -- Prerequisites are defined at the curriculum level, not the subject level
@@ -198,9 +206,9 @@ CREATE TABLE Curricula
 	CourseId INT NOT NULL,
 	EffectiveYear INT NOT NULL,           -- Academic year when this curriculum takes effect (e.g., 2024)
 	Version VARCHAR(20) NOT NULL,          -- Version identifier (e.g., '2024-A', '2024-REV1')
-	Status VARCHAR(20) NOT NULL DEFAULT 'DRAFT', -- DRAFT, ACTIVE, PHASED_OUT, ARCHIVED
+	StatusId INT NOT NULL DEFAULT 1, -- default Draft
 	Description VARCHAR(500) NULL,
-	ApprovedDate DATE NULL,                -- When the curriculum was officially approved
+	ApprovedDate DATETIMEOFFSET NULL,                -- When the curriculum was officially approved
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -210,11 +218,11 @@ CREATE TABLE Curricula
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 
+	CONSTRAINT FK_Curricula_Status FOREIGN KEY (StatusId) REFERENCES CurriculaStatuses(Id),
 	CONSTRAINT FK_Curricula_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
 	CONSTRAINT FK_Curricula_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Curricula_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Curricula_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
-	CONSTRAINT CHK_Curricula_Status_Valid CHECK (Status IN ('DRAFT', 'ACTIVE', 'PHASED_OUT', 'ARCHIVED')),
 	CONSTRAINT CHK_Curricula_EffectiveYear_Valid CHECK (EffectiveYear >= 2000)
 );
 GO;
@@ -225,7 +233,7 @@ ON Curricula(CourseId);
 GO
 
 CREATE NONCLUSTERED INDEX IX_Curricula_Status 
-ON Curricula(Status);
+ON Curricula(StatusId);
 GO
 
 -- Unique curriculum version per course (only for active records)

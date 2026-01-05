@@ -1,6 +1,5 @@
 ﻿using DbUp.Engine;
 using Enrollify.Core.Constants.Authorization;
-using Microsoft.Extensions.Primitives;
 using System.Data;
 using System.Text;
 
