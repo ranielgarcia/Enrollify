@@ -13,11 +13,25 @@ public interface IDbConnectionFactory
 public sealed class SqlConnectionFactory : IDbConnectionFactory
 {
     private readonly string _connectionString;
+    private readonly AsyncPolicy _retryPolicy;
 
     public SqlConnectionFactory(string connectionString)
     {
-        // Early validation
-        _connectionString = new SqlConnectionStringBuilder(connectionString).ConnectionString;
+        // Early validation and ensure reasonable connection timeout
+        var builder = new SqlConnectionStringBuilder(connectionString);
+        if (builder.ConnectTimeout < 30)
+        {
+            builder.ConnectTimeout = 30; // Ensure at least 30 seconds timeout
+        }
+        _connectionString = builder.ConnectionString;
+
+        // Create retry policy once for reuse
+        _retryPolicy = Policy
+            .Handle<SqlException>(IsTransient)
+            .Or<TimeoutException>()
+            .WaitAndRetryAsync(
+                retryCount: 3,
+                sleepDurationProvider: attempt => TimeSpan.FromMilliseconds(500 * Math.Pow(2, attempt - 1)));
     }
 
     public SqlConnection Create()
@@ -32,30 +46,51 @@ public sealed class SqlConnectionFactory : IDbConnectionFactory
 
     public async Task<SqlConnection> CreateOpenAsync(CancellationToken ct = default)
     {
-        var retryPolicy = Policy
-            .Handle<SqlException>(ex => IsTransient(ex))
-            .WaitAndRetryAsync(
-                retryCount: 3,
-                sleepDurationProvider: attempt => TimeSpan.FromMilliseconds(200 * Math.Pow(2, attempt - 1)),
-                onRetry: (exception, timeSpan, retryCount, _) =>
-                {
-                    // Optional: Add logging here if needed
-                });
+        // Fast path: check for cancellation before any work
+        ct.ThrowIfCancellationRequested();
 
-        return await retryPolicy.ExecuteAsync(async token =>
+        SqlConnection? conn = null;
+        try
         {
-            var conn = new SqlConnection(_connectionString);
-            try
+            return await _retryPolicy.ExecuteAsync(async () =>
             {
-                await conn.OpenAsync(token).ConfigureAwait(false);
-                return conn;
-            }
-            catch
-            {
-                await conn.DisposeAsync().ConfigureAwait(false);
-                throw;
-            }
-        }, ct).ConfigureAwait(false);
+                ct.ThrowIfCancellationRequested();
+
+                // Dispose previous connection attempt if retrying
+                if (conn != null)
+                {
+                    await conn.DisposeAsync().ConfigureAwait(false);
+                }
+
+                conn = new SqlConnection(_connectionString);
+
+                // Use a linked token with its own timeout to distinguish
+                // between user cancellation and connection timeout
+                using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
+
+                try
+                {
+                    await conn.OpenAsync(linkedCts.Token).ConfigureAwait(false);
+                    return conn;
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    // User requested cancellation - don't retry, just throw
+                    throw;
+                }
+                catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+                {
+                    // Connection timeout - throw TimeoutException for retry logic
+                    throw new TimeoutException("Connection timeout while opening database connection");
+                }
+            }).ConfigureAwait(false);
+        }
+        catch (Exception) when (conn != null)
+        {
+            await conn.DisposeAsync().ConfigureAwait(false);
+            throw;
+        }
     }
 
     private static bool IsTransient(SqlException ex)

@@ -105,9 +105,6 @@ public class CurriculaConfiguration : IEntityTypeConfiguration<Curricula>
                 .HasForeignKey(e => e.SubjectId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            cs.Navigation(s => s.Prerequisites)
-                .UsePropertyAccessMode(PropertyAccessMode.Field);
-
             // Audit fields for CurriculumSubjects
             cs.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
             cs.Property(a => a.CreatedBy).HasColumnName("CreatedBy");
@@ -133,46 +130,50 @@ public class CurriculaConfiguration : IEntityTypeConfiguration<Curricula>
                 .HasForeignKey(e => e.DeletedBy)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Configure CurriculumSubjectPrerequisites as nested owned collection
-            cs.OwnsMany<CurriculumSubjectPrerequisite>(s => s.Prerequisites, csp =>
-            {
-                csp.ToTable("CurriculumSubjectPrerequisites");
+                // Configure CurriculumSubjectPrerequisites as nested owned collection
+                cs.OwnsMany<CurriculumSubjectPrerequisite>(s => s.Prerequisites, csp =>
+                {
+                    csp.ToTable("CurriculumSubjectPrerequisites");
 
-                csp.WithOwner().HasForeignKey(e => e.CurriculumSubjectId);
+                    csp.WithOwner().HasForeignKey(e => e.CurriculumSubjectId);
 
-                csp.HasKey(e => new { e.CurriculumSubjectId, e.PrerequisiteCurriculumSubjectId });
+                    csp.HasKey(e => new { e.CurriculumSubjectId, e.PrerequisiteCurriculumSubjectId });
 
-                csp.Property(e => e.PrerequisiteCurriculumSubjectId)
-                    .IsRequired();
+                    csp.Property(e => e.PrerequisiteCurriculumSubjectId)
+                        .IsRequired();
 
-                csp.Property(e => e.MinimumGrade)
-                    .HasColumnType("decimal(3,2)");
+                    csp.Property(e => e.MinimumGrade)
+                        .HasColumnType("decimal(3,2)");
 
-                // Audit fields for CurriculumSubjectPrerequisites
-                csp.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
-                csp.Property(a => a.CreatedBy).HasColumnName("CreatedBy");
-                csp.Property(a => a.UpdatedAt).HasColumnName("UpdatedAt");
-                csp.Property(a => a.UpdatedBy).HasColumnName("UpdatedBy");
-                csp.Property(a => a.DeletedAt).HasColumnName("DeletedAt");
-                csp.Property(a => a.DeletedBy).HasColumnName("DeletedBy");
-                csp.Property(a => a.IsActive).HasColumnName("IsActive");
+                    // Audit fields for CurriculumSubjectPrerequisites
+                    csp.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
+                    csp.Property(a => a.CreatedBy).HasColumnName("CreatedBy");
+                    csp.Property(a => a.UpdatedAt).HasColumnName("UpdatedAt");
+                    csp.Property(a => a.UpdatedBy).HasColumnName("UpdatedBy");
+                    csp.Property(a => a.DeletedAt).HasColumnName("DeletedAt");
+                    csp.Property(a => a.DeletedBy).HasColumnName("DeletedBy");
+                    csp.Property(a => a.IsActive).HasColumnName("IsActive");
 
-                // Foreign key relationships for audit fields
-                csp.HasOne(e => e.CreatedByUser)
-                    .WithMany()
-                    .HasForeignKey(e => e.CreatedBy)
-                    .OnDelete(DeleteBehavior.NoAction);
+                    // Foreign key relationships for audit fields
+                    csp.HasOne(e => e.CreatedByUser)
+                        .WithMany()
+                        .HasForeignKey(e => e.CreatedBy)
+                        .OnDelete(DeleteBehavior.NoAction);
 
-                csp.HasOne(e => e.UpdatedByUser)
-                    .WithMany()
-                    .HasForeignKey(e => e.UpdatedBy)
-                    .OnDelete(DeleteBehavior.NoAction);
+                    csp.HasOne(e => e.UpdatedByUser)
+                        .WithMany()
+                        .HasForeignKey(e => e.UpdatedBy)
+                        .OnDelete(DeleteBehavior.NoAction);
 
-                csp.HasOne(e => e.DeletedByUser)
-                    .WithMany()
-                    .HasForeignKey(e => e.DeletedBy)
-                    .OnDelete(DeleteBehavior.NoAction);
+                    csp.HasOne(e => e.DeletedByUser)
+                        .WithMany()
+                        .HasForeignKey(e => e.DeletedBy)
+                        .OnDelete(DeleteBehavior.NoAction);
+                });
+
+                // Configure navigation property access mode after OwnsMany is defined
+                cs.Navigation(s => s.Prerequisites)
+                    .UsePropertyAccessMode(PropertyAccessMode.Field);
             });
-        });
     }
 }
