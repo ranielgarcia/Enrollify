@@ -26,7 +26,7 @@ public class CurriculumSubject : IAuditable
         CurriculumId = curriculumId;
         SubjectId = subjectId;
         YearLevel = Guard.Against.OutOfRange(yearLevel, nameof(yearLevel), 1, 6);
-        Semester = Guard.Against.OutOfRange(semester, nameof(semester), 1, 3);
+        TermNumber = Guard.Against.OutOfRange(semester, nameof(semester), 1, 3);
         IsElective = isElective;
         ElectiveGroupName = electiveGroupName;
         CreatedBy = addedBy;
@@ -44,7 +44,7 @@ public class CurriculumSubject : IAuditable
     /// <summary>
     /// Which semester (1 = First, 2 = Second, 3 = Summer)
     /// </summary>
-    public int Semester { get; private set; }
+    public int TermNumber { get; private set; }
 
     /// <summary>
     /// Whether this is an elective slot
@@ -78,10 +78,10 @@ public class CurriculumSubject : IAuditable
         return this;
     }
 
-    public CurriculumSubject UpdateSemester(int newSemester)
+    public CurriculumSubject UpdateTermNumber(int newTermNumber)
     {
-        if (Semester == newSemester) return this;
-        Semester = Guard.Against.OutOfRange(newSemester, nameof(newSemester), 1, 3);
+        if (TermNumber == newTermNumber) return this;
+        TermNumber = Guard.Against.OutOfRange(newTermNumber, nameof(newTermNumber), 1, 3);
         return this;
     }
 

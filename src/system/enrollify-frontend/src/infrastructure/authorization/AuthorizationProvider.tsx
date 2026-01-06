@@ -1,5 +1,5 @@
 import { useEffect, useState, type PropsWithChildren } from "react";
-import { useAuthenticationContext } from "../authentication/authenticationContext";
+import { useAuthenticationContext } from "../authentication/authentication-context";
 import { AuthorizationService } from "./AuthorizationService";
 import { PolicyRegistry } from "./policies/PolicyRegistry";
 import type { IAuthorizationHandler } from "./handlers/IAuthorizationHandler";

@@ -151,11 +151,11 @@ public class Curricula : EntityBase<Curricula, CurriculaId>, IAggregateRoot, IAu
         return _curriculumSubjects.FirstOrDefault(cs => cs.Id == curriculumSubjectId && cs.IsActive);
     }
 
-    public IEnumerable<CurriculumSubject> GetSubjectsByYearAndSemester(int yearLevel, int semester)
+    public IEnumerable<CurriculumSubject> GetSubjectsByYearAndSemester(int yearLevel, int termNumber)
     {
         return _curriculumSubjects.Where(cs =>
             cs.YearLevel == yearLevel &&
-            cs.Semester == semester &&
+            cs.TermNumber == termNumber &&
             cs.IsActive);
     }
 

@@ -14,7 +14,7 @@ export const SubjectSchema = z
     title: z.string(),
     units: z.number(),
     description: z.string(),
-    preferRoomType: RoomTypeSummarySchema,
+    preferRoomType: RoomTypeSummarySchema.nullable(),
   })
   .extend(AuditInfoSchema.shape);
 

@@ -7,22 +7,22 @@ using Mediator;
 
 namespace Enrollify.Application.Subjects.Features;
 
-public record ListSubjectsQuery (int page = 1, int pageSize = 10) : IQuery<Result<PagedResult<SubjectDTO>>>
+public record ListSubjectsPaginatedQuery (int page = 1, int pageSize = 10) : IQuery<Result<PagedResult<SubjectDTO>>>
 {
 }
 
-public class ListSubjectsQueryHandler : IQueryHandler<ListSubjectsQuery, Result<PagedResult<SubjectDTO>>>
+public class ListSubjectsPaginatedQueryHandler : IQueryHandler<ListSubjectsPaginatedQuery, Result<PagedResult<SubjectDTO>>>
 {
     private readonly IReadRepository<Subject> _readRepository;
 
-    public ListSubjectsQueryHandler(IReadRepository<Subject> readRepository)
+    public ListSubjectsPaginatedQueryHandler(IReadRepository<Subject> readRepository)
     {
         _readRepository = readRepository;
     }
 
-        public async ValueTask<Result<PagedResult<SubjectDTO>>> Handle(ListSubjectsQuery request, CancellationToken cancellationToken)
+        public async ValueTask<Result<PagedResult<SubjectDTO>>> Handle(ListSubjectsPaginatedQuery request, CancellationToken cancellationToken)
         {
-            var spec = new ListSubjectsSpec(request.page, request.pageSize);
+            var spec = new ListSubjectsPaginatedSpec(request.page, request.pageSize);
             var subjects = await _readRepository.ListAsync(spec, cancellationToken);
             var totalCount = await _readRepository.CountAsync(cancellationToken);
 

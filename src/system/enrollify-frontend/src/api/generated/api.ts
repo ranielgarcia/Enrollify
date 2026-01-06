@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/system-settings/curricula-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesSystemSettingsCurriculaSettingsEndpoint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/subjects": {
         parameters: {
             query?: never;
@@ -27,7 +43,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["EnrollifyWebAPIFeaturesSubjectsListMinimalSubjectsEndpoint"];
         put: operations["EnrollifyWebAPIFeaturesSubjectsUpdateEndpoint"];
         post: operations["EnrollifyWebAPIFeaturesSubjectsCreateEndpoint"];
         delete: operations["EnrollifyWebAPIFeaturesSubjectsDeleteEndpoint"];
@@ -247,6 +263,9 @@ export interface components {
             value?: number;
         };
         ArdalisSmartEnumSmartFlagEngineOfPermissionEnumAndInt32: Record<string, never>;
+        EnrollifyCoreModelsCurriculaSettings: {
+            academicSystem?: string;
+        };
         EnrollifyWebAPIFeaturesSubjectsCreateSubjectResponse: {
             /** Format: int32 */
             id?: number;
@@ -285,17 +304,6 @@ export interface components {
             preferRoomTypeId: number;
         };
         EnrollifyWebAPIFeaturesSubjectsDeleteSubjectRequest: Record<string, never>;
-        EnrollifyApplicationPagedResultOfSubjectDTO: {
-            items?: components["schemas"]["EnrollifyApplicationSubjectsDTOsSubjectDTO"][];
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            pageSize?: number;
-            /** Format: int32 */
-            totalCount?: number;
-            /** Format: int32 */
-            totalPages?: number;
-        };
         EnrollifyApplicationSubjectsDTOsSubjectDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
             /**
              * Format: int32
@@ -340,6 +348,17 @@ export interface components {
             email?: components["schemas"]["EnrollifyCoreAggregatesUserAggregateUserEmail"];
             firstName?: string;
             lastName?: string;
+        };
+        EnrollifyApplicationPagedResultOfSubjectDTO: {
+            items?: components["schemas"]["EnrollifyApplicationSubjectsDTOsSubjectDTO"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int32 */
+            totalCount?: number;
+            /** Format: int32 */
+            totalPages?: number;
         };
         EnrollifyWebAPIFeaturesSubjectsUpdateSubjectResponse: {
             /** Format: int32 */
@@ -759,6 +778,67 @@ export interface operations {
                 content: {
                     "application/json": string[];
                 };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesSystemSettingsCurriculaSettingsEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyCoreModelsCurriculaSettings"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesSubjectsListMinimalSubjectsEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationSubjectsDTOsSubjectDTO"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

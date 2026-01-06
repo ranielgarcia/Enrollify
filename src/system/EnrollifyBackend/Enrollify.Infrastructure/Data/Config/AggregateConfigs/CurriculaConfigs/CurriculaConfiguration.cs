@@ -90,7 +90,7 @@ public class CurriculaConfiguration : IEntityTypeConfiguration<Curricula>
             cs.Property(e => e.YearLevel)
                 .IsRequired();
 
-            cs.Property(e => e.Semester)
+            cs.Property(e => e.TermNumber)
                 .IsRequired();
 
             cs.Property(e => e.IsElective)

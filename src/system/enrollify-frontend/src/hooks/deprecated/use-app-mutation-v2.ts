@@ -4,7 +4,7 @@ import {
   useMutation as useReactMutation,
 } from "@tanstack/react-query";
 import axios, { AxiosError, type AxiosProgressEvent } from "axios";
-import { Config } from "@/infrastructure/Configurations/app-config";
+import { Config } from "@/infrastructure/configurations/app-config";
 import type { paths as ApiPaths } from "@/api/generated/api";
 import { getCurrentAccessToken } from "@/infrastructure/authentication/tokenFetcher";
 type HttpVerb = "post" | "put" | "delete";

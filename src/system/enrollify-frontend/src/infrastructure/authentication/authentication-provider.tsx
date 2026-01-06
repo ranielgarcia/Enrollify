@@ -6,7 +6,7 @@ import {
   AuthenticationContext,
   type IAuthenticationContext,
   defaultAuthenticationContext,
-} from "./authenticationContext";
+} from "./authentication-context";
 import { EventType } from "@azure/msal-browser";
 import { useGetMeDetailsSuspense } from "@/api/collections/me-collection";
 

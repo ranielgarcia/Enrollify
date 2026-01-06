@@ -1,6 +1,6 @@
 import { LogLevel, PublicClientApplication } from "@azure/msal-browser";
 
-import { Config } from "@/infrastructure/Configurations/app-config";
+import { Config } from "@/infrastructure/configurations/app-config";
 
 export const msalConfig = {
   auth: {

@@ -1,3 +1,4 @@
+using Enrollify.Core.Models;
 using Enrollify.Infrastructure;
 using Enrollify.WebAPI.Authentication;
 using Enrollify.WebAPI.Authorization;
@@ -12,6 +13,8 @@ try
     var builder = WebApplication.CreateBuilder(args);
 
     // Add services to the container.
+
+    builder.Services.Configure<CurriculaSettings>(builder.Configuration.GetSection(CurriculaSettings.Key));
 
     builder.Services.AddControllers();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

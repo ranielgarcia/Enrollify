@@ -23,10 +23,12 @@ import {
   MultiSearchableSelectWithTrigger,
   type MultiSearchableSelectWithTriggerOption,
 } from "@/components/multi-searchable-select-with-trigger";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { getAllSubjectsMinimalOptions } from "@/api/collections/subject-collection";
+import { useSystemSettingsContext } from "@/infrastructure/system-settings/system-settings-context";
 
 interface SubjectInCurriculum {
-  id: string;
-  subjectId: string;
+  id: number;
   code: string;
   title: string;
   units: number;
@@ -34,6 +36,8 @@ interface SubjectInCurriculum {
 }
 
 function CurriculumContent() {
+  const systemSettings = useSystemSettingsContext();
+  console.log(systemSettings);
   const [showForm, setShowForm] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [curriculum, setCurriculum] = useState<any>(null);
@@ -48,17 +52,14 @@ function CurriculumContent() {
     4: { 1: [], 2: [], 3: [] },
   });
 
-  // Mock available subjects for selection
-  const availableSubjects = [
-    { id: "s1", code: "CS101", title: "Intro to Computing", units: 3 },
-    { id: "s2", code: "MATH101", title: "College Algebra", units: 3 },
-    { id: "s3", code: "PROG101", title: "Basic Programming", units: 4 },
-  ];
+  const { data: availableSubjects } = useSuspenseQuery(
+    getAllSubjectsMinimalOptions()
+  );
 
   const addSubjectToGrid = (
     year: number,
     semester: number,
-    subjectId: string
+    subjectId: number
   ) => {
     const subject = availableSubjects.find((s) => s.id === subjectId);
     if (!subject) return;
@@ -66,7 +67,7 @@ function CurriculumContent() {
     setGrid((prev) => {
       // Check if subject already exists in this year/semester
       const subjectExists = prev[year][semester].some(
-        (s) => s.subjectId === subjectId
+        (s) => s.id === subjectId
       );
 
       if (subjectExists) return prev;
@@ -84,14 +85,12 @@ function CurriculumContent() {
     });
   };
 
-  const removeSubject = (year: number, semester: number, subjectId: string) => {
+  const removeSubject = (year: number, semester: number, subjectId: number) => {
     setGrid((prev) => ({
       ...prev,
       [year]: {
         ...prev[year],
-        [semester]: prev[year][semester].filter(
-          (s) => s.subjectId !== subjectId
-        ),
+        [semester]: prev[year][semester].filter((s) => s.id !== subjectId),
       },
     }));
   };
@@ -117,13 +116,13 @@ function CurriculumContent() {
   const togglePrerequisite = (
     year: number,
     semester: number,
-    subjectId: string,
+    subjectId: number,
     prerequisiteCode: string
   ) => {
     setGrid((prev) => {
       const newGrid = { ...prev };
       const subjects = [...newGrid[year][semester]];
-      const subjectIndex = subjects.findIndex((s) => s.subjectId === subjectId);
+      const subjectIndex = subjects.findIndex((s) => s.id === subjectId);
 
       if (subjectIndex !== -1) {
         const subject = { ...subjects[subjectIndex] };
@@ -151,7 +150,7 @@ function CurriculumContent() {
       const allAddedSubjectIds = new Set(
         Object.values(grid).flatMap((yearData) =>
           Object.values(yearData).flatMap((semesterSubjects) =>
-            semesterSubjects.map((s) => s.subjectId)
+            semesterSubjects.map((s) => s.id)
           )
         )
       );
@@ -159,7 +158,7 @@ function CurriculumContent() {
       return availableSubjects
         .filter((s) => !allAddedSubjectIds.has(s.id))
         .map((s) => ({
-          value: s.id,
+          value: s.id.toString(),
           label: `${s.code} - ${s.title} (${s.units}u)`,
         }));
     };
@@ -207,7 +206,7 @@ function CurriculumContent() {
                       Status
                     </p>
                     <Badge variant="outline" className="bg-background">
-                      {curriculum.status}
+                      DRAFT
                     </Badge>
                   </div>
                   <div>
@@ -290,7 +289,7 @@ function CurriculumContent() {
                           <div className="space-y-2">
                             {grid[year][semester].map((s) => (
                               <div
-                                key={s.subjectId}
+                                key={s.id}
                                 className="group p-3 border rounded-lg bg-background hover:shadow-sm transition-all flex items-start justify-between gap-2"
                               >
                                 <div className="flex-1 min-w-0">
@@ -358,7 +357,7 @@ function CurriculumContent() {
                                                       togglePrerequisite(
                                                         year,
                                                         semester,
-                                                        s.subjectId,
+                                                        s.id,
                                                         sub.code
                                                       )
                                                     }
@@ -389,7 +388,7 @@ function CurriculumContent() {
                                   size="sm"
                                   className="size-7 p-0 opacity-0 group-hover:opacity-100 text-destructive transition-opacity"
                                   onClick={() =>
-                                    removeSubject(year, semester, s.subjectId)
+                                    removeSubject(year, semester, s.id)
                                   }
                                 >
                                   <Trash2 className="size-3.5" />
@@ -402,7 +401,7 @@ function CurriculumContent() {
                             value={[]}
                             onValueChange={(values: string[]) => {
                               values.forEach((val) =>
-                                addSubjectToGrid(year, semester, val)
+                                addSubjectToGrid(year, semester, Number(val))
                               );
                             }}
                             searchPlaceholder="Search subjects..."

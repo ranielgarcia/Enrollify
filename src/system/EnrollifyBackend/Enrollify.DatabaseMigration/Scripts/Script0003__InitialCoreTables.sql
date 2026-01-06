@@ -282,7 +282,7 @@ GO;
 
 -- ************************************
 
--- CurriculumSubjects: Links subjects to a specific curriculum with year/semester placement
+-- CurriculumSubjects: Links subjects to a specific curriculum with year/TermNumber placement
 -- This is where subjects become part of a course's curriculum
 CREATE TABLE CurriculumSubjects
 (
@@ -290,7 +290,7 @@ CREATE TABLE CurriculumSubjects
 	CurriculumId INT NOT NULL,
 	SubjectId INT NOT NULL,
 	YearLevel INT NOT NULL,                -- Which year this subject is typically taken (1-6)
-	Semester INT NOT NULL,                 -- Which semester (1, 2, or 3 for summer)
+	TermNumber INT NOT NULL,				-- 1st, 2nd, 3rd term in the academic year
 	IsElective BIT NOT NULL DEFAULT 0,     -- Whether this is an elective slot
 	ElectiveGroupName VARCHAR(50) NULL,    -- Group name for electives (e.g., 'Major Elective', 'Free Elective')
 
@@ -308,7 +308,7 @@ CREATE TABLE CurriculumSubjects
 	CONSTRAINT FK_CurriculumSubjects_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_CurriculumSubjects_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
 	CONSTRAINT CHK_CurriculumSubjects_YearLevel_Valid CHECK (YearLevel BETWEEN 1 AND 6),
-	CONSTRAINT CHK_CurriculumSubjects_Semester_Valid CHECK (Semester IN (1, 2, 3))
+	CONSTRAINT CHK_CurriculumSubjects_TermNumber_Valid CHECK (TermNumber IN (1, 2, 3))
 );
 GO;
 
@@ -506,6 +506,7 @@ CREATE TABLE Semesters
 	Name VARCHAR(50) NOT NULL,
 	Description VARCHAR(50) NOT NULL,
 	SchoolYear INT NOT NULL,
+
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
 	UpdatedAt DATETIMEOFFSET NULL,
