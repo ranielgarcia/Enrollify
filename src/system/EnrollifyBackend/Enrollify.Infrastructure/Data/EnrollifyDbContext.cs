@@ -10,6 +10,7 @@ using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.BuildingConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CollegeConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CourseConfigs;
+using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CurriculaConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.DepartmentConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.PermissionScopeConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoleConfigs;
@@ -68,5 +69,6 @@ public class EnrollifyDbContext: DbContext
         configurationBuilder.RegisterAllInDepartmentVogenEfCoreConverters();
         configurationBuilder.RegisterAllInCourseVogenEfCoreConverters();
         configurationBuilder.RegisterAllInSubjectVogenEfCoreConverters();
+        configurationBuilder.RegisterAllInCurriculaVogenEfCoreConverters();
     }
 }
