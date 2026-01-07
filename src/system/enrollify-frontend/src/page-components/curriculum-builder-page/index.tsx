@@ -35,22 +35,42 @@ interface SubjectInCurriculum {
   prerequisites: string[];
 }
 
+const DEFAULT_NUMBER_OF_YEARS = 4;
+
+type SemesterGrid = Record<number, SubjectInCurriculum[]>;
+type YearGrid = Record<number, SemesterGrid>;
+
+const createSemesterGrid = (numberOfSemesters: number): SemesterGrid =>
+  Object.fromEntries(
+    Array.from({ length: numberOfSemesters }, (_, i) => [i + 1, []])
+  );
+
+const createInitialGrid = (
+  numberOfYears: number,
+  numberOfSemesters: number
+): YearGrid =>
+  Object.fromEntries(
+    Array.from({ length: numberOfYears }, (_, i) => [
+      i + 1,
+      createSemesterGrid(numberOfSemesters),
+    ])
+  );
+
 function CurriculumContent() {
   const systemSettings = useSystemSettingsContext();
-  console.log(systemSettings);
+  const numberOfSemesters =
+    systemSettings.curricularSettings.academicSystem.value;
+
   const [showForm, setShowForm] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [curriculum, setCurriculum] = useState<any>(null);
 
-  const [activeYears, setActiveYears] = useState<number[]>([1, 2, 3, 4]);
-  const [grid, setGrid] = useState<
-    Record<number, Record<number, SubjectInCurriculum[]>>
-  >({
-    1: { 1: [], 2: [], 3: [] },
-    2: { 1: [], 2: [], 3: [] },
-    3: { 1: [], 2: [], 3: [] },
-    4: { 1: [], 2: [], 3: [] },
-  });
+  const [activeYears, setActiveYears] = useState<number[]>(
+    Array.from({ length: DEFAULT_NUMBER_OF_YEARS }, (_, i) => i + 1)
+  );
+  const [grid, setGrid] = useState<YearGrid>(() =>
+    createInitialGrid(DEFAULT_NUMBER_OF_YEARS, numberOfSemesters)
+  );
 
   const { data: availableSubjects } = useSuspenseQuery(
     getAllSubjectsMinimalOptions()
@@ -100,7 +120,7 @@ function CurriculumContent() {
     setActiveYears((prev) => [...prev, nextYear]);
     setGrid((prev) => ({
       ...prev,
-      [nextYear]: { 1: [], 2: [], 3: [] },
+      [nextYear]: createSemesterGrid(numberOfSemesters),
     }));
   };
 
@@ -265,7 +285,7 @@ function CurriculumContent() {
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {[1, 2, 3].map((semester) => (
+                    {Array.from({ length: numberOfSemesters }, (_, i) => i + 1).map((semester) => (
                       <Card
                         key={semester}
                         className="flex flex-col border-muted hover:border-accent/50 transition-colors"

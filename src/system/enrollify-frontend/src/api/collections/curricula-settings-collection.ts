@@ -16,7 +16,6 @@ export const getCurriculaSettingsQueryOptions = () =>
       staleTime: 1000 * 60 * 5,
       gcTime: 1000 * 60 * 60 * 24,
       select: (settings): CurriculaSettings => {
-        console.log(settings);
         return CurriculaSettingsSchema.parse(settings);
       },
     },
