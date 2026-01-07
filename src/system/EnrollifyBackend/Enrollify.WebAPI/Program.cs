@@ -1,9 +1,8 @@
 using Enrollify.Core.Models;
-using Enrollify.Infrastructure;
 using Enrollify.WebAPI.Authentication;
-using Enrollify.WebAPI.Authorization;
 using Enrollify.WebAPI.Infrastructure.Exceptions;
 using Enrollify.WebAPI.Plumbing;
+using Microsoft.Extensions.Options;
 using Serilog;
 
 Log.Logger = ConfigureSerilogLogging.BootstrapLogger;
@@ -14,7 +13,10 @@ try
 
     // Add services to the container.
 
-    builder.Services.Configure<CurriculaSettings>(builder.Configuration.GetSection(CurriculaSettings.Key));
+    builder.Services.AddOptionsWithValidateOnStart<CurriculaSettings>()
+        .Bind(builder.Configuration.GetSection(CurriculaSettings.Key))
+        .ValidateDataAnnotations();
+    builder.Services.AddSingleton<IValidateOptions<CurriculaSettings>, CurriculaSettingsValidator>();
 
     builder.Services.AddControllers();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

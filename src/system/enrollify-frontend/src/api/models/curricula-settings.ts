@@ -16,9 +16,14 @@ const academicSystemValues = Object.values(AcademicSystemEnum) as [
 const AcademicSystemSchema = z
   .object({
     value: z
-      .enum(academicSystemValues.map(String) as [string, ...string[]])
-      .transform(Number)
-      .pipe(z.number()),
+      .number()
+      .refine(
+        (val): val is (typeof academicSystemValues)[number] =>
+          academicSystemValues.includes(val),
+        {
+          message: `Invalid value: expected one of ${academicSystemValues.join(", ")}`,
+        }
+      ),
     name: z.enum(academicSystemNames),
   })
   .refine(

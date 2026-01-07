@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Ardalis.SmartEnum" Version="8.2.0" />
     <PackageReference Include="Mediator.Abstractions" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.0-preview.4.25258.110" />
     <PackageReference Include="Riok.Mapperly" Version="4.3.0" />
     <PackageReference Include="Vogen" Version="8.0.2" />
   </ItemGroup>

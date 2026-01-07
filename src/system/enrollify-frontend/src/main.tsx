@@ -226,7 +226,9 @@ if (!rootElement.innerHTML) {
             >
               <AuthenticationProvider>
                 <AuthorizationProvider>
-                  <App />
+                  <SystemSettingsProvider>
+                    <App />
+                  </SystemSettingsProvider>
                 </AuthorizationProvider>
               </AuthenticationProvider>
             </Suspense>
