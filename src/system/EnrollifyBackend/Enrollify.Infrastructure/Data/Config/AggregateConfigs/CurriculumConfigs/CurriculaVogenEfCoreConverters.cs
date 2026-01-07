@@ -3,6 +3,6 @@ using Vogen;
 
 namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.CurriculumConfigs;
 
-[EfCoreConverter<CurriculaId>]
+[EfCoreConverter<CurriculumId>]
 [EfCoreConverter<CurriculumSubjectId>]
 internal partial class CurriculaVogenEfCoreConverters;

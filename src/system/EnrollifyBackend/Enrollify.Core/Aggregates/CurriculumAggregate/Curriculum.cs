@@ -14,19 +14,22 @@ namespace Enrollify.Core.Aggregates.CurriculumAggregate;
 /// Students are assigned to a curriculum when they enroll.
 /// Prerequisites are defined at the curriculum level, not the subject level.
 /// </summary>
-public class Curriculum : EntityBase<Curriculum, CurriculaId>, IAggregateRoot, IAuditable
+public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, IAuditable
 {
     private readonly List<CurriculumSubject> _curriculumSubjects = new();
 
     private Curriculum() { } // EF Core constructor
 
-    public Curriculum(DraftCurriculumForCreation newCurricula)
+    public static Curriculum CreateDraftCurriculum(DraftCurriculumForCreation newCurricula)
     {
-        CourseId = Guard.Against.Null(newCurricula.CourseId);
-        EffectiveYear = Guard.Against.OutOfRange(newCurricula.EffectiveYear, nameof(newCurricula.EffectiveYear), 2000, 9999);
-        Version = Guard.Against.NullOrWhiteSpace(newCurricula.Version);
-        StatusId = CurriculaStatusEnum.Draft;
-        Description = newCurricula.Description;
+        return new Curriculum
+        {
+            CourseId = Guard.Against.Null(newCurricula.CourseId),
+            EffectiveYear = Guard.Against.OutOfRange(newCurricula.EffectiveYear, nameof(newCurricula.EffectiveYear), 2000, 9999),
+            Version = Guard.Against.NullOrWhiteSpace(newCurricula.Version),
+            StatusId = CurriculaStatusEnum.Draft,
+            Description = newCurricula.Description,
+        };
     }
 
     public CourseId CourseId { get; private set; }

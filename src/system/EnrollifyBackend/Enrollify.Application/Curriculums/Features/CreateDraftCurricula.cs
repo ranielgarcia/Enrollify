@@ -30,9 +30,9 @@ public static class CreateDraftCurricula
                 Description = command.description
             };
 
-            var newCurriculum = new Curriculum(draftCurriculumForCreation);
+            var newDraftCurriculum = Curriculum.CreateDraftCurriculum(draftCurriculumForCreation);
 
-            var result = await _curriculumRepository.CreateDraftCurricula(newCurriculum, cancellationToken);
+            var result = await _curriculumRepository.CreateDraftCurricula(newDraftCurriculum, cancellationToken);
             return result;
         }
     }

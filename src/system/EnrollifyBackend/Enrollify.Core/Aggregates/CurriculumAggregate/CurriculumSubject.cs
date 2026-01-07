@@ -15,7 +15,7 @@ public class CurriculumSubject : IAuditable
     private CurriculumSubject() { } // EF Core constructor
 
     public CurriculumSubject(
-        CurriculaId curriculumId,
+        CurriculumId curriculumId,
         SubjectId subjectId,
         int yearLevel,
         int semester,
@@ -33,7 +33,7 @@ public class CurriculumSubject : IAuditable
     }
 
     public CurriculumSubjectId Id { get; private set; }
-    public CurriculaId CurriculumId { get; private set; }
+    public CurriculumId CurriculumId { get; private set; }
     public SubjectId SubjectId { get; private set; }
 
     /// <summary>

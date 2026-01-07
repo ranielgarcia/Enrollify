@@ -3,7 +3,7 @@
 namespace Enrollify.Core.Aggregates.CurriculumAggregate;
 
 [ValueObject<int>]
-public readonly partial struct CurriculaId
+public readonly partial struct CurriculumId
 {
 }
 
