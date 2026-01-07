@@ -1,10 +1,10 @@
-using Enrollify.Core.Aggregates.CurriculaAggregate;
+using Enrollify.Core.Aggregates.CurriculumAggregate;
 
-namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.CurriculaConfigs;
+namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.CurriculumConfigs;
 
-public class CurriculaConfiguration : IEntityTypeConfiguration<Curricula>
+public class CurriculaConfiguration : IEntityTypeConfiguration<Curriculum>
 {
-    public void Configure(EntityTypeBuilder<Curricula> builder)
+    public void Configure(EntityTypeBuilder<Curriculum> builder)
     {
         builder.ToTable("Curricula");
 

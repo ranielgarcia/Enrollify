@@ -20,14 +20,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/system-settings/curricula-settings": {
+    "/api/system-settings/curriculum-settings": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["EnrollifyWebAPIFeaturesSystemSettingsCurriculaSettingsEndpoint"];
+        get: operations["EnrollifyWebAPIFeaturesSystemSettingsCurriculumSettingsEndpoint"];
         put?: never;
         post?: never;
         delete?: never;
@@ -264,7 +264,7 @@ export interface components {
         };
         ArdalisSmartEnumSmartFlagEngineOfPermissionEnumAndInt32: Record<string, never>;
         EnrollifyCoreModelsCurriculaSettings: {
-            academicSystem?: string;
+            academicSystem: string;
         };
         EnrollifyWebAPIFeaturesSubjectsCreateSubjectResponse: {
             /** Format: int32 */
@@ -781,7 +781,7 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesSystemSettingsCurriculaSettingsEndpoint: {
+    EnrollifyWebAPIFeaturesSystemSettingsCurriculumSettingsEndpoint: {
         parameters: {
             query?: never;
             header?: never;
@@ -801,6 +801,13 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

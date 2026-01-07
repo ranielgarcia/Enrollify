@@ -1,6 +1,6 @@
 using Enrollify.Core.Aggregates.UserAggregate;
 
-namespace Enrollify.Core.Aggregates.CurriculaAggregate;
+namespace Enrollify.Core.Aggregates.CurriculumAggregate;
 
 /// <summary>
 /// Represents a prerequisite relationship between curriculum subjects.

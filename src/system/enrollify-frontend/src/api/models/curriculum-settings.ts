@@ -33,8 +33,8 @@ const AcademicSystemSchema = z
     { message: "Academic system name and value do not match" }
   ) as z.ZodType<AcademicSystem>;
 
-export const CurriculaSettingsSchema = z.object({
+export const CurriculumSettingsSchema = z.object({
   academicSystem: AcademicSystemSchema,
 });
 
-export type CurriculaSettings = z.infer<typeof CurriculaSettingsSchema>;
+export type CurriculumSettings = z.infer<typeof CurriculumSettingsSchema>;

@@ -35,7 +35,7 @@ interface SubjectInCurriculum {
   prerequisites: string[];
 }
 
-const DEFAULT_NUMBER_OF_YEARS = 4;
+const DEFAULT_NUMBER_OF_YEARS = 2;
 
 type SemesterGrid = Record<number, SubjectInCurriculum[]>;
 type YearGrid = Record<number, SemesterGrid>;
@@ -59,7 +59,7 @@ const createInitialGrid = (
 function CurriculumContent() {
   const systemSettings = useSystemSettingsContext();
   const numberOfSemesters =
-    systemSettings.curricularSettings.academicSystem.value;
+    systemSettings.curriculumSettings.academicSystem.value;
 
   const [showForm, setShowForm] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -285,7 +285,10 @@ function CurriculumContent() {
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {Array.from({ length: numberOfSemesters }, (_, i) => i + 1).map((semester) => (
+                    {Array.from(
+                      { length: numberOfSemesters },
+                      (_, i) => i + 1
+                    ).map((semester) => (
                       <Card
                         key={semester}
                         className="flex flex-col border-muted hover:border-accent/50 transition-colors"

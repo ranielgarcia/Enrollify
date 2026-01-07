@@ -8,21 +8,21 @@ const CourseSummarySchema = CourseSchema.pick({
   code: true,
 });
 
-const CurriculaStatusSchema = z.object({
+const CurriculumStatusSchema = z.object({
   value: z.number(),
   name: z.string(),
 });
 
-export const CurriculaSchema = z
+export const CurriculumSchema = z
   .object({
     id: z.number(),
     course: CourseSummarySchema,
     effectiveYear: z.number(),
     version: z.string(),
-    status: CurriculaStatusSchema,
+    status: CurriculumStatusSchema,
     description: z.string(),
     approvedDate: z.date().nullable(),
   })
   .extend(AuditInfoSchema.shape);
 
-export type Curricula = z.infer<typeof CurriculaSchema>;
+export type Curriculum = z.infer<typeof CurriculumSchema>;

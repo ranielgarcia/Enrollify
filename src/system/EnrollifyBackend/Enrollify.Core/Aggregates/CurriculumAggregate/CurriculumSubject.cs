@@ -2,7 +2,7 @@ using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 
-namespace Enrollify.Core.Aggregates.CurriculaAggregate;
+namespace Enrollify.Core.Aggregates.CurriculumAggregate;
 
 /// <summary>
 /// Links subjects to a specific curriculum with year/semester placement.

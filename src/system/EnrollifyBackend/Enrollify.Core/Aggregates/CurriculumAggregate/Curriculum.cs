@@ -1,12 +1,12 @@
 ﻿using Ardalis.GuardClauses;
-using Enrollify.Core.Aggregates.CurriculaAggregate.Models;
 using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.SharedKernel;
 
-namespace Enrollify.Core.Aggregates.CurriculaAggregate;
+namespace Enrollify.Core.Aggregates.CurriculumAggregate;
 
 /// <summary>
 /// Represents a curriculum version for a course.
@@ -14,20 +14,19 @@ namespace Enrollify.Core.Aggregates.CurriculaAggregate;
 /// Students are assigned to a curriculum when they enroll.
 /// Prerequisites are defined at the curriculum level, not the subject level.
 /// </summary>
-public class Curricula : EntityBase<Curricula, CurriculaId>, IAggregateRoot, IAuditable
+public class Curriculum : EntityBase<Curriculum, CurriculaId>, IAggregateRoot, IAuditable
 {
     private readonly List<CurriculumSubject> _curriculumSubjects = new();
 
-    private Curricula() { } // EF Core constructor
+    private Curriculum() { } // EF Core constructor
 
-    public Curricula(CurriculaForCreation newCurricula)
+    public Curriculum(DraftCurriculumForCreation newCurricula)
     {
         CourseId = Guard.Against.Null(newCurricula.CourseId);
         EffectiveYear = Guard.Against.OutOfRange(newCurricula.EffectiveYear, nameof(newCurricula.EffectiveYear), 2000, 9999);
         Version = Guard.Against.NullOrWhiteSpace(newCurricula.Version);
-        StatusId = Guard.Against.Null(newCurricula.StatusId);
+        StatusId = CurriculaStatusEnum.Draft;
         Description = newCurricula.Description;
-        ApprovedDate = newCurricula.ApprovedDate;
     }
 
     public CourseId CourseId { get; private set; }
@@ -65,42 +64,42 @@ public class Curricula : EntityBase<Curricula, CurriculaId>, IAggregateRoot, IAu
     public User? DeletedByUser { get; private set; }
     public bool IsActive { get; private set; }
 
-    public Curricula UpdateEffectiveYear(int newEffectiveYear)
+    public Curriculum UpdateEffectiveYear(int newEffectiveYear)
     {
         if (EffectiveYear == newEffectiveYear) return this;
         EffectiveYear = Guard.Against.OutOfRange(newEffectiveYear, nameof(newEffectiveYear), 2000, 9999);
         return this;
     }
 
-    public Curricula UpdateVersion(string newVersion)
+    public Curriculum UpdateVersion(string newVersion)
     {
         if (Version == newVersion) return this;
         Version = Guard.Against.NullOrWhiteSpace(newVersion);
         return this;
     }
 
-    public Curricula UpdateStatus(CurriculaStatusEnum newStatus)
+    public Curriculum UpdateStatus(CurriculaStatusEnum newStatus)
     {
         if (StatusId == newStatus) return this;
         StatusId = Guard.Against.Null(newStatus);
         return this;
     }
 
-    public Curricula UpdateDescription(string? newDescription)
+    public Curriculum UpdateDescription(string? newDescription)
     {
         if (Description == newDescription) return this;
         Description = newDescription;
         return this;
     }
 
-    public Curricula Approve(DateTimeOffset approvedDate)
+    public Curriculum Approve(DateTimeOffset approvedDate)
     {
         ApprovedDate = approvedDate;
         StatusId = CurriculaStatusEnum.Active;
         return this;
     }
 
-    public Curricula AddSubject(
+    public Curriculum AddSubject(
         SubjectId subjectId,
         int yearLevel,
         int semester,
@@ -131,7 +130,7 @@ public class Curricula : EntityBase<Curricula, CurriculaId>, IAggregateRoot, IAu
         return this;
     }
 
-    public Curricula RemoveSubject(SubjectId subjectId)
+    public Curriculum RemoveSubject(SubjectId subjectId)
     {
         var curriculumSubject = _curriculumSubjects.FirstOrDefault(cs => cs.SubjectId == subjectId);
         if (curriculumSubject != null)

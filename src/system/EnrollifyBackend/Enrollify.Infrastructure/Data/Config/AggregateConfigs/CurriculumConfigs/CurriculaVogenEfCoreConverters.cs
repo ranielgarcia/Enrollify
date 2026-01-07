@@ -1,7 +1,7 @@
-using Enrollify.Core.Aggregates.CurriculaAggregate;
+using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Vogen;
 
-namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.CurriculaConfigs;
+namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.CurriculumConfigs;
 
 [EfCoreConverter<CurriculaId>]
 [EfCoreConverter<CurriculumSubjectId>]
