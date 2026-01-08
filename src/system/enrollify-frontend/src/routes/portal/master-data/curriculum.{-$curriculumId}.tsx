@@ -1,8 +1,19 @@
 import CurriculumPage from "@/page-components/curriculum-builder-page";
 import type { RouteLoaderData } from "@/types/route.types";
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { z } from "zod";
 
-export const Route = createFileRoute("/portal/master-data/curriculum")({
+const curriculumParamsSchema = z.object({
+  curriculumId: z.string().min(1, "Curriculum ID cannot be empty").optional(),
+});
+
+export const Route = createFileRoute(
+  "/portal/master-data/curriculum/{-$curriculumId}"
+)({
+  params: {
+    parse: (params) => curriculumParamsSchema.parse(params),
+    stringify: (params) => params,
+  },
   component: CurriculumPage,
   loader: (): RouteLoaderData => ({
     crumb: "Curriculum Builder",

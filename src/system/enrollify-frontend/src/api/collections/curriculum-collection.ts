@@ -10,15 +10,18 @@ const queryKeys = {
 };
 
 // curriculumId is obfuscated, that is why it is type string
-export const getCurriculum = (curriculumId: string) =>
+export const getCurriculumQueryOption = (curriculumId?: string) =>
   createQueryOptions({
     path: "/api/curriculums/{curriculumId}",
     pathParams: {
-      curriculumId,
+      curriculumId: curriculumId!,
     },
     options: {
+      enabled: !!curriculumId,
       queryKey: queryKeys.all(),
-      select: (curriculum): Curriculum => {
+      select: (curriculum): Curriculum | null => {
+        if (!curriculum) return null;
+        console.log(curriculum);
         return CurriculumSchema.parse(curriculum);
       },
     },

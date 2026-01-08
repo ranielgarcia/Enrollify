@@ -16,10 +16,10 @@ import { Route as PortalHomeRouteImport } from './routes/portal/home'
 import { Route as PortalMasterDataRouteRouteImport } from './routes/portal/master-data/route'
 import { Route as PortalMasterDataRoomsRouteImport } from './routes/portal/master-data/rooms'
 import { Route as PortalMasterDataDepartmentsRouteImport } from './routes/portal/master-data/departments'
-import { Route as PortalMasterDataCurriculumRouteImport } from './routes/portal/master-data/curriculum'
 import { Route as PortalMasterDataCoursesRouteImport } from './routes/portal/master-data/courses'
 import { Route as PortalMasterDataCollegesRouteImport } from './routes/portal/master-data/colleges'
 import { Route as PortalMasterDataBuildingsRouteImport } from './routes/portal/master-data/buildings'
+import { Route as PortalMasterDataCurriculumChar123CurriculumIdChar125RouteImport } from './routes/portal/master-data/curriculum.{-$curriculumId}'
 import { Route as PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125RouteImport } from './routes/portal/master-data/subjects.{-$page}.{-$pageSize}'
 
 const LoginRoute = LoginRouteImport.update({
@@ -58,12 +58,6 @@ const PortalMasterDataDepartmentsRoute =
     path: '/departments',
     getParentRoute: () => PortalMasterDataRouteRoute,
   } as any)
-const PortalMasterDataCurriculumRoute =
-  PortalMasterDataCurriculumRouteImport.update({
-    id: '/curriculum',
-    path: '/curriculum',
-    getParentRoute: () => PortalMasterDataRouteRoute,
-  } as any)
 const PortalMasterDataCoursesRoute = PortalMasterDataCoursesRouteImport.update({
   id: '/courses',
   path: '/courses',
@@ -79,6 +73,12 @@ const PortalMasterDataBuildingsRoute =
   PortalMasterDataBuildingsRouteImport.update({
     id: '/buildings',
     path: '/buildings',
+    getParentRoute: () => PortalMasterDataRouteRoute,
+  } as any)
+const PortalMasterDataCurriculumChar123CurriculumIdChar125Route =
+  PortalMasterDataCurriculumChar123CurriculumIdChar125RouteImport.update({
+    id: '/curriculum/{-$curriculumId}',
+    path: '/curriculum/{-$curriculumId}',
     getParentRoute: () => PortalMasterDataRouteRoute,
   } as any)
 const PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route =
@@ -99,9 +99,9 @@ export interface FileRoutesByFullPath {
   '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
   '/portal/master-data/courses': typeof PortalMasterDataCoursesRoute
-  '/portal/master-data/curriculum': typeof PortalMasterDataCurriculumRoute
   '/portal/master-data/departments': typeof PortalMasterDataDepartmentsRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
+  '/portal/master-data/curriculum/{-$curriculumId}': typeof PortalMasterDataCurriculumChar123CurriculumIdChar125Route
   '/portal/master-data/subjects/{-$page}/{-$pageSize}': typeof PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route
 }
 export interface FileRoutesByTo {
@@ -113,9 +113,9 @@ export interface FileRoutesByTo {
   '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
   '/portal/master-data/courses': typeof PortalMasterDataCoursesRoute
-  '/portal/master-data/curriculum': typeof PortalMasterDataCurriculumRoute
   '/portal/master-data/departments': typeof PortalMasterDataDepartmentsRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
+  '/portal/master-data/curriculum/{-$curriculumId}': typeof PortalMasterDataCurriculumChar123CurriculumIdChar125Route
   '/portal/master-data/subjects/{-$page}/{-$pageSize}': typeof PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route
 }
 export interface FileRoutesById {
@@ -128,9 +128,9 @@ export interface FileRoutesById {
   '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
   '/portal/master-data/courses': typeof PortalMasterDataCoursesRoute
-  '/portal/master-data/curriculum': typeof PortalMasterDataCurriculumRoute
   '/portal/master-data/departments': typeof PortalMasterDataDepartmentsRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
+  '/portal/master-data/curriculum/{-$curriculumId}': typeof PortalMasterDataCurriculumChar123CurriculumIdChar125Route
   '/portal/master-data/subjects/{-$page}/{-$pageSize}': typeof PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route
 }
 export interface FileRouteTypes {
@@ -144,9 +144,9 @@ export interface FileRouteTypes {
     | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
     | '/portal/master-data/courses'
-    | '/portal/master-data/curriculum'
     | '/portal/master-data/departments'
     | '/portal/master-data/rooms'
+    | '/portal/master-data/curriculum/{-$curriculumId}'
     | '/portal/master-data/subjects/{-$page}/{-$pageSize}'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -158,9 +158,9 @@ export interface FileRouteTypes {
     | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
     | '/portal/master-data/courses'
-    | '/portal/master-data/curriculum'
     | '/portal/master-data/departments'
     | '/portal/master-data/rooms'
+    | '/portal/master-data/curriculum/{-$curriculumId}'
     | '/portal/master-data/subjects/{-$page}/{-$pageSize}'
   id:
     | '__root__'
@@ -172,9 +172,9 @@ export interface FileRouteTypes {
     | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
     | '/portal/master-data/courses'
-    | '/portal/master-data/curriculum'
     | '/portal/master-data/departments'
     | '/portal/master-data/rooms'
+    | '/portal/master-data/curriculum/{-$curriculumId}'
     | '/portal/master-data/subjects/{-$page}/{-$pageSize}'
   fileRoutesById: FileRoutesById
 }
@@ -235,13 +235,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalMasterDataDepartmentsRouteImport
       parentRoute: typeof PortalMasterDataRouteRoute
     }
-    '/portal/master-data/curriculum': {
-      id: '/portal/master-data/curriculum'
-      path: '/curriculum'
-      fullPath: '/portal/master-data/curriculum'
-      preLoaderRoute: typeof PortalMasterDataCurriculumRouteImport
-      parentRoute: typeof PortalMasterDataRouteRoute
-    }
     '/portal/master-data/courses': {
       id: '/portal/master-data/courses'
       path: '/courses'
@@ -263,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalMasterDataBuildingsRouteImport
       parentRoute: typeof PortalMasterDataRouteRoute
     }
+    '/portal/master-data/curriculum/{-$curriculumId}': {
+      id: '/portal/master-data/curriculum/{-$curriculumId}'
+      path: '/curriculum/{-$curriculumId}'
+      fullPath: '/portal/master-data/curriculum/{-$curriculumId}'
+      preLoaderRoute: typeof PortalMasterDataCurriculumChar123CurriculumIdChar125RouteImport
+      parentRoute: typeof PortalMasterDataRouteRoute
+    }
     '/portal/master-data/subjects/{-$page}/{-$pageSize}': {
       id: '/portal/master-data/subjects/{-$page}/{-$pageSize}'
       path: '/subjects/{-$page}/{-$pageSize}'
@@ -277,9 +277,9 @@ interface PortalMasterDataRouteRouteChildren {
   PortalMasterDataBuildingsRoute: typeof PortalMasterDataBuildingsRoute
   PortalMasterDataCollegesRoute: typeof PortalMasterDataCollegesRoute
   PortalMasterDataCoursesRoute: typeof PortalMasterDataCoursesRoute
-  PortalMasterDataCurriculumRoute: typeof PortalMasterDataCurriculumRoute
   PortalMasterDataDepartmentsRoute: typeof PortalMasterDataDepartmentsRoute
   PortalMasterDataRoomsRoute: typeof PortalMasterDataRoomsRoute
+  PortalMasterDataCurriculumChar123CurriculumIdChar125Route: typeof PortalMasterDataCurriculumChar123CurriculumIdChar125Route
   PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route: typeof PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route
 }
 
@@ -287,9 +287,10 @@ const PortalMasterDataRouteRouteChildren: PortalMasterDataRouteRouteChildren = {
   PortalMasterDataBuildingsRoute: PortalMasterDataBuildingsRoute,
   PortalMasterDataCollegesRoute: PortalMasterDataCollegesRoute,
   PortalMasterDataCoursesRoute: PortalMasterDataCoursesRoute,
-  PortalMasterDataCurriculumRoute: PortalMasterDataCurriculumRoute,
   PortalMasterDataDepartmentsRoute: PortalMasterDataDepartmentsRoute,
   PortalMasterDataRoomsRoute: PortalMasterDataRoomsRoute,
+  PortalMasterDataCurriculumChar123CurriculumIdChar125Route:
+    PortalMasterDataCurriculumChar123CurriculumIdChar125Route,
   PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route:
     PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route,
 }

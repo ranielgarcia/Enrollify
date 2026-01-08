@@ -26,6 +26,8 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getAllSubjectsMinimalOptions } from "@/api/collections/subject-collection";
 import { useSystemSettingsContext } from "@/infrastructure/system-settings/system-settings-context";
+import { useParams } from "@tanstack/react-router";
+import { getCurriculumQueryOption } from "@/api/collections/curriculum-collection";
 
 interface SubjectInCurriculum {
   id: number;
@@ -57,12 +59,15 @@ const createInitialGrid = (
   );
 
 function CurriculumContent() {
+  const { curriculumId } = useParams({ strict: false });
   const systemSettings = useSystemSettingsContext();
   const numberOfSemesters = systemSettings.academicSettings.academicSystem;
 
   const [showForm, setShowForm] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [curriculum, setCurriculum] = useState<any>(null);
+
+  const { data: curriculum } = useSuspenseQuery(
+    getCurriculumQueryOption(curriculumId)
+  );
 
   const [activeYears, setActiveYears] = useState<number[]>(
     Array.from({ length: DEFAULT_NUMBER_OF_YEARS }, (_, i) => i + 1)
@@ -207,7 +212,7 @@ function CurriculumContent() {
             <CurriculumForm
               onClose={() => setShowForm(false)}
               onSave={(data) => {
-                setCurriculum(data);
+                console.log("CurriculumForm response", data);
                 setShowForm(false);
               }}
             />
@@ -251,7 +256,7 @@ function CurriculumContent() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurriculum(null)}
+                    // onClick={() => setCurriculum(null)}
                   >
                     Edit Details
                   </Button>

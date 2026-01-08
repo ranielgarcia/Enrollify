@@ -8,17 +8,30 @@ import {
   type SearchableSelectOption,
 } from "@/components/searchable-select";
 import { Label } from "@/components/ui/label";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { getAllCoursesOptions } from "@/api/collections/course-collection";
 import { useForm } from "@tanstack/react-form";
-import {
-  curriculaFormSchema,
-  type CurriculaFormData,
-} from "./models/curricula-form-schema";
+import z from "zod";
+import { createDraftCurriculumOptions } from "@/api/collections/curriculum-collection";
+
+const curriculaFormSchema = z.object({
+  courseId: z.number().min(1, "Course is required"),
+  effectiveYear: z
+    .number()
+    .min(2020, "Effective Year must be a valid year")
+    .max(
+      new Date().getFullYear() + 1,
+      "Effective Year cannot be in the distant future"
+    ),
+  version: z.string().min(1, "Version Identifier is required"),
+  description: z.string().nullable(),
+});
+
+type CurriculaFormData = z.infer<typeof curriculaFormSchema>;
 
 interface CurriculumFormProps {
   onClose: () => void;
-  onSave: (curriculum: CurriculaFormData) => void;
+  onSave: (curriculumId: string) => void;
 }
 
 export function CurriculumForm({ onClose, onSave }: CurriculumFormProps) {
@@ -29,6 +42,10 @@ export function CurriculumForm({ onClose, onSave }: CurriculumFormProps) {
     description: "",
   };
 
+  const { mutateAsync: createDraftCurriculumAsync } = useMutation(
+    createDraftCurriculumOptions()
+  );
+
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
@@ -36,7 +53,10 @@ export function CurriculumForm({ onClose, onSave }: CurriculumFormProps) {
     },
     onSubmit: async ({ value }) => {
       const formValues = curriculaFormSchema.parse(value);
-      onSave(formValues);
+
+      const curriculumId = await createDraftCurriculumAsync(formValues);
+
+      onSave(curriculumId);
       form.reset();
     },
   });
@@ -147,7 +167,7 @@ export function CurriculumForm({ onClose, onSave }: CurriculumFormProps) {
                   </Label>
                   <Textarea
                     placeholder="Curriculum details..."
-                    value={field.state.value}
+                    value={field.state.value ?? undefined}
                     onChange={(e) => field.handleChange(e.target.value)}
                     rows={3}
                     id={field.name}

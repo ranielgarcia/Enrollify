@@ -6,10 +6,12 @@ namespace Enrollify.WebAPI.Features.Curriculums;
 
 public class CreateDraftCurriculumRequest
 {
-    public int CourseId { get; set; }
-    public int EffectiveYear { get; set; }
+    public required int CourseId { get; set; }
 
-    public string Version { get; set; } = null!;
+    public required int EffectiveYear { get; set; }
+
+    public required string Version { get; set; }
+
     public string? Description { get; set; }
 }
 
@@ -26,12 +28,12 @@ public class CreateDraftCurriculumRequestValidator : Validator<CreateDraftCurric
             .GreaterThanOrEqualTo(2000).WithMessage("Please enter an effective year greater than or equal to 2000.");
 
         RuleFor(x => x.Version)
-        .NotEmpty().WithMessage("Please provide a curriculum description.")
-        .MaximumLength(20).WithMessage("Description must be 20 characters or fewer.");
+            .NotEmpty().WithMessage("Please provide a curriculum description.")
+            .MaximumLength(20).WithMessage("Description must be 20 characters or fewer.");
 
         RuleFor(x => x.Description)
-        .NotEmpty().WithMessage("Please provide a curriculum description.")
-        .MaximumLength(500).WithMessage("Description must be 500 characters or fewer.");
+            .MaximumLength(500).WithMessage("Description must be 500 characters or fewer.")
+            .When(x => x.Description is not null);
     }
 }
 

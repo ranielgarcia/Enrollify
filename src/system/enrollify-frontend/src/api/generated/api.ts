@@ -622,7 +622,7 @@ export interface components {
             /** Format: int32 */
             effectiveYear: number;
             version: string;
-            description: string;
+            description?: string | null;
         };
         EnrollifyApplicationCurriculumsDTOsCurriculumDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
             /**
