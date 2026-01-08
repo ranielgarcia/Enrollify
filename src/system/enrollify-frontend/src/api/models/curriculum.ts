@@ -5,7 +5,6 @@ import { CourseSchema } from "./course";
 const CourseSummarySchema = CourseSchema.pick({
   id: true,
   name: true,
-  code: true,
 });
 
 const CurriculumStatusSchema = z.object({

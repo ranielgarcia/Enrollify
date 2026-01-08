@@ -20,14 +20,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/system-settings/curriculum-settings": {
+    "/api/system-settings/academic-settings": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["EnrollifyWebAPIFeaturesSystemSettingsCurriculumSettingsEndpoint"];
+        get: operations["EnrollifyWebAPIFeaturesSystemSettingsAcademicSettingsEndpoint"];
         put?: never;
         post?: never;
         delete?: never;
@@ -148,6 +148,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/curriculums": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["EnrollifyWebAPIFeaturesCurriculumsCreateDraftCurriculumEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/curriculums/{curriculumId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesCurriculumsGetCurriculumByIdEndpoint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/courses": {
         parameters: {
             query?: never;
@@ -263,8 +295,9 @@ export interface components {
             value?: number;
         };
         ArdalisSmartEnumSmartFlagEngineOfPermissionEnumAndInt32: Record<string, never>;
-        EnrollifyCoreModelsCurriculaSettings: {
-            academicSystem: string;
+        EnrollifyCoreAcademicSettings: {
+            /** Format: int32 */
+            academicSystem?: number;
         };
         EnrollifyWebAPIFeaturesSubjectsCreateSubjectResponse: {
             /** Format: int32 */
@@ -583,6 +616,49 @@ export interface components {
             /** Format: int32 */
             collegeId: number;
         };
+        EnrollifyWebAPIFeaturesCurriculumsCrateDraftCurriculumRequest: {
+            /** Format: int32 */
+            courseId: number;
+            /** Format: int32 */
+            effectiveYear: number;
+            version: string;
+            description: string;
+        };
+        EnrollifyApplicationCurriculumsDTOsCurriculumDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            /** Format: int32 */
+            effectiveYear?: number;
+            version?: string;
+            status?: components["schemas"]["EnrollifyCoreConstantsCurriculaStatusEnum"];
+            course?: components["schemas"]["EnrollifyApplicationSharedDTOsCourseSummaryDTO"] | null;
+            description?: string | null;
+            /** Format: date-time */
+            approvedDate?: string | null;
+        };
+        EnrollifyCoreConstantsCurriculaStatusEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfCurriculaStatusEnum"] & Record<string, never>;
+        ArdalisSmartEnumSmartEnumOfCurriculaStatusEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfCurriculaStatusEnumAndInt32"] & Record<string, never>;
+        /** @description A base type to use for creating smart enums. */
+        ArdalisSmartEnumSmartEnumOfCurriculaStatusEnumAndInt32: {
+            /** @description Gets the name. */
+            name?: string | null;
+            /**
+             * Format: int32
+             * @description Gets the value.
+             */
+            value?: number;
+        };
+        EnrollifyApplicationSharedDTOsCourseSummaryDTO: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            name?: string;
+        };
         EnrollifyWebAPIFeaturesCoursesCreateCourseResponse: {
             /** Format: int32 */
             id?: number;
@@ -781,7 +857,7 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesSystemSettingsCurriculumSettingsEndpoint: {
+    EnrollifyWebAPIFeaturesSystemSettingsAcademicSettingsEndpoint: {
         parameters: {
             query?: never;
             header?: never;
@@ -796,7 +872,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EnrollifyCoreModelsCurriculaSettings"];
+                    "application/json": components["schemas"]["EnrollifyCoreAcademicSettings"];
                 };
             };
             /** @description Unauthorized */
@@ -1763,6 +1839,97 @@ export interface operations {
                 content: {
                     "application/json": string[];
                 };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCurriculumsCreateDraftCurriculumEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCurriculumsCrateDraftCurriculumRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCurriculumsGetCurriculumByIdEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                curriculumId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationCurriculumsDTOsCurriculumDTO"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

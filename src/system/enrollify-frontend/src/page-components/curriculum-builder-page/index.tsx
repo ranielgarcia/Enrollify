@@ -58,8 +58,7 @@ const createInitialGrid = (
 
 function CurriculumContent() {
   const systemSettings = useSystemSettingsContext();
-  const numberOfSemesters =
-    systemSettings.curriculumSettings.academicSystem.value;
+  const numberOfSemesters = systemSettings.academicSettings.academicSystem;
 
   const [showForm, setShowForm] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,25 +1,25 @@
-import { getCurriculumSettingsQueryOptions } from "@/api/collections/curriculum-settings-collection";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import {
   SystemSettingsContext,
   type ISystemSettingsContext,
 } from "./system-settings-context";
+import { getAcademicSettingsQueryOptions } from "@/api/collections/academic-settings-collection";
 
 export const SystemSettingsProvider = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>): React.ReactElement => {
-  const { data: curriculumSettings } = useSuspenseQuery(
-    getCurriculumSettingsQueryOptions()
+  const { data: academicSettings } = useSuspenseQuery(
+    getAcademicSettingsQueryOptions()
   );
 
   const contextValue = useMemo<ISystemSettingsContext>(
     () => ({
-      curriculumSettings: curriculumSettings,
+      academicSettings,
     }),
-    [curriculumSettings]
+    [academicSettings]
   );
 
   return (

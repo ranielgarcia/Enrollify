@@ -1,19 +1,15 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createAcademicSystem } from "@/api/models/academic-system-enum";
-import type { CurriculumSettings } from "@/api/models/curriculum-settings";
+import type { AcademicSettings } from "@/api/models/academic-settings";
 import React, { use } from "react";
 
 export interface ISystemSettingsContext {
-  curriculumSettings: CurriculumSettings;
+  academicSettings: AcademicSettings;
 }
 
 export const defaultSystemSettingsContext: ISystemSettingsContext = {
-  curriculumSettings: {
-    academicSystem: {
-      name: createAcademicSystem("Semester").name,
-      value: createAcademicSystem("Semester").value,
-    },
-  } as CurriculumSettings,
+  academicSettings: {
+    academicSystem: 0,
+  } as AcademicSettings,
 };
 
 export const SystemSettingsContext =
