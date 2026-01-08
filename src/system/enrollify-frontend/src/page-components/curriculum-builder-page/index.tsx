@@ -23,7 +23,7 @@ import {
   MultiSearchableSelectWithTrigger,
   type MultiSearchableSelectWithTriggerOption,
 } from "@/components/multi-searchable-select-with-trigger";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery, useQuery } from "@tanstack/react-query";
 import { getAllSubjectsMinimalOptions } from "@/api/collections/subject-collection";
 import { useSystemSettingsContext } from "@/infrastructure/system-settings/system-settings-context";
 import { useParams } from "@tanstack/react-router";
@@ -65,9 +65,7 @@ function CurriculumContent() {
 
   const [showForm, setShowForm] = useState(false);
 
-  const { data: curriculum } = useSuspenseQuery(
-    getCurriculumQueryOption(curriculumId)
-  );
+  const { data: curriculum } = useQuery(getCurriculumQueryOption(curriculumId));
 
   const [activeYears, setActiveYears] = useState<number[]>(
     Array.from({ length: DEFAULT_NUMBER_OF_YEARS }, (_, i) => i + 1)
