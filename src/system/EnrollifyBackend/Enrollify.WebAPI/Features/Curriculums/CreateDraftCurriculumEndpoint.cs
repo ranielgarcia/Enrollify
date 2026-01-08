@@ -1,9 +1,10 @@
 ﻿using Enrollify.Application.Curriculums.Features;
 using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.WebAPI.Utilities;
 
 namespace Enrollify.WebAPI.Features.Curriculums;
 
-public class CrateDraftCurriculumRequest
+public class CreateDraftCurriculumRequest
 {
     public int CourseId { get; set; }
     public int EffectiveYear { get; set; }
@@ -13,9 +14,9 @@ public class CrateDraftCurriculumRequest
 }
 
 
-public class CrateDraftCurriculumRequestValidator : Validator<CrateDraftCurriculumRequest>
+public class CreateDraftCurriculumRequestValidator : Validator<CreateDraftCurriculumRequest>
 {
-    public CrateDraftCurriculumRequestValidator()
+    public CreateDraftCurriculumRequestValidator()
     {
         RuleFor(x => x.CourseId)
             .NotNull().WithMessage("Please provide a valid course ID.");
@@ -37,17 +38,17 @@ public class CrateDraftCurriculumRequestValidator : Validator<CrateDraftCurricul
 [HttpPost("")]
 [Group<CurriculumEndpointGroup>]
 [Authorize(Policy = PolicyName.HasCreateCurriculumPermission)]
-public class CreateDraftCurriculumEndpoint (IMediator mediator)
-    : Endpoint<CrateDraftCurriculumRequest, Results<Created<int>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+public class CreateDraftCurriculumEndpoint (IMediator mediator, IIdObfuscator idObfuscator)
+    : Endpoint<CreateDraftCurriculumRequest, Results<Created<string>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
 {
-    public override async Task<Results<Created<int>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
-        ExecuteAsync(CrateDraftCurriculumRequest request, CancellationToken ct)
+    public override async Task<Results<Created<string>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+        ExecuteAsync(CreateDraftCurriculumRequest request, CancellationToken ct)
     {
         var result = await mediator.Send(new CreateDraftCurricula
             .Command(CourseId.From(request.CourseId), request.EffectiveYear, request.Version, request.Description));
 
         return result.ToCreatedResult(
             id => $"/curriculumns/{id}",
-            id => id.Value);
+            id => idObfuscator.Encode(id.Value));
     }
 }

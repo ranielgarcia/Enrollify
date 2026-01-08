@@ -616,7 +616,7 @@ export interface components {
             /** Format: int32 */
             collegeId: number;
         };
-        EnrollifyWebAPIFeaturesCurriculumsCrateDraftCurriculumRequest: {
+        EnrollifyWebAPIFeaturesCurriculumsCreateDraftCurriculumRequest: {
             /** Format: int32 */
             courseId: number;
             /** Format: int32 */
@@ -1851,7 +1851,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCurriculumsCrateDraftCurriculumRequest"];
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCurriculumsCreateDraftCurriculumRequest"];
             };
         };
         responses: {
@@ -1861,7 +1861,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": string;
                 };
             };
             /** @description Bad Request */
