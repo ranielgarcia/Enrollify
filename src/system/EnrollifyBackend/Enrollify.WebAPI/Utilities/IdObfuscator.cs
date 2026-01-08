@@ -31,6 +31,7 @@ public class IdObfuscator : IIdObfuscator
     public int Decode(string encodedId)
     {
         if (_IdsEncoder.Decode(encodedId) is [var decodedId] &&
+            decodedId >= 0 &&
             encodedId == _IdsEncoder.Encode(decodedId))
         {
             return decodedId;
