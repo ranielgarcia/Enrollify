@@ -1,10 +1,11 @@
-﻿using Enrollify.Core.Aggregates.CourseAggregate;
+﻿using Enrollify.Application.Curriculums.Features;
+using Enrollify.Core.Aggregates.CourseAggregate;
 
 namespace Enrollify.WebAPI.Features.Curriculums;
 
 public class CrateDraftCurriculumRequest
 {
-    public CourseId CourseId { get; set; }
+    public int CourseId { get; set; }
     public int EffectiveYear { get; set; }
 
     public string Version { get; set; } = null!;
@@ -33,6 +34,20 @@ public class CrateDraftCurriculumRequestValidator : Validator<CrateDraftCurricul
     }
 }
 
-public class CreateDraftCurriculumEndpoint
+[HttpPost("")]
+[Group<CurriculumEndpointGroup>]
+[Authorize(Policy = PolicyName.HasCreateCurriculumPermission)]
+public class CreateDraftCurriculumEndpoint (IMediator mediator)
+    : Endpoint<CrateDraftCurriculumRequest, Results<Created<int>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
 {
+    public override async Task<Results<Created<int>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+        ExecuteAsync(CrateDraftCurriculumRequest request, CancellationToken ct)
+    {
+        var result = await mediator.Send(new CreateDraftCurricula
+            .Command(CourseId.From(request.CourseId), request.EffectiveYear, request.Version, request.Description));
+
+        return result.ToCreatedResult(
+            id => $"/curriculumns/{id}",
+            id => id.Value);
+    }
 }

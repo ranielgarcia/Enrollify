@@ -9,9 +9,9 @@ namespace Enrollify.Application.Curriculums.Features;
 public static class CreateDraftCurricula
 {
     public sealed record Command(CourseId courseId, int effectiveYear, string version, string? description) :
-        ICommand<Result<CurriculaId>>;
+        ICommand<Result<CurriculumId>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<CurriculaId>>
+    public sealed class Handler : ICommandHandler<Command, Result<CurriculumId>>
     {
         private readonly ICurriculumRepository _curriculumRepository;
 
@@ -20,7 +20,7 @@ public static class CreateDraftCurricula
             _curriculumRepository = curriculumRepository;
         }
 
-        public async ValueTask<Result<CurriculaId>> Handle(Command command, CancellationToken cancellationToken)
+        public async ValueTask<Result<CurriculumId>> Handle(Command command, CancellationToken cancellationToken)
         {
             var draftCurriculumForCreation = new DraftCurriculumForCreation
             {

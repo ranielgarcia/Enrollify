@@ -5,6 +5,6 @@ namespace Enrollify.Application.Curriculums;
 
 public interface ICurriculumRepository
 {
-    Task<Result<Curriculum>> CreateDraftCurricula(Curriculum newCurriculum, CancellationToken cancellationToken);
+    Task<Result<CurriculumId>> CreateDraftCurricula(Curriculum newCurriculum, CancellationToken cancellationToken);
 
 }

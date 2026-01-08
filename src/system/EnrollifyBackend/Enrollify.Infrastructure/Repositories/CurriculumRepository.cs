@@ -16,13 +16,13 @@ internal class CurriculumRepository : ICurriculumRepository
         _logger = logger;
     }
 
-    public async Task<Result<Curriculum>> CreateDraftCurricula(Curriculum newCurriculum, CancellationToken cancellationToken)
+    public async Task<Result<CurriculumId>> CreateDraftCurricula(Curriculum newCurriculum, CancellationToken cancellationToken)
     {
         try
         {
             await _dbContext.Curriculums.AddAsync(newCurriculum, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
-            return Result.Success(newCurriculum);
+            return Result.Success(newCurriculum.Id);
         }
         catch (DbUpdateException ex) when (IsEffectiveYearInvalidException(ex))
         {
