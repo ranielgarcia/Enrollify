@@ -2,7 +2,7 @@ import { useState, Suspense } from "react";
 import { CurriculumForm } from "./curriculum-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, BookOpen } from "lucide-react";
+import { Plus, Trash2, BookOpen, OctagonAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Popover,
@@ -26,8 +26,9 @@ import {
 import { useSuspenseQuery, useQuery } from "@tanstack/react-query";
 import { getAllSubjectsMinimalOptions } from "@/api/collections/subject-collection";
 import { useSystemSettingsContext } from "@/infrastructure/system-settings/system-settings-context";
-import { useParams } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { getCurriculumQueryOption } from "@/api/collections/curriculum-collection";
+import CurriculumBasicDetails from "./curriculum-basic-details";
 
 interface SubjectInCurriculum {
   id: number;
@@ -59,6 +60,7 @@ const createInitialGrid = (
   );
 
 function CurriculumContent() {
+  const navigate = useNavigate();
   const { curriculumId } = useParams({ strict: false });
   const systemSettings = useSystemSettingsContext();
   const numberOfSemesters = systemSettings.academicSettings.academicSystem;
@@ -209,58 +211,38 @@ function CurriculumContent() {
           <div className="mb-8">
             <CurriculumForm
               onClose={() => setShowForm(false)}
-              onSave={(data) => {
-                console.log("CurriculumForm response", data);
+              onSave={(curriculumId) => {
+                navigate({
+                  to: "/portal/master-data/curriculum/{-$curriculumId}",
+                  params: (prev) => ({ ...prev, curriculumId }),
+                });
                 setShowForm(false);
               }}
+              curriculumToUpdate={curriculum}
             />
           </div>
         )}
 
         {curriculum ? (
           <div className="space-y-8 animate-in fade-in duration-500">
-            {/* Curriculum Header */}
-            <Card className="border-accent bg-accent/5">
-              <CardContent className="pt-6">
-                <div className="flex flex-wrap gap-6 items-center">
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1 font-semibold">
-                      Status
-                    </p>
-                    <Badge variant="outline" className="bg-background">
-                      DRAFT
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1 font-semibold">
-                      Version
-                    </p>
-                    <p className="font-bold">{curriculum.version}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1 font-semibold">
-                      Effective Year
-                    </p>
-                    <p className="font-bold">{curriculum.effectiveYear}</p>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1 font-semibold">
-                      Description
-                    </p>
-                    <p className="text-sm italic">
-                      {curriculum.description || "No description provided."}
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    // onClick={() => setCurriculum(null)}
-                  >
-                    Edit Details
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {!showForm && (
+              <CurriculumBasicDetails
+                curriculum={curriculum}
+                onEditDetails={() => {
+                  console.log("show form");
+                  setShowForm(true);
+                }}
+                onClose={() => {
+                  navigate({
+                    to: "/portal/master-data/curriculum/{-$curriculumId}",
+                    params: (prev) => ({
+                      ...prev,
+                      curriculumId: undefined,
+                    }),
+                  });
+                }}
+              />
+            )}
 
             {/* Multi-Year Subject Grid */}
             <div className="space-y-12">
@@ -467,14 +449,29 @@ function CurriculumContent() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-32 bg-muted/20 rounded-xl border-2 border-dashed">
-            <BookOpen className="size-16 text-muted-foreground/20 mb-4" />
-            <h2 className="text-xl font-semibold text-foreground">
-              No Curriculum Started
-            </h2>
-            <p className="text-muted-foreground max-w-sm text-center mt-2">
-              Click the button above to start designing a new academic
-              curriculum.
-            </p>
+            {curriculumId && !curriculum ? (
+              <>
+                <OctagonAlert className="size-16 text-muted-foreground/20 mb-4" />
+                <h2 className="text-xl font-semibold text-foreground">
+                  Curriculum Not Found
+                </h2>
+                <p className="text-muted-foreground max-w-sm text-center mt-2">
+                  Click the button above to start designing a new academic
+                  curriculum.
+                </p>
+              </>
+            ) : (
+              <>
+                <BookOpen className="size-16 text-muted-foreground/20 mb-4" />
+                <h2 className="text-xl font-semibold text-foreground">
+                  No Curriculum Started
+                </h2>
+                <p className="text-muted-foreground max-w-sm text-center mt-2">
+                  Click the button above to start designing a new academic
+                  curriculum.
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>

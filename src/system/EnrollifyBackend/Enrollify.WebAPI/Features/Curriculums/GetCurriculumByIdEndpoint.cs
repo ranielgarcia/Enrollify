@@ -9,10 +9,10 @@ namespace Enrollify.WebAPI.Features.Curriculums;
 [Authorize(Policy = PolicyName.HasViewCurriculumsPermission)]
 public class GetCurriculumByIdEndpoint (IMediator mediator, IIdObfuscator idObfuscator) : EndpointWithoutRequest<CurriculumDTO>
 {
-    public override async Task<CurriculumDTO> HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(CancellationToken ct)
     {
         var curriculumId = Route<string>("curriculumId");
         var result = await mediator.Send(new GetCurriculumByIdQuery(idObfuscator.Decode(curriculumId ?? "")));
-        return result;
+        await Send.OkAsync(result);
     }
 }

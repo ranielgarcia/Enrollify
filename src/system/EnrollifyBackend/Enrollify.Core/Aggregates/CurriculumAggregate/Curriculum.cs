@@ -27,7 +27,7 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
             CourseId = Guard.Against.Null(newCurricula.CourseId),
             EffectiveYear = Guard.Against.OutOfRange(newCurricula.EffectiveYear, nameof(newCurricula.EffectiveYear), 2000, 9999),
             Version = Guard.Against.NullOrWhiteSpace(newCurricula.Version),
-            StatusId = CurriculaStatusEnum.Draft,
+            StatusId = CurriculumStatusEnum.Draft,
             Description = newCurricula.Description,
         };
     }
@@ -44,7 +44,7 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
     /// </summary>
     public string Version { get; private set; }
 
-    public CurriculaStatusEnum StatusId { get; private set; }
+    public CurriculumStatusEnum StatusId { get; private set; }
     public string? Description { get; private set; }
 
     /// <summary>
@@ -67,6 +67,13 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
     public User? DeletedByUser { get; private set; }
     public bool IsActive { get; private set; }
 
+    public Curriculum UpdateCourse (CourseId newCourseId)
+    {
+        if (CourseId == newCourseId) return this;
+        CourseId = Guard.Against.Null(newCourseId);
+        return this;
+    }
+
     public Curriculum UpdateEffectiveYear(int newEffectiveYear)
     {
         if (EffectiveYear == newEffectiveYear) return this;
@@ -81,7 +88,7 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
         return this;
     }
 
-    public Curriculum UpdateStatus(CurriculaStatusEnum newStatus)
+    public Curriculum UpdateStatus(CurriculumStatusEnum newStatus)
     {
         if (StatusId == newStatus) return this;
         StatusId = Guard.Against.Null(newStatus);
@@ -98,7 +105,7 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
     public Curriculum Approve(DateTimeOffset approvedDate)
     {
         ApprovedDate = approvedDate;
-        StatusId = CurriculaStatusEnum.Active;
+        StatusId = CurriculumStatusEnum.Active;
         return this;
     }
 

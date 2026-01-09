@@ -34,7 +34,10 @@ export const PolicyNames = {
   canUpdateSubject: "canUpdateSubject",
   canDeleteSubject: "canDeleteSubject",
 
-  canManageCurriculum: "canManageCurriculum",
+  canViewCurriculums: "canViewCurriculums",
+  canCreateCurriculum: "canCreateCurriculum",
+  canUpdateCurriculum: "canUpdateCurriculum",
+  canDeleteCurriculum: "canDeleteCurriculum",
 } as const;
 
 export type PolicyName = keyof typeof PolicyNames;

@@ -65,7 +65,7 @@ const data = {
         {
           title: "Curriculum",
           url: "/portal/master-data/curriculum",
-          viewAuthorizationPolicies: [PolicyNames.canManageCurriculum],
+          viewAuthorizationPolicies: [PolicyNames.canViewCurriculums],
         },
       ],
     } as NavMainItemProp,

@@ -2,11 +2,12 @@
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
+using Enrollify.SharedKernel;
 using Mediator;
 
 namespace Enrollify.Application.Curriculums.Features;
 
-public static class CreateDraftCurricula
+public static class CreateDraftCurriculum
 {
     public sealed record Command(CourseId courseId, int effectiveYear, string version, string? description) :
         ICommand<Result<CurriculumId>>;
@@ -14,14 +15,20 @@ public static class CreateDraftCurricula
     public sealed class Handler : ICommandHandler<Command, Result<CurriculumId>>
     {
         private readonly ICurriculumRepository _curriculumRepository;
+        private readonly IReadRepository<Course> _courseReadRepository;
 
-        public Handler(ICurriculumRepository curriculumRepository)
+        public Handler(ICurriculumRepository curriculumRepository, IReadRepository<Course> courseReadRepository)
         {
             _curriculumRepository = curriculumRepository;
+            _courseReadRepository = courseReadRepository;
         }
 
         public async ValueTask<Result<CurriculumId>> Handle(Command command, CancellationToken cancellationToken)
         {
+            var course = await _courseReadRepository.GetByIdAsync(command.courseId, cancellationToken);
+            if (course == null)
+                return Result.NotFound($"Course with an id of {command.courseId} not found");
+
             var draftCurriculumForCreation = new DraftCurriculumForCreation
             {
                 CourseId = command.courseId,
@@ -32,7 +39,7 @@ public static class CreateDraftCurricula
 
             var newDraftCurriculum = Curriculum.CreateDraftCurriculum(draftCurriculumForCreation);
 
-            var result = await _curriculumRepository.CreateDraftCurricula(newDraftCurriculum, cancellationToken);
+            var result = await _curriculumRepository.CreateDraftCurriculum(newDraftCurriculum, cancellationToken);
             return result;
         }
     }

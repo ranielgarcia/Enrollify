@@ -13,6 +13,18 @@ import { getAllCoursesOptions } from "@/api/collections/course-collection";
 import { useForm } from "@tanstack/react-form";
 import z from "zod";
 import { createDraftCurriculumOptions } from "@/api/collections/curriculum-collection";
+import type { Curriculum } from "@/api/models/curriculum";
+
+type FormMeta = {
+  submitAction: "create" | "update" | null;
+  formAction: "close" | "stayopen" | null;
+};
+// Metadata is not required to call form.handleSubmit().
+// Specify what values to use as default if no meta is passed
+const defaultMeta: FormMeta = {
+  submitAction: null,
+  formAction: null,
+};
 
 const curriculaFormSchema = z.object({
   courseId: z.number().min(1, "Course is required"),
@@ -32,14 +44,20 @@ type CurriculaFormData = z.infer<typeof curriculaFormSchema>;
 interface CurriculumFormProps {
   onClose: () => void;
   onSave: (curriculumId: string) => void;
+  curriculumToUpdate?: Curriculum | null;
 }
 
-export function CurriculumForm({ onClose, onSave }: CurriculumFormProps) {
+export function CurriculumForm({
+  onClose,
+  onSave,
+  curriculumToUpdate,
+}: CurriculumFormProps) {
   const defaultFormValues: CurriculaFormData = {
-    courseId: 0,
-    effectiveYear: new Date().getFullYear(),
-    version: "",
-    description: "",
+    courseId: curriculumToUpdate?.course.id ?? 0,
+    effectiveYear:
+      curriculumToUpdate?.effectiveYear ?? new Date().getFullYear(),
+    version: curriculumToUpdate?.version ?? "",
+    description: curriculumToUpdate?.description ?? "",
   };
 
   const { mutateAsync: createDraftCurriculumAsync } = useMutation(
@@ -51,12 +69,14 @@ export function CurriculumForm({ onClose, onSave }: CurriculumFormProps) {
     validators: {
       onChange: curriculaFormSchema,
     },
-    onSubmit: async ({ value }) => {
+    onSubmitMeta: defaultMeta,
+    onSubmit: async ({ value, meta }) => {
       const formValues = curriculaFormSchema.parse(value);
 
-      const curriculumId = await createDraftCurriculumAsync(formValues);
-
-      onSave(curriculumId);
+      if (meta.submitAction === "create") {
+        const curriculumId = await createDraftCurriculumAsync(formValues);
+        onSave(curriculumId);
+      }
       form.reset();
     },
   });
@@ -67,6 +87,8 @@ export function CurriculumForm({ onClose, onSave }: CurriculumFormProps) {
     value: c.id.toString(),
     label: c.name,
   }));
+
+  const isUpdatingCurriculumBasicDetails = !!curriculumToUpdate;
 
   return (
     <Card className="border-2 border-primary">
@@ -187,9 +209,22 @@ export function CurriculumForm({ onClose, onSave }: CurriculumFormProps) {
                 <Button
                   type="submit"
                   disabled={!canSubmit}
-                  onClick={() => form.handleSubmit()}
+                  onClick={() =>
+                    form.handleSubmit({
+                      submitAction: isUpdatingCurriculumBasicDetails
+                        ? "update"
+                        : "create",
+                      formAction: "close",
+                    })
+                  }
                 >
-                  {isSubmitting ? <Loader2 /> : "Create Curriculum"}
+                  {isSubmitting ? (
+                    <Loader2 />
+                  ) : isUpdatingCurriculumBasicDetails ? (
+                    "Update Curriculum"
+                  ) : (
+                    "Create Curriculum"
+                  )}
                 </Button>
               )}
             />

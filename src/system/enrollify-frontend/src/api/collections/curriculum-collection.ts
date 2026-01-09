@@ -5,9 +5,11 @@ import { toast } from "sonner";
 
 const queryKeys = {
   all: () => ["curriculums"],
-  single: (id: number) => [...queryKeys.all(), id],
+  single: (id: string) => [...queryKeys.all(), id],
   createDraft: () => [...queryKeys.all(), `create-draft`],
 };
+
+export 
 
 // curriculumId is obfuscated, that is why it is type string
 export const getCurriculumQueryOption = (curriculumId?: string) =>
@@ -18,10 +20,9 @@ export const getCurriculumQueryOption = (curriculumId?: string) =>
     },
     options: {
       enabled: !!curriculumId,
-      queryKey: queryKeys.all(),
+      queryKey: queryKeys.single(curriculumId ?? ""),
       select: (curriculum): Curriculum | null => {
         if (!curriculum) return null;
-        console.log(curriculum);
         return CurriculumSchema.parse(curriculum);
       },
     },

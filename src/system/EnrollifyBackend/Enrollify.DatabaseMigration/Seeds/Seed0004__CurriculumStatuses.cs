@@ -5,21 +5,21 @@ using System.Text;
 
 namespace Enrollify.DatabaseMigration.Seeds;
 
-public class Seed0004__CurriculaStatuses : IScript
+public class Seed0004__CurriculumStatuses : IScript
 {
     public string ProvideScript(Func<IDbCommand> dbCommandFactory)
     {
-        var curriculaStatuses = CurriculaStatusEnum.List;
+        var curriculumStatuses = CurriculumStatusEnum.List;
 
         var scriptBuilder = new StringBuilder();
 
-        scriptBuilder.Append(@"MERGE [CurriculaStatuses] As [Target]
+        scriptBuilder.Append(@"MERGE [CurriculumStatuses] As [Target]
             USING (");
         scriptBuilder.Append(@"VALUES");
 
         var values = new List<string>();
 
-        foreach (var status in curriculaStatuses)
+        foreach (var status in curriculumStatuses)
         {
             values.Add(string.Format("({0}, '{1}')", status.Value, status.Name));
         }

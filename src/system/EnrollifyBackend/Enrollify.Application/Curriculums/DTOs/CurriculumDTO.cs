@@ -10,7 +10,7 @@ public class CurriculumDTO : BaseDTO
 
     public int EffectiveYear { get; set; }
     public string Version { get; set; } = null!;
-    public CurriculaStatusEnum Status { get; set; } = null!;
+    public CurriculumStatusEnum Status { get; set; } = null!;
     public CourseSummaryDTO? Course { get; set; }
     public string? Description { get; set; }
     public DateTimeOffset? ApprovedDate { get; set; }
@@ -26,6 +26,11 @@ public class CurriculumDTO : BaseDTO
             Course = curriculum.Course != null ? CourseSummaryDTO.FromEntity(curriculum.Course) : null,
             Description = curriculum.Description,
             ApprovedDate = curriculum.ApprovedDate,
+            CreatedAt = curriculum.CreatedAt,
+            CreatedBy = BaseUserDTO.FromUser(curriculum.CreatedByUser),
+            UpdatedAt = curriculum.UpdatedAt,
+            UpdatedBy = BaseUserDTO.FromUser(curriculum.UpdatedByUser),
+            IsActive = curriculum.IsActive,
         };
     }
 }

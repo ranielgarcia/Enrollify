@@ -2,11 +2,11 @@ using Enrollify.Core.Aggregates.CurriculumAggregate;
 
 namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.CurriculumConfigs;
 
-public class CurriculaConfiguration : IEntityTypeConfiguration<Curriculum>
+public class CurriculumConfiguration : IEntityTypeConfiguration<Curriculum>
 {
     public void Configure(EntityTypeBuilder<Curriculum> builder)
     {
-        builder.ToTable("Curricula");
+        builder.ToTable("Curriculums");
 
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id)
@@ -27,7 +27,7 @@ public class CurriculaConfiguration : IEntityTypeConfiguration<Curriculum>
             .HasColumnName("StatusId")
             .HasConversion(
                 v => v.Value,
-                v => Core.Constants.CurriculaStatusEnum.FromValue(v))
+                v => Core.Constants.CurriculumStatusEnum.FromValue(v))
             .IsRequired();
 
         builder.Property(e => e.Description)

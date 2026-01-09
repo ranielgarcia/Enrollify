@@ -1,6 +1,4 @@
-﻿
- 
-CREATE TABLE RoomTypes
+﻿CREATE TABLE RoomTypes
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	Name VARCHAR(50) NOT NULL,
@@ -189,18 +187,18 @@ GO
 
 -- ************************************
 
-CREATE TABLE CurriculaStatuses
+CREATE TABLE CurriculumStatuses
 (
 	Id INT NOT NULL PRIMARY KEY,
 	Name VARCHAR(20) NOT NULL,
-	CONSTRAINT UQ_CurriculaStatuses_Name UNIQUE (Name),
+	CONSTRAINT UQ_CurriculumStatuses_Name UNIQUE (Name),
 );
 GO
 
 -- Curriculum versioning - each course can have multiple curriculum versions
 -- Students are assigned to a curriculum when they enroll
 -- Prerequisites are defined at the curriculum level, not the subject level
-CREATE TABLE Curricula
+CREATE TABLE Curriculums
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	CourseId INT NOT NULL,
@@ -218,34 +216,34 @@ CREATE TABLE Curricula
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 
-	CONSTRAINT FK_Curricula_Status FOREIGN KEY (StatusId) REFERENCES CurriculaStatuses(Id),
-	CONSTRAINT FK_Curricula_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
-	CONSTRAINT FK_Curricula_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_Curricula_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_Curricula_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
-	CONSTRAINT CHK_Curricula_EffectiveYear_Valid CHECK (EffectiveYear >= 2000)
+	CONSTRAINT FK_Curriculums_Status FOREIGN KEY (StatusId) REFERENCES CurriculumStatuses(Id),
+	CONSTRAINT FK_Curriculums_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
+	CONSTRAINT FK_Curriculums_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Curriculums_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Curriculums_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
+	CONSTRAINT CHK_Curriculums_EffectiveYear_Valid CHECK (EffectiveYear >= 2000)
 );
 GO;
 
--- Curricula indexes
-CREATE NONCLUSTERED INDEX IX_Curricula_CourseId 
-ON Curricula(CourseId);
+-- Curriculums indexes
+CREATE NONCLUSTERED INDEX IX_Curriculums_CourseId 
+ON Curriculums(CourseId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_Curricula_Status 
-ON Curricula(StatusId);
+CREATE NONCLUSTERED INDEX IX_Curriculums_Status 
+ON Curriculums(StatusId);
 GO
 
 -- Unique curriculum version per course (only for active records)
-CREATE UNIQUE NONCLUSTERED INDEX UIdx_Curricula_Course_Version_IsActive
-ON Curricula(CourseId, Version)
+CREATE UNIQUE NONCLUSTERED INDEX UIdx_Curriculums_Course_Version_IsActive
+ON Curriculums(CourseId, Version)
 WHERE IsActive = 1;
 GO
 
 -- ************************************
 
 -- Subjects are now course-agnostic catalog entries
--- They can be reused across multiple curricula/courses
+-- They can be reused across multiple Curriculums/courses
 -- The relationship to a course is through CurriculumSubjects
 CREATE TABLE Subjects
 (
@@ -302,7 +300,7 @@ CREATE TABLE CurriculumSubjects
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 
-	CONSTRAINT FK_CurriculumSubjects_Curriculum FOREIGN KEY (CurriculumId) REFERENCES Curricula(Id),
+	CONSTRAINT FK_CurriculumSubjects_Curriculum FOREIGN KEY (CurriculumId) REFERENCES Curriculums(Id),
 	CONSTRAINT FK_CurriculumSubjects_Subject FOREIGN KEY (SubjectId) REFERENCES Subjects(Id),
 	CONSTRAINT FK_CurriculumSubjects_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_CurriculumSubjects_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
@@ -725,7 +723,7 @@ CREATE TABLE Students
 	CONSTRAINT UQ_Students_StudentNumber UNIQUE (StudentNumber),
 	CONSTRAINT UQ_Students_Email UNIQUE (Email),
 	CONSTRAINT FK_Students_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
-	CONSTRAINT FK_Students_Curriculum FOREIGN KEY (CurriculumId) REFERENCES Curricula(Id),
+	CONSTRAINT FK_Students_Curriculum FOREIGN KEY (CurriculumId) REFERENCES Curriculums(Id),
     CONSTRAINT FK_Students_StudentStatus FOREIGN KEY (Status) REFERENCES StudentStatuses(Id),
     CONSTRAINT FK_Students_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_Students_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),

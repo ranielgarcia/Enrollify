@@ -16,11 +16,28 @@ internal class CurriculumRepository : ICurriculumRepository
         _logger = logger;
     }
 
-    public async Task<Result<CurriculumId>> CreateDraftCurricula(Curriculum newCurriculum, CancellationToken cancellationToken)
+    public async Task<Result<CurriculumId>> CreateDraftCurriculum(Curriculum newCurriculum, CancellationToken cancellationToken)
     {
         try
         {
             await _dbContext.Curriculums.AddAsync(newCurriculum, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            return Result.Success(newCurriculum.Id);
+        }
+        catch (DbUpdateException ex) when (IsEffectiveYearInvalidException(ex))
+        {
+            _logger.LogError(ex, "Failed to create curricula due to invalid effective year: {EffectiveYear}", newCurriculum.EffectiveYear);
+            return Result.Invalid(new ValidationError(
+                identifier: "EffectiveYear",
+                errorMessage: $"The effective year '{newCurriculum.EffectiveYear}' is invalid. Please enter a year greater than or equal to 2000."));
+        }
+    }
+
+    public async Task<Result<CurriculumId>> UpdateCurriculum(Curriculum newCurriculum, CancellationToken cancellationToken)
+    {
+        try
+        {
+            _dbContext.Curriculums.Update(newCurriculum);
             await _dbContext.SaveChangesAsync(cancellationToken);
             return Result.Success(newCurriculum.Id);
         }

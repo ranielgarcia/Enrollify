@@ -1,25 +1,27 @@
 ﻿using Enrollify.Application.Curriculums.Features;
 using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.WebAPI.Utilities;
 
 namespace Enrollify.WebAPI.Features.Curriculums;
 
-public class CreateDraftCurriculumRequest
+public class UpdateCurriculumRequest
 {
+    [QueryParam]
+    public int Id { get; set; }
     public required int CourseId { get; set; }
-
     public required int EffectiveYear { get; set; }
-
     public required string Version { get; set; }
-
     public string? Description { get; set; }
 }
 
-
-public class CreateDraftCurriculumRequestValidator : Validator<CreateDraftCurriculumRequest>
+public class UpdateCurriculumRequestValidator : Validator<UpdateCurriculumRequest>
 {
-    public CreateDraftCurriculumRequestValidator()
+    public UpdateCurriculumRequestValidator()
     {
+        RuleFor(x => x.Id)
+            .NotNull().WithMessage("Please provide a valid curriculum ID.");
+
         RuleFor(x => x.CourseId)
             .NotNull().WithMessage("Please provide a valid course ID.");
 
@@ -37,20 +39,19 @@ public class CreateDraftCurriculumRequestValidator : Validator<CreateDraftCurric
     }
 }
 
-[HttpPost("")]
+[HttpPut("")]
 [Group<CurriculumEndpointGroup>]
 [Authorize(Policy = PolicyName.HasCreateCurriculumPermission)]
-public class CreateDraftCurriculumEndpoint (IMediator mediator, IIdObfuscator idObfuscator)
-    : Endpoint<CreateDraftCurriculumRequest, Results<Created<string>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+public class UpdateEndpoint(IMediator mediator, IIdObfuscator idObfuscator)
+    : Endpoint<UpdateCurriculumRequest, Results<Ok<string>, NotFound, Conflict<string[]>, ProblemHttpResult>>
 {
-    public override async Task<Results<Created<string>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
-        ExecuteAsync(CreateDraftCurriculumRequest request, CancellationToken ct)
+    public override async Task<Results<Ok<string>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+        ExecuteAsync(UpdateCurriculumRequest request, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(new CreateDraftCurriculum
-            .Command(CourseId.From(request.CourseId), request.EffectiveYear, request.Version, request.Description));
+        var result = await mediator.Send(new UpdateCurriculum
+            .Command(CurriculumId.From(request.Id), CourseId.From(request.CourseId), request.EffectiveYear, request.Version, request.Description));
 
-        return result.ToCreatedResult(
-            id => $"/curriculumns/{id}",
+        return result.ToUpdateResult(
             id => idObfuscator.Encode(id.Value));
     }
 }

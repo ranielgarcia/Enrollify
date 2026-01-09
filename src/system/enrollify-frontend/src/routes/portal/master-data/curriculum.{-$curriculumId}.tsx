@@ -15,8 +15,10 @@ export const Route = createFileRoute(
     stringify: (params) => params,
   },
   component: CurriculumPage,
-  loader: (): RouteLoaderData => ({
-    crumb: "Curriculum Builder",
+  loader: ({ params }): RouteLoaderData => ({
+    crumb: params.curriculumId
+      ? `Curriculum Builder (${params.curriculumId})`
+      : "Curriculum Builder",
   }),
   beforeLoad: async ({ context: { authorization } }): Promise<void> => {
     // Wait for authorization to be ready before making authorization decisions
