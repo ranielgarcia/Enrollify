@@ -38,13 +38,13 @@ export const registerCurriculumPolicies = (registry: PolicyRegistry) => {
       .build()
   );
   registry.register(
-    new PolicyBuilder("canDeleteCurriculum")
+    new PolicyBuilder("canArchiveCurriculum")
       .requireRole(
         createRole("Admin"),
         createRole("SystemAdmin"),
         createRole("Registrar")
       )
-      .requirePermission(createPermission("Update"), "Curriculums")
+      .requirePermission(createPermission("Delete"), "Curriculums")
       .requireAll()
       .build()
   );

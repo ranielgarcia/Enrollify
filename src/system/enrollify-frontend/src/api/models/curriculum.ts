@@ -1,6 +1,7 @@
 import z from "zod";
 import { AuditInfoSchema } from "./audit-info";
 import { CourseSchema } from "./course";
+import { dateTransformer } from "./date-transformer";
 
 const CourseSummarySchema = CourseSchema.pick({
   id: true,
@@ -20,7 +21,7 @@ export const CurriculumSchema = z
     version: z.string(),
     status: CurriculumStatusSchema,
     description: z.string(),
-    approvedDate: z.date().nullable(),
+    approvedDate: dateTransformer,
   })
   .extend(AuditInfoSchema.shape);
 

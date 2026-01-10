@@ -67,8 +67,6 @@ export function CurriculumForm({
     createDraftCurriculumOptions()
   );
 
-  console.log(curriculumToUpdate);
-
   const { mutateAsync: updateCurriculumAsync } = useMutation(
     updateCurriculumOptions(curriculumToUpdate?.id ?? 0)
   );

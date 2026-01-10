@@ -10,10 +10,11 @@ const queryKeys = {
   update: (id: number) => [...queryKeys.all(), `update`, id],
 };
 
-export const getAllCurriculumsOptions = () =>
+export const getAllCurriculumsOptions = (enabled: boolean) =>
   createQueryOptions({
     path: "/api/curriculums",
     options: {
+      enabled,
       queryKey: queryKeys.all(),
       select: (curriculums): Curriculum[] => {
         return curriculums.map((c) => CurriculumSchema.parse(c));

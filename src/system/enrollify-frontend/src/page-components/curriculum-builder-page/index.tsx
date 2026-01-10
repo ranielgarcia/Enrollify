@@ -4,12 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Plus, BookOpen, OctagonAlert } from "lucide-react";
 
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { getCurriculumQueryOption } from "@/api/collections/curriculum-collection";
+import {
+  getAllCurriculumsOptions,
+  getCurriculumQueryOption,
+} from "@/api/collections/curriculum-collection";
 import CurriculumBasicDetails from "./curriculum-basic-details";
 import { obfuscator } from "@/lib/obfuscator";
 import { useQuery } from "@tanstack/react-query";
 import MultiYearSubjectGridEditor from "./multi-year-subject-grid-editor";
 import { OverlayLoader } from "@/components/app-loading-overlay";
+import { CurriculumsTable } from "./curriculums-table";
 
 function CurriculumContent() {
   const navigate = useNavigate();
@@ -21,7 +25,9 @@ function CurriculumContent() {
     getCurriculumQueryOption(obfuscator.decode(curriculumId ?? "").at(0))
   );
 
-  console.log(isLoadingCurriculum);
+  const { data: curriculums } = useQuery(
+    getAllCurriculumsOptions(curriculumId === undefined)
+  );
 
   return (
     <main>
@@ -97,6 +103,17 @@ function CurriculumContent() {
               </Button>
             </div>
           </div>
+        ) : curriculums && curriculums?.length > 0 ? (
+          <CurriculumsTable
+            curriculums={curriculums}
+            onEdit={(item) => {
+              const obfuscatedId = obfuscator.encode([item.id]);
+              navigate({
+                to: "/portal/master-data/curriculum/{-$curriculumId}",
+                params: (prev) => ({ ...prev, curriculumId: obfuscatedId }),
+              });
+            }}
+          />
         ) : (
           <div className="flex flex-col items-center justify-center py-32 bg-muted/20 rounded-xl border-2 border-dashed">
             {curriculumId && !curriculum ? (

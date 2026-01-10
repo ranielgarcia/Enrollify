@@ -18,8 +18,4 @@
     <ProjectReference Include="..\Enrollify.SharedKernel\Enrollify.SharedKernel.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
 </Project>
