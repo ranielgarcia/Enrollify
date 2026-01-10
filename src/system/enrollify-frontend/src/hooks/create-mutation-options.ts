@@ -32,6 +32,14 @@ type QueryParamsForPathVerb<P extends ApiPath, V extends HttpVerb> =
       : undefined
     : undefined;
 
+// Extract the path params type for a GET operation on a given path.
+type PathParamsForPathVerb<P extends ApiPath, V extends HttpVerb> =
+  ApiPaths[P] extends Record<V, infer Op>
+    ? Op extends { parameters: { path: infer Q } }
+      ? Q
+      : undefined
+    : undefined;
+
 // Extract request body type (application/json) for a given path + verb
 type JsonRequestBodyForPathVerb<P extends ApiPath, V extends HttpVerb> =
   ApiPaths[P] extends Record<V, infer Op>
@@ -49,6 +57,7 @@ interface UseMutationParams<P extends ApiPath, V extends HttpVerb> {
   mutationKey: string | readonly unknown[];
   path: P;
   params?: QueryParamsForPathVerb<P, V>;
+  pathParams?: PathParamsForPathVerb<P, V>;
   isMultipart?: boolean;
   onUploadProgressCallBack?: (progressEvent: AxiosProgressEvent) => void;
   forceRefreshToken?: boolean;
@@ -59,10 +68,29 @@ interface UseMutationParams<P extends ApiPath, V extends HttpVerb> {
   >;
 }
 
+/**
+ * Interpolates path parameters into the URL path.
+ * e.g., "/api/room-types/{roomTypeId}/rooms/count" with { roomTypeId: "123" }
+ * becomes "/api/room-types/123/rooms/count"
+ */
+const interpolatePath = <P extends ApiPath>(
+  path: P,
+  pathParams: Record<string, string | number> | undefined
+): string => {
+  if (!pathParams) return path;
+
+  let interpolatedPath: string = path;
+  for (const [key, value] of Object.entries(pathParams)) {
+    interpolatedPath = interpolatedPath.replace(`{${key}}`, String(value));
+  }
+  return interpolatedPath;
+};
+
 const createMutationOptions = <P extends ApiPath, V extends HttpVerb = "post">({
   mutationKey,
   path,
   params,
+  pathParams,
   onUploadProgressCallBack,
   httpVerb = "post" as V,
   isMultipart = false,
@@ -82,10 +110,15 @@ const createMutationOptions = <P extends ApiPath, V extends HttpVerb = "post">({
         forceRefreshToken,
       });
 
+      const interpolatedPath = interpolatePath(
+        path,
+        pathParams as Record<string, string | number> | undefined
+      );
+
       if (isMultipart) {
         const response = await axios<JsonResponseForPathVerb<P, V>>({
           method: httpVerb,
-          url: `${Config.API_URL}${path}`,
+          url: `${Config.API_URL}${interpolatedPath}`,
           data: formData as FormData,
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -101,7 +134,7 @@ const createMutationOptions = <P extends ApiPath, V extends HttpVerb = "post">({
 
       const response = await axios<JsonResponseForPathVerb<P, V>>({
         method: httpVerb,
-        url: `${Config.API_URL}${path}`,
+        url: `${Config.API_URL}${interpolatedPath}`,
         data: formData,
         headers: {
           Authorization: `Bearer ${accessToken}`,

@@ -94,14 +94,7 @@ function CurriculumContent() {
             )}
 
             {/* Multi-Year Subject Grid */}
-            <MultiYearSubjectGridEditor />
-
-            <div className="flex justify-end gap-3 pt-8 border-t">
-              <Button variant="outline">Save as Draft</Button>
-              <Button className="bg-primary text-primary-foreground">
-                Finalize Curriculum
-              </Button>
-            </div>
+            <MultiYearSubjectGridEditor curriculumId={curriculum?.id} />
           </div>
         ) : curriculums && curriculums?.length > 0 ? (
           <CurriculumsTable

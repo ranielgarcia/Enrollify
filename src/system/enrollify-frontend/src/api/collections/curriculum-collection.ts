@@ -69,3 +69,20 @@ export const updateCurriculumOptions = (curriculumId: number) =>
       },
     },
   });
+
+// ** Save Curriculum Content **
+export const saveCurriculumContentOptions = (curriculumId: number) =>
+  createMutationOptions({
+    httpVerb: "put",
+    path: "/api/curriculums/{curriculumId}/save-content",
+    pathParams: {
+      curriculumId: curriculumId,
+    },
+    mutationKey: queryKeys.update(curriculumId),
+    options: {
+      meta: { invalidateQueries: [queryKeys.all()] },
+      onSuccess: () => {
+        toast.success("Curriculum content saved successfully");
+      },
+    },
+  });
