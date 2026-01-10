@@ -9,6 +9,7 @@ import CurriculumBasicDetails from "./curriculum-basic-details";
 import { obfuscator } from "@/lib/obfuscator";
 import { useQuery } from "@tanstack/react-query";
 import MultiYearSubjectGridEditor from "./multi-year-subject-grid-editor";
+import { OverlayLoader } from "@/components/app-loading-overlay";
 
 function CurriculumContent() {
   const navigate = useNavigate();
@@ -16,12 +17,20 @@ function CurriculumContent() {
 
   const [showForm, setShowForm] = useState(false);
 
-  const { data: curriculum } = useQuery(
+  const { data: curriculum, isPending: isLoadingCurriculum } = useQuery(
     getCurriculumQueryOption(obfuscator.decode(curriculumId ?? "").at(0))
   );
 
+  console.log(isLoadingCurriculum);
+
   return (
     <main>
+      <OverlayLoader
+        isLoading={!!curriculumId && isLoadingCurriculum}
+        text="Loading Curriculum"
+        size="sm"
+      />
+
       <div className="p-4 md:p-8">
         <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="mb-8">
