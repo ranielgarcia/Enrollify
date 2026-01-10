@@ -1,6 +1,4 @@
 import * as React from "react";
-import { Check } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 import {
   Command,
@@ -38,7 +36,7 @@ interface MultiSearchableSelectWithTriggerProps {
   popoverWidth?: "trigger" | number | string;
 }
 
-export function MultiSearchableSelectWithTrigger({
+export function SearchableSelectWithCustomTrigger({
   options,
   searchPlaceholder = "Search items...",
   emptyMessage = "No items found.",
@@ -129,21 +127,7 @@ export function MultiSearchableSelectWithTrigger({
                   value={option.label}
                   onSelect={() => handleSelect(option.value)}
                 >
-                  <div className="flex items-center">
-                    <div
-                      className={cn(
-                        "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                        selected.includes(option.value)
-                          ? "bg-primary text-primary-foreground"
-                          : "opacity-50"
-                      )}
-                    >
-                      {selected.includes(option.value) && (
-                        <Check className="h-3 w-3" />
-                      )}
-                    </div>
-                    {option.label}
-                  </div>
+                  <div className="flex items-center">{option.label}</div>
                 </CommandItem>
               ))}
             </CommandGroup>
