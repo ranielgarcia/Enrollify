@@ -1,6 +1,5 @@
 ﻿using Enrollify.Application.Curriculums.Features;
 using Enrollify.Core.Aggregates.CourseAggregate;
-using Enrollify.WebAPI.Utilities;
 
 namespace Enrollify.WebAPI.Features.Curriculums;
 
@@ -40,10 +39,10 @@ public class CreateDraftCurriculumRequestValidator : Validator<CreateDraftCurric
 [HttpPost("")]
 [Group<CurriculumEndpointGroup>]
 [Authorize(Policy = PolicyName.HasCreateCurriculumPermission)]
-public class CreateDraftCurriculumEndpoint (IMediator mediator, IIdObfuscator idObfuscator)
-    : Endpoint<CreateDraftCurriculumRequest, Results<Created<string>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+public class CreateDraftCurriculumEndpoint (IMediator mediator)
+    : Endpoint<CreateDraftCurriculumRequest, Results<Created<int>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
 {
-    public override async Task<Results<Created<string>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<Results<Created<int>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
         ExecuteAsync(CreateDraftCurriculumRequest request, CancellationToken ct)
     {
         var result = await mediator.Send(new CreateDraftCurriculum
@@ -51,6 +50,6 @@ public class CreateDraftCurriculumEndpoint (IMediator mediator, IIdObfuscator id
 
         return result.ToCreatedResult(
             id => $"/curriculumns/{id}",
-            id => idObfuscator.Encode(id.Value));
+            id => id.Value);
     }
 }

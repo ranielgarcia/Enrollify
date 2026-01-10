@@ -2,6 +2,7 @@
 using Enrollify.Application.Curriculums;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Infrastructure.Data;
+using System.Data.Common;
 
 namespace Enrollify.Infrastructure.Repositories;
 
@@ -23,6 +24,13 @@ internal class CurriculumRepository : ICurriculumRepository
             await _dbContext.Curriculums.AddAsync(newCurriculum, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
             return Result.Success(newCurriculum.Id);
+        }
+        catch (DbUpdateException ex) when (IsDuplicateCurriculumVersionInACourse(ex))
+        {
+            _logger.LogError(ex, "Failed to create curriculum due to duplicate version in a course: {CourseId}, {Version}", newCurriculum.CourseId, newCurriculum.Version);
+            return Result.Invalid(new ValidationError(
+                identifier: "Version",
+                errorMessage: $"A curriculum with version '{newCurriculum.Version}' already exists for the specified course."));
         }
         catch (DbUpdateException ex) when (IsEffectiveYearInvalidException(ex))
         {
@@ -49,6 +57,14 @@ internal class CurriculumRepository : ICurriculumRepository
                 errorMessage: $"The effective year '{newCurriculum.EffectiveYear}' is invalid. Please enter a year greater than or equal to 2000."));
         }
     }
+
+
+    private bool IsDuplicateCurriculumVersionInACourse(DbUpdateException ex)
+    {
+        var message = ex.InnerException?.Message;
+        return message?.Contains("UIdx_Curriculums_Course_Version_IsActive") == true;
+    }
+
 
     private bool IsEffectiveYearInvalidException(DbUpdateException ex)
     {

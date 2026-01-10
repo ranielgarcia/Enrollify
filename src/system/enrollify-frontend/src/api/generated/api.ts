@@ -1905,7 +1905,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string;
+                    "application/json": number;
                 };
             };
             /** @description Bad Request */
@@ -1967,7 +1967,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string;
+                    "application/json": number;
                 };
             };
             /** @description Bad Request */

@@ -5,22 +5,32 @@ import { toast } from "sonner";
 
 const queryKeys = {
   all: () => ["curriculums"],
-  single: (id: string) => [...queryKeys.all(), id],
+  single: (id: number) => [...queryKeys.all(), id],
   createDraft: () => [...queryKeys.all(), `create-draft`],
+  update: (id: number) => [...queryKeys.all(), `update`, id],
 };
 
-export 
+export const getAllCurriculumsOptions = () =>
+  createQueryOptions({
+    path: "/api/curriculums",
+    options: {
+      queryKey: queryKeys.all(),
+      select: (curriculums): Curriculum[] => {
+        return curriculums.map((c) => CurriculumSchema.parse(c));
+      },
+    },
+  });
 
 // curriculumId is obfuscated, that is why it is type string
-export const getCurriculumQueryOption = (curriculumId?: string) =>
+export const getCurriculumQueryOption = (curriculumId?: number) =>
   createQueryOptions({
     path: "/api/curriculums/{curriculumId}",
     pathParams: {
-      curriculumId: curriculumId!,
+      curriculumId: curriculumId?.toString() ?? "",
     },
     options: {
       enabled: !!curriculumId,
-      queryKey: queryKeys.single(curriculumId ?? ""),
+      queryKey: queryKeys.single(curriculumId ?? 0),
       select: (curriculum): Curriculum | null => {
         if (!curriculum) return null;
         return CurriculumSchema.parse(curriculum);
@@ -38,6 +48,23 @@ export const createDraftCurriculumOptions = () =>
       meta: { invalidateQueries: [queryKeys.all()] },
       onSuccess: () => {
         toast.success("Draft Curriculum created successfully");
+      },
+    },
+  });
+
+// ** Update Curriculum **
+export const updateCurriculumOptions = (curriculumId: number) =>
+  createMutationOptions({
+    httpVerb: "put",
+    path: "/api/curriculums",
+    params: {
+      id: curriculumId,
+    },
+    mutationKey: queryKeys.update(curriculumId),
+    options: {
+      meta: { invalidateQueries: [queryKeys.all()] },
+      onSuccess: () => {
+        toast.success("Curriculum updated successfully");
       },
     },
   });

@@ -1,7 +1,6 @@
 ﻿using Enrollify.Application.Curriculums.Features;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
-using Enrollify.WebAPI.Utilities;
 
 namespace Enrollify.WebAPI.Features.Curriculums;
 
@@ -42,16 +41,16 @@ public class UpdateCurriculumRequestValidator : Validator<UpdateCurriculumReques
 [HttpPut("")]
 [Group<CurriculumEndpointGroup>]
 [Authorize(Policy = PolicyName.HasCreateCurriculumPermission)]
-public class UpdateEndpoint(IMediator mediator, IIdObfuscator idObfuscator)
-    : Endpoint<UpdateCurriculumRequest, Results<Ok<string>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+public class UpdateEndpoint(IMediator mediator)
+    : Endpoint<UpdateCurriculumRequest, Results<Ok<int>, NotFound, Conflict<string[]>, ProblemHttpResult>>
 {
-    public override async Task<Results<Ok<string>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<Results<Ok<int>, NotFound, Conflict<string[]>, ProblemHttpResult>>
         ExecuteAsync(UpdateCurriculumRequest request, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(new UpdateCurriculum
             .Command(CurriculumId.From(request.Id), CourseId.From(request.CourseId), request.EffectiveYear, request.Version, request.Description));
 
         return result.ToUpdateResult(
-            id => idObfuscator.Encode(id.Value));
+            id => request.Id);
     }
 }

@@ -29,6 +29,7 @@ import { useSystemSettingsContext } from "@/infrastructure/system-settings/syste
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { getCurriculumQueryOption } from "@/api/collections/curriculum-collection";
 import CurriculumBasicDetails from "./curriculum-basic-details";
+import { obfuscator } from "@/lib/obfuscator";
 
 interface SubjectInCurriculum {
   id: number;
@@ -67,7 +68,9 @@ function CurriculumContent() {
 
   const [showForm, setShowForm] = useState(false);
 
-  const { data: curriculum } = useQuery(getCurriculumQueryOption(curriculumId));
+  const { data: curriculum } = useQuery(
+    getCurriculumQueryOption(obfuscator.decode(curriculumId ?? "").at(0))
+  );
 
   const [activeYears, setActiveYears] = useState<number[]>(
     Array.from({ length: DEFAULT_NUMBER_OF_YEARS }, (_, i) => i + 1)
@@ -212,9 +215,10 @@ function CurriculumContent() {
             <CurriculumForm
               onClose={() => setShowForm(false)}
               onSave={(curriculumId) => {
+                const obfuscatedId = obfuscator.encode([curriculumId]);
                 navigate({
                   to: "/portal/master-data/curriculum/{-$curriculumId}",
-                  params: (prev) => ({ ...prev, curriculumId }),
+                  params: (prev) => ({ ...prev, curriculumId: obfuscatedId }),
                 });
                 setShowForm(false);
               }}

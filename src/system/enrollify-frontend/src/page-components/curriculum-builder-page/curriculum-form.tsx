@@ -12,7 +12,10 @@ import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { getAllCoursesOptions } from "@/api/collections/course-collection";
 import { useForm } from "@tanstack/react-form";
 import z from "zod";
-import { createDraftCurriculumOptions } from "@/api/collections/curriculum-collection";
+import {
+  createDraftCurriculumOptions,
+  updateCurriculumOptions,
+} from "@/api/collections/curriculum-collection";
 import type { Curriculum } from "@/api/models/curriculum";
 
 type FormMeta = {
@@ -43,7 +46,7 @@ type CurriculaFormData = z.infer<typeof curriculaFormSchema>;
 
 interface CurriculumFormProps {
   onClose: () => void;
-  onSave: (curriculumId: string) => void;
+  onSave: (curriculumId: number) => void;
   curriculumToUpdate?: Curriculum | null;
 }
 
@@ -64,6 +67,12 @@ export function CurriculumForm({
     createDraftCurriculumOptions()
   );
 
+  console.log(curriculumToUpdate);
+
+  const { mutateAsync: updateCurriculumAsync } = useMutation(
+    updateCurriculumOptions(curriculumToUpdate?.id ?? 0)
+  );
+
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
@@ -77,6 +86,11 @@ export function CurriculumForm({
         const curriculumId = await createDraftCurriculumAsync(formValues);
         onSave(curriculumId);
       }
+
+      if (meta.submitAction === "update" && curriculumToUpdate) {
+        await updateCurriculumAsync(formValues);
+      }
+
       form.reset();
     },
   });

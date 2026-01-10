@@ -1,7 +1,6 @@
 using Enrollify.WebAPI.Authentication;
 using Enrollify.WebAPI.Infrastructure.Exceptions;
 using Enrollify.WebAPI.Plumbing;
-using Enrollify.WebAPI.Utilities;
 using Serilog;
 
 Log.Logger = ConfigureSerilogLogging.BootstrapLogger;
@@ -10,7 +9,6 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
-    builder.Services.AddScoped<IIdObfuscator, IdObfuscator>();
     builder.Services.AddControllers();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
