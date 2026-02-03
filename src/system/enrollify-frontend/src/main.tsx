@@ -13,7 +13,6 @@ import {
   type AuthenticationResult,
 } from "@azure/msal-browser";
 import { handleLogin } from "./infrastructure/authentication/msal";
-import { AuthenticationProvider } from "./infrastructure/authentication/authentication-provider";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "./components/theming/theme-provider";
 import {
@@ -26,7 +25,6 @@ import {
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import type { RouteLoaderData } from "./types/route.types";
-import { AuthorizationProvider } from "./infrastructure/authorization/AuthorizationProvider";
 import {
   AuthorizationContext,
   type IAuthorizationContextValue,
@@ -38,7 +36,6 @@ import {
   type ProblemDetails,
 } from "./lib/axios-utils";
 import { toast } from "sonner";
-import { SystemSettingsProvider } from "./infrastructure/system-settings/system-settings-provider";
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
@@ -149,6 +146,13 @@ function App() {
         const payload = event.payload as AuthenticationResult;
         const account = payload.account;
         msalInstance.setActiveAccount(account);
+
+        // Navigate to the redirect URL or default to portal home after successful login
+        const currentSearch = router.state.location.search as {
+          redirect?: string;
+        };
+        const redirectTo = currentSearch.redirect || "/portal/home";
+        router.navigate({ to: redirectTo });
       }
 
       // To prevent: BrowserAuthError: monitor_window_timeout: Token acquisition in iframe failed due to timeout.
