@@ -23,8 +23,30 @@ public class CurriculumSubjectPrerequisite : IAuditable
         CreatedBy = addedBy;
     }
 
+    public CurriculumSubjectPrerequisite(
+        CurriculumSubject curriculumSubject,
+        CurriculumSubject prerequisiteCurriculumSubject,
+        decimal? minimumGrade,
+        UserId addedBy)
+    {
+        CurriculumSubject = curriculumSubject;
+        PrerequisiteCurriculumSubject = prerequisiteCurriculumSubject;
+        MinimumGrade = minimumGrade;
+        CreatedBy = addedBy;
+    }
+
     public CurriculumSubjectId CurriculumSubjectId { get; private set; }
     public CurriculumSubjectId PrerequisiteCurriculumSubjectId { get; private set; }
+
+    /// <summary>
+    /// Navigation property to the curriculum subject that has this prerequisite.
+    /// </summary>
+    public CurriculumSubject? CurriculumSubject { get; private set; }
+
+    /// <summary>
+    /// Navigation property to the prerequisite curriculum subject.
+    /// </summary>
+    public CurriculumSubject? PrerequisiteCurriculumSubject { get; private set; }
 
     /// <summary>
     /// Optional minimum grade required (e.g., 2.0). Valid range: 1.0 to 5.0

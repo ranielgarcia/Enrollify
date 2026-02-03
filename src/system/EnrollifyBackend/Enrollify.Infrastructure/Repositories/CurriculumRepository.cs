@@ -2,7 +2,6 @@
 using Enrollify.Application.Curriculums;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Infrastructure.Data;
-using System.Data.Common;
 
 namespace Enrollify.Infrastructure.Repositories;
 

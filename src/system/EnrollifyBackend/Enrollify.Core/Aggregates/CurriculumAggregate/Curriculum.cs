@@ -109,20 +109,18 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
         return this;
     }
 
-    public Curriculum AddSubject(
+    public CurriculumSubject? AddSubject(
         SubjectId subjectId,
         int yearLevel,
         int semester,
         bool isElective,
-        string? electiveGroupName,
-        UserId addedBy)
+        string? electiveGroupName)
     {
         Guard.Against.Null(subjectId);
-        Guard.Against.Null(addedBy);
 
         // Prevent duplicate subjects in the same curriculum
         if (_curriculumSubjects.Any(cs => cs.SubjectId == subjectId && cs.IsActive))
-            return this;
+            return null;
 
         yearLevel = Guard.Against.OutOfRange(yearLevel, nameof(yearLevel), 1, 6);
         semester = Guard.Against.OutOfRange(semester, nameof(semester), 1, 3);
@@ -133,11 +131,10 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
             yearLevel,
             semester,
             isElective,
-            electiveGroupName,
-            addedBy);
+            electiveGroupName);
 
         _curriculumSubjects.Add(curriculumSubject);
-        return this;
+        return curriculumSubject;
     }
 
     public Curriculum RemoveSubject(SubjectId subjectId)
