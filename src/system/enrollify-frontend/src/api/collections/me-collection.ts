@@ -29,7 +29,11 @@ export const getMeSuspenseQueryOptions = () =>
     },
   });
 
-export const useGetMeDetails = () => useQuery(getMeQueryOptions());
+export const useGetMeDetails = (options?: { enabled?: boolean }) =>
+  useQuery({
+    ...getMeQueryOptions(),
+    enabled: options?.enabled ?? true,
+  });
 
 export const useGetMeDetailsSuspense = () =>
   useSuspenseQuery(getMeSuspenseQueryOptions());

@@ -1,4 +1,4 @@
-import { StrictMode, use, useMemo, useEffect, Suspense } from "react";
+import { StrictMode, use, useMemo, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import "./index.css";
@@ -23,11 +23,8 @@ import {
   useQueryClient,
   type QueryKey,
 } from "@tanstack/react-query";
-import {
-  PersistQueryClientProvider,
-  type PersistedClient,
-  type Persister,
-} from "@tanstack/react-query-persist-client";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import type { RouteLoaderData } from "./types/route.types";
 import { AuthorizationProvider } from "./infrastructure/authorization/AuthorizationProvider";
 import {
@@ -41,7 +38,6 @@ import {
   type ProblemDetails,
 } from "./lib/axios-utils";
 import { toast } from "sonner";
-import { OverlayLoader } from "./components/app-loading-overlay";
 import { SystemSettingsProvider } from "./infrastructure/system-settings/system-settings-provider";
 
 // Register the router instance for type safety
@@ -64,7 +60,7 @@ declare module "@tanstack/react-query" {
 }
 
 function hasMutationMeta(
-  meta: Record<string, unknown> | undefined
+  meta: Record<string, unknown> | undefined,
 ): meta is { invalidateQueries: ReadonlyArray<QueryKey> } {
   return meta != null && "invalidateQueries" in meta;
 }
@@ -106,18 +102,10 @@ const queryClient = new QueryClient({
   },
 });
 
-const persister: Persister = {
-  persistClient: async (client: PersistedClient) => {
-    localStorage.setItem("REACT_QUERY_CACHE", JSON.stringify(client));
-  },
-  restoreClient: async () => {
-    const cache = localStorage.getItem("REACT_QUERY_CACHE");
-    return cache ? JSON.parse(cache) : undefined;
-  },
-  removeClient: async () => {
-    localStorage.removeItem("REACT_QUERY_CACHE");
-  },
-};
+const persister = createAsyncStoragePersister({
+  storage: window.localStorage,
+  key: "REACT_QUERY_CACHE",
+});
 
 const msal = {} as IMsalContext;
 const authorization = {} as IAuthorizationContextValue;
@@ -187,7 +175,7 @@ function App() {
   // Memoize the router context to prevent unnecessary re-renders
   const routerContext = useMemo(
     () => ({ msal, authorization: authorizationContext, queryClient }),
-    [msal, authorizationContext, queryClient]
+    [msal, authorizationContext, queryClient],
   );
 
   return (
@@ -215,26 +203,10 @@ if (!rootElement.innerHTML) {
               },
             }}
           >
-            <Suspense
-              fallback={
-                <OverlayLoader
-                  isLoading={true}
-                  text="Loading profile..."
-                  size="lg"
-                />
-              }
-            >
-              <AuthenticationProvider>
-                <AuthorizationProvider>
-                  <SystemSettingsProvider>
-                    <App />
-                  </SystemSettingsProvider>
-                </AuthorizationProvider>
-              </AuthenticationProvider>
-            </Suspense>
+            <App />
           </PersistQueryClientProvider>
         </MsalProvider>
-      </StrictMode>
+      </StrictMode>,
     );
   });
 }
