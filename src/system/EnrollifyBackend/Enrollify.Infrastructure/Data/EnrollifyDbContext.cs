@@ -71,6 +71,6 @@ public class EnrollifyDbContext: DbContext
         configurationBuilder.RegisterAllInDepartmentVogenEfCoreConverters();
         configurationBuilder.RegisterAllInCourseVogenEfCoreConverters();
         configurationBuilder.RegisterAllInSubjectVogenEfCoreConverters();
-        configurationBuilder.RegisterAllInCurriculaVogenEfCoreConverters();
+        configurationBuilder.RegisterAllInCurriculumVogenEfCoreConverters();
     }
 }

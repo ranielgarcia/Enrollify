@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Tests/">
+    <Project Path="Enrollify.Application.Tests/Enrollify.Application.Tests.csproj" Id="8e9067e6-df0f-4048-a744-2cea7bf5a005" />
+  </Folder>
   <Project Path="Enrollify.Application/Enrollify.Application.csproj" Id="5a4d983a-b8db-4f09-9845-d325f6674418" />
   <Project Path="Enrollify.Core/Enrollify.Core.csproj" Id="885acc37-63de-4c05-b402-5f6c4c7e9e8c" />
   <Project Path="Enrollify.DatabaseMigration/Enrollify.DatabaseMigration.csproj" Id="9e235c67-c306-4c14-bbe7-0092a6e32c95" />

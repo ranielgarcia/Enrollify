@@ -142,6 +142,11 @@ public class CurriculumConfiguration : IEntityTypeConfiguration<Curriculum>
                     csp.Property(e => e.PrerequisiteCurriculumSubjectId)
                         .IsRequired();
 
+                    // Ignore navigation properties to CurriculumSubject since owned entities
+                    // cannot be on the principal side of non-ownership relationships
+                    csp.Ignore(e => e.CurriculumSubject);
+                    csp.Ignore(e => e.PrerequisiteCurriculumSubject);
+
                     csp.Property(e => e.MinimumGrade)
                         .HasColumnType("decimal(3,2)");
 

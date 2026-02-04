@@ -1,4 +1,8 @@
-﻿using Semester = int;
+﻿using Enrollify.Application.Curriculums.DTOs;
+using Enrollify.Application.Curriculums.Features;
+using Enrollify.Core.Aggregates.CurriculumAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate;
+using Semester = int;
 using Year = int;
 
 namespace Enrollify.WebAPI.Features.Curriculums;
@@ -20,19 +24,32 @@ public class CurriculumContentRequest
 [HttpPut("{curriculumId}/save-content")]
 [Group<CurriculumEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateCurriculumPermission)]
-public class SaveCurriculumnContentEndpoint
-    : Endpoint<CurriculumContentRequest, CurriculumContentRequest>
-    //: Endpoint<CurriculumContentRequest, Results<Created<CurriculumContentRequest>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+public class SaveCurriculumnContentEndpoint (IMediator mediator)
+    : Endpoint<CurriculumContentRequest, Results<Ok<CurriculumDTO>, NotFound, Conflict<string[]>, ProblemHttpResult>>
 {
-    //public override async Task<Results<Created<CurriculumContentRequest>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
-    //    ExecuteAsync(CurriculumContentRequest request, CancellationToken ct)
-    //{
-    //    return Send.OkAsync(request);
-    //}
-
-    public override async Task HandleAsync(CurriculumContentRequest request, CancellationToken c)
+    public override async Task<Results<Ok<CurriculumDTO>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+        ExecuteAsync(CurriculumContentRequest request, CancellationToken ct)
     {
-        var curriculumId = request.CurriculumId;
-        await Send.OkAsync(request);
+        var subjectsGrid = new Dictionary<Year, Dictionary<Semester, SaveCurriculumContent.SubjectInCurriculum[]>>();
+
+        foreach (var (year, semesters) in request.Grid)
+        {
+            var semesterDict = new Dictionary<Semester, SaveCurriculumContent.SubjectInCurriculum[]>();
+            foreach (var (semester, subjects) in semesters)
+            {
+                var subjectArray = subjects.Select(s => new SaveCurriculumContent.SubjectInCurriculum
+                {
+                    Code = SubjectCode.From(s.Code),
+                    Prerequisites = s.Prerequisites.Select(p => SubjectCode.From(p)).ToArray()
+                }).ToArray();
+                semesterDict[semester] = subjectArray;
+            }
+            subjectsGrid[year] = semesterDict;
+        }
+
+        var result = await mediator.Send(new SaveCurriculumContent
+            .Command(CurriculumId.From(request.CurriculumId), subjectsGrid), ct);
+
+        return result.ToUpdateResult(id => result.Value);
     }
 }

@@ -5,4 +5,4 @@ namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.CurriculumConfig
 
 [EfCoreConverter<CurriculumId>]
 [EfCoreConverter<CurriculumSubjectId>]
-internal partial class CurriculaVogenEfCoreConverters;
+public partial class CurriculumVogenEfCoreConverters;
