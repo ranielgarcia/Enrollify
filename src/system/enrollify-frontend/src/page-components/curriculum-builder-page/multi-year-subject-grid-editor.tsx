@@ -42,6 +42,74 @@ const createInitialGrid = (
 
 const DEFAULT_NUMBER_OF_YEARS = 2;
 
+/**
+ * Populates the grid state from the curriculum's existing subjects.
+ * Maps curriculum subjects to the YearGrid structure organized by year and semester.
+ */
+const populateGridFromCurriculum = (
+  curriculum: CurriculumWithSubjects,
+  numberOfSemesters: number,
+): { grid: YearGrid; activeYears: number[] } => {
+  const { curriculumSubjects } = curriculum;
+
+  // If no subjects, return default empty grid
+  if (!curriculumSubjects || curriculumSubjects.length === 0) {
+    return {
+      grid: createInitialGrid(DEFAULT_NUMBER_OF_YEARS, numberOfSemesters),
+      activeYears: Array.from(
+        { length: DEFAULT_NUMBER_OF_YEARS },
+        (_, i) => i + 1,
+      ),
+    };
+  }
+
+  // Build a lookup map: curriculumSubjectId -> subject code
+  // This is needed to resolve prerequisite references to subject codes
+  const curriculumSubjectIdToCode = new Map<number, string>(
+    curriculumSubjects.map((cs) => [cs.id, cs.subject.code]),
+  );
+
+  // Determine the unique years from curriculum subjects
+  const yearsSet = new Set(curriculumSubjects.map((cs) => cs.yearLevel));
+  const activeYears = Array.from(yearsSet).sort((a, b) => a - b);
+
+  // Ensure we have at least the default number of years
+  const maxYear = Math.max(...activeYears, DEFAULT_NUMBER_OF_YEARS);
+  const allYears = Array.from({ length: maxYear }, (_, i) => i + 1);
+
+  // Initialize grid with empty semesters for all years
+  const grid: YearGrid = Object.fromEntries(
+    allYears.map((year) => [year, createSemesterGrid(numberOfSemesters)]),
+  );
+
+  // Populate the grid with curriculum subjects
+  for (const curriculumSubject of curriculumSubjects) {
+    const { yearLevel, termNumber, subject, prerequisites } = curriculumSubject;
+
+    // Resolve prerequisite IDs to subject codes
+    const prerequisiteCodes = prerequisites
+      .map((prereq) =>
+        curriculumSubjectIdToCode.get(prereq.prerequisiteCurriculumSubjectId),
+      )
+      .filter((code): code is string => code !== undefined);
+
+    const subjectInCurriculum: SubjectInCurriculum = {
+      id: subject.id,
+      code: subject.code,
+      title: subject.title,
+      units: subject.units,
+      prerequisites: prerequisiteCodes,
+    };
+
+    // Add subject to the appropriate year and semester
+    if (grid[yearLevel] && grid[yearLevel][termNumber]) {
+      grid[yearLevel][termNumber].push(subjectInCurriculum);
+    }
+  }
+
+  return { grid, activeYears: allYears };
+};
+
 interface MultiYearSubjectGridEditorProps {
   curriculum: CurriculumWithSubjects;
 }
@@ -56,12 +124,20 @@ export default function MultiYearSubjectGridEditor({
     saveCurriculumContentOptions(curriculum.id),
   );
 
-  const [activeYears, setActiveYears] = useState<number[]>(
-    Array.from({ length: DEFAULT_NUMBER_OF_YEARS }, (_, i) => i + 1),
-  );
-  const [grid, setGrid] = useState<YearGrid>(() =>
-    createInitialGrid(DEFAULT_NUMBER_OF_YEARS, numberOfSemesters),
-  );
+  const [activeYears, setActiveYears] = useState<number[]>(() => {
+    const { activeYears: years } = populateGridFromCurriculum(
+      curriculum,
+      numberOfSemesters,
+    );
+    return years;
+  });
+  const [grid, setGrid] = useState<YearGrid>(() => {
+    const { grid: populatedGrid } = populateGridFromCurriculum(
+      curriculum,
+      numberOfSemesters,
+    );
+    return populatedGrid;
+  });
 
   const { data: availableSubjects } = useSuspenseQuery(
     getAllSubjectsMinimalOptions(),
