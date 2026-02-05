@@ -1,5 +1,4 @@
-﻿using Ardalis.Result;
-using Enrollify.Application.Subjects.DTOs;
+﻿using Enrollify.Application.Subjects.DTOs;
 using Enrollify.Application.Subjects.Features;
 
 namespace Enrollify.WebAPI.Features.Subjects;
@@ -13,7 +12,7 @@ public class ListPaginatedSubjectsEndpoint (IMediator mediator) : EndpointWithou
     {
         var page = Route<int>("page");
         var pageSize = Route<int>("pageSize");
-        var result = await mediator.Send(new ListSubjectsQuery(page, pageSize), cancellationToken);
+        var result = await mediator.Send(new ListSubjectsPaginatedQuery(page, pageSize), cancellationToken);
         await Send.OkAsync(result.Value);
     }
 }

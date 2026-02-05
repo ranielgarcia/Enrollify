@@ -6,9 +6,9 @@ import {
   AuthenticationContext,
   type IAuthenticationContext,
   defaultAuthenticationContext,
-} from "./authenticationContext";
+} from "./authentication-context";
 import { EventType } from "@azure/msal-browser";
-import { useGetMeDetailsSuspense } from "@/api/collections/me-collection";
+import { useGetMeDetails } from "@/api/collections/me-collection";
 
 export const AuthenticationProvider = ({
   children,
@@ -16,13 +16,16 @@ export const AuthenticationProvider = ({
   children: React.ReactNode;
 }>): React.ReactElement => {
   const { instance, accounts } = useMsal();
+  const isAuthenticated = accounts.length > 0;
 
   const {
     data: userContext,
     isSuccess: isGetUserContextSuccessful,
     isLoading: isLoadingUserContext,
     refetch: refreshUserContext,
-  } = useGetMeDetailsSuspense();
+  } = useGetMeDetails({
+    enabled: isAuthenticated, // Only fetch when user is authenticated
+  });
 
   // Derive context value from state instead of using effects
   const contextValue = useMemo<IAuthenticationContext>(() => {

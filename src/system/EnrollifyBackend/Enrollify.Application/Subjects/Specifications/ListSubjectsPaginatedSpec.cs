@@ -3,13 +3,12 @@ using Enrollify.Core.Aggregates.SubjectAggregate;
 
 namespace Enrollify.Application.Subjects.Specifications;
 
-public class ListSubjectsSpec : Specification<Subject>
+public class ListSubjectsPaginatedSpec : Specification<Subject>
 {
-    public ListSubjectsSpec(int pageNumber, int pageSize)
-    {
+    public ListSubjectsPaginatedSpec(int pageNumber, int pageSize) =>
         Query
+            .AsNoTracking()
             .Include(s => s.PreferRoomType)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize);
-    }
 }

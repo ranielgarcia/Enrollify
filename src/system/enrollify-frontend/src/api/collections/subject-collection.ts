@@ -18,6 +18,17 @@ const queryKeys = {
 
 const pagedSubjectsSchema = pagedResultSchema(SubjectSchema);
 
+export const getAllSubjectsMinimalOptions = () =>
+  createQueryOptions({
+    path: "/api/subjects",
+    options: {
+      queryKey: queryKeys.base(),
+      select: (subjects): Subject[] => {
+        return subjects.map((s) => SubjectSchema.parse(s));
+      },
+    },
+  });
+
 export const getAllSubjectsPaginatedOptions = (
   page: number,
   pageSize: number

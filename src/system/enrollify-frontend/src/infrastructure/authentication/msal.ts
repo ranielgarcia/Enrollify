@@ -1,5 +1,5 @@
-import { Config } from "../Configurations/app-config";
-import { loginRequest, msalInstance } from "./authConfig";
+import { Config } from "../configurations/app-config";
+import { loginRequest, msalInstance } from "./auth-config";
 
 export const handleLogin = () => {
   if (Config.SIGNIN_FLOW === "popup") {

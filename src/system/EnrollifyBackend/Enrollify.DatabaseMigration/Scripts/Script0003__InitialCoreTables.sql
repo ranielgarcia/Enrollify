@@ -1,6 +1,4 @@
-﻿
- 
-CREATE TABLE RoomTypes
+﻿CREATE TABLE RoomTypes
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	Name VARCHAR(50) NOT NULL,
@@ -189,18 +187,26 @@ GO
 
 -- ************************************
 
+CREATE TABLE CurriculumStatuses
+(
+	Id INT NOT NULL PRIMARY KEY,
+	Name VARCHAR(20) NOT NULL,
+	CONSTRAINT UQ_CurriculumStatuses_Name UNIQUE (Name),
+);
+GO
+
 -- Curriculum versioning - each course can have multiple curriculum versions
 -- Students are assigned to a curriculum when they enroll
 -- Prerequisites are defined at the curriculum level, not the subject level
-CREATE TABLE Curricula
+CREATE TABLE Curriculums
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	CourseId INT NOT NULL,
 	EffectiveYear INT NOT NULL,           -- Academic year when this curriculum takes effect (e.g., 2024)
 	Version VARCHAR(20) NOT NULL,          -- Version identifier (e.g., '2024-A', '2024-REV1')
-	Status VARCHAR(20) NOT NULL DEFAULT 'DRAFT', -- DRAFT, ACTIVE, PHASED_OUT, ARCHIVED
+	StatusId INT NOT NULL DEFAULT 1, -- default Draft
 	Description VARCHAR(500) NULL,
-	ApprovedDate DATE NULL,                -- When the curriculum was officially approved
+	ApprovedDate DATETIMEOFFSET NULL,                -- When the curriculum was officially approved
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -210,34 +216,34 @@ CREATE TABLE Curricula
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 
-	CONSTRAINT FK_Curricula_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
-	CONSTRAINT FK_Curricula_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_Curricula_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_Curricula_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
-	CONSTRAINT CHK_Curricula_Status_Valid CHECK (Status IN ('DRAFT', 'ACTIVE', 'PHASED_OUT', 'ARCHIVED')),
-	CONSTRAINT CHK_Curricula_EffectiveYear_Valid CHECK (EffectiveYear >= 2000)
+	CONSTRAINT FK_Curriculums_Status FOREIGN KEY (StatusId) REFERENCES CurriculumStatuses(Id),
+	CONSTRAINT FK_Curriculums_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
+	CONSTRAINT FK_Curriculums_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Curriculums_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Curriculums_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
+	CONSTRAINT CHK_Curriculums_EffectiveYear_Valid CHECK (EffectiveYear >= 2000)
 );
 GO;
 
--- Curricula indexes
-CREATE NONCLUSTERED INDEX IX_Curricula_CourseId 
-ON Curricula(CourseId);
+-- Curriculums indexes
+CREATE NONCLUSTERED INDEX IX_Curriculums_CourseId 
+ON Curriculums(CourseId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_Curricula_Status 
-ON Curricula(Status);
+CREATE NONCLUSTERED INDEX IX_Curriculums_Status 
+ON Curriculums(StatusId);
 GO
 
 -- Unique curriculum version per course (only for active records)
-CREATE UNIQUE NONCLUSTERED INDEX UIdx_Curricula_Course_Version_IsActive
-ON Curricula(CourseId, Version)
+CREATE UNIQUE NONCLUSTERED INDEX UIdx_Curriculums_Course_Version_IsActive
+ON Curriculums(CourseId, Version)
 WHERE IsActive = 1;
 GO
 
 -- ************************************
 
 -- Subjects are now course-agnostic catalog entries
--- They can be reused across multiple curricula/courses
+-- They can be reused across multiple Curriculums/courses
 -- The relationship to a course is through CurriculumSubjects
 CREATE TABLE Subjects
 (
@@ -274,7 +280,7 @@ GO;
 
 -- ************************************
 
--- CurriculumSubjects: Links subjects to a specific curriculum with year/semester placement
+-- CurriculumSubjects: Links subjects to a specific curriculum with year/TermNumber placement
 -- This is where subjects become part of a course's curriculum
 CREATE TABLE CurriculumSubjects
 (
@@ -282,7 +288,7 @@ CREATE TABLE CurriculumSubjects
 	CurriculumId INT NOT NULL,
 	SubjectId INT NOT NULL,
 	YearLevel INT NOT NULL,                -- Which year this subject is typically taken (1-6)
-	Semester INT NOT NULL,                 -- Which semester (1, 2, or 3 for summer)
+	TermNumber INT NOT NULL,				-- 1st, 2nd, 3rd term in the academic year
 	IsElective BIT NOT NULL DEFAULT 0,     -- Whether this is an elective slot
 	ElectiveGroupName VARCHAR(50) NULL,    -- Group name for electives (e.g., 'Major Elective', 'Free Elective')
 
@@ -294,13 +300,13 @@ CREATE TABLE CurriculumSubjects
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 
-	CONSTRAINT FK_CurriculumSubjects_Curriculum FOREIGN KEY (CurriculumId) REFERENCES Curricula(Id),
+	CONSTRAINT FK_CurriculumSubjects_Curriculum FOREIGN KEY (CurriculumId) REFERENCES Curriculums(Id),
 	CONSTRAINT FK_CurriculumSubjects_Subject FOREIGN KEY (SubjectId) REFERENCES Subjects(Id),
 	CONSTRAINT FK_CurriculumSubjects_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_CurriculumSubjects_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_CurriculumSubjects_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
 	CONSTRAINT CHK_CurriculumSubjects_YearLevel_Valid CHECK (YearLevel BETWEEN 1 AND 6),
-	CONSTRAINT CHK_CurriculumSubjects_Semester_Valid CHECK (Semester IN (1, 2, 3))
+	CONSTRAINT CHK_CurriculumSubjects_TermNumber_Valid CHECK (TermNumber IN (1, 2, 3))
 );
 GO;
 
@@ -498,6 +504,7 @@ CREATE TABLE Semesters
 	Name VARCHAR(50) NOT NULL,
 	Description VARCHAR(50) NOT NULL,
 	SchoolYear INT NOT NULL,
+
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
 	UpdatedAt DATETIMEOFFSET NULL,
@@ -716,7 +723,7 @@ CREATE TABLE Students
 	CONSTRAINT UQ_Students_StudentNumber UNIQUE (StudentNumber),
 	CONSTRAINT UQ_Students_Email UNIQUE (Email),
 	CONSTRAINT FK_Students_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
-	CONSTRAINT FK_Students_Curriculum FOREIGN KEY (CurriculumId) REFERENCES Curricula(Id),
+	CONSTRAINT FK_Students_Curriculum FOREIGN KEY (CurriculumId) REFERENCES Curriculums(Id),
     CONSTRAINT FK_Students_StudentStatus FOREIGN KEY (Status) REFERENCES StudentStatuses(Id),
     CONSTRAINT FK_Students_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_Students_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),

@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/system-settings/academic-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesSystemSettingsAcademicSettingsEndpoint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/subjects": {
         parameters: {
             query?: never;
@@ -27,7 +43,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["EnrollifyWebAPIFeaturesSubjectsListMinimalSubjectsEndpoint"];
         put: operations["EnrollifyWebAPIFeaturesSubjectsUpdateEndpoint"];
         post: operations["EnrollifyWebAPIFeaturesSubjectsCreateEndpoint"];
         delete: operations["EnrollifyWebAPIFeaturesSubjectsDeleteEndpoint"];
@@ -127,6 +143,54 @@ export interface paths {
         put: operations["EnrollifyWebAPIFeaturesDepartmentsUpdateEndpoint"];
         post: operations["EnrollifyWebAPIFeaturesDepartmentsCreateEndpoint"];
         delete: operations["EnrollifyWebAPIFeaturesDepartmentsDeleteEndpoint"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/curriculums": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesCurriculumsListCurriculumEndpoint"];
+        put: operations["EnrollifyWebAPIFeaturesCurriculumsUpdateEndpoint"];
+        post: operations["EnrollifyWebAPIFeaturesCurriculumsCreateDraftCurriculumEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/curriculums/{curriculumId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesCurriculumsGetCurriculumByIdEndpoint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/curriculums/{curriculumId}/save-content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesCurriculumsSaveCurriculumnContentEndpoint"];
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -247,6 +311,10 @@ export interface components {
             value?: number;
         };
         ArdalisSmartEnumSmartFlagEngineOfPermissionEnumAndInt32: Record<string, never>;
+        EnrollifyCoreAcademicSettings: {
+            /** Format: int32 */
+            academicSystem?: number;
+        };
         EnrollifyWebAPIFeaturesSubjectsCreateSubjectResponse: {
             /** Format: int32 */
             id?: number;
@@ -285,17 +353,6 @@ export interface components {
             preferRoomTypeId: number;
         };
         EnrollifyWebAPIFeaturesSubjectsDeleteSubjectRequest: Record<string, never>;
-        EnrollifyApplicationPagedResultOfSubjectDTO: {
-            items?: components["schemas"]["EnrollifyApplicationSubjectsDTOsSubjectDTO"][];
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            pageSize?: number;
-            /** Format: int32 */
-            totalCount?: number;
-            /** Format: int32 */
-            totalPages?: number;
-        };
         EnrollifyApplicationSubjectsDTOsSubjectDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
             /**
              * Format: int32
@@ -340,6 +397,17 @@ export interface components {
             email?: components["schemas"]["EnrollifyCoreAggregatesUserAggregateUserEmail"];
             firstName?: string;
             lastName?: string;
+        };
+        EnrollifyApplicationPagedResultOfSubjectDTO: {
+            items?: components["schemas"]["EnrollifyApplicationSubjectsDTOsSubjectDTO"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int32 */
+            totalCount?: number;
+            /** Format: int32 */
+            totalPages?: number;
         };
         EnrollifyWebAPIFeaturesSubjectsUpdateSubjectResponse: {
             /** Format: int32 */
@@ -564,6 +632,68 @@ export interface components {
             /** Format: int32 */
             collegeId: number;
         };
+        EnrollifyWebAPIFeaturesCurriculumsCreateDraftCurriculumRequest: {
+            /** Format: int32 */
+            courseId: number;
+            /** Format: int32 */
+            effectiveYear: number;
+            version: string;
+            description?: string | null;
+        };
+        EnrollifyApplicationCurriculumsDTOsCurriculumDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            /** Format: int32 */
+            effectiveYear?: number;
+            version?: string;
+            status?: components["schemas"]["EnrollifyCoreConstantsCurriculumStatusEnum"];
+            course?: components["schemas"]["EnrollifyApplicationSharedDTOsCourseSummaryDTO"] | null;
+            description?: string | null;
+            /** Format: date-time */
+            approvedDate?: string | null;
+        };
+        EnrollifyCoreConstantsCurriculumStatusEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfCurriculumStatusEnum"] & Record<string, never>;
+        ArdalisSmartEnumSmartEnumOfCurriculumStatusEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfCurriculumStatusEnumAndInt32"] & Record<string, never>;
+        /** @description A base type to use for creating smart enums. */
+        ArdalisSmartEnumSmartEnumOfCurriculumStatusEnumAndInt32: {
+            /** @description Gets the name. */
+            name?: string | null;
+            /**
+             * Format: int32
+             * @description Gets the value.
+             */
+            value?: number;
+        };
+        EnrollifyApplicationSharedDTOsCourseSummaryDTO: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            name?: string;
+        };
+        EnrollifyWebAPIFeaturesCurriculumsCurriculumContentRequest: {
+            grid?: {
+                [key: string]: {
+                    [key: string]: components["schemas"]["EnrollifyWebAPIFeaturesCurriculumsSubjectInCurriculum"][];
+                };
+            };
+        };
+        EnrollifyWebAPIFeaturesCurriculumsSubjectInCurriculum: {
+            code?: string;
+            prerequisites?: string[];
+        };
+        EnrollifyWebAPIFeaturesCurriculumsUpdateCurriculumRequest: {
+            /** Format: int32 */
+            courseId: number;
+            /** Format: int32 */
+            effectiveYear: number;
+            version: string;
+            description?: string | null;
+        };
         EnrollifyWebAPIFeaturesCoursesCreateCourseResponse: {
             /** Format: int32 */
             id?: number;
@@ -759,6 +889,74 @@ export interface operations {
                 content: {
                     "application/json": string[];
                 };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesSystemSettingsAcademicSettingsEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyCoreAcademicSettings"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesSubjectsListMinimalSubjectsEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationSubjectsDTOsSubjectDTO"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -1676,6 +1874,235 @@ export interface operations {
                 content: {
                     "application/json": string[];
                 };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCurriculumsListCurriculumEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationCurriculumsDTOsCurriculumDTO"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCurriculumsUpdateEndpoint: {
+        parameters: {
+            query: {
+                id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCurriculumsUpdateCurriculumRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCurriculumsCreateDraftCurriculumEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCurriculumsCreateDraftCurriculumRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCurriculumsGetCurriculumByIdEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                curriculumId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationCurriculumsDTOsCurriculumDTO"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCurriculumsSaveCurriculumnContentEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                curriculumId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCurriculumsCurriculumContentRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCurriculumsCurriculumContentRequest"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

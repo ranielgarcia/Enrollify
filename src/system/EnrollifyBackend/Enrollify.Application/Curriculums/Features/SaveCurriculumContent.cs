@@ -1,0 +1,209 @@
+﻿using Ardalis.Result;
+using Enrollify.Application.Curriculums.DTOs;
+using Enrollify.Application.Curriculums.Specifications;
+using Enrollify.Application.Subjects.Specifications;
+using Enrollify.Core.Aggregates.CurriculumAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate;
+using Enrollify.SharedKernel;
+using Mediator;
+using Semester = int;
+using Year = int;
+
+namespace Enrollify.Application.Curriculums.Features;
+
+public class SaveCurriculumContent
+{
+    public class SubjectInCurriculum
+    {
+        public SubjectCode Code { get; set; }
+        public SubjectCode[] Prerequisites { get; set; } = [];
+    }
+
+    public sealed record Command(CurriculumId CurriculumId, Dictionary<Year, Dictionary<Semester, SubjectInCurriculum[]>> SubjectsGrid) : ICommand<Result<CurriculumDTO>>;
+
+    public sealed class Handler : ICommandHandler<Command, Result<CurriculumDTO>>
+    {
+        private readonly IReadRepository<Curriculum> _readRepository;
+        private readonly IReadRepository<Subject> _subjectReadRepository;
+        private readonly ICurriculumRepository _curriculumRepository;
+
+        public Handler(
+            IReadRepository<Curriculum> readRepository, 
+            IReadRepository<Subject> subjectReadRepository,
+            ICurriculumRepository curriculumRepository)
+        {
+            _readRepository = readRepository;
+            _subjectReadRepository = subjectReadRepository;
+            _curriculumRepository = curriculumRepository;
+        }
+
+        public async ValueTask<Result<CurriculumDTO>> Handle(Command command, CancellationToken cancellationToken)
+        {
+            var spec = new GetCurriculumWithSubjectsByIdSpec(command.CurriculumId);
+            var curriculum = await _readRepository.FirstOrDefaultAsync(spec, cancellationToken);
+
+            if (curriculum == null)
+            {
+                return Result.Invalid(new ValidationError($"Curriculum with an id of {command.CurriculumId.Value} not found"));
+            }
+
+            // Collect all subject codes from the grid (including prerequisites)
+            var allSubjectCodes = command.SubjectsGrid.Values
+                .SelectMany(semesters => semesters.Values)
+                .SelectMany(subjects => subjects)
+                .SelectMany(subject => subject.Prerequisites.Prepend(subject.Code))
+                .Distinct()
+                .ToList();
+
+            // Get only the main subject codes (not prerequisites) for determining what should exist
+            var gridSubjectCodes = command.SubjectsGrid.Values
+                .SelectMany(semesters => semesters.Values)
+                .SelectMany(subjects => subjects)
+                .Select(subject => subject.Code)
+                .Distinct()
+                .ToHashSet();
+
+            var allSubjects = await _subjectReadRepository.ListAsync(new ListSubjectsByCodesSpec(allSubjectCodes), cancellationToken);
+
+            // Create lookup from SubjectCode to Subject
+            var subjectsByCode = allSubjects.ToDictionary(s => s.Code, s => s);
+
+            // Validate all subject codes exist
+            var missingCodes = allSubjectCodes
+                .Where(code => !subjectsByCode.ContainsKey(code))
+                .Select(code => code.Value)
+                .ToList();
+
+            if (missingCodes.Count > 0)
+            {
+                return Result.Invalid(new ValidationError($"Subjects with codes {string.Join(", ", missingCodes)} not found"));
+            }
+
+            // Get SubjectIds that should be in the curriculum
+            var gridSubjectIds = gridSubjectCodes
+                .Select(code => subjectsByCode[code].Id)
+                .ToHashSet();
+
+            // Remove subjects that are in the curriculum but not in the grid
+            var existingSubjects = curriculum.CurriculumSubjects.Where(cs => cs.IsActive).ToList();
+            foreach (var existingSubject in existingSubjects)
+            {
+                if (!gridSubjectIds.Contains(existingSubject.SubjectId))
+                {
+                    curriculum.RemoveSubject(existingSubject.SubjectId);
+                }
+            }
+
+            // Track CurriculumSubject by SubjectCode
+            var curriculumSubjectsLookup = new Dictionary<SubjectCode, CurriculumSubject>();
+
+            // Add new subjects or update existing ones
+            foreach (var year in command.SubjectsGrid.OrderBy(kvp => kvp.Key))
+            {
+                foreach (var semester in year.Value.OrderBy(kvp => kvp.Key))
+                {
+                    foreach (var subjectInCurriculum in semester.Value)
+                    {
+                        var subject = subjectsByCode[subjectInCurriculum.Code];
+
+                        // Try to get existing curriculum subject
+                        var curriculumSubject = curriculum.GetCurriculumSubject(subject.Id);
+
+                        if (curriculumSubject != null)
+                        {
+                            // Update existing subject's year/semester if changed
+                            curriculumSubject.UpdateYearLevel(year.Key);
+                            curriculumSubject.UpdateTermNumber(semester.Key);
+                            curriculumSubjectsLookup[subjectInCurriculum.Code] = curriculumSubject;
+                        }
+                        else
+                        {
+                            // Add new subject
+                            curriculumSubject = curriculum.AddSubject(subject.Id, year.Key, semester.Key, isElective: false, electiveGroupName: null);
+                            if (curriculumSubject != null)
+                            {
+                                curriculumSubjectsLookup[subjectInCurriculum.Code] = curriculumSubject;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Save the curriculum subjects first to get their database-generated IDs
+            // This is required because CurriculumSubjectPrerequisite needs valid CurriculumSubjectIds
+            var saveSubjectsResult = await _curriculumRepository.UpdateCurriculum(curriculum, cancellationToken);
+            if (!saveSubjectsResult.IsSuccess)
+            {
+                return Result.Invalid(saveSubjectsResult.ValidationErrors);
+            }
+
+            // Build expected prerequisites map: SubjectCode -> Set of prerequisite SubjectCodes
+            var expectedPrerequisites = command.SubjectsGrid.Values
+                .SelectMany(semesters => semesters.Values)
+                .SelectMany(subjects => subjects)
+                .ToDictionary(
+                    s => s.Code,
+                    s => s.Prerequisites.ToHashSet());
+
+            // Sync prerequisites for each subject
+            foreach (var year in command.SubjectsGrid)
+            {
+                foreach (var semester in year.Value)
+                {
+                    foreach (var subjectInCurriculum in semester.Value)
+                    {
+                        var subject = subjectsByCode[subjectInCurriculum.Code];
+                        var curriculumSubject = curriculumSubjectsLookup.TryGetValue(subjectInCurriculum.Code, out var cs)
+                            ? cs
+                            : curriculum.GetCurriculumSubject(subject.Id);
+
+                        if (curriculumSubject == null)
+                        {
+                            return Result.Invalid(new ValidationError($"CurriculumSubject for code {subjectInCurriculum.Code.Value} was not found"));
+                        }
+
+                        var expectedPrereqCodes = expectedPrerequisites.GetValueOrDefault(subjectInCurriculum.Code) ?? [];
+
+                        // Get expected prerequisite CurriculumSubjectIds
+                        var expectedPrereqIds = new HashSet<CurriculumSubjectId>();
+                        foreach (var prereqCode in expectedPrereqCodes)
+                        {
+                            var prereqSubject = subjectsByCode[prereqCode];
+                            var prereqCurriculumSubject = curriculumSubjectsLookup.TryGetValue(prereqCode, out var pcs)
+                                ? pcs
+                                : curriculum.GetCurriculumSubject(prereqSubject.Id);
+
+                            if (prereqCurriculumSubject == null)
+                            {
+                                return Result.Invalid(new ValidationError($"Prerequisite with code {prereqCode.Value} not found in the curriculum"));
+                            }
+
+                            expectedPrereqIds.Add(prereqCurriculumSubject.Id);
+                        }
+
+                        // Remove prerequisites that are no longer in the grid
+                        var existingPrerequisites = curriculumSubject.Prerequisites.Where(p => p.IsActive).ToList();
+                        foreach (var existingPrereq in existingPrerequisites)
+                        {
+                            if (!expectedPrereqIds.Contains(existingPrereq.PrerequisiteCurriculumSubjectId))
+                            {
+                                curriculumSubject.RemovePrerequisite(existingPrereq.PrerequisiteCurriculumSubjectId);
+                            }
+                        }
+
+                        // Add new prerequisites
+                        foreach (var prereqId in expectedPrereqIds)
+                        {
+                            curriculumSubject.AddPrerequisite(prereqId, minimumGrade: null, addedBy: curriculum.CreatedBy);
+                        }
+                    }
+                }
+            }
+
+            // Save the prerequisites
+            var updateResult = await _curriculumRepository.UpdateCurriculum(curriculum, cancellationToken);
+
+            return updateResult.IsSuccess ? Result.Success(CurriculumDTO.FromEntity(curriculum)) : Result.Invalid(updateResult.ValidationErrors);
+        }
+    }
+}

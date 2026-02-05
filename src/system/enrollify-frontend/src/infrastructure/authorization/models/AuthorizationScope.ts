@@ -12,6 +12,7 @@ export const Scopes = {
   Departments: 7,
   Courses: 8,
   Subjects: 9,
+  Curriculums: 10,
 } as const;
 
 export type ScopeName = keyof typeof Scopes;

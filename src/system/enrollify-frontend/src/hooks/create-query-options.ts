@@ -5,10 +5,10 @@ import {
 } from "@tanstack/react-query";
 import axios from "axios";
 
-import { Config } from "@/infrastructure/Configurations/app-config";
+import { Config } from "@/infrastructure/configurations/app-config";
 import type { paths as ApiPaths } from "@/api/generated/api";
 import { getCurrentAccessToken } from "@/infrastructure/authentication/tokenFetcher";
-import { msalInstance } from "@/infrastructure/authentication/authConfig";
+import { msalInstance } from "@/infrastructure/authentication/auth-config";
 
 type ApiPath = keyof ApiPaths;
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, type PropsWithChildren } from "react";
-import { useAuthenticationContext } from "../authentication/authenticationContext";
+import { useAuthenticationContext } from "../authentication/authentication-context";
 import { AuthorizationService } from "./AuthorizationService";
 import { PolicyRegistry } from "./policies/PolicyRegistry";
 import type { IAuthorizationHandler } from "./handlers/IAuthorizationHandler";
@@ -18,6 +18,7 @@ import { registerBuildingsPolicies } from "./policies/buildings-policies";
 import { registerDepartmentPolicies } from "./policies/department-policies";
 import { registerCoursesPolicies } from "./policies/courses-policies";
 import { registerSubjectsPolicies } from "./policies/subjects-policies";
+import { registerCurriculumPolicies } from "./policies/curriculum-policies";
 
 export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
   children,
@@ -44,6 +45,7 @@ export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
     registerDepartmentPolicies(policyRegistry);
     registerCoursesPolicies(policyRegistry);
     registerSubjectsPolicies(policyRegistry);
+    registerCurriculumPolicies(policyRegistry);
 
     const handlers: IAuthorizationHandler[] = [
       new RoleHandler(),

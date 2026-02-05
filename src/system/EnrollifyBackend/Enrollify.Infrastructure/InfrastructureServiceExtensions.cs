@@ -4,6 +4,7 @@ using Dapper;
 using Enrollify.Application.Buildings;
 using Enrollify.Application.Colleges;
 using Enrollify.Application.Courses;
+using Enrollify.Application.Curriculums;
 using Enrollify.Application.Departments;
 using Enrollify.Application.Roles.Features.List;
 using Enrollify.Application.Rooms;
@@ -73,6 +74,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();
         services.AddScoped<ICourseRepository, CourseRepository>();
         services.AddScoped<ISubjectRepository, SubjectRepository>();
+        services.AddScoped<ICurriculumRepository, CurriculumRepository>();
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 

@@ -17,7 +17,7 @@ import {
   SidebarMenuButton,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { useAuthenticationContext } from "@/infrastructure/authentication/authenticationContext";
+import { useAuthenticationContext } from "@/infrastructure/authentication/authentication-context";
 import { PolicyNames } from "@/infrastructure/authorization/models/PolicyNames";
 
 // This is sample data.
@@ -61,6 +61,11 @@ const data = {
           title: "Subjects",
           url: "/portal/master-data/subjects",
           viewAuthorizationPolicies: [PolicyNames.canViewSubjects],
+        },
+        {
+          title: "Curriculum",
+          url: "/portal/master-data/curriculum",
+          viewAuthorizationPolicies: [PolicyNames.canViewCurriculums],
         },
       ],
     } as NavMainItemProp,

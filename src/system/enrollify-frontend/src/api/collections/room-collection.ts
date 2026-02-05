@@ -17,7 +17,6 @@ export const getAllRooms = () =>
     options: {
       queryKey: queryKeys.all(),
       select: (rooms): Room[] => {
-        console.log(rooms);
         return rooms.map((t) => RoomSchema.parse(t));
       },
     },

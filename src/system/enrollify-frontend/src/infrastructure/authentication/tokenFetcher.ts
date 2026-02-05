@@ -3,7 +3,7 @@ import {
   type IPublicClientApplication,
 } from "@azure/msal-browser";
 
-import { loginRequest } from "./authConfig";
+import { loginRequest } from "./auth-config";
 
 interface getCurrentTokenProps {
   msalInstance: IPublicClientApplication;

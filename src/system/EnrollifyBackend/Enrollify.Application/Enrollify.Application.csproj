@@ -7,15 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Curriculums\Specifications\GetCurriculumByIdSpec.cs~RF53d96f5.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Ardalis.Result" Version="10.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Enrollify.Core\Enrollify.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Common\" />
   </ItemGroup>
 
 </Project>
