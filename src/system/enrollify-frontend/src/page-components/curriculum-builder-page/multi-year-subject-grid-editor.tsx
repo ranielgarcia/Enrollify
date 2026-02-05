@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSystemSettingsContext } from "@/infrastructure/system-settings/system-settings-context";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import { Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Check, Cloud, CloudOff, Loader2, Plus, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface SubjectInCurriculum {
   id: number;
@@ -23,6 +23,8 @@ interface SubjectInCurriculum {
 
 type SemesterGrid = Record<number, SubjectInCurriculum[]>;
 type YearGrid = Record<number, SemesterGrid>;
+
+type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 const createSemesterGrid = (numberOfSemesters: number): SemesterGrid =>
   Object.fromEntries(
@@ -124,6 +126,10 @@ export default function MultiYearSubjectGridEditor({
     saveCurriculumContentOptions(curriculum.id),
   );
 
+  const [isDirty, setIsDirty] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [activeYears, setActiveYears] = useState<number[]>(() => {
     const { activeYears: years } = populateGridFromCurriculum(
       curriculum,
@@ -143,6 +149,49 @@ export default function MultiYearSubjectGridEditor({
     getAllSubjectsMinimalOptions(),
   );
 
+  // Auto-save effect with debounce
+  useEffect(() => {
+    if (!isDirty) return;
+
+    // Clear any existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set up debounced save
+    saveTimeoutRef.current = setTimeout(async () => {
+      setSaveStatus("saving");
+      try {
+        await saveCurriculumContentAsync({ grid });
+        setSaveStatus("saved");
+        setIsDirty(false);
+
+        // Reset to idle after showing "saved" for 2 seconds
+        setTimeout(() => setSaveStatus("idle"), 2000);
+      } catch {
+        setSaveStatus("error");
+      }
+    }, 1500); // 1.5 second debounce
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [grid, isDirty, saveCurriculumContentAsync]);
+
+  // Helper to mark grid as dirty when updating
+  const updateGridWithDirty = (updater: (prev: YearGrid) => YearGrid) => {
+    setGrid((prev) => {
+      const newGrid = updater(prev);
+      // Only mark dirty if the grid actually changed
+      if (newGrid !== prev) {
+        setIsDirty(true);
+      }
+      return newGrid;
+    });
+  };
+
   const addSubjectToGrid = (
     year: number,
     semester: number,
@@ -151,7 +200,7 @@ export default function MultiYearSubjectGridEditor({
     const subject = availableSubjects.find((s) => s.id === subjectId);
     if (!subject) return;
 
-    setGrid((prev) => {
+    updateGridWithDirty((prev) => {
       // Check if subject already exists in this year/semester
       const subjectExists = prev[year][semester].some(
         (s) => s.id === subjectId,
@@ -173,7 +222,7 @@ export default function MultiYearSubjectGridEditor({
   };
 
   const removeSubject = (year: number, semester: number, subjectId: number) => {
-    setGrid((prev) => ({
+    updateGridWithDirty((prev) => ({
       ...prev,
       [year]: {
         ...prev[year],
@@ -185,7 +234,7 @@ export default function MultiYearSubjectGridEditor({
   const addYear = () => {
     const nextYear = activeYears.length > 0 ? Math.max(...activeYears) + 1 : 1;
     setActiveYears((prev) => [...prev, nextYear]);
-    setGrid((prev) => ({
+    updateGridWithDirty((prev) => ({
       ...prev,
       [nextYear]: createSemesterGrid(numberOfSemesters),
     }));
@@ -193,7 +242,7 @@ export default function MultiYearSubjectGridEditor({
 
   const removeYear = (year: number) => {
     setActiveYears((prev) => prev.filter((y) => y !== year));
-    setGrid((prev) => {
+    updateGridWithDirty((prev) => {
       const newGrid = { ...prev };
       delete newGrid[year];
       return newGrid;
@@ -206,7 +255,7 @@ export default function MultiYearSubjectGridEditor({
     subjectId: number,
     prerequisiteCodes: string[],
   ) => {
-    setGrid((prev) => {
+    updateGridWithDirty((prev) => {
       const newGrid = { ...prev };
       const subjects = [...newGrid[year][semester]];
       const subjectIndex = subjects.findIndex((s) => s.id === subjectId);
@@ -232,7 +281,7 @@ export default function MultiYearSubjectGridEditor({
     subjectId: number,
     prerequisiteCode: string,
   ) => {
-    setGrid((prev) => {
+    updateGridWithDirty((prev) => {
       const newGrid = { ...prev };
       const subjects = [...newGrid[year][semester]];
       const subjectIndex = subjects.findIndex((s) => s.id === subjectId);
@@ -500,16 +549,66 @@ export default function MultiYearSubjectGridEditor({
         </Button>
       </div>
 
-      <div className="flex justify-end gap-3 pt-8 border-t">
-        <Button
-          variant="outline"
-          onClick={() => saveCurriculumContentAsync({ grid })}
-        >
-          Save as Draft
-        </Button>
-        <Button className="bg-primary text-primary-foreground">
-          Finalize Curriculum
-        </Button>
+      <div className="flex items-center justify-between gap-3 pt-8 border-t">
+        {/* Auto-save status indicator */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          {saveStatus === "idle" && !isDirty && (
+            <>
+              <Cloud className="size-4" />
+              <span>All changes saved</span>
+            </>
+          )}
+          {saveStatus === "idle" && isDirty && (
+            <>
+              <Cloud className="size-4 animate-pulse" />
+              <span>Unsaved changes</span>
+            </>
+          )}
+          {saveStatus === "saving" && (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              <span>Saving...</span>
+            </>
+          )}
+          {saveStatus === "saved" && (
+            <>
+              <Check className="size-4 text-green-600" />
+              <span className="text-green-600">Saved</span>
+            </>
+          )}
+          {saveStatus === "error" && (
+            <>
+              <CloudOff className="size-4 text-destructive" />
+              <span className="text-destructive">Save failed</span>
+            </>
+          )}
+        </div>
+
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              setSaveStatus("saving");
+              try {
+                await saveCurriculumContentAsync({ grid });
+                setSaveStatus("saved");
+                setIsDirty(false);
+                setTimeout(() => setSaveStatus("idle"), 2000);
+              } catch {
+                setSaveStatus("error");
+              }
+            }}
+            disabled={saveStatus === "saving"}
+          >
+            {saveStatus === "saving" ? (
+              <Loader2 className="size-4 mr-2 animate-spin" />
+            ) : null}
+            Save as Draft
+          </Button>
+          <Button className="bg-primary text-primary-foreground">
+            Finalize Curriculum
+          </Button>
+        </div>
       </div>
     </>
   );
