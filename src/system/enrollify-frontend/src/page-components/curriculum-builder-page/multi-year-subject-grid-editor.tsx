@@ -1,5 +1,6 @@
 import { saveCurriculumContentOptions } from "@/api/collections/curriculum-collection";
 import { getAllSubjectsMinimalOptions } from "@/api/collections/subject-collection";
+import type { CurriculumWithSubjects } from "@/api/models/curriculum";
 import {
   SearchableSelectWithCustomTrigger,
   type MultiSearchableSelectWithTriggerOption,
@@ -25,51 +26,51 @@ type YearGrid = Record<number, SemesterGrid>;
 
 const createSemesterGrid = (numberOfSemesters: number): SemesterGrid =>
   Object.fromEntries(
-    Array.from({ length: numberOfSemesters }, (_, i) => [i + 1, []])
+    Array.from({ length: numberOfSemesters }, (_, i) => [i + 1, []]),
   );
 
 const createInitialGrid = (
   numberOfYears: number,
-  numberOfSemesters: number
+  numberOfSemesters: number,
 ): YearGrid =>
   Object.fromEntries(
     Array.from({ length: numberOfYears }, (_, i) => [
       i + 1,
       createSemesterGrid(numberOfSemesters),
-    ])
+    ]),
   );
 
 const DEFAULT_NUMBER_OF_YEARS = 2;
 
 interface MultiYearSubjectGridEditorProps {
-  curriculumId: number;
+  curriculum: CurriculumWithSubjects;
 }
 
 export default function MultiYearSubjectGridEditor({
-  curriculumId,
+  curriculum,
 }: MultiYearSubjectGridEditorProps) {
   const systemSettings = useSystemSettingsContext();
   const numberOfSemesters = systemSettings.academicSettings.academicSystem;
 
   const { mutateAsync: saveCurriculumContentAsync } = useMutation(
-    saveCurriculumContentOptions(curriculumId)
+    saveCurriculumContentOptions(curriculum.id),
   );
 
   const [activeYears, setActiveYears] = useState<number[]>(
-    Array.from({ length: DEFAULT_NUMBER_OF_YEARS }, (_, i) => i + 1)
+    Array.from({ length: DEFAULT_NUMBER_OF_YEARS }, (_, i) => i + 1),
   );
   const [grid, setGrid] = useState<YearGrid>(() =>
-    createInitialGrid(DEFAULT_NUMBER_OF_YEARS, numberOfSemesters)
+    createInitialGrid(DEFAULT_NUMBER_OF_YEARS, numberOfSemesters),
   );
 
   const { data: availableSubjects } = useSuspenseQuery(
-    getAllSubjectsMinimalOptions()
+    getAllSubjectsMinimalOptions(),
   );
 
   const addSubjectToGrid = (
     year: number,
     semester: number,
-    subjectId: number
+    subjectId: number,
   ) => {
     const subject = availableSubjects.find((s) => s.id === subjectId);
     if (!subject) return;
@@ -77,7 +78,7 @@ export default function MultiYearSubjectGridEditor({
     setGrid((prev) => {
       // Check if subject already exists in this year/semester
       const subjectExists = prev[year][semester].some(
-        (s) => s.id === subjectId
+        (s) => s.id === subjectId,
       );
 
       if (subjectExists) return prev;
@@ -127,7 +128,7 @@ export default function MultiYearSubjectGridEditor({
     year: number,
     semester: number,
     subjectId: number,
-    prerequisiteCodes: string[]
+    prerequisiteCodes: string[],
   ) => {
     setGrid((prev) => {
       const newGrid = { ...prev };
@@ -138,7 +139,7 @@ export default function MultiYearSubjectGridEditor({
         const subject = { ...subjects[subjectIndex] };
         // Filter out duplicates and add new prerequisites
         const newPrereqs = prerequisiteCodes.filter(
-          (code) => !subject.prerequisites.includes(code)
+          (code) => !subject.prerequisites.includes(code),
         );
         subject.prerequisites = [...subject.prerequisites, ...newPrereqs];
         subjects[subjectIndex] = subject;
@@ -153,7 +154,7 @@ export default function MultiYearSubjectGridEditor({
     year: number,
     semester: number,
     subjectId: number,
-    prerequisiteCode: string
+    prerequisiteCode: string,
   ) => {
     setGrid((prev) => {
       const newGrid = { ...prev };
@@ -163,7 +164,7 @@ export default function MultiYearSubjectGridEditor({
       if (subjectIndex !== -1) {
         const subject = { ...subjects[subjectIndex] };
         subject.prerequisites = subject.prerequisites.filter(
-          (code) => code !== prerequisiteCode
+          (code) => code !== prerequisiteCode,
         );
         subjects[subjectIndex] = subject;
         newGrid[year][semester] = subjects;
@@ -179,9 +180,9 @@ export default function MultiYearSubjectGridEditor({
       const allAddedSubjectIds = new Set(
         Object.values(grid).flatMap((yearData) =>
           Object.values(yearData).flatMap((semesterSubjects) =>
-            semesterSubjects.map((s) => s.id)
-          )
-        )
+            semesterSubjects.map((s) => s.id),
+          ),
+        ),
       );
 
       return availableSubjects
@@ -204,11 +205,11 @@ export default function MultiYearSubjectGridEditor({
   const getAvailablePrerequisites = (
     year: number,
     semester: number,
-    subjectCode: string
+    subjectCode: string,
   ) => {
     // Find the current subject to get its existing prerequisites
     const currentSubject = grid[year][semester].find(
-      (s) => s.code === subjectCode
+      (s) => s.code === subjectCode,
     );
     const existingPrerequisites = new Set(currentSubject?.prerequisites ?? []);
 
@@ -225,21 +226,21 @@ export default function MultiYearSubjectGridEditor({
 
         // Filter out the subject itself and already added prerequisites
         return subjects.filter(
-          (s) => s.code !== subjectCode && !existingPrerequisites.has(s.code)
+          (s) => s.code !== subjectCode && !existingPrerequisites.has(s.code),
         );
-      })
+      }),
     );
   };
 
   const getAvailableSubjectForPrerequisitesOptions = (
     year: number,
     semester: number,
-    subjectCode: string
+    subjectCode: string,
   ): MultiSearchableSelectWithTriggerOption[] => {
     const availablePrerequisites = getAvailablePrerequisites(
       year,
       semester,
-      subjectCode
+      subjectCode,
     );
     return availablePrerequisites.map((s) => ({
       value: s.code,
@@ -290,7 +291,7 @@ export default function MultiYearSubjectGridEditor({
                         >
                           {grid[year][semester].reduce(
                             (acc, s) => acc + s.units,
-                            0
+                            0,
                           )}{" "}
                           Units Total
                         </Badge>
@@ -334,7 +335,7 @@ export default function MultiYearSubjectGridEditor({
                                             year,
                                             semester,
                                             subject.id,
-                                            pre
+                                            pre,
                                           );
                                         }}
                                       >
@@ -350,7 +351,7 @@ export default function MultiYearSubjectGridEditor({
                                 options={getAvailableSubjectForPrerequisitesOptions(
                                   year,
                                   semester,
-                                  subject.code
+                                  subject.code,
                                 )}
                                 value={[]}
                                 onValueChange={(subjectCodes: string[]) => {
@@ -358,7 +359,7 @@ export default function MultiYearSubjectGridEditor({
                                     year,
                                     semester,
                                     subject.id,
-                                    subjectCodes
+                                    subjectCodes,
                                   );
                                 }}
                                 searchPlaceholder="Search subjects..."
@@ -392,7 +393,7 @@ export default function MultiYearSubjectGridEditor({
                         value={[]}
                         onValueChange={(values: string[]) => {
                           values.forEach((val) =>
-                            addSubjectToGrid(year, semester, Number(val))
+                            addSubjectToGrid(year, semester, Number(val)),
                           );
                         }}
                         searchPlaceholder="Search subjects..."
@@ -409,7 +410,7 @@ export default function MultiYearSubjectGridEditor({
                       />
                     </CardContent>
                   </Card>
-                )
+                ),
               )}
             </div>
           </div>

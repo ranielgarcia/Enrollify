@@ -1,5 +1,10 @@
 import createQueryOptions from "@/hooks/create-query-options";
-import { CurriculumSchema, type Curriculum } from "../models/curriculum";
+import {
+  CurriculumSchema,
+  CurriculumWithSubjectsSchema,
+  type Curriculum,
+  type CurriculumWithSubjects,
+} from "../models/curriculum";
 import createMutationOptions from "@/hooks/create-mutation-options";
 import { toast } from "sonner";
 
@@ -32,9 +37,9 @@ export const getCurriculumQueryOption = (curriculumId?: number) =>
     options: {
       enabled: !!curriculumId,
       queryKey: queryKeys.single(curriculumId ?? 0),
-      select: (curriculum): Curriculum | null => {
+      select: (curriculum): CurriculumWithSubjects | null => {
         if (!curriculum) return null;
-        return CurriculumSchema.parse(curriculum);
+        return CurriculumWithSubjectsSchema.parse(curriculum);
       },
     },
   });

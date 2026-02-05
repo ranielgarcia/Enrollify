@@ -23,18 +23,6 @@ public class CurriculumSubjectPrerequisite : IAuditable
         CreatedBy = addedBy;
     }
 
-    public CurriculumSubjectPrerequisite(
-        CurriculumSubject curriculumSubject,
-        CurriculumSubject prerequisiteCurriculumSubject,
-        decimal? minimumGrade,
-        UserId addedBy)
-    {
-        CurriculumSubject = curriculumSubject;
-        PrerequisiteCurriculumSubject = prerequisiteCurriculumSubject;
-        MinimumGrade = minimumGrade;
-        CreatedBy = addedBy;
-    }
-
     public CurriculumSubjectId CurriculumSubjectId { get; private set; }
     public CurriculumSubjectId PrerequisiteCurriculumSubjectId { get; private set; }
 

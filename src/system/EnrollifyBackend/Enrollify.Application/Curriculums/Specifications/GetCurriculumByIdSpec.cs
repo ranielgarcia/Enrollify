@@ -3,13 +3,16 @@ using Enrollify.Core.Aggregates.CurriculumAggregate;
 
 namespace Enrollify.Application.Curriculums.Specifications;
 
+/// <summary>
+/// Specification for filtering curriculum by ID.
+/// Note: When used with WithProjectionOf(), Includes are not needed as
+/// EF Core generates optimized SQL from the Select projection.
+/// AsNoTracking is required to avoid owned entity tracking issues with ValueObjects.
+/// </summary>
 public class GetCurriculumByIdSpec : Specification<Curriculum>
 {
     public GetCurriculumByIdSpec(CurriculumId id) =>
         Query
-        .Include(c => c.CurriculumSubjects).ThenInclude(cs => cs.Prerequisites)
-        .Include(c => c.Course)
-        .Include(c => c.CreatedByUser)
-        .Include(c => c.UpdatedByUser)
-        .Where(c => c.Id == id);
+            .AsNoTracking()
+            .Where(c => c.Id == id);
 }

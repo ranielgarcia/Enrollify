@@ -16,7 +16,7 @@ import {
   createDraftCurriculumOptions,
   updateCurriculumOptions,
 } from "@/api/collections/curriculum-collection";
-import type { Curriculum } from "@/api/models/curriculum";
+import type { CurriculumWithSubjects } from "@/api/models/curriculum";
 
 type FormMeta = {
   submitAction: "create" | "update" | null;
@@ -36,7 +36,7 @@ const curriculaFormSchema = z.object({
     .min(2020, "Effective Year must be a valid year")
     .max(
       new Date().getFullYear() + 1,
-      "Effective Year cannot be in the distant future"
+      "Effective Year cannot be in the distant future",
     ),
   version: z.string().min(1, "Version Identifier is required"),
   description: z.string().nullable(),
@@ -47,7 +47,7 @@ type CurriculaFormData = z.infer<typeof curriculaFormSchema>;
 interface CurriculumFormProps {
   onClose: () => void;
   onSave: (curriculumId: number) => void;
-  curriculumToUpdate?: Curriculum | null;
+  curriculumToUpdate?: CurriculumWithSubjects | null;
 }
 
 export function CurriculumForm({
@@ -64,11 +64,11 @@ export function CurriculumForm({
   };
 
   const { mutateAsync: createDraftCurriculumAsync } = useMutation(
-    createDraftCurriculumOptions()
+    createDraftCurriculumOptions(),
   );
 
   const { mutateAsync: updateCurriculumAsync } = useMutation(
-    updateCurriculumOptions(curriculumToUpdate?.id ?? 0)
+    updateCurriculumOptions(curriculumToUpdate?.id ?? 0),
   );
 
   const form = useForm({

@@ -116,36 +116,6 @@ public class CurriculumSubject : IAuditable
         return this;
     }
 
-    /// <summary>
-    /// Adds a prerequisite using object reference. Use this when adding prerequisites 
-    /// before entities are saved (when IDs are not yet assigned).
-    /// </summary>
-    public CurriculumSubject AddPrerequisite(
-        CurriculumSubject prerequisiteCurriculumSubject,
-        decimal? minimumGrade,
-        UserId addedBy)
-    {
-        Guard.Against.Null(prerequisiteCurriculumSubject);
-        Guard.Against.Null(addedBy);
-
-        // Prevent self-reference
-        if (ReferenceEquals(this, prerequisiteCurriculumSubject))
-            throw new ArgumentException("A subject cannot be its own prerequisite.");
-
-        // Prevent duplicate prerequisites (check by reference for unsaved entities)
-        if (_prerequisites.Any(p => ReferenceEquals(p.PrerequisiteCurriculumSubject, prerequisiteCurriculumSubject) && p.IsActive))
-            return this;
-
-        var prerequisite = new CurriculumSubjectPrerequisite(
-            this,
-            prerequisiteCurriculumSubject,
-            minimumGrade,
-            addedBy);
-
-        _prerequisites.Add(prerequisite);
-        return this;
-    }
-
     public CurriculumSubject RemovePrerequisite(CurriculumSubjectId prerequisiteCurriculumSubjectId)
     {
         var prerequisite = _prerequisites.FirstOrDefault(p =>

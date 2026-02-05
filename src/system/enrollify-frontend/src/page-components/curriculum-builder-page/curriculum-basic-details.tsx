@@ -1,10 +1,10 @@
-import type { Curriculum } from "@/api/models/curriculum";
+import type { CurriculumWithSubjects } from "@/api/models/curriculum";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 interface CurriculumBasicDetailsProps {
-  curriculum: Curriculum;
+  curriculum: CurriculumWithSubjects;
   onEditDetails: () => void;
   onClose: () => void;
 }

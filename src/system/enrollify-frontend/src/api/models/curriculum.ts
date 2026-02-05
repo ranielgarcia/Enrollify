@@ -26,3 +26,41 @@ export const CurriculumSchema = z
   .extend(AuditInfoSchema.shape);
 
 export type Curriculum = z.infer<typeof CurriculumSchema>;
+
+const subjectSummarySchema = z.object({
+  id: z.number(),
+  code: z.string(),
+  title: z.string(),
+  units: z.number(),
+});
+
+const subjectPrerequisiteSchema = z.object({
+  prerequisiteCurriculumSubjectId: z.number(),
+  minimumGrade: z.number().nullable(),
+});
+
+const curriculumSubjectSchema = z.object({
+  id: z.number(),
+  subjectId: z.number(),
+  yearLevel: z.number(),
+  termNumber: z.number(),
+  isElective: z.boolean(),
+  electiveGroupName: z.string().nullable(),
+  subject: subjectSummarySchema,
+  prerequisites: z.array(subjectPrerequisiteSchema),
+});
+
+export const CurriculumWithSubjectsSchema = z.object({
+  id: z.number(),
+  course: CourseSummarySchema,
+  effectiveYear: z.number(),
+  version: z.string(),
+  status: CurriculumStatusSchema,
+  description: z.string(),
+  approvedDate: dateTransformer,
+  curriculumSubjects: z.array(curriculumSubjectSchema),
+});
+
+export type CurriculumWithSubjects = z.infer<
+  typeof CurriculumWithSubjectsSchema
+>;

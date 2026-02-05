@@ -22,11 +22,11 @@ function CurriculumContent() {
   const [showForm, setShowForm] = useState(false);
 
   const { data: curriculum, isPending: isLoadingCurriculum } = useQuery(
-    getCurriculumQueryOption(obfuscator.decode(curriculumId ?? "").at(0))
+    getCurriculumQueryOption(obfuscator.decode(curriculumId ?? "").at(0)),
   );
 
   const { data: curriculums } = useQuery(
-    getAllCurriculumsOptions(curriculumId === undefined)
+    getAllCurriculumsOptions(curriculumId === undefined),
   );
 
   return (
@@ -94,7 +94,7 @@ function CurriculumContent() {
             )}
 
             {/* Multi-Year Subject Grid */}
-            <MultiYearSubjectGridEditor curriculumId={curriculum?.id} />
+            <MultiYearSubjectGridEditor curriculum={curriculum} />
           </div>
         ) : curriculums && curriculums?.length > 0 ? (
           <CurriculumsTable

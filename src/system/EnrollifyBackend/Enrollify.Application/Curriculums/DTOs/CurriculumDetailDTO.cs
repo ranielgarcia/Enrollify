@@ -21,22 +21,4 @@ public class CurriculumDetailDTO
     public DateTimeOffset? ApprovedDate { get; set; }
 
     public IReadOnlyCollection<CurriculumSubjectDTO> CurriculumSubjects { get; set; } = [];
-
-    public static CurriculumDetailDTO FromEntity(Curriculum curriculum)
-    {
-        return new CurriculumDetailDTO
-        {
-            Id = curriculum.Id,
-            EffectiveYear = curriculum.EffectiveYear,
-            Version = curriculum.Version,
-            Status = curriculum.StatusId,
-            Course = curriculum.Course != null ? CourseSummaryDTO.FromEntity(curriculum.Course) : null,
-            Description = curriculum.Description,
-            ApprovedDate = curriculum.ApprovedDate,
-            CurriculumSubjects = curriculum.CurriculumSubjects
-                .Where(cs => cs.IsActive)
-                .Select(CurriculumSubjectDTO.FromEntity)
-                .ToList(),
-        };
-    }
 }
