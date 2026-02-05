@@ -79,6 +79,74 @@ public class SaveCurriculumContent
                 return Result.Invalid(new ValidationError($"Subjects with codes {string.Join(", ", missingCodes)} not found"));
             }
 
+            // Validate prerequisites - build a lookup of subject code to (year, semester)
+            var subjectPositions = command.SubjectsGrid
+                .SelectMany(year => year.Value.SelectMany(semester => 
+                    semester.Value.Select(subject => (Code: subject.Code, Year: year.Key, Semester: semester.Key))))
+                .ToDictionary(x => x.Code, x => (x.Year, x.Semester));
+
+            // Validate each subject's prerequisites
+            var prerequisiteErrors = new List<string>();
+            foreach (var year in command.SubjectsGrid)
+            {
+                foreach (var semester in year.Value)
+                {
+                    foreach (var subjectInCurriculum in semester.Value)
+                    {
+                        var subjectCode = subjectInCurriculum.Code;
+                        var subjectYear = year.Key;
+                        var subjectSemester = semester.Key;
+                        var seenPrereqs = new HashSet<SubjectCode>();
+
+                        foreach (var prereqCode in subjectInCurriculum.Prerequisites)
+                        {
+                            // Val: Subject cannot be its own prerequisite
+                            if (prereqCode == subjectCode)
+                            {
+                                prerequisiteErrors.Add($"Subject '{subjectCode.Value}' cannot be its own prerequisite");
+                                continue;
+                            }
+
+                            // Val: No duplicate prerequisites
+                            if (!seenPrereqs.Add(prereqCode))
+                            {
+                                prerequisiteErrors.Add($"Duplicate prerequisite '{prereqCode.Value}' for subject '{subjectCode.Value}'");
+                                continue;
+                            }
+
+                            // Val: Prerequisite must be in the grid
+                            if (!subjectPositions.TryGetValue(prereqCode, out var prereqPosition))
+                            {
+                                prerequisiteErrors.Add($"Prerequisite '{prereqCode.Value}' for subject '{subjectCode.Value}' is not in the curriculum grid");
+                                continue;
+                            }
+
+                            var prereqYear = prereqPosition.Year;
+                            var prereqSemester = prereqPosition.Semester;
+
+                            // Val: Prerequisites cannot be from future years
+                            if (prereqYear > subjectYear)
+                            {
+                                prerequisiteErrors.Add($"Prerequisite '{prereqCode.Value}' (Year {prereqYear}, Sem {prereqSemester}) cannot be from a future year for subject '{subjectCode.Value}' (Year {subjectYear}, Sem {subjectSemester})");
+                                continue;
+                            }
+
+                            // Val: Prerequisites cannot be from the same year with same or future semester
+                            if (prereqYear == subjectYear && prereqSemester >= subjectSemester)
+                            {
+                                prerequisiteErrors.Add($"Prerequisite '{prereqCode.Value}' (Year {prereqYear}, Sem {prereqSemester}) must be from an earlier semester for subject '{subjectCode.Value}' (Year {subjectYear}, Sem {subjectSemester})");
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (prerequisiteErrors.Count > 0)
+            {
+                return Result.Invalid(prerequisiteErrors.Select(e => new ValidationError(e)).ToArray());
+            }
+
             // Get SubjectIds that should be in the curriculum
             var gridSubjectIds = gridSubjectCodes
                 .Select(code => subjectsByCode[code].Id)
