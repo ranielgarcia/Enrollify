@@ -324,8 +324,6 @@ export default function MultiYearSubjectGridEditor({
     }));
   };
 
-  console.log(grid);
-
   return (
     <>
       <div className="space-y-12">
