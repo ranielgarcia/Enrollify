@@ -2,17 +2,17 @@
 
 public static class CurriculumAuthorizationPolicyRegistration
 {
-    public static IServiceCollection AddCorriculumAuthorizationPolicyHandlers(this IServiceCollection services)
+    public static IServiceCollection AddCurriculumAuthorizationPolicyHandlers(this IServiceCollection services)
     {
         services.AddScoped<IAuthorizationHandler, HasCreateCurriculumPermissionHandler>();
         services.AddScoped<IAuthorizationHandler, HasUpdateCurriculumPermissionHandler>();
         services.AddScoped<IAuthorizationHandler, HasDeleteCurriculumPermissionHandler>();
-        services.AddScoped<IAuthorizationHandler, HasViewCurriculumnsPermissionHandler>();
+        services.AddScoped<IAuthorizationHandler, HasViewCurriculumsPermissionHandler>();
 
         return services;
     }
 
-    public static void AddCorriculumAuthorizationPolicies(this AuthorizationOptions options)
+    public static void AddCurriculumAuthorizationPolicies(this AuthorizationOptions options)
     {
         options.AddPolicy(PolicyName.HasCreateCurriculumPermission, policyBuilder =>
             policyBuilder.AddRequirements(new HasCreateCurriculumPermission()));

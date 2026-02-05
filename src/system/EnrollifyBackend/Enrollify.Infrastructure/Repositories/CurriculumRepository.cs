@@ -33,7 +33,7 @@ internal class CurriculumRepository : ICurriculumRepository
         }
         catch (DbUpdateException ex) when (IsEffectiveYearInvalidException(ex))
         {
-            _logger.LogError(ex, "Failed to create curricula due to invalid effective year: {EffectiveYear}", newCurriculum.EffectiveYear);
+            _logger.LogError(ex, "Failed to create curriculum due to invalid effective year: {EffectiveYear}", newCurriculum.EffectiveYear);
             return Result.Invalid(new ValidationError(
                 identifier: "EffectiveYear",
                 errorMessage: $"The effective year '{newCurriculum.EffectiveYear}' is invalid. Please enter a year greater than or equal to 2000."));
@@ -50,7 +50,7 @@ internal class CurriculumRepository : ICurriculumRepository
         }
         catch (DbUpdateException ex) when (IsEffectiveYearInvalidException(ex))
         {
-            _logger.LogError(ex, "Failed to create curricula due to invalid effective year: {EffectiveYear}", newCurriculum.EffectiveYear);
+            _logger.LogError(ex, "Failed to create curriculum due to invalid effective year: {EffectiveYear}", newCurriculum.EffectiveYear);
             return Result.Invalid(new ValidationError(
                 identifier: "EffectiveYear",
                 errorMessage: $"The effective year '{newCurriculum.EffectiveYear}' is invalid. Please enter a year greater than or equal to 2000."));
@@ -67,6 +67,6 @@ internal class CurriculumRepository : ICurriculumRepository
 
     private bool IsEffectiveYearInvalidException(DbUpdateException ex)
     {
-        return ex.InnerException?.Message.Contains("CHK_Curricula_EffectiveYear_Valid") == true;
+        return ex.InnerException?.Message.Contains("CHK_Curriculums_EffectiveYear_Valid") == true;
     }
 }

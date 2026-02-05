@@ -69,12 +69,14 @@ public class SaveCurriculumContent
             var subjectsByCode = allSubjects.ToDictionary(s => s.Code, s => s);
 
             // Validate all subject codes exist
-            foreach (var code in allSubjectCodes)
+            var missingCodes = allSubjectCodes
+                .Where(code => !subjectsByCode.ContainsKey(code))
+                .Select(code => code.Value)
+                .ToList();
+
+            if (missingCodes.Count > 0)
             {
-                if (!subjectsByCode.ContainsKey(code))
-                {
-                    return Result.Invalid(new ValidationError($"Subject with code {code.Value} not found"));
-                }
+                return Result.Invalid(new ValidationError($"Subjects with codes {string.Join(", ", missingCodes)} not found"));
             }
 
             // Get SubjectIds that should be in the curriculum

@@ -4,11 +4,11 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
 
 const curriculumParamsSchema = z.object({
-  curriculumId: z.string().min(1, "Curriculum ID cannot be empty").optional(),
+  curriculumId: z.string().optional(),
 });
 
 export const Route = createFileRoute(
-  "/portal/master-data/curriculum/{-$curriculumId}"
+  "/portal/master-data/curriculum/{-$curriculumId}",
 )({
   params: {
     parse: (params) => curriculumParamsSchema.parse(params),
@@ -27,7 +27,7 @@ export const Route = createFileRoute(
       return;
     }
 
-    const canAccess = await authorization.checkPolicy("canViewCourses");
+    const canAccess = await authorization.checkPolicy("canViewCurriculums");
     if (!canAccess) {
       throw redirect({
         to: "/portal/home",

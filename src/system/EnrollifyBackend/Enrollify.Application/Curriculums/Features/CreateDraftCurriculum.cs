@@ -27,7 +27,7 @@ public static class CreateDraftCurriculum
         {
             var course = await _courseReadRepository.GetByIdAsync(command.courseId, cancellationToken);
             if (course == null)
-                return Result.NotFound($"Course with an id of {command.courseId} not found");
+                return Result.NotFound($"Course with an id of {command.courseId.Value} not found");
 
             var draftCurriculumForCreation = new DraftCurriculumForCreation
             {

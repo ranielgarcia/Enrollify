@@ -29,8 +29,8 @@ public class UpdateCurriculumRequestValidator : Validator<UpdateCurriculumReques
             .GreaterThanOrEqualTo(2000).WithMessage("Please enter an effective year greater than or equal to 2000.");
 
         RuleFor(x => x.Version)
-            .NotEmpty().WithMessage("Please provide a curriculum description.")
-            .MaximumLength(20).WithMessage("Description must be 20 characters or fewer.");
+            .NotEmpty().WithMessage("Please provide a curriculum version.")
+            .MaximumLength(20).WithMessage("Version must be 20 characters or fewer.");
 
         RuleFor(x => x.Description)
             .MaximumLength(500).WithMessage("Description must be 500 characters or fewer.")

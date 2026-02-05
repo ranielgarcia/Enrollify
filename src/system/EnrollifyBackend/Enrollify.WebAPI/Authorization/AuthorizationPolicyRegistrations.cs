@@ -24,7 +24,7 @@ public static class AuthorizationPolicyRegistrations
         services.AddDepartmentAuthorizationPolicyHandlers();
         services.AddCoursesAuthorizationPolicyHandlers();
         services.AddSubjectAuthorizationPolicyHandlers();
-        services.AddCorriculumAuthorizationPolicyHandlers();
+        services.AddCurriculumAuthorizationPolicyHandlers();
 
         services.AddAuthorization(options =>
         {
@@ -39,7 +39,7 @@ public static class AuthorizationPolicyRegistrations
             options.AddDepartmentAuthorizationPolicies();
             options.AddCoursesAuthorizationPolicies();
             options.AddSubjectAuthorizationPolicies();
-            options.AddCorriculumAuthorizationPolicies();
+            options.AddCurriculumAuthorizationPolicies();
         });
 
         return services;

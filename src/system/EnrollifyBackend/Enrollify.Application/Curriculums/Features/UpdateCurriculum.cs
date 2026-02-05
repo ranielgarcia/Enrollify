@@ -31,11 +31,11 @@ public static class UpdateCurriculum
         {
             var course = await _courseReadRepository.GetByIdAsync(command.courseId, cancellationToken);
             if (course == null)
-                return Result.NotFound($"Course with an id of {command.courseId} not found");
+                return Result.NotFound($"Course with an id of {command.courseId.Value} not found");
 
             var curriculum = await _curriculumReadRepository.GetByIdAsync(command.Id, cancellationToken);
             if (curriculum == null)
-                return Result.NotFound($"Curriculumn with an id of {command.Id} not found");
+                return Result.NotFound($"Curriculum with an id of {command.Id.Value} not found");
 
             // Status should be updated manually
             curriculum

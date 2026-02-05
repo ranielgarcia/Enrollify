@@ -7,12 +7,12 @@ public class HasViewCurriculumsPermission : IAuthorizationRequirement
 {
 }
 
-public class HasViewCurriculumnsPermissionHandler : UserAuthorizationHandler<HasViewCurriculumsPermission>
+public class HasViewCurriculumsPermissionHandler : UserAuthorizationHandler<HasViewCurriculumsPermission>
 {
-    public HasViewCurriculumnsPermissionHandler(IMediator mediator) : base(mediator) { }
+    public HasViewCurriculumsPermissionHandler(IMediator mediator) : base(mediator) { }
     protected override Task CheckRequirement(UserContext user, AuthorizationHandlerContext context, HasViewCurriculumsPermission requirement)
     {
-        if (user.HasPermissionToTheScope(PermissionScopeEnum.Curriculums, PermissionEnum.Delete))
+        if (user.HasPermissionToTheScope(PermissionScopeEnum.Curriculums, PermissionEnum.View))
         {
             context.Succeed(requirement);
         }

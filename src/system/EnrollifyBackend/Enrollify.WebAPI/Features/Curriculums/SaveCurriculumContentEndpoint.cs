@@ -24,7 +24,7 @@ public class CurriculumContentRequest
 [HttpPut("{curriculumId}/save-content")]
 [Group<CurriculumEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateCurriculumPermission)]
-public class SaveCurriculumnContentEndpoint (IMediator mediator)
+public class SaveCurriculumContentEndpoint (IMediator mediator)
     : Endpoint<CurriculumContentRequest, Results<Ok<CurriculumDTO>, NotFound, Conflict<string[]>, ProblemHttpResult>>
 {
     public override async Task<Results<Ok<CurriculumDTO>, NotFound, Conflict<string[]>, ProblemHttpResult>>

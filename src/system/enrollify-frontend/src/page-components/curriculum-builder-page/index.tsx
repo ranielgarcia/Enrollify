@@ -78,7 +78,6 @@ function CurriculumContent() {
               <CurriculumBasicDetails
                 curriculum={curriculum}
                 onEditDetails={() => {
-                  console.log("show form");
                   setShowForm(true);
                 }}
                 onClose={() => {
@@ -109,7 +108,7 @@ function CurriculumContent() {
           />
         ) : (
           <div className="flex flex-col items-center justify-center py-32 bg-muted/20 rounded-xl border-2 border-dashed">
-            {curriculumId && !curriculum ? (
+            {curriculumId && !isLoadingCurriculum ? (
               <>
                 <OctagonAlert className="size-16 text-muted-foreground/20 mb-4" />
                 <h2 className="text-xl font-semibold text-foreground">
