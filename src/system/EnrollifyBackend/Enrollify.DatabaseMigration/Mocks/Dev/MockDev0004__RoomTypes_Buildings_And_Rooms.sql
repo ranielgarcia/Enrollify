@@ -14,7 +14,8 @@ VALUES
 ('Lecture Room', 'Test'),
 ('Laboratory', 'Test'),
 ('Seminar Room', 'Test'),
-('Computer Lab', 'Test');
+('Computer Lab', 'Test'),
+('Gymnasium', 'Physical education and sports facility');
 
 MERGE [RoomTypes] As [Target]
 USING 
