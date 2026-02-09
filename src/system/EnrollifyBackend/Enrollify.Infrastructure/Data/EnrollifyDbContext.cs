@@ -19,6 +19,7 @@ using Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoomConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoomTypeConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.SubjectConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.UserConfigs;
+using Enrollify.Infrastructure.Data.Config.AggregateConfigs.SubjectEquivalenceGroupConfigs;
 using SmartEnum.EFCore;
 
 namespace Enrollify.Infrastructure.Data;
@@ -72,5 +73,8 @@ public class EnrollifyDbContext: DbContext
         configurationBuilder.RegisterAllInCourseVogenEfCoreConverters();
         configurationBuilder.RegisterAllInSubjectVogenEfCoreConverters();
         configurationBuilder.RegisterAllInCurriculumVogenEfCoreConverters();
+        configurationBuilder.RegisterAllInSubjectEquivalenceGroupVogenEfCoreConverters();
+
+
     }
 }

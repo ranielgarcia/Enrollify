@@ -41,12 +41,6 @@ public class CurriculumConfiguration : IEntityTypeConfiguration<Curriculum>
             .HasForeignKey(e => e.CourseId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        // EF Core can't add/remove items via a read-only collection,
-        // so you tell EF to use the backing field instead of the property
-        // This is mainly about materialization and change-tracking without requiring a public setter or a mutable collection property.
-        builder.Navigation(c => c.CurriculumSubjects)
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
-
         // Audit fields
         builder.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
         builder.Property(a => a.CreatedBy).HasColumnName("CreatedBy");
@@ -71,6 +65,12 @@ public class CurriculumConfiguration : IEntityTypeConfiguration<Curriculum>
             .WithMany()
             .HasForeignKey(e => e.DeletedBy)
             .OnDelete(DeleteBehavior.NoAction);
+
+        // EF Core can't add/remove items via a read-only collection,
+        // so you tell EF to use the backing field instead of the property
+        // This is mainly about materialization and change-tracking without requiring a public setter or a mutable collection property.
+        builder.Navigation(c => c.CurriculumSubjects)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         // Configure CurriculumSubjects as owned collection
         builder.OwnsMany<CurriculumSubject>(c => c.CurriculumSubjects, cs =>

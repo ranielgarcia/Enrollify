@@ -394,7 +394,7 @@ CREATE TABLE SubjectEquivalenceGroups
 )
 
 -- Links multiple Subjects across Colleges or Department
-CREATE TABLE SubjectEquivalence
+CREATE TABLE SubjectEquivalences
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	SubjectId INT NOT NULL,
