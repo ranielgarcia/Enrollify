@@ -2,6 +2,7 @@ import type { Curriculum } from "@/api/models/curriculum";
 import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
+import { truncateText } from "@/lib/text-utils";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -57,7 +58,7 @@ export function CurriculumsTable({
     }),
     columnHelper.accessor("description", {
       header: "Description",
-      cell: (info) => <span>{info.getValue()}</span>,
+      cell: (info) => <span>{truncateText(info.getValue(), 30)}</span>,
     }),
     columnHelper.accessor("approvedDate", {
       header: "Approved Date",
@@ -76,7 +77,7 @@ export function CurriculumsTable({
         id: "createdBy",
         header: "Created By",
         cell: (info) => <span>{info.getValue()}</span>,
-      }
+      },
     ),
     columnHelper.accessor("updatedAt", {
       header: "Updated At",
@@ -91,7 +92,7 @@ export function CurriculumsTable({
         id: "updatedBy",
         header: "Updated By",
         cell: (info) => <span>{info.getValue()}</span>,
-      }
+      },
     ),
     columnHelper.display({
       id: "actions",
