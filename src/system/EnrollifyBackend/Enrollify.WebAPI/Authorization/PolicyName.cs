@@ -58,4 +58,11 @@ public class PolicyName
     public const string HasUpdateCurriculumPermission = "HasUpdateCurriculumPermission";
     public const string HasDeleteCurriculumPermission = "HasDeleteCurriculumPermission";
 
+
+    // Subject Equivalence Groups
+    public const string HasCreateSubjectEquivalenceGroupPermission = "HasCreateSubjectEquivalenceGroupPermission";
+    public const string HasUpdateSubjectEquivalenceGroupPermission = "HasUpdateSubjectEquivalenceGroupPermission";
+    public const string HasDeleteSubjectEquivalenceGroupPermission = "HasDeleteSubjectEquivalenceGroupPermission";
+    public const string HasViewSubjectEquivalenceGroupsPermission = "HasViewSubjectEquivalenceGroupsPermission";
+
 }

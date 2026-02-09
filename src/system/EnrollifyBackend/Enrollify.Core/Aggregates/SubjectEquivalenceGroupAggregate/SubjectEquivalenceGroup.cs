@@ -8,7 +8,7 @@ namespace Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 public class SubjectEquivalenceGroup : EntityBase<SubjectEquivalenceGroup, SubjectEquivalenceGroupId>, IAggregateRoot, IAuditable
 {
     private readonly List<SubjectEquivalence> _subjectEquivalences = new();
-    public SubjectEquivalenceGroup() {}
+    private SubjectEquivalenceGroup() {}
 
     public SubjectEquivalenceGroup(string name)
     {

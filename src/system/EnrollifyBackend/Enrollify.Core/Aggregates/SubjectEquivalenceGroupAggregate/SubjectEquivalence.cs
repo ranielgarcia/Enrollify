@@ -6,7 +6,7 @@ namespace Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 
 public class SubjectEquivalence : IAuditable
 {
-    public SubjectEquivalence() { }
+    private SubjectEquivalence() { }
 
     public SubjectEquivalence(SubjectId subjectId, SubjectEquivalenceGroupId equivalenceGroupId)
     {

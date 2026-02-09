@@ -43,7 +43,7 @@ public class SubjectRepository : ISubjectRepository
             var subject = await _dbContext.Subjects.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
             if (subject == null)
             {
-                return Result.NotFound($"Subject with ID {id} not found.");
+                return Result.NotFound($"Subject with ID {id.Value} not found.");
             }
 
             _dbContext.Subjects.Remove(subject);

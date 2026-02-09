@@ -68,6 +68,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/subject-equivalence-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["EnrollifyWebAPIFeaturesSubjectEquivalenceGroupsCreateNewSubjectEquivalenceGroupEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/room-types/{roomTypeId}/rooms/count": {
         parameters: {
             query?: never;
@@ -188,7 +204,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put: operations["EnrollifyWebAPIFeaturesCurriculumsSaveCurriculumnContentEndpoint"];
+        put: operations["EnrollifyWebAPIFeaturesCurriculumsSaveCurriculumContentEndpoint"];
         post?: never;
         delete?: never;
         options?: never;
@@ -468,6 +484,9 @@ export interface components {
             /** @description the severity of the error */
             severity?: string | null;
         };
+        EnrollifyWebAPIFeaturesSubjectEquivalenceGroupsCreateNewSubjectEquivalenceGroupRequest: {
+            name: string;
+        };
         EnrollifyWebAPIFeaturesRoomTypesCreateRoomTypeResponse: {
             /** Format: int32 */
             id?: number;
@@ -640,7 +659,7 @@ export interface components {
             version: string;
             description?: string | null;
         };
-        EnrollifyApplicationCurriculumsDTOsCurriculumDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+        EnrollifyApplicationCurriculumsDTOsCurriculumDetailDTO: {
             /**
              * Format: int32
              * @description Value object wrapping Int32
@@ -654,6 +673,7 @@ export interface components {
             description?: string | null;
             /** Format: date-time */
             approvedDate?: string | null;
+            curriculumSubjects?: components["schemas"]["EnrollifyApplicationCurriculumsDTOsCurriculumSubjectDTO"][];
         };
         EnrollifyCoreConstantsCurriculumStatusEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfCurriculumStatusEnum"] & Record<string, never>;
         ArdalisSmartEnumSmartEnumOfCurriculumStatusEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfCurriculumStatusEnumAndInt32"] & Record<string, never>;
@@ -674,6 +694,61 @@ export interface components {
              */
             id?: number;
             name?: string;
+        };
+        EnrollifyApplicationCurriculumsDTOsCurriculumSubjectDTO: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            subjectId?: number;
+            /** Format: int32 */
+            yearLevel?: number;
+            /** Format: int32 */
+            termNumber?: number;
+            isElective?: boolean;
+            electiveGroupName?: string | null;
+            subject?: components["schemas"]["EnrollifyApplicationCurriculumsDTOsSubjectSummaryDTO"] | null;
+            prerequisites?: components["schemas"]["EnrollifyApplicationCurriculumsDTOsCurriculumSubjectPrerequisiteDTO"][];
+        };
+        EnrollifyApplicationCurriculumsDTOsSubjectSummaryDTO: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            code?: components["schemas"]["EnrollifyCoreAggregatesSubjectAggregateSubjectCode"];
+            title?: string;
+            /** Format: decimal */
+            units?: number;
+        };
+        EnrollifyApplicationCurriculumsDTOsCurriculumSubjectPrerequisiteDTO: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            prerequisiteCurriculumSubjectId?: number;
+            /** Format: decimal */
+            minimumGrade?: number | null;
+        };
+        EnrollifyApplicationCurriculumsDTOsCurriculumDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            /** Format: int32 */
+            effectiveYear?: number;
+            version?: string;
+            status?: components["schemas"]["EnrollifyCoreConstantsCurriculumStatusEnum"];
+            course?: components["schemas"]["EnrollifyApplicationSharedDTOsCourseSummaryDTO"] | null;
+            description?: string | null;
+            /** Format: date-time */
+            approvedDate?: string | null;
         };
         EnrollifyWebAPIFeaturesCurriculumsCurriculumContentRequest: {
             grid?: {
@@ -1171,6 +1246,61 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesSubjectEquivalenceGroupsCreateNewSubjectEquivalenceGroupEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesSubjectEquivalenceGroupsCreateNewSubjectEquivalenceGroupRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
             };
         };
     };
@@ -2047,7 +2177,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EnrollifyApplicationCurriculumsDTOsCurriculumDTO"];
+                    "application/json": components["schemas"]["EnrollifyApplicationCurriculumsDTOsCurriculumDetailDTO"];
                 };
             };
             /** @description Unauthorized */
@@ -2066,7 +2196,7 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesCurriculumsSaveCurriculumnContentEndpoint: {
+    EnrollifyWebAPIFeaturesCurriculumsSaveCurriculumContentEndpoint: {
         parameters: {
             query?: never;
             header?: never;
@@ -2087,7 +2217,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCurriculumsCurriculumContentRequest"];
+                    "application/json": components["schemas"]["EnrollifyApplicationCurriculumsDTOsCurriculumDTO"];
                 };
             };
             /** @description Unauthorized */
@@ -2103,6 +2233,21 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
             };
         };
     };

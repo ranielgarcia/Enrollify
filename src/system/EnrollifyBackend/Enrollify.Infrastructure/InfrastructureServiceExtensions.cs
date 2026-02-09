@@ -9,6 +9,7 @@ using Enrollify.Application.Departments;
 using Enrollify.Application.Roles.Features.List;
 using Enrollify.Application.Rooms;
 using Enrollify.Application.RoomTypes;
+using Enrollify.Application.SubjectEquivalenceGroups;
 using Enrollify.Application.Subjects;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Infrastructure.Data;
@@ -75,6 +76,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ICourseRepository, CourseRepository>();
         services.AddScoped<ISubjectRepository, SubjectRepository>();
         services.AddScoped<ICurriculumRepository, CurriculumRepository>();
+        services.AddScoped<ISubjectEquivalenceGroupRepository, SubjectEquivalenceGroupRepository>();
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 
