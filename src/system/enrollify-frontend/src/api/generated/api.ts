@@ -68,7 +68,71 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/subjects/search/{page}/{pageSize}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesSubjectsSearchSubjectsPaginatedEndpoint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/subject-equivalence-groups/{id}/add-subjects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesSubjectEquivalencesAddSubjectsToEquivalenceGroupEndpoint"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/subject-equivalence-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesSubjectEquivalencesListSubjectEquivalenceGroupsEndpoint"];
+        put?: never;
+        post: operations["EnrollifyWebAPIFeaturesSubjectEquivalencesCreateNewSubjectEquivalenceGroupEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/subject-equivalence-groups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesSubjectEquivalencesUpdateSubjectEquivalenceGroupEndpoint"];
+        post?: never;
+        delete: operations["EnrollifyWebAPIFeaturesSubjectEquivalencesDeleteSubjectEquivalenceGroupEndpoint"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/subject-equivalence-groups/{id}/remove-subject": {
         parameters: {
             query?: never;
             header?: never;
@@ -77,8 +141,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["EnrollifyWebAPIFeaturesSubjectEquivalenceGroupsCreateNewSubjectEquivalenceGroupEndpoint"];
-        delete?: never;
+        post?: never;
+        delete: operations["EnrollifyWebAPIFeaturesSubjectEquivalencesRemoveSubjectFromEquivalenceGroupEndpoint"];
         options?: never;
         head?: never;
         patch?: never;
@@ -425,6 +489,7 @@ export interface components {
             /** Format: int32 */
             totalPages?: number;
         };
+        EnrollifyWebAPIFeaturesSubjectsSearchSubjectsPaginatedRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesSubjectsUpdateSubjectResponse: {
             /** Format: int32 */
             id?: number;
@@ -484,7 +549,37 @@ export interface components {
             /** @description the severity of the error */
             severity?: string | null;
         };
-        EnrollifyWebAPIFeaturesSubjectEquivalenceGroupsCreateNewSubjectEquivalenceGroupRequest: {
+        EnrollifyWebAPIFeaturesSubjectEquivalencesAddSubjectsToEquivalenceGroupRequest: {
+            subjectCodes: string[];
+        };
+        EnrollifyWebAPIFeaturesSubjectEquivalencesCreateNewSubjectEquivalenceGroupRequest: {
+            name: string;
+        };
+        EnrollifyWebAPIFeaturesSubjectEquivalencesDeleteSubjectEquivalenceGroupRequest: Record<string, never>;
+        EnrollifyApplicationSubjectEquivalencesDTOsSubjectEquivalenceGroupDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+            subjects?: components["schemas"]["EnrollifyApplicationSubjectEquivalencesDTOsSubjectSummaryDTO"][];
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            name?: string;
+        };
+        EnrollifyApplicationSubjectEquivalencesDTOsSubjectSummaryDTO: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            code?: components["schemas"]["EnrollifyCoreAggregatesSubjectAggregateSubjectCode"];
+            title?: string;
+            /** Format: decimal */
+            units?: number;
+        };
+        EnrollifyWebAPIFeaturesSubjectEquivalencesRemoveSubjectFromEquivalenceGroupRequest: {
+            subjectCode: string;
+        };
+        EnrollifyWebAPIFeaturesSubjectEquivalencesUpdateSubjectEquivalenceGroupRequest: {
             name: string;
         };
         EnrollifyWebAPIFeaturesRoomTypesCreateRoomTypeResponse: {
@@ -1249,7 +1344,144 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesSubjectEquivalenceGroupsCreateNewSubjectEquivalenceGroupEndpoint: {
+    EnrollifyWebAPIFeaturesSubjectsSearchSubjectsPaginatedEndpoint: {
+        parameters: {
+            query: {
+                searchTerm: string;
+            };
+            header?: never;
+            path: {
+                page: number;
+                pageSize: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationPagedResultOfSubjectDTO"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesSubjectEquivalencesAddSubjectsToEquivalenceGroupEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesSubjectEquivalencesAddSubjectsToEquivalenceGroupRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesSubjectEquivalencesListSubjectEquivalenceGroupsEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationSubjectEquivalencesDTOsSubjectEquivalenceGroupDTO"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesSubjectEquivalencesCreateNewSubjectEquivalenceGroupEndpoint: {
         parameters: {
             query?: never;
             header?: never;
@@ -1258,7 +1490,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesSubjectEquivalenceGroupsCreateNewSubjectEquivalenceGroupRequest"];
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesSubjectEquivalencesCreateNewSubjectEquivalenceGroupRequest"];
             };
         };
         responses: {
@@ -1289,6 +1521,191 @@ export interface operations {
             };
             /** @description Forbidden */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesSubjectEquivalencesUpdateSubjectEquivalenceGroupEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesSubjectEquivalencesUpdateSubjectEquivalenceGroupRequest"];
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesSubjectEquivalencesDeleteSubjectEquivalenceGroupEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesSubjectEquivalencesRemoveSubjectFromEquivalenceGroupEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "*/*": components["schemas"]["EnrollifyWebAPIFeaturesSubjectEquivalencesRemoveSubjectFromEquivalenceGroupRequest"];
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesSubjectEquivalencesRemoveSubjectFromEquivalenceGroupRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["MicrosoftAspNetCoreHttpHttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -1,5 +1,4 @@
 import type { SubjectEquivalenceGroup } from "@/api/models/subject-equivalence";
-import type { Subject } from "@/api/models/subject";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Package, Plus, Search } from "lucide-react";
@@ -8,70 +7,16 @@ import { EquivalenceGroupCard } from "./equivalence-group-card";
 import { EquivalenceGroupFormDialog } from "./equivalence-group-form-dialog";
 import { DeleteEquivalenceGroupDialog } from "./delete-equivalence-group-dialog";
 import { AddSubjectToGroupDialog } from "./add-subject-to-group-dialog";
+import {
+  createSubjectEquivalenceGroupOptions,
+  deleteSubjectEquivalenceGroupOptions,
+  getAllSubjectEquivalenceGroupsOptions,
+  updateSubjectEquivalenceGroupOptions,
+} from "@/api/collections/subject-equivalence-group-collection";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
-// Mock data for UI demonstration
-const mockEquivalenceGroups: SubjectEquivalenceGroup[] = [
-  {
-    id: 1,
-    name: "Programming Fundamentals",
-    subjects: [
-      { id: 1, code: "CS101", title: "Introduction to Programming", units: 3 },
-      { id: 2, code: "IT101", title: "Programming Basics", units: 3 },
-      { id: 3, code: "CpE101", title: "Computer Programming 1", units: 3 },
-    ],
-    createdAt: new Date().toISOString(),
-    createdBy: null,
-    updatedAt: null,
-    updatedBy: null,
-    deletedAt: null,
-    isActive: true,
-  },
-  {
-    id: 2,
-    name: "Calculus Equivalents",
-    subjects: [
-      { id: 4, code: "MATH101", title: "Calculus I", units: 4 },
-      {
-        id: 5,
-        code: "ENGR-MATH1",
-        title: "Engineering Mathematics 1",
-        units: 4,
-      },
-    ],
-    createdAt: new Date().toISOString(),
-    createdBy: null,
-    updatedAt: null,
-    updatedBy: null,
-    deletedAt: null,
-    isActive: true,
-  },
-  {
-    id: 3,
-    name: "Physics Foundations",
-    subjects: [
-      { id: 6, code: "PHYS101", title: "General Physics I", units: 4 },
-      { id: 7, code: "ENGR-PHYS1", title: "Engineering Physics 1", units: 4 },
-    ],
-    createdAt: new Date().toISOString(),
-    createdBy: null,
-    updatedAt: null,
-    updatedBy: null,
-    deletedAt: null,
-    isActive: true,
-  },
-];
-
-interface EquivalenceGroupsTabProps {
-  allSubjects: Subject[];
-}
-
-export function EquivalenceGroupsTab({
-  allSubjects,
-}: EquivalenceGroupsTabProps) {
+export function EquivalenceGroupsTab() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [groups, setGroups] = useState<SubjectEquivalenceGroup[]>(
-    mockEquivalenceGroups,
-  );
 
   // Form dialog state
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
@@ -88,11 +33,24 @@ export function EquivalenceGroupsTab({
   const [groupToAddSubject, setGroupToAddSubject] =
     useState<SubjectEquivalenceGroup | null>(null);
 
+  const { data: groups } = useQuery(
+    getAllSubjectEquivalenceGroupsOptions(true),
+  );
+  const { mutateAsync: createSubjectEquivalenceGroupAsync } = useMutation(
+    createSubjectEquivalenceGroupOptions(),
+  );
+  const { mutateAsync: updateSubjectEquivalenceGroupAsync } = useMutation(
+    updateSubjectEquivalenceGroupOptions(groupToEdit?.id ?? 0),
+  );
+  const { mutateAsync: deleteSubjectEquivalenceGroupAsync } = useMutation(
+    deleteSubjectEquivalenceGroupOptions(groupToDelete?.id ?? 0),
+  );
+
   // Filter groups by search
   const filteredGroups = useMemo(() => {
     if (!searchQuery) return groups;
     const query = searchQuery.toLowerCase();
-    return groups.filter(
+    return groups?.filter(
       (group) =>
         group.name.toLowerCase().includes(query) ||
         group.subjects?.some(
@@ -129,52 +87,28 @@ export function EquivalenceGroupsTab({
     subject: { id: number; code: string; title: string; units: number },
   ) => {
     // Mock: Remove subject from group locally
-    setGroups((prev) =>
-      prev.map((g) =>
-        g.id === group.id
-          ? { ...g, subjects: g.subjects?.filter((s) => s.id !== subject.id) }
-          : g,
-      ),
-    );
+    // setGroups((prev) =>
+    //   prev.map((g) =>
+    //     g.id === group.id
+    //       ? { ...g, subjects: g.subjects?.filter((s) => s.id !== subject.id) }
+    //       : g,
+    //   ),
+    // );
     // TODO: Call API to remove subject from group
     console.log(`Remove subject ${subject.code} from group ${group.name}`);
   };
 
   const handleFormSubmit = async (data: { name: string }) => {
     if (groupToEdit) {
-      // Mock: Update group locally
-      setGroups((prev) =>
-        prev.map((g) =>
-          g.id === groupToEdit.id ? { ...g, name: data.name } : g,
-        ),
-      );
-      // TODO: Call API to update group
-      console.log("Update group:", groupToEdit.id, data);
+      await updateSubjectEquivalenceGroupAsync({ name: data.name });
     } else {
-      // Mock: Create new group locally
-      const newGroup: SubjectEquivalenceGroup = {
-        id: Date.now(),
-        name: data.name,
-        subjects: [],
-        createdAt: new Date().toISOString(),
-        createdBy: null,
-        updatedAt: null,
-        updatedBy: null,
-        deletedAt: null,
-        isActive: true,
-      };
-      setGroups((prev) => [...prev, newGroup]);
-      // TODO: Call API to create group
-      console.log("Create group:", data);
+      await createSubjectEquivalenceGroupAsync({ name: data.name });
     }
   };
 
   const handleConfirmDelete = async () => {
     if (!groupToDelete) return;
-    // Mock: Delete group locally
-    setGroups((prev) => prev.filter((g) => g.id !== groupToDelete.id));
-    // TODO: Call API to delete group
-    console.log("Delete group:", groupToDelete.id);
+    await deleteSubjectEquivalenceGroupAsync({});
   };
 
   const handleAddSubjectsToGroup = async (
@@ -182,22 +116,23 @@ export function EquivalenceGroupsTab({
     subjectIds: number[],
   ) => {
     // Mock: Add subjects to group locally
-    const subjectsToAdd = allSubjects
-      .filter((s) => subjectIds.includes(s.id))
-      .map((s) => ({
-        id: s.id,
-        code: s.code,
-        title: s.title,
-        units: s.units,
-      }));
+    // const subjectsToAdd = allSubjects
+    //   .filter((s) => subjectIds.includes(s.id))
+    //   .map((s) => ({
+    //     id: s.id,
+    //     code: s.code,
+    //     title: s.title,
+    //     units: s.units,
+    //   }));
+    // console.log(subjectsToAdd);
 
-    setGroups((prev) =>
-      prev.map((g) =>
-        g.id === groupId
-          ? { ...g, subjects: [...(g.subjects ?? []), ...subjectsToAdd] }
-          : g,
-      ),
-    );
+    // setGroups((prev) =>
+    //   prev.map((g) =>
+    //     g.id === groupId
+    //       ? { ...g, subjects: [...(g.subjects ?? []), ...subjectsToAdd] }
+    //       : g,
+    //   ),
+    // );
     // TODO: Call API to add subjects to group
     console.log("Add subjects to group:", groupId, subjectIds);
   };
@@ -223,7 +158,7 @@ export function EquivalenceGroupsTab({
 
       {/* Groups Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {filteredGroups.map((group) => (
+        {filteredGroups?.map((group) => (
           <EquivalenceGroupCard
             key={group.id}
             group={group}
@@ -236,7 +171,7 @@ export function EquivalenceGroupsTab({
       </div>
 
       {/* Empty State */}
-      {filteredGroups.length === 0 && (
+      {filteredGroups?.length === 0 && (
         <div className="text-center py-12 border rounded-lg">
           <Package className="size-12 mx-auto mb-4 text-muted-foreground opacity-50" />
           <h3 className="text-lg font-medium mb-2">
@@ -275,7 +210,7 @@ export function EquivalenceGroupsTab({
         isOpen={isAddSubjectDialogOpen}
         onOpenChange={setIsAddSubjectDialogOpen}
         group={groupToAddSubject}
-        availableSubjects={allSubjects}
+        availableSubjects={[]}
         onSubmit={handleAddSubjectsToGroup}
       />
     </div>

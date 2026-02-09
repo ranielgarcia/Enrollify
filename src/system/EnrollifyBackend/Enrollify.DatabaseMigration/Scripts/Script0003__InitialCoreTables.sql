@@ -277,6 +277,10 @@ CREATE NONCLUSTERED INDEX IX_Subjects_PreferRoomTypeId
 ON Subjects(PreferRoomTypeId);
 GO;
 
+CREATE NONCLUSTERED INDEX IX_Subjects_Code
+ON Subjects(Code);
+GO;
+
 
 -- ************************************
 
@@ -390,9 +394,9 @@ CREATE TABLE SubjectEquivalenceGroups
 	IsActive BIT NOT NULL DEFAULT 1,
 
 	CONSTRAINT UQ_SubjectEquivalenceGroups_Name UNIQUE (Name),
-	CONSTRAINT FK_EquivalentSubjectMapping_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_EquivalentSubjectMapping_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_EquivalentSubjectMapping_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
+	CONSTRAINT FK_SubjectEquivalenceGroups_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_SubjectEquivalenceGroups_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_SubjectEquivalenceGroups_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
 )
 
 -- Links multiple Subjects across Colleges or Department

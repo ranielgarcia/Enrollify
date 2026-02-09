@@ -8,6 +8,7 @@ public class ListSubjectEquivalenceGroupsSpec : Specification<SubjectEquivalence
     public ListSubjectEquivalenceGroupsSpec() =>
         Query
         .AsNoTracking()
-        .AsSplitQuery()
+        .Include(seg => seg.CreatedByUser)
+        .Include(seg => seg.UpdatedByUser)
         .Include(seg => seg.SubjectEquivalences).ThenInclude(se => se.Subject);
 }

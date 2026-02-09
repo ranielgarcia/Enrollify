@@ -77,9 +77,6 @@ export default function SubjectsManagementPage() {
     }
   };
 
-  // Get all subjects for the equivalence groups tab
-  const allSubjects = pagedSubjects?.items ?? [];
-
   return (
     <main>
       <div className="p-4 md:p-8">
@@ -162,7 +159,7 @@ export default function SubjectsManagementPage() {
 
           {/* Equivalence Groups Tab */}
           <TabsContent value="equivalence">
-            <EquivalenceGroupsTab allSubjects={allSubjects} />
+            <EquivalenceGroupsTab />
           </TabsContent>
         </Tabs>
 

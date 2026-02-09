@@ -10,6 +10,18 @@ const queryKeys = {
   all: () => ["subject-equivalence-groups"],
   create: () => [...queryKeys.all(), `create-draft`],
   update: (id: number) => [...queryKeys.all(), `update`, id],
+  addSubjects: (id: number, subjectCodes: string[]) => [
+    ...queryKeys.all(),
+    `add-subjects`,
+    id,
+    ...subjectCodes,
+  ],
+  removeSubject: (id: number, subjectCode: string) => [
+    ...queryKeys.all(),
+    `remove-subject`,
+    id,
+    subjectCode,
+  ],
 };
 
 export const getAllSubjectEquivalenceGroupsOptions = (enabled: boolean) =>
@@ -20,6 +32,86 @@ export const getAllSubjectEquivalenceGroupsOptions = (enabled: boolean) =>
       queryKey: queryKeys.all(),
       select: (groups): SubjectEquivalenceGroup[] => {
         return groups.map((g) => SubjectEquivalenceGroupSchema.parse(g));
+      },
+    },
+  });
+
+// ** Create New **
+export const createSubjectEquivalenceGroupOptions = () =>
+  createMutationOptions({
+    httpVerb: "post",
+    path: "/api/subject-equivalence-groups",
+    mutationKey: queryKeys.create(),
+    options: {
+      meta: { invalidateQueries: [queryKeys.all()] },
+      onSuccess: () => {
+        toast.success("New Subject equivalence group created successfully");
+      },
+    },
+  });
+
+// ** Update **
+export const updateSubjectEquivalenceGroupOptions = (id: number) =>
+  createMutationOptions({
+    httpVerb: "put",
+    path: "/api/subject-equivalence-groups/{id}",
+    pathParams: { id: id },
+    mutationKey: queryKeys.update(id),
+    options: {
+      meta: { invalidateQueries: [queryKeys.all()] },
+      onSuccess: () => {
+        toast.success("Subject equivalence group updated successfully");
+      },
+    },
+  });
+
+// ** Delete **
+export const deleteSubjectEquivalenceGroupOptions = (id: number) =>
+  createMutationOptions({
+    httpVerb: "delete",
+    path: "/api/subject-equivalence-groups/{id}",
+    pathParams: { id: id },
+    mutationKey: queryKeys.update(id),
+    options: {
+      meta: { invalidateQueries: [queryKeys.all()] },
+      onSuccess: () => {
+        toast.success("Subject equivalence group deleted successfully");
+      },
+    },
+  });
+
+// ** Add subjects **
+export const addSubjectsToEquivalenceGroupOptions = (
+  id: number,
+  subjectCodes: string[],
+) =>
+  createMutationOptions({
+    httpVerb: "put",
+    path: "/api/subject-equivalence-groups/{id}/add-subjects",
+    pathParams: { id: id },
+    mutationKey: queryKeys.addSubjects(id, subjectCodes),
+    options: {
+      meta: { invalidateQueries: [queryKeys.all()] },
+      onSuccess: () => {
+        toast.success("Subjects added to equivalence group successfully");
+      },
+    },
+  });
+
+// ** Remove subject **
+export const removeSubjectFromEquivalenceGroupOptions = (
+  id: number,
+  subjectCode: string,
+) =>
+  createMutationOptions({
+    httpVerb: "delete",
+    path: "/api/subject-equivalence-groups/{id}/remove-subject",
+    pathParams: { id: id },
+    mutationKey: queryKeys.removeSubject(id, subjectCode),
+    options: {
+      meta: { invalidateQueries: [queryKeys.all()] },
+      onSuccess: () => {
+        toast.success("Subject removed from equivalence group successfully");
       },
     },
   });
