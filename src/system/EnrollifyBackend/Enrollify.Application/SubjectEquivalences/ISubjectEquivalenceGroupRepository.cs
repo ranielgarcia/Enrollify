@@ -1,7 +1,7 @@
 ﻿using Ardalis.Result;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 
-namespace Enrollify.Application.SubjectEquivalenceGroups;
+namespace Enrollify.Application.SubjectEquivalences;
 
 public interface ISubjectEquivalenceGroupRepository
 {

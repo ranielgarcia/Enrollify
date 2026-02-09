@@ -9,7 +9,7 @@ using Enrollify.Application.Departments;
 using Enrollify.Application.Roles.Features.List;
 using Enrollify.Application.Rooms;
 using Enrollify.Application.RoomTypes;
-using Enrollify.Application.SubjectEquivalenceGroups;
+using Enrollify.Application.SubjectEquivalences;
 using Enrollify.Application.Subjects;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Infrastructure.Data;

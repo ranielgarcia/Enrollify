@@ -2,7 +2,7 @@
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 using Mediator;
 
-namespace Enrollify.Application.SubjectEquivalenceGroups.Features;
+namespace Enrollify.Application.SubjectEquivalences.Features;
 
 public static class AddNewSubjectEquivalenceGroup
 {

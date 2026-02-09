@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <None Remove="Authorization\Departments\HasDeleteDepartmentPermission.cs~RF23b768e.TMP" />
+    <None Remove="Features\SubjectEquivalences\UpdateSubjectEquivalenceGroupEndpoint.cs~RF6e05071.TMP" />
   </ItemGroup>
 
   <ItemGroup>

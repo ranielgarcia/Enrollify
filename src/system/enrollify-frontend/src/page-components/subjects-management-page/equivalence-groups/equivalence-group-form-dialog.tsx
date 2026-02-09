@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Unauthorized } from "@/components/unauthorized";
+import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { useForm } from "@tanstack/react-form";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -90,43 +92,61 @@ export function EquivalenceGroupFormDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            <form.Field
-              name="name"
-              children={(field) => (
-                <div className="grid gap-2">
-                  <Label htmlFor={field.name}>Group Name</Label>
-                  <Input
-                    id={field.name}
-                    placeholder="e.g., Programming Fundamentals"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                  />
-                  {field.state.meta.errors.length > 0 && (
-                    <p className="text-sm text-destructive">
-                      {field.state.meta.errors.join(", ")}
-                    </p>
-                  )}
-                </div>
-              )}
-            />
-          </div>
+          <AuthorizeView
+            policy="canCreateSubjectEquivalenceGroup"
+            unauthorized={
+              <Unauthorized
+                message="Your current role does not have the necessary permissions to create subject equivalence group."
+                buttonLabel="Back to Home"
+                backCallback={() => onOpenChange(false)}
+                redirectOptions={{
+                  to: "/portal",
+                }}
+              />
+            }
+          >
+            <div className="grid gap-4 py-4">
+              <form.Field
+                name="name"
+                children={(field) => (
+                  <div className="grid gap-2">
+                    <Label htmlFor={field.name}>Group Name</Label>
+                    <Input
+                      id={field.name}
+                      placeholder="e.g., Programming Fundamentals"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                    />
+                    {!field.state.meta.isValid && (
+                      <em role="alert" className="text-red-800">
+                        {field.state.meta.errors
+                          .map((e) => e?.message)
+                          .join(", ")}
+                      </em>
+                    )}
+                  </div>
+                )}
+              />
+            </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
-              {isEditing ? "Save Changes" : "Create Group"}
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && (
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                )}
+                {isEditing ? "Save Changes" : "Create Group"}
+              </Button>
+            </DialogFooter>
+          </AuthorizeView>
         </form>
       </DialogContent>
     </Dialog>

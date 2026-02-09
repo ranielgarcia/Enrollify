@@ -1,6 +1,6 @@
-﻿using Enrollify.Application.SubjectEquivalenceGroups.Features;
+﻿using Enrollify.Application.SubjectEquivalences.Features;
 
-namespace Enrollify.WebAPI.Features.SubjectEquivalenceGroups;
+namespace Enrollify.WebAPI.Features.SubjectEquivalences;
 
 public class CreateNewSubjectEquivalenceGroupRequest
 {
@@ -13,12 +13,12 @@ public class CreateNewSubjectEquivalenceGroupRequestValidator : Validator<Create
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Please provide a name for the subject equivalence group.")
-            .MaximumLength(100).WithMessage("Name must be 100 characters or fewer.");
+            .MaximumLength(255).WithMessage("Name must be 255 characters or fewer.");
     }
 }
 
 [HttpPost("")]
-[Group<CreateNewSubjectEquivalenceGroupEndpointGroup>]
+[Group<SubjectEquivalenceGroupEndpointGroup>]
 [Authorize(Policy = PolicyName.HasCreateSubjectEquivalenceGroupPermission)]
 public class CreateNewSubjectEquivalenceGroupEndpoint (IMediator mediator)
     : Endpoint<CreateNewSubjectEquivalenceGroupRequest, Results<Created<int>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>

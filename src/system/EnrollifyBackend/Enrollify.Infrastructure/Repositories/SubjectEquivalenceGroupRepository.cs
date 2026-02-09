@@ -1,5 +1,5 @@
 ﻿using Ardalis.Result;
-using Enrollify.Application.SubjectEquivalenceGroups;
+using Enrollify.Application.SubjectEquivalences;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 using Enrollify.Infrastructure.Data;
 
