@@ -16,6 +16,21 @@ public class SearchSubjectsPaginatedRequest
     public required string SearchTerm { get; set; }
 }
 
+public class SearchSubjectsPaginatedRequestValidator : Validator<SearchSubjectsPaginatedRequest>
+{
+    public SearchSubjectsPaginatedRequestValidator()
+    {
+        RuleFor(x => x.Page)
+            .GreaterThan(0).WithMessage("Page number must be greater than 0.");
+        RuleFor(x => x.PageSize)
+            .GreaterThan(0).WithMessage("Page size must be greater than 0.")
+            .LessThanOrEqualTo(100).WithMessage("Page size must be 100 or fewer.");
+        RuleFor(x => x.SearchTerm)
+            .NotEmpty().WithMessage("Please provide a search term.")
+            .MaximumLength(100).WithMessage("Search term must be 100 characters or fewer.");
+    }
+}
+
 [HttpGet("search/{page}/{pageSize}")]
 [Group<SubjectEndpointGroup>]
 [Authorize(Policy = PolicyName.HasViewSubjectsPermission)]

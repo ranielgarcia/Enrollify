@@ -210,7 +210,6 @@ export function EquivalenceGroupsTab() {
         isOpen={isAddSubjectDialogOpen}
         onOpenChange={setIsAddSubjectDialogOpen}
         group={groupToAddSubject}
-        availableSubjects={[]}
         onSubmit={handleAddSubjectsToGroup}
       />
     </div>

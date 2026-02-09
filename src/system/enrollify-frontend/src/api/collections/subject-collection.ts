@@ -31,7 +31,7 @@ export const getAllSubjectsMinimalOptions = () =>
 
 export const getAllSubjectsPaginatedOptions = (
   page: number,
-  pageSize: number
+  pageSize: number,
 ) =>
   createQueryOptions({
     path: "/api/subjects/{page}/{pageSize}",
@@ -40,6 +40,46 @@ export const getAllSubjectsPaginatedOptions = (
       pageSize: pageSize.toString(),
     },
     options: {
+      queryKey: queryKeys.paginated(page, pageSize),
+      select: (pagedResults): PagedResult<Subject> => {
+        // Handle empty response or string response
+        if (
+          !pagedResults ||
+          (typeof pagedResults === "string" && pagedResults === "")
+        ) {
+          return {
+            items: [],
+            page,
+            pageSize,
+            totalCount: 0,
+            totalPages: 0,
+          };
+        }
+        const data =
+          typeof pagedResults === "string"
+            ? JSON.parse(pagedResults)
+            : pagedResults;
+        return pagedSubjectsSchema.parse(data);
+      },
+    },
+  });
+
+export const searchSubjectsPaginatedOptions = (
+  page: number,
+  pageSize: number,
+  searchTerm: string,
+) =>
+  createQueryOptions({
+    path: "/api/subjects/search/{page}/{pageSize}",
+    pathParams: {
+      page: page,
+      pageSize: pageSize,
+    },
+    params: {
+      searchTerm,
+    },
+    options: {
+      enabled: !!searchTerm && searchTerm.length > 0 && !!page && !!pageSize,
       queryKey: queryKeys.paginated(page, pageSize),
       select: (pagedResults): PagedResult<Subject> => {
         // Handle empty response or string response
