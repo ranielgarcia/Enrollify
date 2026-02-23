@@ -100,5 +100,4 @@ public class SubjectRepository : ISubjectRepository
                ex.InnerException?.Message.Contains("FK_") == true ||
                ex.InnerException?.Message.Contains("_Subject") == true;
     }
-
 }
