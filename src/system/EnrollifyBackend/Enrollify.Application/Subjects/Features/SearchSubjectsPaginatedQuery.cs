@@ -7,7 +7,7 @@ using Mediator;
 
 namespace Enrollify.Application.Subjects.Features;
 
-public record SearchSubjectsPaginatedQuery(string searchTerm, int page = 1, int pageSize = 10) : IQuery<Result<PagedResult<SubjectDTO>>>;
+public record SearchSubjectsPaginatedQuery(string? searchTerm, int page = 1, int pageSize = 10) : IQuery<Result<PagedResult<SubjectDTO>>>;
 
 public class SearchSubjectsPaginatedQueryHandler : IQueryHandler<SearchSubjectsPaginatedQuery, Result<PagedResult<SubjectDTO>>>
 {

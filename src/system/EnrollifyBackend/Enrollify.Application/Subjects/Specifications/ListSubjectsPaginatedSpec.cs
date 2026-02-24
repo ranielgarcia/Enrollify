@@ -9,6 +9,7 @@ public class ListSubjectsPaginatedSpec : Specification<Subject>
         Query
             .AsNoTracking()
             .Include(s => s.PreferRoomType)
+            .OrderBy(s => s.Title)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize);
 }

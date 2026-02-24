@@ -11,6 +11,13 @@ const queryKeys = {
     page,
     pageSize,
   ],
+  search: (page: number, pageSize: number, searchTerm: string) => [
+    ...queryKeys.base(),
+    "search",
+    page,
+    pageSize,
+    searchTerm,
+  ],
   create: () => [...queryKeys.base(), `create`],
   update: (subjectId: number) => [...queryKeys.base(), "update", subjectId],
   delete: (subjectId: number) => [...queryKeys.base(), "delete", subjectId],
@@ -79,8 +86,8 @@ export const searchSubjectsPaginatedOptions = (
       searchTerm,
     },
     options: {
-      enabled: !!searchTerm && searchTerm.length > 0 && !!page && !!pageSize,
-      queryKey: queryKeys.paginated(page, pageSize),
+      enabled: !!page && !!pageSize,
+      queryKey: queryKeys.search(page, pageSize, searchTerm),
       select: (pagedResults): PagedResult<Subject> => {
         // Handle empty response or string response
         if (

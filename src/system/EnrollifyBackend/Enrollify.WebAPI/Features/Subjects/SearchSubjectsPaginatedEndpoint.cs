@@ -13,7 +13,7 @@ public class SearchSubjectsPaginatedRequest
     public required int PageSize { get; set; }
 
     [QueryParam]
-    public required string SearchTerm { get; set; }
+    public string? SearchTerm { get; set; }
 }
 
 public class SearchSubjectsPaginatedRequestValidator : Validator<SearchSubjectsPaginatedRequest>
@@ -27,7 +27,8 @@ public class SearchSubjectsPaginatedRequestValidator : Validator<SearchSubjectsP
             .LessThanOrEqualTo(100).WithMessage("Page size must be 100 or fewer.");
         RuleFor(x => x.SearchTerm)
             .NotEmpty().WithMessage("Please provide a search term.")
-            .MaximumLength(100).WithMessage("Search term must be 100 characters or fewer.");
+            .MaximumLength(100).WithMessage("Search term must be 100 characters or fewer.")
+            .When(x => !string.IsNullOrEmpty(x.SearchTerm));
     }
 }
 
