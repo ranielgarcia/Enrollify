@@ -10,12 +10,7 @@ const queryKeys = {
   all: () => ["subject-equivalence-groups"],
   create: () => [...queryKeys.all(), `create-draft`],
   update: (id: number) => [...queryKeys.all(), `update`, id],
-  addSubjects: (id: number, subjectCodes: string[]) => [
-    ...queryKeys.all(),
-    `add-subjects`,
-    id,
-    ...subjectCodes,
-  ],
+  addSubjects: (id: number) => [...queryKeys.all(), `add-subjects`, id],
   removeSubject: (id: number, subjectCode: string) => [
     ...queryKeys.all(),
     `remove-subject`,
@@ -81,15 +76,12 @@ export const deleteSubjectEquivalenceGroupOptions = (id: number) =>
   });
 
 // ** Add subjects **
-export const addSubjectsToEquivalenceGroupOptions = (
-  id: number,
-  subjectCodes: string[],
-) =>
+export const addSubjectsToEquivalenceGroupOptions = (id: number) =>
   createMutationOptions({
     httpVerb: "put",
     path: "/api/subject-equivalence-groups/{id}/add-subjects",
-    pathParams: { id: id },
-    mutationKey: queryKeys.addSubjects(id, subjectCodes),
+    pathParams: { id },
+    mutationKey: queryKeys.addSubjects(id),
     options: {
       meta: { invalidateQueries: [queryKeys.all()] },
       onSuccess: () => {

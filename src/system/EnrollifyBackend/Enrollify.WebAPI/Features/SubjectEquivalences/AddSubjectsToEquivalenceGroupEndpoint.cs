@@ -1,4 +1,6 @@
-﻿using Enrollify.Application.SubjectEquivalences.Features;
+﻿using Ardalis.Result;
+using Enrollify.Application.SubjectEquivalences.DTOs;
+using Enrollify.Application.SubjectEquivalences.Features;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 
@@ -8,17 +10,18 @@ public class AddSubjectsToEquivalenceGroupRequest
 {
     [Microsoft.AspNetCore.Mvc.FromRoute]
     public int Id { get; set; }
-    public List<string> SubjectCodes { get; set; } = new List<string>();
+    public List<int> SubjectIds { get; set; } = new List<int>();
 }
 
 public class AddSubjectsToEquivalenceGroupRequestValidator : Validator<AddSubjectsToEquivalenceGroupRequest>
 {
     public AddSubjectsToEquivalenceGroupRequestValidator()
     {
-        RuleFor(x => x.SubjectCodes)
-            .NotEmpty().WithMessage("Please provide at least one subject code.")
-            .Must(codes => codes.All(code => !string.IsNullOrWhiteSpace(code)))
-            .WithMessage("Subject codes cannot be empty or whitespace.");
+        RuleFor(x => x.Id)
+            .NotNull().WithMessage("Please provide the subject equivalence group id");
+
+        RuleFor(x => x.SubjectIds)
+            .NotEmpty().WithMessage("Please provide at least one subject id.");
     }
 }
 
@@ -26,14 +29,14 @@ public class AddSubjectsToEquivalenceGroupRequestValidator : Validator<AddSubjec
 [Group<SubjectEquivalenceGroupEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateSubjectEquivalenceGroupPermission)]
 public class AddSubjectsToEquivalenceGroupEndpoint (IMediator mediator)
-    : Endpoint<AddSubjectsToEquivalenceGroupRequest, Results<Ok<int>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+    : Endpoint<AddSubjectsToEquivalenceGroupRequest, Results<Ok<IEnumerable<SubjectSummaryDTO>>, NotFound, Conflict<string[]>, ProblemHttpResult>>
 {
-    public override async Task<Results<Ok<int>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<Results<Ok<IEnumerable<SubjectSummaryDTO>>, NotFound, Conflict<string[]>, ProblemHttpResult>>
         ExecuteAsync(AddSubjectsToEquivalenceGroupRequest request, CancellationToken ct)
     {
-        var subjectCodes = request.SubjectCodes.Select(code => SubjectCode.From(code)).ToList();
+        var subjectIds = request.SubjectIds.Select(id => SubjectId.From(id)).ToList();
         var result = await mediator.Send(new AddSubjectsToEquivalenceGroup
-            .Command(SubjectEquivalenceGroupId.From(request.Id), subjectCodes), ct);
-        return result.ToUpdateResult(id => request.Id);
+            .Command(SubjectEquivalenceGroupId.From(request.Id), subjectIds), ct);
+        return result.ToUpdateResult(id => result.Value);
     }
 }

@@ -27,7 +27,7 @@ interface AddSubjectToGroupDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   group?: SubjectEquivalenceGroup | null;
-  onSubmit: (groupId: number, subjectIds: number[]) => Promise<void>;
+  onSubmit: (subjectIds: number[]) => Promise<void>;
 }
 
 export function AddSubjectToGroupDialog({
@@ -73,15 +73,16 @@ export function AddSubjectToGroupDialog({
 
   // Filter subjects: not already in group and matching search
   const filteredSubjects = useMemo(() => {
-    return paginatedSubjects?.items.filter((subject) => {
+    return paginatedSubjects?.items?.filter((subject) => {
       // Exclude subjects already in the group
-      if (existingSubjectIds.has(subject.id)) return false;
+      if (subject.id && existingSubjectIds.has(subject.id)) return false;
 
       return true;
     });
   }, [paginatedSubjects, existingSubjectIds]);
 
-  const handleToggleSubject = (subjectId: number) => {
+  const handleToggleSubject = (subjectId?: number) => {
+    if (!subjectId) return;
     setSelectedSubjectIds((prev) =>
       prev.includes(subjectId)
         ? prev.filter((id) => id !== subjectId)
@@ -91,10 +92,9 @@ export function AddSubjectToGroupDialog({
 
   const handleSubmit = async () => {
     if (!group || selectedSubjectIds.length === 0) return;
-
     setIsSubmitting(true);
     try {
-      await onSubmit(group.id, selectedSubjectIds);
+      await onSubmit(selectedSubjectIds);
       onOpenChange(false);
     } finally {
       setIsSubmitting(false);
@@ -149,7 +149,11 @@ export function AddSubjectToGroupDialog({
                     className="flex items-center gap-3 p-3 rounded-md hover:bg-muted cursor-pointer transition-colors"
                   >
                     <Checkbox
-                      checked={selectedSubjectIds.includes(subject.id)}
+                      checked={
+                        subject.id
+                          ? selectedSubjectIds.includes(subject.id)
+                          : false
+                      }
                       onCheckedChange={() => handleToggleSubject(subject.id)}
                     />
                     <div className="flex-1 min-w-0">

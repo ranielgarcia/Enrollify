@@ -8,6 +8,7 @@ import { EquivalenceGroupFormDialog } from "./equivalence-group-form-dialog";
 import { DeleteEquivalenceGroupDialog } from "./delete-equivalence-group-dialog";
 import { AddSubjectToGroupDialog } from "./add-subject-to-group-dialog";
 import {
+  addSubjectsToEquivalenceGroupOptions,
   createSubjectEquivalenceGroupOptions,
   deleteSubjectEquivalenceGroupOptions,
   getAllSubjectEquivalenceGroupsOptions,
@@ -44,6 +45,10 @@ export function EquivalenceGroupsTab() {
   );
   const { mutateAsync: deleteSubjectEquivalenceGroupAsync } = useMutation(
     deleteSubjectEquivalenceGroupOptions(groupToDelete?.id ?? 0),
+  );
+
+  const { mutateAsync: addSubjectsToGroupAsync } = useMutation(
+    addSubjectsToEquivalenceGroupOptions(groupToAddSubject?.id ?? 0),
   );
 
   // Filter groups by search
@@ -111,30 +116,8 @@ export function EquivalenceGroupsTab() {
     await deleteSubjectEquivalenceGroupAsync({});
   };
 
-  const handleAddSubjectsToGroup = async (
-    groupId: number,
-    subjectIds: number[],
-  ) => {
-    // Mock: Add subjects to group locally
-    // const subjectsToAdd = allSubjects
-    //   .filter((s) => subjectIds.includes(s.id))
-    //   .map((s) => ({
-    //     id: s.id,
-    //     code: s.code,
-    //     title: s.title,
-    //     units: s.units,
-    //   }));
-    // console.log(subjectsToAdd);
-
-    // setGroups((prev) =>
-    //   prev.map((g) =>
-    //     g.id === groupId
-    //       ? { ...g, subjects: [...(g.subjects ?? []), ...subjectsToAdd] }
-    //       : g,
-    //   ),
-    // );
-    // TODO: Call API to add subjects to group
-    console.log("Add subjects to group:", groupId, subjectIds);
+  const handleAddSubjectsToGroup = async (subjectIds: number[]) => {
+    await addSubjectsToGroupAsync({ subjectIds });
   };
 
   return (

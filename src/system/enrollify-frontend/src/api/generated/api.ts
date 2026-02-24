@@ -490,26 +490,6 @@ export interface components {
             totalPages?: number;
         };
         EnrollifyWebAPIFeaturesSubjectsSearchSubjectsPaginatedRequest: Record<string, never>;
-        EnrollifyWebAPIFeaturesSubjectsUpdateSubjectResponse: {
-            /** Format: int32 */
-            id?: number;
-            code?: string;
-            title?: string;
-            /** Format: decimal */
-            units?: number;
-            description?: string;
-            /** Format: int32 */
-            preferRoomTypeId?: number;
-        };
-        EnrollifyWebAPIFeaturesSubjectsUpdateSubjectRequest: {
-            code: string;
-            title: string;
-            /** Format: decimal */
-            units?: number;
-            description: string;
-            /** Format: int32 */
-            preferRoomTypeId: number;
-        };
         /**
          * @description RFC7807 compatible problem details/ error response class. this can be used by configuring startup like so:
          *     app.UseFastEndpoints(c => c.Errors.UseProblemDetails())
@@ -549,8 +529,39 @@ export interface components {
             /** @description the severity of the error */
             severity?: string | null;
         };
+        EnrollifyWebAPIFeaturesSubjectsUpdateSubjectResponse: {
+            /** Format: int32 */
+            id?: number;
+            code?: string;
+            title?: string;
+            /** Format: decimal */
+            units?: number;
+            description?: string;
+            /** Format: int32 */
+            preferRoomTypeId?: number;
+        };
+        EnrollifyWebAPIFeaturesSubjectsUpdateSubjectRequest: {
+            code: string;
+            title: string;
+            /** Format: decimal */
+            units?: number;
+            description: string;
+            /** Format: int32 */
+            preferRoomTypeId: number;
+        };
+        EnrollifyApplicationSubjectEquivalencesDTOsSubjectSummaryDTO: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            code?: components["schemas"]["EnrollifyCoreAggregatesSubjectAggregateSubjectCode"];
+            title?: string;
+            /** Format: decimal */
+            units?: number;
+        };
         EnrollifyWebAPIFeaturesSubjectEquivalencesAddSubjectsToEquivalenceGroupRequest: {
-            subjectCodes: string[];
+            subjectIds: number[];
         };
         EnrollifyWebAPIFeaturesSubjectEquivalencesCreateNewSubjectEquivalenceGroupRequest: {
             name: string;
@@ -564,17 +575,6 @@ export interface components {
              */
             id?: number;
             name?: string;
-        };
-        EnrollifyApplicationSubjectEquivalencesDTOsSubjectSummaryDTO: {
-            /**
-             * Format: int32
-             * @description Value object wrapping Int32
-             */
-            id?: number;
-            code?: components["schemas"]["EnrollifyCoreAggregatesSubjectAggregateSubjectCode"];
-            title?: string;
-            /** Format: decimal */
-            units?: number;
         };
         EnrollifyWebAPIFeaturesSubjectEquivalencesRemoveSubjectFromEquivalenceGroupRequest: {
             subjectCode: string;
@@ -1346,8 +1346,8 @@ export interface operations {
     };
     EnrollifyWebAPIFeaturesSubjectsSearchSubjectsPaginatedEndpoint: {
         parameters: {
-            query: {
-                searchTerm: string;
+            query?: {
+                searchTerm?: string | null;
             };
             header?: never;
             path: {
@@ -1365,6 +1365,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EnrollifyApplicationPagedResultOfSubjectDTO"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
                 };
             };
             /** @description Unauthorized */
@@ -1404,7 +1413,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": number;
+                    "application/json": components["schemas"]["EnrollifyApplicationSubjectEquivalencesDTOsSubjectSummaryDTO"][];
                 };
             };
             /** @description Bad Request */

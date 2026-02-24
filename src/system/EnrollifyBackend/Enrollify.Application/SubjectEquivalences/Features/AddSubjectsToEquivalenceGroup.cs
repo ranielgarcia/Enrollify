@@ -1,4 +1,6 @@
 ﻿using Ardalis.Result;
+using Enrollify.Application.SubjectEquivalences.DTOs;
+using Enrollify.Application.SubjectEquivalences.Specifications;
 using Enrollify.Application.Subjects.Specifications;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
@@ -9,9 +11,9 @@ namespace Enrollify.Application.SubjectEquivalences.Features;
 
 public static class AddSubjectsToEquivalenceGroup
 {
-    public sealed record Command(SubjectEquivalenceGroupId groupId, List<SubjectCode> subjectCodes) : ICommand<Result<SubjectEquivalenceGroupId>>;
+    public sealed record Command(SubjectEquivalenceGroupId groupId, List<SubjectId> subjectIds) : ICommand<Result<SubjectEquivalenceGroupDTO>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<SubjectEquivalenceGroupId>>
+    public sealed class Handler : ICommandHandler<Command, Result<SubjectEquivalenceGroupDTO>>
     {
         private readonly ISubjectEquivalenceGroupRepository _repository;
         private readonly IReadRepository<SubjectEquivalenceGroup> _readRepository;
@@ -22,33 +24,34 @@ public static class AddSubjectsToEquivalenceGroup
             _readRepository = readRepository;
             _subjectReadRepository = subjectReadRepository;
         }
-        public async ValueTask<Result<SubjectEquivalenceGroupId>> Handle(Command command, CancellationToken cancellationToken)
+        public async ValueTask<Result<SubjectEquivalenceGroupDTO>> Handle(Command command, CancellationToken cancellationToken)
         {
-            var groupToUpdate = await _readRepository.GetByIdAsync(command.groupId, cancellationToken);
+            var groupToUpdate = await _readRepository.FirstOrDefaultAsync(new GetSubjectEquivalenceGroupByIdWithSubjectsSpec(command.groupId), cancellationToken);
             if (groupToUpdate is null)
             {
                 return Result.NotFound();
             }
 
-            var subjects = await _subjectReadRepository.ListAsync(new ListSubjectsByCodesSpec(command.subjectCodes), cancellationToken);
+            var subjects = await _subjectReadRepository.ListAsync(new ListSubjectsByIdsSpec(command.subjectIds), cancellationToken);
 
-            var missingSubjects = command.subjectCodes.Except(subjects.Select(s => s.Code)).ToList();
+            var missingSubjects = command.subjectIds.Except(subjects.Select(s => s.Id)).ToList();
             if (missingSubjects.Any())
             {
-                return Result.Invalid(new ValidationError($"Subjects with codes {string.Join(", ", missingSubjects)} not found"));
+                return Result.Invalid(new ValidationError($"Subjects with IDs {string.Join(", ", missingSubjects)} not found"));
             }
 
-            foreach (var code in command.subjectCodes)
+            foreach (var id in command.subjectIds)
             {
-                var subject = subjects.FirstOrDefault(s => s.Code == code);
+                var subject = subjects.FirstOrDefault(s => s.Id == id);
                 if (subject is null)
                 {
-                    return Result.NotFound($"Subject with code {code} not found.");
+                    return Result.NotFound($"Subject with ID {id} not found.");
                 }
                 groupToUpdate.AddSubject(subject.Id);
             }
             var result = await _repository.UpdateSubjectEquivalenceGroup(groupToUpdate, cancellationToken);
-            return result;
+
+            return Result.Success(SubjectEquivalenceGroupDTO.FromEntity(groupToUpdate));
         }
     }
 }
