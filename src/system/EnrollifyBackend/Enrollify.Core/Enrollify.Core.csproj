@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Enrollify.SharedKernel\Enrollify.SharedKernel.csproj" />
+    <ProjectReference Include="..\Enrollify.Analyzers\Enrollify.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

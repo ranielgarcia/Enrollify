@@ -26,6 +26,7 @@ export const getAllSubjectEquivalenceGroupsOptions = (enabled: boolean) =>
       enabled,
       queryKey: queryKeys.all(),
       select: (groups): SubjectEquivalenceGroup[] => {
+        console.log(groups);
         return groups.map((g) => SubjectEquivalenceGroupSchema.parse(g));
       },
     },

@@ -10,5 +10,5 @@ public class ListSubjectEquivalenceGroupsSpec : Specification<SubjectEquivalence
         .AsNoTracking()
         .Include(seg => seg.CreatedByUser)
         .Include(seg => seg.UpdatedByUser)
-        .Include(seg => seg.SubjectEquivalences).ThenInclude(se => se.Subject);
+        .Include(seg => seg.SubjectEquivalences.Where(se => se.IsActive)).ThenInclude(se => se.Subject);
 }

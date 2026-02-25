@@ -87,22 +87,6 @@ export function EquivalenceGroupsTab() {
     setIsAddSubjectDialogOpen(true);
   };
 
-  const handleRemoveSubject = (
-    group: SubjectEquivalenceGroup,
-    subject: { id: number; code: string; title: string; units: number },
-  ) => {
-    // Mock: Remove subject from group locally
-    // setGroups((prev) =>
-    //   prev.map((g) =>
-    //     g.id === group.id
-    //       ? { ...g, subjects: g.subjects?.filter((s) => s.id !== subject.id) }
-    //       : g,
-    //   ),
-    // );
-    // TODO: Call API to remove subject from group
-    console.log(`Remove subject ${subject.code} from group ${group.name}`);
-  };
-
   const handleFormSubmit = async (data: { name: string }) => {
     if (groupToEdit) {
       await updateSubjectEquivalenceGroupAsync({ name: data.name });
@@ -148,7 +132,6 @@ export function EquivalenceGroupsTab() {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onAddSubject={handleAddSubject}
-            onRemoveSubject={handleRemoveSubject}
           />
         ))}
       </div>

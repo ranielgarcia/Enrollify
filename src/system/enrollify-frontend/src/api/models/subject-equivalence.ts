@@ -10,7 +10,9 @@ const SubjectSummarySchema = SubjectSchema.pick({
   units: true,
 });
 
-export type SubjectSummary = z.infer<typeof SubjectSummarySchema>;
+export type SubjectSummaryInSubjectEquivalenceGroup = z.infer<
+  typeof SubjectSummarySchema
+>;
 
 // Subject Equivalence Group
 export const SubjectEquivalenceGroupSchema = z

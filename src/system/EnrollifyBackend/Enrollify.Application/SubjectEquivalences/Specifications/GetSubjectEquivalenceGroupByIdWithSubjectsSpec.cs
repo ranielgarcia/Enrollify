@@ -7,6 +7,6 @@ public class GetSubjectEquivalenceGroupByIdWithSubjectsSpec : Specification<Subj
 {
     public GetSubjectEquivalenceGroupByIdWithSubjectsSpec(SubjectEquivalenceGroupId id) =>
         Query
-        .Include(seg => seg.SubjectEquivalences).ThenInclude(se => se.Subject)
+        .Include(seg => seg.SubjectEquivalences.Where(se => se.IsActive)).ThenInclude(se => se.Subject)
         .Where(seg => seg.Id == id);
 }

@@ -17,7 +17,7 @@ public class SubjectEquivalenceGroup : EntityBase<SubjectEquivalenceGroup, Subje
 
     public string Name { get; private set; }
 
-    public IEnumerable<SubjectEquivalence> SubjectEquivalences => _subjectEquivalences.AsReadOnly();
+    public IReadOnlyCollection<SubjectEquivalence> SubjectEquivalences => _subjectEquivalences.AsReadOnly();
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }

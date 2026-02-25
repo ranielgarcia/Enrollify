@@ -7,7 +7,7 @@ public class SubjectEquivalenceGroupDTO : BaseDTO
     public SubjectEquivalenceGroupId Id { get; set; }
     public string Name { get; set; } = string.Empty;
 
-    public List<SubjectSummaryDTO> Subjects = new();
+    public List<SubjectSummaryDTO> Subjects { get; set; } = new();
 
     public static SubjectEquivalenceGroupDTO FromEntity(SubjectEquivalenceGroup group)
     {

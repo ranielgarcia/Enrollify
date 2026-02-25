@@ -549,6 +549,15 @@ export interface components {
             /** Format: int32 */
             preferRoomTypeId: number;
         };
+        EnrollifyApplicationSubjectEquivalencesDTOsSubjectEquivalenceGroupDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            name?: string;
+            subjects?: components["schemas"]["EnrollifyApplicationSubjectEquivalencesDTOsSubjectSummaryDTO"][];
+        };
         EnrollifyApplicationSubjectEquivalencesDTOsSubjectSummaryDTO: {
             /**
              * Format: int32
@@ -567,15 +576,6 @@ export interface components {
             name: string;
         };
         EnrollifyWebAPIFeaturesSubjectEquivalencesDeleteSubjectEquivalenceGroupRequest: Record<string, never>;
-        EnrollifyApplicationSubjectEquivalencesDTOsSubjectEquivalenceGroupDTO: components["schemas"]["EnrollifyApplicationBaseDTO"] & {
-            subjects?: components["schemas"]["EnrollifyApplicationSubjectEquivalencesDTOsSubjectSummaryDTO"][];
-            /**
-             * Format: int32
-             * @description Value object wrapping Int32
-             */
-            id?: number;
-            name?: string;
-        };
         EnrollifyWebAPIFeaturesSubjectEquivalencesRemoveSubjectFromEquivalenceGroupRequest: {
             subjectCode: string;
         };
@@ -1413,7 +1413,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EnrollifyApplicationSubjectEquivalencesDTOsSubjectSummaryDTO"][];
+                    "application/json": components["schemas"]["EnrollifyApplicationSubjectEquivalencesDTOsSubjectEquivalenceGroupDTO"];
                 };
             };
             /** @description Bad Request */
@@ -1476,13 +1476,6 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Forbidden */
-            403: {
                 headers: {
                     [name: string]: unknown;
                 };
