@@ -11,7 +11,7 @@ const queryKeys = {
     page,
     pageSize,
   ],
-  search: (page: number, pageSize: number, searchTerm: string) => [
+  search: (page: number, pageSize: number, searchTerm?: string | null) => [
     ...queryKeys.base(),
     "search",
     page,
@@ -74,7 +74,8 @@ export const getAllSubjectsPaginatedOptions = (
 export const searchSubjectsPaginatedOptions = (
   page: number,
   pageSize: number,
-  searchTerm: string,
+  searchTerm?: string | null,
+  enabled: boolean = false,
 ) =>
   createQueryOptions({
     path: "/api/subjects/search/{page}/{pageSize}",
@@ -86,7 +87,7 @@ export const searchSubjectsPaginatedOptions = (
       searchTerm,
     },
     options: {
-      enabled: !!page && !!pageSize,
+      enabled: !!page && !!pageSize && enabled,
       queryKey: queryKeys.search(page, pageSize, searchTerm),
       select: (pagedResults): PagedResult<Subject> => {
         // Handle empty response or string response

@@ -64,11 +64,11 @@ export function CollegeFormDrawer({
   };
 
   const { mutateAsync: createNewCollegeAsync } = useMutation(
-    createCollegeOptions()
+    createCollegeOptions(),
   );
 
   const { mutateAsync: updateCollegeAsync } = useMutation(
-    updateCollegeOptions(collegeToUpdate?.id ?? 0)
+    updateCollegeOptions(collegeToUpdate?.id ?? 0),
   );
 
   const form = useForm({
@@ -108,7 +108,7 @@ export function CollegeFormDrawer({
       </DrawerTrigger>
       <DrawerContent>
         <AuthorizeView
-          policy="canCreateCollege"
+          policy={isUpdateCollege ? "canUpdateCollege" : "canCreateCollege"}
           unauthorized={
             <Unauthorized
               message="Your current role does not have the necessary permissions to create college."

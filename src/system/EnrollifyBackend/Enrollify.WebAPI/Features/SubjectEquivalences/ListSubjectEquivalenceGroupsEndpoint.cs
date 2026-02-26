@@ -5,8 +5,7 @@ namespace Enrollify.WebAPI.Features.SubjectEquivalences;
 
 [HttpGet("")]
 [Group<SubjectEquivalenceGroupEndpointGroup>]
-//[Authorize(Policy = PolicyName.HasViewSubjectEquivalenceGroupsPermission)]
-[AllowAnonymous]
+[Authorize(Policy = PolicyName.HasViewSubjectEquivalenceGroupsPermission)]
 public class ListSubjectEquivalenceGroupsEndpoint (IMediator mediator) : EndpointWithoutRequest<List<SubjectEquivalenceGroupDTO>>
 {
     public override async Task HandleAsync (CancellationToken cancellationToken)

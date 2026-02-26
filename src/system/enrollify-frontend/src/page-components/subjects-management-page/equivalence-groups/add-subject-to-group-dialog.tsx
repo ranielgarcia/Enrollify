@@ -64,7 +64,7 @@ export function AddSubjectToGroupDialog({
   }, [group]);
 
   const { data: paginatedSubjects, isLoading } = useQuery(
-    searchSubjectsPaginatedOptions(page, 10, debouncedSearchTerm),
+    searchSubjectsPaginatedOptions(page, 10, debouncedSearchTerm, isOpen),
   );
 
   const totalPages = paginatedSubjects?.totalPages ?? 1;

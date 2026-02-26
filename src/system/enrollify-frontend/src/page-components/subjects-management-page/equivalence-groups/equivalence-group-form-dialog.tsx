@@ -42,7 +42,7 @@ export function EquivalenceGroupFormDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!groupToEdit;
 
-  const form = useForm({z
+  const form = useForm({
     defaultValues: {
       name: groupToEdit?.name ?? "",
     },
@@ -93,7 +93,11 @@ export function EquivalenceGroupFormDialog({
           </DialogHeader>
 
           <AuthorizeView
-            policy="canCreateSubjectEquivalenceGroup"
+            policy={
+              isEditing
+                ? "canUpdateSubjectEquivalenceGroup"
+                : "canCreateSubjectEquivalenceGroup"
+            }
             unauthorized={
               <Unauthorized
                 message="Your current role does not have the necessary permissions to create subject equivalence group."

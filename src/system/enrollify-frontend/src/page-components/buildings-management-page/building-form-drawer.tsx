@@ -71,11 +71,11 @@ export function BuildingFormDrawer({
   };
 
   const { mutateAsync: createNewBuildingAsync } = useMutation(
-    createBuildingOptions()
+    createBuildingOptions(),
   );
 
   const { mutateAsync: updateBuildingAsync } = useMutation(
-    updateBuildingOptions(buildingToUpdate?.id ?? 0)
+    updateBuildingOptions(buildingToUpdate?.id ?? 0),
   );
 
   const form = useForm({
@@ -121,10 +121,10 @@ export function BuildingFormDrawer({
       </DrawerTrigger>
       <DrawerContent>
         <AuthorizeView
-          policy="canCreateBuilding"
+          policy={isUpdateBuilding ? "canUpdateBuilding" : "canCreateBuilding"}
           unauthorized={
             <Unauthorized
-              message="Your current role does not have the necessary permissions to create building."
+              message="Your current role does not have the necessary permissions to create/update building."
               buttonLabel="Back to Home"
               backCallback={() => setIsOpen(false)}
               redirectOptions={{
