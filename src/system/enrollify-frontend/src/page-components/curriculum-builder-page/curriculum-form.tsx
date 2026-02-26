@@ -17,6 +17,8 @@ import {
   updateCurriculumOptions,
 } from "@/api/collections/curriculum-collection";
 import type { CurriculumWithSubjects } from "@/api/models/curriculum";
+import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
+import { Unauthorized } from "@/components/unauthorized";
 
 type FormMeta = {
   submitAction: "create" | "update" | null;
@@ -111,137 +113,157 @@ export function CurriculumForm({
         </Button>
       </CardHeader>
       <CardContent>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          className="space-y-4"
+        <AuthorizeView
+          policy={
+            isUpdatingCurriculumBasicDetails
+              ? "canUpdateCurriculum"
+              : "canCreateCurriculum"
+          }
+          unauthorized={
+            <Unauthorized
+              message="Your current role does not have the necessary permissions to create/update curriculum."
+              buttonLabel="Back to Home"
+              backCallback={onClose}
+              redirectOptions={{
+                to: "/portal",
+              }}
+            />
+          }
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <form.Field
-              name="courseId"
-              children={(field) => (
-                <div>
-                  <Label htmlFor={field.name}>Course:</Label>
-                  <SearchableSelect
-                    options={coursesOptions}
-                    value={field.state.value.toString()}
-                    onValueChange={(val) => field.handleChange(Number(val))}
-                    name={field.name}
-                    placeholder="Select Course"
-                    searchPlaceholder="Search Course..."
-                    emptyMessage="No Course found"
-                  />
-                  {!field.state.meta.isValid && (
-                    <em role="alert" className="text-red-800">
-                      {field.state.meta.errors
-                        .map((e) => e?.message)
-                        .join(", ")}
-                    </em>
-                  )}
-                </div>
-              )}
-            />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            className="space-y-4"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form.Field
+                name="courseId"
+                children={(field) => (
+                  <div>
+                    <Label htmlFor={field.name}>Course:</Label>
+                    <SearchableSelect
+                      options={coursesOptions}
+                      value={field.state.value.toString()}
+                      onValueChange={(val) => field.handleChange(Number(val))}
+                      name={field.name}
+                      placeholder="Select Course"
+                      searchPlaceholder="Search Course..."
+                      emptyMessage="No Course found"
+                    />
+                    {!field.state.meta.isValid && (
+                      <em role="alert" className="text-red-800">
+                        {field.state.meta.errors
+                          .map((e) => e?.message)
+                          .join(", ")}
+                      </em>
+                    )}
+                  </div>
+                )}
+              />
 
-            <form.Field
-              name="effectiveYear"
-              children={(field) => (
-                <div>
-                  <Label htmlFor={field.name}>Effective Year:</Label>
-                  <Input
-                    name="effectiveYear"
-                    type="number"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(Number(e.target.value))}
-                    required
-                    id={field.name}
-                  />
-                  {!field.state.meta.isValid && (
-                    <em role="alert" className="text-red-800">
-                      {field.state.meta.errors
-                        .map((e) => e?.message)
-                        .join(", ")}
-                    </em>
-                  )}
-                </div>
-              )}
-            />
+              <form.Field
+                name="effectiveYear"
+                children={(field) => (
+                  <div>
+                    <Label htmlFor={field.name}>Effective Year:</Label>
+                    <Input
+                      name="effectiveYear"
+                      type="number"
+                      value={field.state.value}
+                      onChange={(e) =>
+                        field.handleChange(Number(e.target.value))
+                      }
+                      required
+                      id={field.name}
+                    />
+                    {!field.state.meta.isValid && (
+                      <em role="alert" className="text-red-800">
+                        {field.state.meta.errors
+                          .map((e) => e?.message)
+                          .join(", ")}
+                      </em>
+                    )}
+                  </div>
+                )}
+              />
 
-            <form.Field
-              name="version"
-              children={(field) => (
-                <div>
-                  <Label
-                    className="text-sm font-medium block mb-1"
-                    htmlFor={field.name}
+              <form.Field
+                name="version"
+                children={(field) => (
+                  <div>
+                    <Label
+                      className="text-sm font-medium block mb-1"
+                      htmlFor={field.name}
+                    >
+                      Version Identifier:
+                    </Label>
+                    <Input
+                      placeholder="e.g., 2024-A"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      required
+                      id={field.name}
+                    />
+                  </div>
+                )}
+              />
+
+              <form.Field
+                name="description"
+                children={(field) => (
+                  <div className="md:col-span-2">
+                    <Label
+                      className="text-sm font-medium block mb-1"
+                      htmlFor="description"
+                    >
+                      Description
+                    </Label>
+                    <Textarea
+                      placeholder="Curriculum details..."
+                      value={field.state.value ?? undefined}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      rows={3}
+                      id={field.name}
+                    />
+                  </div>
+                )}
+              />
+            </div>
+
+            <div className="flex gap-2 justify-end pt-4">
+              <Button variant="outline" type="button" onClick={onClose}>
+                Cancel
+              </Button>
+              <form.Subscribe
+                selector={(state) => [state.canSubmit, state.isSubmitting]}
+                children={([canSubmit, isSubmitting]) => (
+                  <Button
+                    type="submit"
+                    disabled={!canSubmit}
+                    onClick={() =>
+                      form.handleSubmit({
+                        submitAction: isUpdatingCurriculumBasicDetails
+                          ? "update"
+                          : "create",
+                        formAction: "close",
+                      })
+                    }
                   >
-                    Version Identifier:
-                  </Label>
-                  <Input
-                    placeholder="e.g., 2024-A"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    required
-                    id={field.name}
-                  />
-                </div>
-              )}
-            />
-
-            <form.Field
-              name="description"
-              children={(field) => (
-                <div className="md:col-span-2">
-                  <Label
-                    className="text-sm font-medium block mb-1"
-                    htmlFor="description"
-                  >
-                    Description
-                  </Label>
-                  <Textarea
-                    placeholder="Curriculum details..."
-                    value={field.state.value ?? undefined}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    rows={3}
-                    id={field.name}
-                  />
-                </div>
-              )}
-            />
-          </div>
-
-          <div className="flex gap-2 justify-end pt-4">
-            <Button variant="outline" type="button" onClick={onClose}>
-              Cancel
-            </Button>
-            <form.Subscribe
-              selector={(state) => [state.canSubmit, state.isSubmitting]}
-              children={([canSubmit, isSubmitting]) => (
-                <Button
-                  type="submit"
-                  disabled={!canSubmit}
-                  onClick={() =>
-                    form.handleSubmit({
-                      submitAction: isUpdatingCurriculumBasicDetails
-                        ? "update"
-                        : "create",
-                      formAction: "close",
-                    })
-                  }
-                >
-                  {isSubmitting ? (
-                    <Loader2 />
-                  ) : isUpdatingCurriculumBasicDetails ? (
-                    "Update Curriculum"
-                  ) : (
-                    "Create Curriculum"
-                  )}
-                </Button>
-              )}
-            />
-          </div>
-        </form>
+                    {isSubmitting ? (
+                      <Loader2 />
+                    ) : isUpdatingCurriculumBasicDetails ? (
+                      "Update Curriculum"
+                    ) : (
+                      "Create Curriculum"
+                    )}
+                  </Button>
+                )}
+              />
+            </div>
+          </form>
+        </AuthorizeView>
       </CardContent>
     </Card>
   );

@@ -11,6 +11,13 @@ const queryKeys = {
     page,
     pageSize,
   ],
+  search: (page: number, pageSize: number, searchTerm?: string | null) => [
+    ...queryKeys.base(),
+    "search",
+    page,
+    pageSize,
+    searchTerm,
+  ],
   create: () => [...queryKeys.base(), `create`],
   update: (subjectId: number) => [...queryKeys.base(), "update", subjectId],
   delete: (subjectId: number) => [...queryKeys.base(), "delete", subjectId],
@@ -31,7 +38,7 @@ export const getAllSubjectsMinimalOptions = () =>
 
 export const getAllSubjectsPaginatedOptions = (
   page: number,
-  pageSize: number
+  pageSize: number,
 ) =>
   createQueryOptions({
     path: "/api/subjects/{page}/{pageSize}",
@@ -41,6 +48,47 @@ export const getAllSubjectsPaginatedOptions = (
     },
     options: {
       queryKey: queryKeys.paginated(page, pageSize),
+      select: (pagedResults): PagedResult<Subject> => {
+        // Handle empty response or string response
+        if (
+          !pagedResults ||
+          (typeof pagedResults === "string" && pagedResults === "")
+        ) {
+          return {
+            items: [],
+            page,
+            pageSize,
+            totalCount: 0,
+            totalPages: 0,
+          };
+        }
+        const data =
+          typeof pagedResults === "string"
+            ? JSON.parse(pagedResults)
+            : pagedResults;
+        return pagedSubjectsSchema.parse(data);
+      },
+    },
+  });
+
+export const searchSubjectsPaginatedOptions = (
+  page: number,
+  pageSize: number,
+  searchTerm?: string | null,
+  enabled: boolean = false,
+) =>
+  createQueryOptions({
+    path: "/api/subjects/search/{page}/{pageSize}",
+    pathParams: {
+      page: page,
+      pageSize: pageSize,
+    },
+    params: {
+      searchTerm,
+    },
+    options: {
+      enabled: !!page && !!pageSize && enabled,
+      queryKey: queryKeys.search(page, pageSize, searchTerm),
       select: (pagedResults): PagedResult<Subject> => {
         // Handle empty response or string response
         if (

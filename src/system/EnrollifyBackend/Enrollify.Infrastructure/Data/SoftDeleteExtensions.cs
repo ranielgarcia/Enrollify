@@ -60,8 +60,9 @@ public static class SoftDeleteExtensions
                 continue;
             }
 
-            // Do not apply query filters to owned entity types (e.g., owned collections like RolePermission)
-            // Owned types should be filtered/configured within their OwnsOne/OwnsMany mapping.
+            // EF Core does not support query filters on owned entity types.
+            // Owned collections are instead filtered at the domain level via their
+            // navigation properties (exposing only active items).
             if (entityType.IsOwned())
             {
                 continue;
@@ -72,15 +73,13 @@ public static class SoftDeleteExtensions
                 continue;
             }
 
-            // Build expression: (e) => e.AuditInfo.IsActive == true
+            // Build expression: (e) => e.IsActive == true
             var parameter = Expression.Parameter(entityType.ClrType, "e");
             var property = Expression.Property(parameter, nameof(IAuditable.IsActive));
             var isActive = Expression.Constant(true);
             var equal = Expression.Equal(property, isActive);
             var lambda = Expression.Lambda(equal, parameter);
 
-            // This is equivalent to this
-            //modelBuilder.Entity<Shop>().HasQueryFilter(s => s.IsActive == true);
             modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
         }
     }

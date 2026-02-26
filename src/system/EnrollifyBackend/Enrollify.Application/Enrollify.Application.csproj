@@ -4,11 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	  <EnableNETAnalyzers>true</EnableNETAnalyzers>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="Curriculums\Specifications\GetCurriculumByIdSpec.cs~RF53d96f5.TMP" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Ardalis.Result" Version="10.1.0" />
@@ -16,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Enrollify.Core\Enrollify.Core.csproj" />
+    <ProjectReference Include="..\Enrollify.Analyzers\Enrollify.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

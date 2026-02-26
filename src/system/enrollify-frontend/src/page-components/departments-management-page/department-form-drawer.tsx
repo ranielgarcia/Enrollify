@@ -73,10 +73,10 @@ export function DepartmentFormDrawer({
   };
 
   const { mutateAsync: createNewDepartmentAsync } = useMutation(
-    createDepartmentOptions()
+    createDepartmentOptions(),
   );
   const { mutateAsync: updateDepartmentAsync } = useMutation(
-    updateDepartmentOptions(departmentToUpdate?.id ?? 0)
+    updateDepartmentOptions(departmentToUpdate?.id ?? 0),
   );
 
   const form = useForm({
@@ -123,7 +123,9 @@ export function DepartmentFormDrawer({
       </DrawerTrigger>
       <DrawerContent>
         <AuthorizeView
-          policy="canCreateDepartment"
+          policy={
+            isUpdateDepartment ? "canUpdateDepartment" : "canCreateDepartment"
+          }
           unauthorized={
             <Unauthorized
               message="Your current role does not have the necessary permissions to create department."

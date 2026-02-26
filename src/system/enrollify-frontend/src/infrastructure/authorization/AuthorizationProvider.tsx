@@ -19,6 +19,7 @@ import { registerDepartmentPolicies } from "./policies/department-policies";
 import { registerCoursesPolicies } from "./policies/courses-policies";
 import { registerSubjectsPolicies } from "./policies/subjects-policies";
 import { registerCurriculumPolicies } from "./policies/curriculum-policies";
+import { registerSubjectEquivalenceGroupPolicies } from "./policies/subject-equivalence-group-policies";
 
 export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
   children,
@@ -26,7 +27,7 @@ export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
   // const queryClient = useQueryClient();
   const { user, isLoading: isUserLoading } = useAuthenticationContext();
   const [authService, setAuthService] = useState<AuthorizationService | null>(
-    null
+    null,
   );
 
   // Authorization is ready when auth service is initialized and user data is loaded
@@ -46,6 +47,7 @@ export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
     registerCoursesPolicies(policyRegistry);
     registerSubjectsPolicies(policyRegistry);
     registerCurriculumPolicies(policyRegistry);
+    registerSubjectEquivalenceGroupPolicies(policyRegistry);
 
     const handlers: IAuthorizationHandler[] = [
       new RoleHandler(),
@@ -58,7 +60,7 @@ export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
 
   const authorize = async (
     policyName: PolicyName,
-    resource?: AuthorizationResource
+    resource?: AuthorizationResource,
   ): Promise<AuthorizationResult> => {
     if (!authService || !user) {
       return { succeeded: false, failureReasons: ["Not authenticated"] };
@@ -78,7 +80,7 @@ export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
    */
   const checkPolicy = async (
     policyName: PolicyName,
-    resource?: AuthorizationResource
+    resource?: AuthorizationResource,
   ): Promise<boolean> => {
     const result = await authorize(policyName, resource);
     return result.succeeded;
@@ -91,7 +93,7 @@ export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
 
   const currentUserHasPermission = (
     permission: Permission,
-    resource?: AuthorizationResource
+    resource?: AuthorizationResource,
   ): boolean => {
     if (!authService || !user) return false;
     return authService.hasPermission(user, permission, resource);

@@ -1,0 +1,37 @@
+﻿using Enrollify.Application.SubjectEquivalences.Features;
+using Enrollify.Core.Aggregates.SubjectAggregate;
+using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
+
+namespace Enrollify.WebAPI.Features.SubjectEquivalences;
+
+public class RemoveSubjectFromEquivalenceGroupRequest
+{
+    [Microsoft.AspNetCore.Mvc.FromRoute]
+    public int Id { get; set; }
+    public string SubjectCode { get; set; } = null!;
+}
+
+public class RemoveSubjectFromEquivalenceGroupRequestValidator : Validator<RemoveSubjectFromEquivalenceGroupRequest>
+{
+    public RemoveSubjectFromEquivalenceGroupRequestValidator()
+    {
+        RuleFor(x => x.SubjectCode)
+            .NotEmpty().WithMessage("Please provide a subject code.")
+            .MaximumLength(50).WithMessage("Subject code must be 50 characters or fewer.");
+    }
+}
+
+[HttpDelete("{Id}/remove-subject")]
+[Group<SubjectEquivalenceGroupEndpointGroup>]
+[Authorize(Policy = PolicyName.HasUpdateSubjectEquivalenceGroupPermission)]
+public class RemoveSubjectFromEquivalenceGroupEndpoint (IMediator mediator)
+    : Endpoint<RemoveSubjectFromEquivalenceGroupRequest, Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+{
+    public override async Task<Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+        ExecuteAsync(RemoveSubjectFromEquivalenceGroupRequest request, CancellationToken ct)
+    {
+        var result = await mediator.Send(new RemoveSubjectFromEquivalenceGroup
+            .Command(SubjectEquivalenceGroupId.From(request.Id), SubjectCode.From(request.SubjectCode)), ct);
+        return result.ToDeleteResult();
+    }
+}

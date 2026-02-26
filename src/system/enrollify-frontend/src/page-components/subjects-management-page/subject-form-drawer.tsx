@@ -81,10 +81,10 @@ export function SubjectFormDrawer({
   };
 
   const { mutateAsync: createNewSubjectAsync } = useMutation(
-    createSubjectOptions()
+    createSubjectOptions(),
   );
   const { mutateAsync: updateSubjectAsync } = useMutation(
-    updateSubjectOptions(subjectToUpdate?.id ?? 0)
+    updateSubjectOptions(subjectToUpdate?.id ?? 0),
   );
 
   const form = useForm({
@@ -292,7 +292,7 @@ export function SubjectFormDrawer({
                   selector={(state) => [state.canSubmit, state.isSubmitting]}
                   children={([canSubmit, isSubmitting]) => (
                     <Button
-                      className=" cursor-pointer"
+                      className="cursor-pointer"
                       disabled={!canSubmit}
                       type="submit"
                       onClick={() =>

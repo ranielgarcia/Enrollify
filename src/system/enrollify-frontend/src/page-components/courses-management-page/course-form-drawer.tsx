@@ -77,10 +77,10 @@ export function CourseFormDrawer({
   };
 
   const { mutateAsync: createNewCourseAsync } = useMutation(
-    createCourseOptions()
+    createCourseOptions(),
   );
   const { mutateAsync: updateCourseAsync } = useMutation(
-    updateCourseOptions(courseToUpdate?.id ?? 0)
+    updateCourseOptions(courseToUpdate?.id ?? 0),
   );
 
   const form = useForm({
@@ -127,7 +127,7 @@ export function CourseFormDrawer({
       </DrawerTrigger>
       <DrawerContent>
         <AuthorizeView
-          policy="canCreateCourse"
+          policy={isUpdateCourse ? "canUpdateCourse" : "canCreateCourse"}
           unauthorized={
             <Unauthorized
               message="Your current role does not have the necessary permissions to create course."

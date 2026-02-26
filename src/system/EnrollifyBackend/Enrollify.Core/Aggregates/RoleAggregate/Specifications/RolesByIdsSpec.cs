@@ -6,6 +6,6 @@ public class RolesByIdsSpec : Specification<Role>
 {
     public RolesByIdsSpec(IEnumerable<RoleId> roleIds) =>
         Query
-            .Include(r => r.RolePermissions)
+            .Include(r => r.RolePermissions.Where(rp => rp.IsActive))
             .Where(r => roleIds.Contains(r.Id));
 }

@@ -7,6 +7,6 @@ public class GetCurriculumWithSubjectsByIdSpec : Specification<Curriculum>
 {
     public GetCurriculumWithSubjectsByIdSpec(CurriculumId id) =>
         Query
-            .Include(c => c.CurriculumSubjects).ThenInclude(cs => cs.Prerequisites)
+            .Include(c => c.CurriculumSubjects.Where(cs => cs.IsActive)).ThenInclude(cs => cs.Prerequisites.Where(p => p.IsActive))
             .Where(c => c.Id == id);
 }

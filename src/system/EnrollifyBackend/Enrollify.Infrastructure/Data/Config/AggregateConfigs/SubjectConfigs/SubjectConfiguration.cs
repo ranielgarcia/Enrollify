@@ -15,7 +15,7 @@ public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
 
         builder.Property(e => e.Code).IsRequired();
         builder.Property(e => e.Title).IsRequired();
-        builder.Property(e => e.Units).IsRequired();
+        builder.Property(e => e.Units).HasPrecision(3, 1).IsRequired();
         builder.Property(e => e.Description).IsRequired();
 
         builder.HasOne(e => e.PreferRoomType)

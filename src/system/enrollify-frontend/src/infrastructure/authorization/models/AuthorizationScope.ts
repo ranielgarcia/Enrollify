@@ -13,6 +13,7 @@ export const Scopes = {
   Courses: 8,
   Subjects: 9,
   Curriculums: 10,
+  SubjectEquivalenceGroups: 11,
 } as const;
 
 export type ScopeName = keyof typeof Scopes;
@@ -25,7 +26,7 @@ export type Scope = {
 
 // Helper function to create a Scope from just the name
 export const createScope = <T extends ScopeName>(
-  name: T
+  name: T,
 ): Extract<Scope, { name: T }> =>
   ({
     id: Scopes[name],
