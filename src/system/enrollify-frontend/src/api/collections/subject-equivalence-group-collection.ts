@@ -10,6 +10,7 @@ const queryKeys = {
   all: () => ["subject-equivalence-groups"],
   create: () => [...queryKeys.all(), `create-draft`],
   update: (id: number) => [...queryKeys.all(), `update`, id],
+  delete: (id: number) => [...queryKeys.all(), `delete`, id],
   addSubjects: (id: number) => [...queryKeys.all(), `add-subjects`, id],
   removeSubject: (id: number, subjectCode: string) => [
     ...queryKeys.all(),
@@ -26,7 +27,6 @@ export const getAllSubjectEquivalenceGroupsOptions = (enabled: boolean) =>
       enabled,
       queryKey: queryKeys.all(),
       select: (groups): SubjectEquivalenceGroup[] => {
-        console.log(groups);
         return groups.map((g) => SubjectEquivalenceGroupSchema.parse(g));
       },
     },
@@ -67,7 +67,7 @@ export const deleteSubjectEquivalenceGroupOptions = (id: number) =>
     httpVerb: "delete",
     path: "/api/subject-equivalence-groups/{id}",
     pathParams: { id: id },
-    mutationKey: queryKeys.update(id),
+    mutationKey: queryKeys.delete(id),
     options: {
       meta: { invalidateQueries: [queryKeys.all()] },
       onSuccess: () => {

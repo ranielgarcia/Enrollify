@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Edit2, Package, Plus, Trash2 } from "lucide-react";
 import { SubjectBadge } from "./subject-badge";
+import { useEffect, useState } from "react";
+import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
 
 interface EquivalenceGroupCardProps {
   group: SubjectEquivalenceGroup;
@@ -18,6 +20,22 @@ export function EquivalenceGroupCard({
   onAddSubject,
 }: EquivalenceGroupCardProps) {
   const subjects = group.subjects ?? [];
+  const { checkPolicy } = useAuthorization();
+  const [canUpdate, setCanUpdate] = useState(false);
+  const [canDelete, setCanDelete] = useState(false);
+
+  useEffect(() => {
+    const checkPolicies = async () => {
+      const [updatePermission, deletePermission] = await Promise.all([
+        checkPolicy("canUpdateSubjectEquivalenceGroup"),
+        checkPolicy("canDeleteSubjectEquivalenceGroup"),
+      ]);
+      setCanUpdate(updatePermission);
+      setCanDelete(deletePermission);
+    };
+
+    checkPolicies();
+  }, [checkPolicy]);
 
   return (
     <Card className="hover:border-accent/50 transition-colors">
@@ -33,6 +51,7 @@ export function EquivalenceGroupCard({
               size="sm"
               onClick={() => onEdit(group)}
               className="hover:bg-blue-500/10 text-blue-600 hover:text-blue-700"
+              disabled={!canUpdate}
             >
               <Edit2 className="size-4" />
             </Button>
@@ -41,6 +60,7 @@ export function EquivalenceGroupCard({
               size="sm"
               onClick={() => onDelete(group)}
               className="text-destructive hover:bg-destructive/10"
+              disabled={!canDelete}
             >
               <Trash2 className="size-4" />
             </Button>
@@ -50,7 +70,7 @@ export function EquivalenceGroupCard({
       <CardContent>
         <div className="flex flex-wrap gap-2">
           {subjects.map((subject) => (
-            <SubjectBadge subject={subject} group={group} />
+            <SubjectBadge key={subject.id} subject={subject} group={group} />
           ))}
 
           {subjects.length === 0 && (

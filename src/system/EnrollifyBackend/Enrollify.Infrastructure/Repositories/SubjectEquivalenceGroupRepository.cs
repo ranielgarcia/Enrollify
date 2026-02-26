@@ -62,8 +62,8 @@ public class SubjectEquivalenceGroupRepository : ISubjectEquivalenceGroupReposit
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting subject equivalence group with an of ID: {SubjectId}", id.Value);
-            return Result.Error($"Unable to delete the subject with ID {id.Value} due to internal error");
+            _logger.LogError(ex, "Error deleting subject equivalence group with an of ID: {SubjectEquivalenceGroupId}", id.Value);
+            return Result.Error($"Unable to delete the subject equivalence group with ID {id.Value} due to internal error");
         }
     }
 

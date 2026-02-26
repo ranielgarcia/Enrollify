@@ -43,9 +43,10 @@ export function EquivalenceGroupsTab() {
   const { mutateAsync: updateSubjectEquivalenceGroupAsync } = useMutation(
     updateSubjectEquivalenceGroupOptions(groupToEdit?.id ?? 0),
   );
-  const { mutateAsync: deleteSubjectEquivalenceGroupAsync } = useMutation(
-    deleteSubjectEquivalenceGroupOptions(groupToDelete?.id ?? 0),
-  );
+  const {
+    mutateAsync: deleteSubjectEquivalenceGroupAsync,
+    isPending: isDeletingSubjectEquivalenceGroup,
+  } = useMutation(deleteSubjectEquivalenceGroupOptions(groupToDelete?.id ?? 0));
 
   const { mutateAsync: addSubjectsToGroupAsync } = useMutation(
     addSubjectsToEquivalenceGroupOptions(groupToAddSubject?.id ?? 0),
@@ -170,6 +171,7 @@ export function EquivalenceGroupsTab() {
         onOpenChange={setIsDeleteDialogOpen}
         group={groupToDelete}
         onConfirm={handleConfirmDelete}
+        isDeleting={isDeletingSubjectEquivalenceGroup}
       />
 
       <AddSubjectToGroupDialog

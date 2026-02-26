@@ -4,6 +4,9 @@ using Enrollify.Application.Subjects.Specifications;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.SharedKernel;
 using Mediator;
+using Microsoft.Extensions.Options;
+using System.Reflection.Metadata;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Enrollify.Application.Subjects.Features;
 
@@ -22,6 +25,13 @@ public class SearchSubjectsPaginatedQueryHandler : IQueryHandler<SearchSubjectsP
     {
         var spec = new SearchSubjectsPaginatedSpec(request.page, request.pageSize, request.searchTerm);
         var subjects = await _readRepository.ListAsync(spec, cancellationToken);
+        // https://specification.ardalis.com/usage/use-built-in-abstract-repository.html#countasync-and-anyasync-methods
+        // CountAsync and AnyAsync methods
+        // The ISpecificationEvaluator.GetQuery() method accepts an additional optional bool evaluateCriteriaOnly = false
+        // parameter.If set to true it will ignore the Take, Skip, OrderBy and Include conditions.
+        // For paginated results, commonly we’d like to retrieve items in a given page, but also the total number of items.
+        // The CountAsync repository method evaluates the specification in this special mode,
+        // therefore we can reuse the same specification and avoid having unnecessary duplicates(one with pagination and another one without it).
         var totalCount = await _readRepository.CountAsync(spec, cancellationToken);
 
         var items = subjects

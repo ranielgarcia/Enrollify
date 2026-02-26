@@ -42,7 +42,7 @@ export function EquivalenceGroupFormDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!groupToEdit;
 
-  const form = useForm({
+  const form = useForm({z
     defaultValues: {
       name: groupToEdit?.name ?? "",
     },
