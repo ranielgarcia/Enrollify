@@ -27,23 +27,32 @@ type JsonResponseForPath<P extends ApiPath> = ApiPaths[P] extends {
     : never
   : never;
 
-// Extract the query params type for a GET operation on a given path.
-type QueryParamsForPath<P extends ApiPath> = ApiPaths[P] extends {
+// Helper type to extract parameters from a GET operation
+type GetOperationParams<P extends ApiPath> = ApiPaths[P] extends {
   get: infer GetOp;
 }
-  ? GetOp extends { parameters: { query: infer Q } }
+  ? GetOp extends { parameters: infer Params }
+    ? Params
+    : never
+  : never;
+
+// Extract the query params type for a GET operation on a given path.
+// Handles both required (query:) and optional (query?:) query parameters.
+type QueryParamsForPath<P extends ApiPath> =
+  GetOperationParams<P> extends { query?: infer Q }
     ? Q
-    : undefined
-  : undefined;
+    : GetOperationParams<P> extends { query: infer Q }
+      ? Q
+      : undefined;
 
 // Extract the path params type for a GET operation on a given path.
-type PathParamsForPath<P extends ApiPath> = ApiPaths[P] extends {
-  get: infer GetOp;
-}
-  ? GetOp extends { parameters: { path: infer PathP } }
+// Handles both required (path:) and optional (path?:) path parameters.
+type PathParamsForPath<P extends ApiPath> =
+  GetOperationParams<P> extends { path?: infer PathP }
     ? PathP
-    : undefined
-  : undefined;
+    : GetOperationParams<P> extends { path: infer PathP }
+      ? PathP
+      : undefined;
 
 interface QueryParams<
   P extends ApiPath,
@@ -69,7 +78,7 @@ interface QueryParams<
  */
 const interpolatePath = <P extends ApiPath>(
   path: P,
-  pathParams: Record<string, string | number> | undefined
+  pathParams: Record<string, string | number> | undefined,
 ): string => {
   if (!pathParams) return path;
 
@@ -88,7 +97,7 @@ const createQueryFn =
     path: P,
     pathParams: PathParamsForPath<P> | undefined,
     params: QueryParamsForPath<P> | undefined,
-    forceRefreshToken: boolean | undefined
+    forceRefreshToken: boolean | undefined,
   ) =>
   async () => {
     const accessToken = await getCurrentAccessToken({
@@ -98,7 +107,7 @@ const createQueryFn =
 
     const interpolatedPath = interpolatePath(
       path,
-      pathParams as Record<string, string | number> | undefined
+      pathParams as Record<string, string | number> | undefined,
     );
 
     const response = await axios.get<JsonResponseForPath<P>>(
@@ -108,7 +117,7 @@ const createQueryFn =
           Authorization: `Bearer ${accessToken}`,
         },
         params: params as QueryParamsForPath<P>,
-      }
+      },
     );
 
     return response.data;
