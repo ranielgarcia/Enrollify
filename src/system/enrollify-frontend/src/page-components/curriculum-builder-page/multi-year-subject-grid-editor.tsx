@@ -122,13 +122,26 @@ export default function MultiYearSubjectGridEditor({
   const systemSettings = useSystemSettingsContext();
   const numberOfSemesters = systemSettings.academicSettings.academicSystem;
 
-  const { mutateAsync: saveCurriculumContentAsync } = useMutation(
-    saveCurriculumContentOptions(curriculum.id),
-  );
-
   const [isDirty, setIsDirty] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Track pending removals for rollback on save error
+  const pendingRemovedSubjectsRef = useRef<
+    Array<{
+      year: number;
+      semester: number;
+      subject: SubjectInCurriculum;
+    }>
+  >([]);
+  const pendingRemovedPrerequisitesRef = useRef<
+    Array<{
+      year: number;
+      semester: number;
+      subjectId: number;
+      prerequisiteCode: string;
+    }>
+  >([]);
 
   const [activeYears, setActiveYears] = useState<number[]>(() => {
     const { activeYears: years } = populateGridFromCurriculum(
@@ -144,10 +157,75 @@ export default function MultiYearSubjectGridEditor({
     );
     return populatedGrid;
   });
+  const { mutateAsync: saveCurriculumContentAsync } = useMutation(
+    saveCurriculumContentOptions(curriculum.id),
+  );
 
   const { data: availableSubjects } = useSuspenseQuery(
     getAllSubjectsMinimalOptions(),
   );
+
+  // Rollback removed subjects and prerequisites on save error
+  const rollbackRemovals = (
+    removedSubjects: typeof pendingRemovedSubjectsRef.current,
+    removedPrerequisites: typeof pendingRemovedPrerequisitesRef.current,
+  ) => {
+    // Set isDirty to false FIRST to prevent auto-save from triggering again
+    // when setGrid updates the state
+    setIsDirty(false);
+
+    setGrid((prev) => {
+      let newGrid = { ...prev };
+
+      // Restore removed subjects
+      for (const removal of removedSubjects) {
+        const { year, semester, subject } = removal;
+        if (newGrid[year] && newGrid[year][semester]) {
+          // Check if subject doesn't already exist (avoid duplicates)
+          const exists = newGrid[year][semester].some(
+            (s) => s.id === subject.id,
+          );
+          if (!exists) {
+            newGrid = {
+              ...newGrid,
+              [year]: {
+                ...newGrid[year],
+                [semester]: [...newGrid[year][semester], subject],
+              },
+            };
+          }
+        }
+      }
+
+      // Restore removed prerequisites
+      for (const removal of removedPrerequisites) {
+        const { year, semester, subjectId, prerequisiteCode } = removal;
+        if (newGrid[year] && newGrid[year][semester]) {
+          const subjects = [...newGrid[year][semester]];
+          const subjectIndex = subjects.findIndex((s) => s.id === subjectId);
+          if (subjectIndex !== -1) {
+            const subject = { ...subjects[subjectIndex] };
+            if (!subject.prerequisites.includes(prerequisiteCode)) {
+              subject.prerequisites = [
+                ...subject.prerequisites,
+                prerequisiteCode,
+              ];
+              subjects[subjectIndex] = subject;
+              newGrid[year][semester] = subjects;
+            }
+          }
+        }
+      }
+
+      return newGrid;
+    });
+  };
+
+  // Clear pending removals on successful save
+  const clearPendingRemovals = () => {
+    pendingRemovedSubjectsRef.current = [];
+    pendingRemovedPrerequisitesRef.current = [];
+  };
 
   // Auto-save effect with debounce
   useEffect(() => {
@@ -160,16 +238,26 @@ export default function MultiYearSubjectGridEditor({
 
     // Set up debounced save
     saveTimeoutRef.current = setTimeout(async () => {
+      // Capture pending removals BEFORE the save attempt
+      // This ensures we have the data for rollback even if refs are cleared
+      const capturedRemovedSubjects = [...pendingRemovedSubjectsRef.current];
+      const capturedRemovedPrerequisites = [
+        ...pendingRemovedPrerequisitesRef.current,
+      ];
+
       setSaveStatus("saving");
       try {
         await saveCurriculumContentAsync({ grid });
         setSaveStatus("saved");
         setIsDirty(false);
+        clearPendingRemovals();
 
         // Reset to idle after showing "saved" for 2 seconds
         setTimeout(() => setSaveStatus("idle"), 2000);
       } catch {
         setSaveStatus("error");
+        clearPendingRemovals();
+        rollbackRemovals(capturedRemovedSubjects, capturedRemovedPrerequisites);
       }
     }, 1500); // 1.5 second debounce
 
@@ -222,6 +310,18 @@ export default function MultiYearSubjectGridEditor({
   };
 
   const removeSubject = (year: number, semester: number, subjectId: number) => {
+    // Track the subject being removed for potential rollback
+    const subjectToRemove = grid[year]?.[semester]?.find(
+      (s) => s.id === subjectId,
+    );
+    if (subjectToRemove) {
+      pendingRemovedSubjectsRef.current.push({
+        year,
+        semester,
+        subject: { ...subjectToRemove },
+      });
+    }
+
     updateGridWithDirty((prev) => ({
       ...prev,
       [year]: {
@@ -281,6 +381,14 @@ export default function MultiYearSubjectGridEditor({
     subjectId: number,
     prerequisiteCode: string,
   ) => {
+    // Track the prerequisite being removed for potential rollback
+    pendingRemovedPrerequisitesRef.current.push({
+      year,
+      semester,
+      subjectId,
+      prerequisiteCode,
+    });
+
     updateGridWithDirty((prev) => {
       const newGrid = { ...prev };
       const subjects = [...newGrid[year][semester]];
@@ -588,14 +696,28 @@ export default function MultiYearSubjectGridEditor({
           <Button
             variant="outline"
             onClick={async () => {
+              // Capture pending removals BEFORE the save attempt
+              const capturedRemovedSubjects = [
+                ...pendingRemovedSubjectsRef.current,
+              ];
+              const capturedRemovedPrerequisites = [
+                ...pendingRemovedPrerequisitesRef.current,
+              ];
+
               setSaveStatus("saving");
               try {
                 await saveCurriculumContentAsync({ grid });
                 setSaveStatus("saved");
                 setIsDirty(false);
+                clearPendingRemovals();
                 setTimeout(() => setSaveStatus("idle"), 2000);
               } catch {
                 setSaveStatus("error");
+                clearPendingRemovals();
+                rollbackRemovals(
+                  capturedRemovedSubjects,
+                  capturedRemovedPrerequisites,
+                );
               }
             }}
             disabled={saveStatus === "saving"}

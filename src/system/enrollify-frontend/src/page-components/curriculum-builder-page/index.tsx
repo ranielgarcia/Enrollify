@@ -62,7 +62,7 @@ function CurriculumContent() {
               onSave={(curriculumId) => {
                 const obfuscatedId = obfuscator.encode([curriculumId]);
                 navigate({
-                  to: "/portal/master-data/curriculum/{-$curriculumId}",
+                  to: "/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}",
                   params: (prev) => ({ ...prev, curriculumId: obfuscatedId }),
                 });
                 setShowForm(false);
@@ -82,7 +82,7 @@ function CurriculumContent() {
                 }}
                 onClose={() => {
                   navigate({
-                    to: "/portal/master-data/curriculum/{-$curriculumId}",
+                    to: "/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}",
                     params: (prev) => ({
                       ...prev,
                       curriculumId: undefined,
@@ -101,7 +101,7 @@ function CurriculumContent() {
             onEdit={(item) => {
               const obfuscatedId = obfuscator.encode([item.id]);
               navigate({
-                to: "/portal/master-data/curriculum/{-$curriculumId}",
+                to: "/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}",
                 params: (prev) => ({ ...prev, curriculumId: obfuscatedId }),
               });
             }}
