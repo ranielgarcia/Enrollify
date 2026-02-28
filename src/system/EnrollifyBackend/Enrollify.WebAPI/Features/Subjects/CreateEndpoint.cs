@@ -45,14 +45,14 @@ public class CreateSubjectRequestValidator : Validator<CreateSubjectRequest>
 [HttpPost("")]
 [Group<SubjectEndpointGroup>]
 [Authorize(Policy = PolicyName.HasCreateSubjectPermission)]
-public class CreateEndpoint : Endpoint<CreateSubjectRequest, Results<Created<CreateSubjectResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+public class CreateEndpoint : Endpoint<CreateSubjectRequest, CreatedApiResult<CreateSubjectResponse>>
 {
     private readonly IMediator _mediator;
     public CreateEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
-    public override async Task<Results<Created<CreateSubjectResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<CreatedApiResult<CreateSubjectResponse>>
         ExecuteAsync (CreateSubjectRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new Application.Subjects.Features.CreateSubject.Command(

@@ -24,9 +24,9 @@ public class UpdateSubjectEquivalenceGroupRequestValidator : Validator<UpdateSub
 [Group<SubjectEquivalenceGroupEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateSubjectEquivalenceGroupPermission)]
 public class UpdateSubjectEquivalenceGroupEndpoint (IMediator mediator)
-    : Endpoint<UpdateSubjectEquivalenceGroupRequest, Results<Ok<int>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+    : Endpoint<UpdateSubjectEquivalenceGroupRequest, OkOrNotFoundApiResult<int>>
 {
-    public override async Task<Results<Ok<int>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<OkOrNotFoundApiResult<int>>
         ExecuteAsync(UpdateSubjectEquivalenceGroupRequest request, CancellationToken ct)
     {
         var result = await mediator.Send(new UpdateSubjectEquivalenceGroup

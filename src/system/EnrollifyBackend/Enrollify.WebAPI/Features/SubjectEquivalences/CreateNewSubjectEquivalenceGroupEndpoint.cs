@@ -21,9 +21,9 @@ public class CreateNewSubjectEquivalenceGroupRequestValidator : Validator<Create
 [Group<SubjectEquivalenceGroupEndpointGroup>]
 [Authorize(Policy = PolicyName.HasCreateSubjectEquivalenceGroupPermission)]
 public class CreateNewSubjectEquivalenceGroupEndpoint (IMediator mediator)
-    : Endpoint<CreateNewSubjectEquivalenceGroupRequest, Results<Created<int>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    : Endpoint<CreateNewSubjectEquivalenceGroupRequest, CreatedApiResult<int>>
 {
-    public override async Task<Results<Created<int>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<CreatedApiResult<int>>
         ExecuteAsync(CreateNewSubjectEquivalenceGroupRequest request, CancellationToken ct)
     {
         var result = await mediator.Send(new AddNewSubjectEquivalenceGroup

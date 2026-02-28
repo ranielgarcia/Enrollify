@@ -47,9 +47,9 @@ public class CreateCourseRequestValidator : Validator<CreateCourseRequest>
 [Group<CourseEndpointGroup>]
 [Authorize(Policy = PolicyName.HasCreateCoursePermission)]
 public class CreateEndpoint(IMediator mediator)
-    : Endpoint<CreateCourseRequest, Results<Created<CreateCourseResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    : Endpoint<CreateCourseRequest, CreatedApiResult<CreateCourseResponse>>
 {
-    public override async Task<Results<Created<CreateCourseResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<CreatedApiResult<CreateCourseResponse>>
         ExecuteAsync(CreateCourseRequest request, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(new CreateCourse.Command(

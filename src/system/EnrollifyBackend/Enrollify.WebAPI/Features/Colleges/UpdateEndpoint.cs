@@ -47,7 +47,7 @@ public class UpdateCollegeRequestValidator : Validator<UpdateCollegeRequest>
 [HttpPut("")]
 [Group<CollegeEndpointsGroup>]
 [Authorize(Policy = PolicyName.HasUpdateCollegePermission)]
-public class UpdateEndpoint : Endpoint<UpdateCollegeRequest, Results<Ok<UpdateCollegeResponse>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+public class UpdateEndpoint : Endpoint<UpdateCollegeRequest, OkOrNotFoundApiResult<UpdateCollegeResponse>>
 {
     private readonly IMediator _mediator;
 
@@ -56,7 +56,7 @@ public class UpdateEndpoint : Endpoint<UpdateCollegeRequest, Results<Ok<UpdateCo
         _mediator = mediator;
     }
 
-    public override async Task<Results<Ok<UpdateCollegeResponse>, NotFound, Conflict<string[]>, ProblemHttpResult>> 
+    public override async Task<OkOrNotFoundApiResult<UpdateCollegeResponse>> 
         ExecuteAsync (UpdateCollegeRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new UpdateCollege.Command(CollegeId.From(request.Id), CollegeCode.From(request.Code), request.Name, request.Description, request.Dean));

@@ -31,7 +31,7 @@ public class CreateRoomTypeRequestValidator : Validator<CreateRoomTypeRequest>
 [HttpPost("")]
 [Group<RoomTypeEndpointsGroup>]
 [Authorize(Policy = PolicyName.HasCreateRoomTypePermission)]
-public class CreateEndpoint : Endpoint<CreateRoomTypeRequest, Results<Created<CreateRoomTypeResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+public class CreateEndpoint : Endpoint<CreateRoomTypeRequest, CreatedApiResult<CreateRoomTypeResponse>>
 {
     private readonly IMediator _mediator;
 
@@ -40,7 +40,7 @@ public class CreateEndpoint : Endpoint<CreateRoomTypeRequest, Results<Created<Cr
         _mediator = mediator;
     }
 
-    public override async Task<Results<Created<CreateRoomTypeResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>> 
+    public override async Task<CreatedApiResult<CreateRoomTypeResponse>> 
         ExecuteAsync (CreateRoomTypeRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new CreateRoomType.Command(request.Name, request.Description), cancellationToken);

@@ -45,7 +45,7 @@ public class CreateBuildingRequestValidator : Validator<CreateBuildingRequest>
 [HttpPost("")]
 [Group<BuildingEndpointGroup>]
 [Authorize(Policy = PolicyName.HasCreateBuildingPermission)]
-public class CreateEndpoint : Endpoint<CreateBuildingRequest, Results<Created<CreateBuildingResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+public class CreateEndpoint : Endpoint<CreateBuildingRequest, CreatedApiResult<CreateBuildingResponse>>
 {
     private readonly IMediator _mediator;
 
@@ -54,7 +54,7 @@ public class CreateEndpoint : Endpoint<CreateBuildingRequest, Results<Created<Cr
         _mediator = mediator;
     }
 
-    public override async Task<Results<Created<CreateBuildingResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<CreatedApiResult<CreateBuildingResponse>>
         ExecuteAsync (CreateBuildingRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send

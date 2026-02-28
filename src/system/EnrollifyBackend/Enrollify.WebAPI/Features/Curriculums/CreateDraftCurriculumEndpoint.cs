@@ -40,9 +40,9 @@ public class CreateDraftCurriculumRequestValidator : Validator<CreateDraftCurric
 [Group<CurriculumEndpointGroup>]
 [Authorize(Policy = PolicyName.HasCreateCurriculumPermission)]
 public class CreateDraftCurriculumEndpoint (IMediator mediator)
-    : Endpoint<CreateDraftCurriculumRequest, Results<Created<int>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    : Endpoint<CreateDraftCurriculumRequest, CreatedApiResult<int>>
 {
-    public override async Task<Results<Created<int>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<CreatedApiResult<int>>
         ExecuteAsync(CreateDraftCurriculumRequest request, CancellationToken ct)
     {
         var result = await mediator.Send(new CreateDraftCurriculum

@@ -5,7 +5,7 @@ namespace Enrollify.WebAPI.Features.Users;
 
 [HttpGet("me")]
 [Authorize(Policy = PolicyName.HasAnyValidRoleAndPermission)]
-public class MeEndpoint : EndpointWithoutRequest<Results<Ok<UserContext>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+public class MeEndpoint : EndpointWithoutRequest<OkOrNotFoundApiResult<UserContext>>
 {
     private readonly IMediator _mediator;
 
@@ -14,7 +14,7 @@ public class MeEndpoint : EndpointWithoutRequest<Results<Ok<UserContext>, NotFou
         _mediator = mediator;
     }
 
-    public override async Task<Results<Ok<UserContext>, NotFound, Conflict<string[]>, ProblemHttpResult>> ExecuteAsync(CancellationToken ct)
+    public override async Task<OkOrNotFoundApiResult<UserContext>> ExecuteAsync(CancellationToken ct)
     {
         var result = await _mediator.Send(new GetCurrentUserContextQuery(), ct);
         return result.ToGetByIdResult((UserContext userContext) => userContext);

@@ -42,9 +42,9 @@ public class UpdateCurriculumRequestValidator : Validator<UpdateCurriculumReques
 [Group<CurriculumEndpointGroup>]
 [Authorize(Policy = PolicyName.HasCreateCurriculumPermission)]
 public class UpdateEndpoint(IMediator mediator)
-    : Endpoint<UpdateCurriculumRequest, Results<Ok<int>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+    : Endpoint<UpdateCurriculumRequest, OkOrNotFoundApiResult<int>>
 {
-    public override async Task<Results<Ok<int>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<OkOrNotFoundApiResult<int>>
         ExecuteAsync(UpdateCurriculumRequest request, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(new UpdateCurriculum

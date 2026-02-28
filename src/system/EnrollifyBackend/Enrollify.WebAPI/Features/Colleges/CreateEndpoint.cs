@@ -42,7 +42,7 @@ public class CreateCollegeRequestValidator : Validator<CreateCollegeRequest>
 [HttpPost("")]
 [Group<CollegeEndpointsGroup>]
 [Authorize(Policy = PolicyName.HasCreateCollegePermission)]
-public class CreateEndpoint : Endpoint<CreateCollegeRequest, Results<Created<CreateCollegeResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+public class CreateEndpoint : Endpoint<CreateCollegeRequest, CreatedApiResult<CreateCollegeResponse>>
 {
     private readonly IMediator _mediator;
 
@@ -51,7 +51,7 @@ public class CreateEndpoint : Endpoint<CreateCollegeRequest, Results<Created<Cre
         _mediator = mediator;
     }
 
-    public override async Task<Results<Created<CreateCollegeResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>> 
+    public override async Task<CreatedApiResult<CreateCollegeResponse>> 
         ExecuteAsync (CreateCollegeRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new CreateCollege.Command(

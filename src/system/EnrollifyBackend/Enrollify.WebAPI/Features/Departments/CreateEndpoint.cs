@@ -53,9 +53,9 @@ public class CreateDepartmentRequestValidator : Validator<CreateDepartmentReques
 [Authorize(Policy = PolicyName.HasCreateDepartmentPermission)]
 public class CreateEndpoint
     (IMediator mediator)
-    : Endpoint<CreateDepartmentRequest, Results<Created<CreateDepartmentResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    : Endpoint<CreateDepartmentRequest, CreatedApiResult<CreateDepartmentResponse>>
 {
-    public override async Task<Results<Created<CreateDepartmentResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<CreatedApiResult<CreateDepartmentResponse>>
         ExecuteAsync(CreateDepartmentRequest request, CancellationToken cancellationToken)
     { 
         var result = await mediator.Send

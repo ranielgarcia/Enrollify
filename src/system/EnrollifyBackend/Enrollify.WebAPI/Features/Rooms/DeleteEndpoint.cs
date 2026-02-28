@@ -21,7 +21,7 @@ public class DeleteRoomRequestValidator : Validator<DeleteRoomRequest>
 [HttpDelete("")]
 [Group<RoomsEndpointGroup>]
 [Authorize(Policy = PolicyName.HasDeleteRoomPermission)]
-public class DeleteEndpoint : Endpoint<DeleteRoomRequest, Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+public class DeleteEndpoint : Endpoint<DeleteRoomRequest, DeleteApiResult>
 {
     private readonly IMediator _mediator;
 
@@ -30,7 +30,7 @@ public class DeleteEndpoint : Endpoint<DeleteRoomRequest, Results<NoContent, Not
         _mediator = mediator;
     }
 
-    public override async Task<Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<DeleteApiResult>
         ExecuteAsync(DeleteRoomRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new DeleteRoom.Command(RoomId.From(request.Id)), cancellationToken);

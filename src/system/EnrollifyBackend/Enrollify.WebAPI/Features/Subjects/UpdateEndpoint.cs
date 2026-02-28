@@ -50,14 +50,14 @@ public class UpdateSubjectRequestValidator : Validator<UpdateSubjectRequest>
 [HttpPut("")]
 [Group<SubjectEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateSubjectPermission)]
-public class UpdateEndpoint : Endpoint<UpdateSubjectRequest, Results<Ok<UpdateSubjectResponse>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+public class UpdateEndpoint : Endpoint<UpdateSubjectRequest, OkOrNotFoundApiResult<UpdateSubjectResponse>>
 {
     private readonly IMediator _mediator;
     public UpdateEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
-    public override async Task<Results<Ok<UpdateSubjectResponse>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<OkOrNotFoundApiResult<UpdateSubjectResponse>>
         ExecuteAsync(UpdateSubjectRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new UpdateSubject.Command

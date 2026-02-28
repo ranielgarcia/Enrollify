@@ -13,9 +13,9 @@ public class DeleteSubjectEquivalenceGroupRequest
 [Group<SubjectEquivalenceGroupEndpointGroup>]
 [Authorize(Policy = PolicyName.HasDeleteSubjectEquivalenceGroupPermission)]
 public class DeleteSubjectEquivalenceGroupEndpoint (IMediator mediator)
-    : Endpoint<DeleteSubjectEquivalenceGroupRequest, Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    : Endpoint<DeleteSubjectEquivalenceGroupRequest, DeleteApiResult>
 {
-    public override async Task<Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<DeleteApiResult>
         ExecuteAsync(DeleteSubjectEquivalenceGroupRequest request, CancellationToken ct)
     {
         var result = await mediator.Send(new DeleteSubjectEquivalenceGroup.Command(SubjectEquivalenceGroupId.From(request.Id)), ct);

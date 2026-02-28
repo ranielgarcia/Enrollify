@@ -51,7 +51,7 @@ public class UpdateBuildingRequestValidator : Validator<UpdateBuildingRequest>
 [HttpPut("")]
 [Group<BuildingEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateBuildingPermission)]
-public class UpdateEndpoint : Endpoint<UpdateBuildingRequest, Results<Ok<UpdateBuildingResponse>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+public class UpdateEndpoint : Endpoint<UpdateBuildingRequest, OkOrNotFoundApiResult<UpdateBuildingResponse>>
 {
     private readonly IMediator _mediator;
 
@@ -60,7 +60,7 @@ public class UpdateEndpoint : Endpoint<UpdateBuildingRequest, Results<Ok<UpdateB
         _mediator = mediator;
     }
 
-    public override async Task<Results<Ok<UpdateBuildingResponse>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<OkOrNotFoundApiResult<UpdateBuildingResponse>>
         ExecuteAsync (UpdateBuildingRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(
