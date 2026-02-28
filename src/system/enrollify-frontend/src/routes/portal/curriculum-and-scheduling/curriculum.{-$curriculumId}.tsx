@@ -8,7 +8,7 @@ const curriculumParamsSchema = z.object({
 });
 
 export const Route = createFileRoute(
-  "/portal/master-data/curriculum/{-$curriculumId}",
+  "/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}",
 )({
   params: {
     parse: (params) => curriculumParamsSchema.parse(params),

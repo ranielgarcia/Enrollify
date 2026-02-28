@@ -62,7 +62,7 @@ function NavSubItem({
       }
 
       const results = await Promise.all(
-        subItem.viewAuthorizationPolicies.map((policy) => checkPolicy(policy))
+        subItem.viewAuthorizationPolicies.map((policy) => checkPolicy(policy)),
       );
       if (isMounted) {
         setCanView(results.every((res) => res));
@@ -87,7 +87,7 @@ function NavSubItem({
           "transition-colors",
           isActive
             ? "bg-sidebar-primary text-sidebar-primary-foreground"
-            : "text-sidebar-foreground hover:bg-sidebar-accent/10"
+            : "text-sidebar-foreground hover:bg-sidebar-accent/10",
         )}
       >
         <Link to={subItem.url} params={subItem.params}>
@@ -106,28 +106,48 @@ export function NavMain({ items }: NavMainProps) {
   const normalizePath = useCallback(
     (path: string) =>
       path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path,
-    []
+    [],
   );
+
+  // Get base path without parameter placeholders (e.g., "/path/{-$param}" -> "/path")
+  const getBasePath = useCallback((path: string) => {
+    const paramIndex = path.indexOf("/{-$");
+    return paramIndex !== -1 ? path.slice(0, paramIndex) : path;
+  }, []);
 
   // Memoize normalized current path
   const normalizedCurrentPath = useMemo(
     () => normalizePath(currentPath),
-    [currentPath, normalizePath]
+    [currentPath, normalizePath],
+  );
+
+  // Check if a path matches (exact match or parameterized route match)
+  const pathMatches = useCallback(
+    (routeUrl: string) => {
+      const normalizedRoute = normalizePath(routeUrl);
+      // Exact match
+      if (normalizedCurrentPath === normalizedRoute) return true;
+      // For parameterized routes, check if current path starts with base path
+      const basePath = getBasePath(normalizedRoute);
+      if (basePath !== normalizedRoute) {
+        return normalizedCurrentPath.startsWith(basePath);
+      }
+      return false;
+    },
+    [normalizedCurrentPath, normalizePath, getBasePath],
   );
 
   // Check if any sub-item matches the current path (for expanding parent)
   const isParentActive = useCallback(
     (item: NavMainItemProp) =>
-      item.items?.some(
-        (subItem) => normalizedCurrentPath === normalizePath(subItem.url)
-      ) ?? false,
-    [normalizedCurrentPath, normalizePath]
+      item.items?.some((subItem) => pathMatches(subItem.url)) ?? false,
+    [pathMatches],
   );
 
   // Check if a sub-item is the current active route
   const isSubItemActive = useCallback(
-    (url: string) => normalizedCurrentPath === normalizePath(url),
-    [normalizedCurrentPath, normalizePath]
+    (url: string) => pathMatches(url),
+    [pathMatches],
   );
 
   return (
