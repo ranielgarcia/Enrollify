@@ -483,6 +483,40 @@ export default function MultiYearSubjectGridEditor({
 
   return (
     <>
+      {/* Auto-save status indicator */}
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        {saveStatus === "idle" && !isDirty && (
+          <>
+            <Cloud className="size-4" />
+            <span>All changes saved</span>
+          </>
+        )}
+        {saveStatus === "idle" && isDirty && (
+          <>
+            <Cloud className="size-4 animate-pulse" />
+            <span>Unsaved changes</span>
+          </>
+        )}
+        {saveStatus === "saving" && (
+          <>
+            <Loader2 className="size-4 animate-spin" />
+            <span>Saving...</span>
+          </>
+        )}
+        {saveStatus === "saved" && (
+          <>
+            <Check className="size-4 text-green-600" />
+            <span className="text-green-600">Saved</span>
+          </>
+        )}
+        {saveStatus === "error" && (
+          <>
+            <CloudOff className="size-4 text-destructive" />
+            <span className="text-destructive">Save failed</span>
+          </>
+        )}
+      </div>
+
       <div className="space-y-12">
         {activeYears.map((year) => (
           <div key={year} className="space-y-4">
@@ -658,40 +692,6 @@ export default function MultiYearSubjectGridEditor({
       </div>
 
       <div className="flex items-center justify-between gap-3 pt-8 border-t">
-        {/* Auto-save status indicator */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          {saveStatus === "idle" && !isDirty && (
-            <>
-              <Cloud className="size-4" />
-              <span>All changes saved</span>
-            </>
-          )}
-          {saveStatus === "idle" && isDirty && (
-            <>
-              <Cloud className="size-4 animate-pulse" />
-              <span>Unsaved changes</span>
-            </>
-          )}
-          {saveStatus === "saving" && (
-            <>
-              <Loader2 className="size-4 animate-spin" />
-              <span>Saving...</span>
-            </>
-          )}
-          {saveStatus === "saved" && (
-            <>
-              <Check className="size-4 text-green-600" />
-              <span className="text-green-600">Saved</span>
-            </>
-          )}
-          {saveStatus === "error" && (
-            <>
-              <CloudOff className="size-4 text-destructive" />
-              <span className="text-destructive">Save failed</span>
-            </>
-          )}
-        </div>
-
         <div className="flex gap-3">
           <Button
             variant="outline"

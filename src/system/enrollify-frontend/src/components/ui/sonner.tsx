@@ -22,19 +22,19 @@ const Toaster = ({ ...props }: ToasterProps) => {
         error: <OctagonXIcon className="size-6 text-destructive" />,
         loading: <Loader2Icon className="size-6 animate-spin" />,
       }}
-      toastOptions={{
-        classNames: {
-          actionButton: "cursor-pointer pointer-events-auto",
-        },
-      }}
-      style={
-        {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
-        } as React.CSSProperties
-      }
+      // toastOptions={{
+      //   classNames: {
+      //     actionButton: "cursor-pointer pointer-events-auto",
+      //   },
+      // }}
+      // style={
+      //   {
+      //     "--normal-bg": "var(--popover)",
+      //     "--normal-text": "var(--popover-foreground)",
+      //     "--normal-border": "var(--border)",
+      //     "--border-radius": "var(--radius)",
+      //   } as React.CSSProperties
+      // }
       {...props}
     />
   );

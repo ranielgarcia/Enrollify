@@ -28,7 +28,7 @@ export interface ParsedApiError {
  * Parses an AxiosError and extracts user-friendly error information
  */
 export function parseApiError(
-  error: AxiosError<ProblemDetails>
+  error: AxiosError<ProblemDetails>,
 ): ParsedApiError {
   // Network error (no response from server)
   if (!error.response) {
@@ -106,7 +106,7 @@ function getDefaultErrorTitle(status: number): string {
  */
 export function formatValidationErrors(
   errors: Record<string, string[]>,
-  includeFields: boolean = false
+  includeFields: boolean = false,
 ): string {
   if (includeFields)
     return Object.entries(errors)
