@@ -170,9 +170,8 @@ export default function MultiYearSubjectGridEditor({
     removedSubjects: typeof pendingRemovedSubjectsRef.current,
     removedPrerequisites: typeof pendingRemovedPrerequisitesRef.current,
   ) => {
-    // Set isDirty to false FIRST to prevent auto-save from triggering again
-    // when setGrid updates the state
-    setIsDirty(false);
+    // Don't clear isDirty here - the editor still has unsaved changes after a failed save.
+    // The auto-save effect will skip retries when saveStatus === "error".
 
     setGrid((prev) => {
       let newGrid = { ...prev };
@@ -211,7 +210,13 @@ export default function MultiYearSubjectGridEditor({
                 prerequisiteCode,
               ];
               subjects[subjectIndex] = subject;
-              newGrid[year][semester] = subjects;
+              newGrid = {
+                ...newGrid,
+                [year]: {
+                  ...newGrid[year],
+                  [semester]: subjects,
+                },
+              };
             }
           }
         }
@@ -229,7 +234,9 @@ export default function MultiYearSubjectGridEditor({
 
   // Auto-save effect with debounce
   useEffect(() => {
-    if (!isDirty) return;
+    // Skip auto-save if not dirty or if in error state (to prevent infinite retry loop)
+    // User must manually retry or make a new change to trigger save after an error
+    if (!isDirty || saveStatus === "error") return;
 
     // Clear any existing timeout
     if (saveTimeoutRef.current) {
@@ -275,6 +282,10 @@ export default function MultiYearSubjectGridEditor({
       // Only mark dirty if the grid actually changed
       if (newGrid !== prev) {
         setIsDirty(true);
+        // Reset error state when user makes a new change, allowing auto-save to retry
+        if (saveStatus === "error") {
+          setSaveStatus("idle");
+        }
       }
       return newGrid;
     });

@@ -40,7 +40,7 @@ public class UpdateCurriculumRequestValidator : Validator<UpdateCurriculumReques
 
 [HttpPut("")]
 [Group<CurriculumEndpointGroup>]
-[Authorize(Policy = PolicyName.HasCreateCurriculumPermission)]
+[Authorize(Policy = PolicyName.HasUpdateCurriculumPermission)]
 public class UpdateEndpoint(IMediator mediator)
     : Endpoint<UpdateCurriculumRequest, OkOrNotFoundApiResult<int>>
 {
