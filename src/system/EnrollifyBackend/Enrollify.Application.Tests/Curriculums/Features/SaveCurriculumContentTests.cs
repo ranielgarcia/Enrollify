@@ -339,7 +339,142 @@ public class SaveCurriculumContentTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("CS101") && e.ErrorMessage.Contains("not in the curriculum grid"));
+        var error = Assert.Single(result.ValidationErrors);
+        Assert.Contains("CS101", error.ErrorMessage);
+        Assert.Contains("not in the curriculum grid", error.ErrorMessage);
+        Assert.Contains("CS102", error.ErrorMessage);
+        Assert.Contains("Either add", error.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task Handle_PrerequisiteNotInGrid_ProducesSingleErrorListingAllDependents()
+    {
+        // Arrange
+        // CC-DSTRUC is missing from the grid but is referenced as a prerequisite by CC-DBMS, CC-OS, and CS-ALGO
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+
+        var dstrucCode = SubjectCode.From("CC-DSTRUC");
+        var dbmsCode = SubjectCode.From("CC-DBMS");
+        var osCode = SubjectCode.From("CC-OS");
+        var algoCode = SubjectCode.From("CS-ALGO");
+
+        var dstrucSubject = CreateTestSubject(SubjectId.From(1), dstrucCode);
+        var dbmsSubject = CreateTestSubject(SubjectId.From(2), dbmsCode);
+        var osSubject = CreateTestSubject(SubjectId.From(3), osCode);
+        var algoSubject = CreateTestSubject(SubjectId.From(4), algoCode);
+
+        // CC-DSTRUC is NOT in the grid, but all three subjects list it as a prerequisite
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = dbmsCode,
+                        Prerequisites = [dstrucCode]
+                    },
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = osCode,
+                        Prerequisites = [dstrucCode]
+                    },
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = algoCode,
+                        Prerequisites = [dstrucCode]
+                    }
+                ]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([dstrucSubject, dbmsSubject, osSubject, algoSubject]);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+
+        // Only one error should be produced for CC-DSTRUC, not three
+        var missingPrereqErrors = result.ValidationErrors
+            .Where(e => e.ErrorMessage.Contains("CC-DSTRUC") && e.ErrorMessage.Contains("not in the curriculum grid"))
+            .ToList();
+        Assert.Single(missingPrereqErrors);
+
+        // The single error should mention all three dependent subjects
+        var errorMessage = missingPrereqErrors[0].ErrorMessage;
+        Assert.Contains("CC-DBMS", errorMessage);
+        Assert.Contains("CC-OS", errorMessage);
+        Assert.Contains("CS-ALGO", errorMessage);
+        Assert.Contains("Either add", errorMessage);
+    }
+
+    [Fact]
+    public async Task Handle_MultipleMissingPrerequisites_ProducesOneErrorPerMissingPrereq()
+    {
+        // Arrange
+        // Two different prerequisites are missing from the grid
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+
+        var missingPrereq1 = SubjectCode.From("MATH101");
+        var missingPrereq2 = SubjectCode.From("PHYS101");
+        var mainSubjectCode = SubjectCode.From("ENGR201");
+
+        var missingSubject1 = CreateTestSubject(SubjectId.From(1), missingPrereq1);
+        var missingSubject2 = CreateTestSubject(SubjectId.From(2), missingPrereq2);
+        var mainSubject = CreateTestSubject(SubjectId.From(3), mainSubjectCode);
+
+        // ENGR201 references two missing prerequisites
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = mainSubjectCode,
+                        Prerequisites = [missingPrereq1, missingPrereq2]
+                    }
+                ]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([missingSubject1, missingSubject2, mainSubject]);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+
+        // Should have exactly two errors, one per missing prerequisite
+        var missingPrereqErrors = result.ValidationErrors
+            .Where(e => e.ErrorMessage.Contains("not in the curriculum grid"))
+            .ToList();
+        Assert.Equal(2, missingPrereqErrors.Count);
+        Assert.Contains(missingPrereqErrors, e => e.ErrorMessage.Contains("MATH101"));
+        Assert.Contains(missingPrereqErrors, e => e.ErrorMessage.Contains("PHYS101"));
     }
 
     [Fact]

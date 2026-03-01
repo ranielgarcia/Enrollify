@@ -45,7 +45,7 @@ public class UpdateRoomRequestValidator : Validator<UpdateRoomRequest>
 [HttpPut("")]
 [Group<RoomsEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateRoomPermission)]
-public class UpdateEndpoint : Endpoint<UpdateRoomRequest, Results<Ok<UpdateRoomResponse>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+public class UpdateEndpoint : Endpoint<UpdateRoomRequest, OkOrNotFoundApiResult<UpdateRoomResponse>>
 {
     private readonly IMediator _mediator;
 
@@ -54,7 +54,7 @@ public class UpdateEndpoint : Endpoint<UpdateRoomRequest, Results<Ok<UpdateRoomR
         _mediator = mediator;
     }
 
-    public override async Task<Results<Ok<UpdateRoomResponse>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<OkOrNotFoundApiResult<UpdateRoomResponse>>
         ExecuteAsync(UpdateRoomRequest request, CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(

@@ -22,9 +22,9 @@ public class DeleteCourseRequestValidator : Validator<DeleteCourseRequest>
 [HttpDelete("")]
 [Group<CourseEndpointGroup>]
 [Authorize(Policy = PolicyName.HasDeleteCoursePermission)]
-public class DeleteEndpoint(IMediator mediator) : Endpoint<DeleteCourseRequest, Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+public class DeleteEndpoint(IMediator mediator) : Endpoint<DeleteCourseRequest, DeleteApiResult>
 {
-    public override async Task<Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<DeleteApiResult>
         ExecuteAsync(DeleteCourseRequest request, CancellationToken ct)
     { 
         var result = await mediator.Send(new DeleteCourse.Command(CourseId.From(request.Id)));

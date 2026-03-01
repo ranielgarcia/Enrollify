@@ -122,13 +122,26 @@ export default function MultiYearSubjectGridEditor({
   const systemSettings = useSystemSettingsContext();
   const numberOfSemesters = systemSettings.academicSettings.academicSystem;
 
-  const { mutateAsync: saveCurriculumContentAsync } = useMutation(
-    saveCurriculumContentOptions(curriculum.id),
-  );
-
   const [isDirty, setIsDirty] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Track pending removals for rollback on save error
+  const pendingRemovedSubjectsRef = useRef<
+    Array<{
+      year: number;
+      semester: number;
+      subject: SubjectInCurriculum;
+    }>
+  >([]);
+  const pendingRemovedPrerequisitesRef = useRef<
+    Array<{
+      year: number;
+      semester: number;
+      subjectId: number;
+      prerequisiteCode: string;
+    }>
+  >([]);
 
   const [activeYears, setActiveYears] = useState<number[]>(() => {
     const { activeYears: years } = populateGridFromCurriculum(
@@ -144,14 +157,86 @@ export default function MultiYearSubjectGridEditor({
     );
     return populatedGrid;
   });
+  const { mutateAsync: saveCurriculumContentAsync } = useMutation(
+    saveCurriculumContentOptions(curriculum.id),
+  );
 
   const { data: availableSubjects } = useSuspenseQuery(
     getAllSubjectsMinimalOptions(),
   );
 
+  // Rollback removed subjects and prerequisites on save error
+  const rollbackRemovals = (
+    removedSubjects: typeof pendingRemovedSubjectsRef.current,
+    removedPrerequisites: typeof pendingRemovedPrerequisitesRef.current,
+  ) => {
+    // Don't clear isDirty here - the editor still has unsaved changes after a failed save.
+    // The auto-save effect will skip retries when saveStatus === "error".
+
+    setGrid((prev) => {
+      let newGrid = { ...prev };
+
+      // Restore removed subjects
+      for (const removal of removedSubjects) {
+        const { year, semester, subject } = removal;
+        if (newGrid[year] && newGrid[year][semester]) {
+          // Check if subject doesn't already exist (avoid duplicates)
+          const exists = newGrid[year][semester].some(
+            (s) => s.id === subject.id,
+          );
+          if (!exists) {
+            newGrid = {
+              ...newGrid,
+              [year]: {
+                ...newGrid[year],
+                [semester]: [...newGrid[year][semester], subject],
+              },
+            };
+          }
+        }
+      }
+
+      // Restore removed prerequisites
+      for (const removal of removedPrerequisites) {
+        const { year, semester, subjectId, prerequisiteCode } = removal;
+        if (newGrid[year] && newGrid[year][semester]) {
+          const subjects = [...newGrid[year][semester]];
+          const subjectIndex = subjects.findIndex((s) => s.id === subjectId);
+          if (subjectIndex !== -1) {
+            const subject = { ...subjects[subjectIndex] };
+            if (!subject.prerequisites.includes(prerequisiteCode)) {
+              subject.prerequisites = [
+                ...subject.prerequisites,
+                prerequisiteCode,
+              ];
+              subjects[subjectIndex] = subject;
+              newGrid = {
+                ...newGrid,
+                [year]: {
+                  ...newGrid[year],
+                  [semester]: subjects,
+                },
+              };
+            }
+          }
+        }
+      }
+
+      return newGrid;
+    });
+  };
+
+  // Clear pending removals on successful save
+  const clearPendingRemovals = () => {
+    pendingRemovedSubjectsRef.current = [];
+    pendingRemovedPrerequisitesRef.current = [];
+  };
+
   // Auto-save effect with debounce
   useEffect(() => {
-    if (!isDirty) return;
+    // Skip auto-save if not dirty or if in error state (to prevent infinite retry loop)
+    // User must manually retry or make a new change to trigger save after an error
+    if (!isDirty || saveStatus === "error") return;
 
     // Clear any existing timeout
     if (saveTimeoutRef.current) {
@@ -160,16 +245,26 @@ export default function MultiYearSubjectGridEditor({
 
     // Set up debounced save
     saveTimeoutRef.current = setTimeout(async () => {
+      // Capture pending removals BEFORE the save attempt
+      // This ensures we have the data for rollback even if refs are cleared
+      const capturedRemovedSubjects = [...pendingRemovedSubjectsRef.current];
+      const capturedRemovedPrerequisites = [
+        ...pendingRemovedPrerequisitesRef.current,
+      ];
+
       setSaveStatus("saving");
       try {
         await saveCurriculumContentAsync({ grid });
         setSaveStatus("saved");
         setIsDirty(false);
+        clearPendingRemovals();
 
         // Reset to idle after showing "saved" for 2 seconds
         setTimeout(() => setSaveStatus("idle"), 2000);
       } catch {
         setSaveStatus("error");
+        clearPendingRemovals();
+        rollbackRemovals(capturedRemovedSubjects, capturedRemovedPrerequisites);
       }
     }, 1500); // 1.5 second debounce
 
@@ -187,6 +282,10 @@ export default function MultiYearSubjectGridEditor({
       // Only mark dirty if the grid actually changed
       if (newGrid !== prev) {
         setIsDirty(true);
+        // Reset error state when user makes a new change, allowing auto-save to retry
+        if (saveStatus === "error") {
+          setSaveStatus("idle");
+        }
       }
       return newGrid;
     });
@@ -222,6 +321,18 @@ export default function MultiYearSubjectGridEditor({
   };
 
   const removeSubject = (year: number, semester: number, subjectId: number) => {
+    // Track the subject being removed for potential rollback
+    const subjectToRemove = grid[year]?.[semester]?.find(
+      (s) => s.id === subjectId,
+    );
+    if (subjectToRemove) {
+      pendingRemovedSubjectsRef.current.push({
+        year,
+        semester,
+        subject: { ...subjectToRemove },
+      });
+    }
+
     updateGridWithDirty((prev) => ({
       ...prev,
       [year]: {
@@ -281,6 +392,14 @@ export default function MultiYearSubjectGridEditor({
     subjectId: number,
     prerequisiteCode: string,
   ) => {
+    // Track the prerequisite being removed for potential rollback
+    pendingRemovedPrerequisitesRef.current.push({
+      year,
+      semester,
+      subjectId,
+      prerequisiteCode,
+    });
+
     updateGridWithDirty((prev) => {
       const newGrid = { ...prev };
       const subjects = [...newGrid[year][semester]];
@@ -375,6 +494,40 @@ export default function MultiYearSubjectGridEditor({
 
   return (
     <>
+      {/* Auto-save status indicator */}
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        {saveStatus === "idle" && !isDirty && (
+          <>
+            <Cloud className="size-4" />
+            <span>All changes saved</span>
+          </>
+        )}
+        {saveStatus === "idle" && isDirty && (
+          <>
+            <Cloud className="size-4 animate-pulse" />
+            <span>Unsaved changes</span>
+          </>
+        )}
+        {saveStatus === "saving" && (
+          <>
+            <Loader2 className="size-4 animate-spin" />
+            <span>Saving...</span>
+          </>
+        )}
+        {saveStatus === "saved" && (
+          <>
+            <Check className="size-4 text-green-600" />
+            <span className="text-green-600">Saved</span>
+          </>
+        )}
+        {saveStatus === "error" && (
+          <>
+            <CloudOff className="size-4 text-destructive" />
+            <span className="text-destructive">Save failed</span>
+          </>
+        )}
+      </div>
+
       <div className="space-y-12">
         {activeYears.map((year) => (
           <div key={year} className="space-y-4">
@@ -550,52 +703,32 @@ export default function MultiYearSubjectGridEditor({
       </div>
 
       <div className="flex items-center justify-between gap-3 pt-8 border-t">
-        {/* Auto-save status indicator */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          {saveStatus === "idle" && !isDirty && (
-            <>
-              <Cloud className="size-4" />
-              <span>All changes saved</span>
-            </>
-          )}
-          {saveStatus === "idle" && isDirty && (
-            <>
-              <Cloud className="size-4 animate-pulse" />
-              <span>Unsaved changes</span>
-            </>
-          )}
-          {saveStatus === "saving" && (
-            <>
-              <Loader2 className="size-4 animate-spin" />
-              <span>Saving...</span>
-            </>
-          )}
-          {saveStatus === "saved" && (
-            <>
-              <Check className="size-4 text-green-600" />
-              <span className="text-green-600">Saved</span>
-            </>
-          )}
-          {saveStatus === "error" && (
-            <>
-              <CloudOff className="size-4 text-destructive" />
-              <span className="text-destructive">Save failed</span>
-            </>
-          )}
-        </div>
-
         <div className="flex gap-3">
           <Button
             variant="outline"
             onClick={async () => {
+              // Capture pending removals BEFORE the save attempt
+              const capturedRemovedSubjects = [
+                ...pendingRemovedSubjectsRef.current,
+              ];
+              const capturedRemovedPrerequisites = [
+                ...pendingRemovedPrerequisitesRef.current,
+              ];
+
               setSaveStatus("saving");
               try {
                 await saveCurriculumContentAsync({ grid });
                 setSaveStatus("saved");
                 setIsDirty(false);
+                clearPendingRemovals();
                 setTimeout(() => setSaveStatus("idle"), 2000);
               } catch {
                 setSaveStatus("error");
+                clearPendingRemovals();
+                rollbackRemovals(
+                  capturedRemovedSubjects,
+                  capturedRemovedPrerequisites,
+                );
               }
             }}
             disabled={saveStatus === "saving"}

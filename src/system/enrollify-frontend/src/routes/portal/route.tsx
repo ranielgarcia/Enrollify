@@ -121,7 +121,7 @@ function RouteComponent() {
                   <Outlet />
                 </Suspense>
 
-                <Toaster position="bottom-center" />
+                <Toaster position="bottom-right" />
               </AppContainer>
             </SidebarInset>
           </SidebarProvider>

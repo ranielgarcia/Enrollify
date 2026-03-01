@@ -21,7 +21,7 @@ public class DeleteRequestValidator : Validator<DeleteRequest>
 [HttpDelete("")]
 [Group<CollegeEndpointsGroup>]
 [Authorize(Policy = PolicyName.HasDeleteCollegePermission)]
-public class DeleteEndpoint : Endpoint<DeleteRequest, Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+public class DeleteEndpoint : Endpoint<DeleteRequest, DeleteApiResult>
 {
     private readonly IMediator _mediator;
 
@@ -30,7 +30,7 @@ public class DeleteEndpoint : Endpoint<DeleteRequest, Results<NoContent, NotFoun
         _mediator = mediator;
     }
 
-    public override async Task<Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>> 
+    public override async Task<DeleteApiResult> 
         ExecuteAsync (DeleteRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new DeleteCollege.Command(CollegeId.From(request.Id)));

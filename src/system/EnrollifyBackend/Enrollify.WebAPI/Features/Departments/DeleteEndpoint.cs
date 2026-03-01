@@ -23,10 +23,10 @@ public class DeleteDepartmentRequestValidator : Validator<DeleteDepartmentReques
 [Group<DepartmentEndpointGroup>]
 [Authorize(Policy = PolicyName.HasDeleteDepartmentPermission)]
 public class DeleteEndpoint(IMediator mediator)
-    : Endpoint<DeleteDepartmentRequest, Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    : Endpoint<DeleteDepartmentRequest, DeleteApiResult>
 {
 
-    public override async Task<Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<DeleteApiResult>
         ExecuteAsync(DeleteDepartmentRequest request, CancellationToken cancellationToken)
     { 
         var result = await mediator.Send(new DeleteDepartment.Command(DepartmentId.From(request.Id)), cancellationToken);

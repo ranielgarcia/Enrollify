@@ -39,7 +39,7 @@ public static class ResultExtensions
     /// <summary>
     /// Maps Result to TypedResults for endpoints that return Created, ValidationProblem, Conflict, or ProblemHttpResult
     /// </summary>
-    public static Results<Created<TResponse>, ValidationProblem, Conflict<string[]>, ProblemHttpResult> ToCreatedResult<TValue, TResponse>(
+    public static CreatedApiResult<TResponse> ToCreatedResult<TValue, TResponse>(
       this Result<TValue> result,
       Func<TValue, string> locationBuilder,
       Func<TValue, TResponse> mapResponse)
@@ -66,7 +66,7 @@ public static class ResultExtensions
     /// <summary>
     /// Maps Result to TypedResults for GetById endpoints that return Ok, NotFound, or ProblemHttpResult
     /// </summary>
-    public static Results<Ok<TResponse>, NotFound, Conflict<string[]>, ProblemHttpResult> ToGetByIdResult<TValue, TResponse>(
+    public static OkOrNotFoundApiResult<TResponse> ToGetByIdResult<TValue, TResponse>(
       this Result<TValue> result,
       Func<TValue, TResponse> mapResponse)
     {
@@ -76,7 +76,7 @@ public static class ResultExtensions
     /// <summary>
     /// Maps Result to TypedResults for Update endpoints that return Ok, NotFound, or ProblemHttpResult
     /// </summary>
-    public static Results<Ok<TResponse>, NotFound, Conflict<string[]>, ProblemHttpResult> ToUpdateResult<TValue, TResponse>(
+    public static OkOrNotFoundApiResult<TResponse> ToUpdateResult<TValue, TResponse>(
       this Result<TValue> result,
       Func<TValue, TResponse> mapResponse)
     {
@@ -84,9 +84,9 @@ public static class ResultExtensions
     }
 
     /// <summary>
-    /// Maps Result to TypedResults for Delete endpoints that return NoContent, NotFound, Conflict, or ProblemHttpResult
+    /// Maps Result to TypedResults for Delete endpoints that return NoContent, NotFound, ValidationProblem, Conflict, or ProblemHttpResult
     /// </summary>
-    public static Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult> ToDeleteResult(
+    public static DeleteApiResult ToDeleteResult(
       this Result result)
     {
         return result.Status switch
@@ -112,7 +112,7 @@ public static class ResultExtensions
     /// <summary>
     /// Private helper method for Ok/NotFound result patterns
     /// </summary>
-    private static Results<Ok<TResponse>, NotFound, Conflict<string[]>, ProblemHttpResult> ToOkOrNotFoundResult<TValue, TResponse>(
+    private static OkOrNotFoundApiResult<TResponse> ToOkOrNotFoundResult<TValue, TResponse>(
       Result<TValue> result,
       Func<TValue, TResponse> mapResponse,
       string operationName)
@@ -121,6 +121,14 @@ public static class ResultExtensions
         {
             ResultStatus.Ok => TypedResults.Ok(mapResponse(result.Value)),
             ResultStatus.NotFound => TypedResults.NotFound(),
+            ResultStatus.Invalid => TypedResults.ValidationProblem(
+            result.ValidationErrors
+              .GroupBy(e => e.Identifier ?? string.Empty)
+              .ToDictionary(
+                g => g.Key,
+                g => g.Select(e => e.ErrorMessage).ToArray()
+              )
+            ),
             ResultStatus.Conflict => TypedResults.Conflict(result.Errors.ToArray()),
             _ => TypedResults.Problem(
               title: $"{operationName} failed",

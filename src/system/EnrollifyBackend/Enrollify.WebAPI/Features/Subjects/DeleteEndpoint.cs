@@ -22,9 +22,9 @@ public class DeleteSubjectRequestValidator : Validator<DeleteSubjectRequest>
 [Group<SubjectEndpointGroup>]
 [Authorize(Policy = PolicyName.HasDeleteSubjectPermission)]
 public class DeleteEndpoint (IMediator mediator) 
-    : Endpoint<DeleteSubjectRequest, Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    : Endpoint<DeleteSubjectRequest, DeleteApiResult>
 {
-    public override async Task<Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<DeleteApiResult>
         ExecuteAsync (DeleteSubjectRequest request, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(new DeleteSubject.Command(SubjectId.From(request.Id)), cancellationToken);

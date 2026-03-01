@@ -59,9 +59,9 @@ public class UpdateDepartmentRequestValidator : Validator<UpdateDepartmentReques
 [Group<DepartmentEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateDepartmentPermission)]
 public class UpdateEndpoint(IMediator mediator)
-    : Endpoint<UpdateDepartmentRequest, Results<Ok<UpdateDepartmentResponse>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+    : Endpoint<UpdateDepartmentRequest, OkOrNotFoundApiResult<UpdateDepartmentResponse>>
 {
-    public override async Task<Results<Ok<UpdateDepartmentResponse>, NotFound, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<OkOrNotFoundApiResult<UpdateDepartmentResponse>>
         ExecuteAsync(UpdateDepartmentRequest request, CancellationToken cancellationToken)
     { 
         var result = await mediator.Send(

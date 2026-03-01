@@ -85,8 +85,17 @@ public class SaveCurriculumContent
                     semester.Value.Select(subject => (Code: subject.Code, Year: year.Key, Semester: semester.Key))))
                 .ToDictionary(x => x.Code, x => (x.Year, x.Semester));
 
+            // Build reverse lookup: prerequisite code -> list of subjects that depend on it
+            var prerequisiteDependents = command.SubjectsGrid.Values
+                .SelectMany(semesters => semesters.Values)
+                .SelectMany(subjects => subjects)
+                .SelectMany(subject => subject.Prerequisites.Select(prereq => (Prerequisite: prereq, Dependent: subject.Code)))
+                .GroupBy(x => x.Prerequisite)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.Dependent).Distinct().ToList());
+
             // Validate each subject's prerequisites
             var prerequisiteErrors = new List<string>();
+            var reportedMissingPrereqs = new HashSet<SubjectCode>();
             foreach (var year in command.SubjectsGrid)
             {
                 foreach (var semester in year.Value)
@@ -117,7 +126,13 @@ public class SaveCurriculumContent
                             // Val: Prerequisite must be in the grid
                             if (!subjectPositions.TryGetValue(prereqCode, out var prereqPosition))
                             {
-                                prerequisiteErrors.Add($"Prerequisite '{prereqCode.Value}' for subject '{subjectCode.Value}' is not in the curriculum grid");
+                                if (reportedMissingPrereqs.Add(prereqCode))
+                                {
+                                    var dependents = prerequisiteDependents.TryGetValue(prereqCode, out var deps)
+                                        ? deps.Select(d => d.Value)
+                                        : [subjectCode.Value];
+                                    prerequisiteErrors.Add($"Subject '{prereqCode.Value}' is not in the curriculum grid but is listed as a prerequisite for {string.Join(", ", dependents.Select(d => $"'{d}'"))}. Either add '{prereqCode.Value}' to the grid or remove it as a prerequisite.");
+                                }
                                 continue;
                             }
 

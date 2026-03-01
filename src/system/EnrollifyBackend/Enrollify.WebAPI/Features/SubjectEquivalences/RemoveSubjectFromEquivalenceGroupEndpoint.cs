@@ -25,9 +25,9 @@ public class RemoveSubjectFromEquivalenceGroupRequestValidator : Validator<Remov
 [Group<SubjectEquivalenceGroupEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateSubjectEquivalenceGroupPermission)]
 public class RemoveSubjectFromEquivalenceGroupEndpoint (IMediator mediator)
-    : Endpoint<RemoveSubjectFromEquivalenceGroupRequest, Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    : Endpoint<RemoveSubjectFromEquivalenceGroupRequest, DeleteApiResult>
 {
-    public override async Task<Results<NoContent, NotFound, ValidationProblem, Conflict<string[]>, ProblemHttpResult>>
+    public override async Task<DeleteApiResult>
         ExecuteAsync(RemoveSubjectFromEquivalenceGroupRequest request, CancellationToken ct)
     {
         var result = await mediator.Send(new RemoveSubjectFromEquivalenceGroup

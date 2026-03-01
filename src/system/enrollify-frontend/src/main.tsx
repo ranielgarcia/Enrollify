@@ -30,11 +30,7 @@ import {
   type IAuthorizationContextValue,
 } from "./infrastructure/authorization/AuthorizationContext";
 import type { AxiosError } from "axios";
-import {
-  formatValidationErrors,
-  parseApiError,
-  type ProblemDetails,
-} from "./lib/axios-utils";
+import { parseApiError, type ProblemDetails } from "./lib/axios-utils";
 import { toast } from "sonner";
 
 // Register the router instance for type safety
@@ -71,9 +67,17 @@ const queryClient = new QueryClient({
 
       // Show error toast with title and detail
       toast.error(parsed.title, {
-        description: parsed.validationErrors
-          ? formatValidationErrors(parsed.validationErrors)
-          : parsed.detail || "Please try again.",
+        description: parsed.validationErrors ? (
+          <ul className="list-disc pl-4">
+            {Object.values(parsed.validationErrors)
+              .flat()
+              .map((msg, index) => (
+                <li key={index}>{msg}</li>
+              ))}
+          </ul>
+        ) : (
+          parsed.detail || "Please try again."
+        ),
       });
     },
     onSettled: (_data, _error, _variables, _context, mutation) => {

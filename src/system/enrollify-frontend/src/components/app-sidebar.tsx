@@ -5,6 +5,7 @@ import {
   GalleryVerticalEnd,
   Settings2,
   DatabaseIcon,
+  Calendar1Icon,
 } from "lucide-react";
 
 import { NavMain, type NavMainItemProp } from "@/components/nav-main";
@@ -62,9 +63,17 @@ const data = {
           url: "/portal/master-data/subjects",
           viewAuthorizationPolicies: [PolicyNames.canViewSubjects],
         },
+      ],
+    } as NavMainItemProp,
+    {
+      title: "Curriculum and Scheduling",
+      url: "/portal/curriculum-and-scheduling",
+      icon: Calendar1Icon,
+      isActive: false,
+      items: [
         {
           title: "Curriculum",
-          url: "/portal/master-data/curriculum",
+          url: "/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}",
           viewAuthorizationPolicies: [PolicyNames.canViewCurriculums],
         },
       ],
