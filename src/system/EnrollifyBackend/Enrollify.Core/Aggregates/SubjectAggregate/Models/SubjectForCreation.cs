@@ -1,7 +1,7 @@
 ﻿using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 
-namespace Enrollify.Core.Aggregates.SubjectAggregate;
+namespace Enrollify.Core.Aggregates.SubjectAggregate.Models;
 
 public class SubjectForCreation
 {

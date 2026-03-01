@@ -445,6 +445,7 @@ CREATE TABLE Teachers
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	FirstName VARCHAR(50) NOT NULL,
+	MiddleName VARCHAR(50) NOT NULL,
 	LastName VARCHAR(50) NOT NULL,
 	Email VARCHAR(255) NOT NULL,
 	DepartmentId INT NOT NULL,
@@ -692,19 +693,6 @@ CREATE TABLE StudentStatuses
     CONSTRAINT CHK_StudentStatuses_Name_NotEmpty CHECK (LEN(TRIM(Name)) > 0)
 );
 GO
-
--- Seed data for StudentStatuses
-DECLARE @InitialUserId INT = (SELECT Id FROM Users WHERE Email='system@enrollify.local');
-INSERT INTO StudentStatuses (Id, Code, Name, Description, DisplayOrder, CreatedBy) VALUES
-(1, 'ACTIVE', 'Active', 'Currently enrolled student', 1, @InitialUserId),
-(2, 'INACTIVE', 'Inactive', 'Not currently enrolled but not withdrawn', 2, @InitialUserId),
-(3, 'LOA', 'Leave of Absence', 'Temporarily not attending', 3, @InitialUserId),
-(4, 'GRADUATED', 'Graduated', 'Completed degree requirements', 4, @InitialUserId),
-(5, 'WITHDRAWN', 'Withdrawn', 'Permanently left the institution', 5, @InitialUserId),
-(6, 'SUSPENDED', 'Suspended', 'Temporarily barred from enrollment', 6, @InitialUserId),
-(7, 'EXPELLED', 'Expelled', 'Permanently barred from institution', 7, @InitialUserId);
-GO
-
 
 -- ************************************
 

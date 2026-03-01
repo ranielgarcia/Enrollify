@@ -11,6 +11,7 @@ using Enrollify.Application.Rooms;
 using Enrollify.Application.RoomTypes;
 using Enrollify.Application.SubjectEquivalences;
 using Enrollify.Application.Subjects;
+using Enrollify.Application.Teachers;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
@@ -77,6 +78,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ISubjectRepository, SubjectRepository>();
         services.AddScoped<ICurriculumRepository, CurriculumRepository>();
         services.AddScoped<ISubjectEquivalenceGroupRepository, SubjectEquivalenceGroupRepository>();
+        services.AddScoped<ITeacherRepository, TeacherRepository>();
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 

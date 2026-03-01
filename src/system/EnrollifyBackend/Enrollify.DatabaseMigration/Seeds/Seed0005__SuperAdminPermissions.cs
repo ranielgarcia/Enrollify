@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Enrollify.DatabaseMigration.Seeds;
 
-public class Seed0004__SuperAdminPermissions : IScript
+public class Seed0005__SuperAdminPermissions : IScript
 {
     public string ProvideScript(Func<IDbCommand> dbCommandFactory)
     {

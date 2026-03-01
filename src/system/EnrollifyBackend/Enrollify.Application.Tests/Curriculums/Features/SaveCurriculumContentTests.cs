@@ -7,6 +7,7 @@ using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate.Models;
 using Enrollify.SharedKernel;
 using Moq;
 
