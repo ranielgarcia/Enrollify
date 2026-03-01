@@ -84,7 +84,7 @@ public static class ResultExtensions
     }
 
     /// <summary>
-    /// Maps Result to TypedResults for Delete endpoints that return NoContent, NotFound, Conflict, or ProblemHttpResult
+    /// Maps Result to TypedResults for Delete endpoints that return NoContent, NotFound, ValidationProblem, Conflict, or ProblemHttpResult
     /// </summary>
     public static DeleteApiResult ToDeleteResult(
       this Result result)
