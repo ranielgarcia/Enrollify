@@ -15,10 +15,10 @@ public class College : EntityBase<College, CollegeId>, IAggregateRoot, IAuditabl
         Dean = Guard.Against.Null(dean);
     }
 
-    public CollegeCode Code { get; set; }
-    public string Name { get; set; }
-    public string Description { get; set; }
-    public string Dean { get; set; }
+    public CollegeCode Code { get; private set; }
+    public string Name { get; private set; } = null!;
+    public string Description { get; private set; } = null!;
+    public string Dean { get; private set; } = null!;
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }

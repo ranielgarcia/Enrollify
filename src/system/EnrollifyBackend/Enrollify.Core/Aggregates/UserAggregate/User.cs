@@ -8,11 +8,13 @@ namespace Enrollify.Core.Aggregates.UserAggregate;
 
 public class User : EntityBase<User, UserId>, IAggregateRoot, IAuditable
 {
+    private User() { } // EF Core constructor
+
     private readonly List<UserRoleAssignment> _roleAssignments = new();
     
     public UserEmail Email { get; private set; }
-    public string FirstName { get; private set; }
-    public string LastName { get; private set; }
+    public string FirstName { get; private set; } = null!;
+    public string LastName { get; private set; } = null!;
     public DateTimeOffset? LastLoginAt { get; private set; }
     public IReadOnlyCollection<UserRoleAssignment> RoleAssignments => _roleAssignments.AsReadOnly();
 
@@ -123,6 +125,5 @@ public class User : EntityBase<User, UserId>, IAggregateRoot, IAuditable
     }
 
 
-    protected User() { } // EF Core constructor
 
 }

@@ -17,9 +17,9 @@ public class Building : EntityBase<Building, BuildingId>, IAggregateRoot, IAudit
         CollegeId = collegeId;
     }
 
-    public string Name { get; private set; }
-    public string Description { get; private set; }
-    public string Address { get; private set; }
+    public string Name { get; private set; } = null!;
+    public string Description { get; private set; } = null!;
+    public string Address { get; private set; } = null!;
 
     public CollegeId CollegeId { get; private set; }
     public College? College { get; private set; }
