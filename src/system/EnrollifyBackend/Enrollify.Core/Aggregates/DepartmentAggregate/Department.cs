@@ -18,11 +18,11 @@ public class Department : EntityBase<Department, DepartmentId>, IAggregateRoot, 
         CollegeId = Guard.Against.Null(collegeId);
     }
 
-    public DepartmentCode Code { get; set; }
-    public string Name { get; set; }
-    public string Chairperson { get; set; }
-    public string Description { get; set; }
-    public CollegeId CollegeId { get; set; }
+    public DepartmentCode Code { get; private set; }
+    public string Name { get; private set; } = null!;
+    public string Chairperson { get; private set; } = null!;
+    public string Description { get; private set; } = null!;
+    public CollegeId CollegeId { get; private set; }
 
     public College? College { get; private set; }
 
