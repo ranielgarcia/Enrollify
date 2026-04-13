@@ -1,4 +1,4 @@
-﻿using Enrollify.Core.Aggregates.TeacherAggregate;
+using Enrollify.Core.Aggregates.TeacherAggregate;
 
 namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.TeacherConfigs;
 
@@ -18,6 +18,13 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
         builder.Property(e => e.MiddleName).IsRequired();
         builder.Property(e => e.LastName).IsRequired();
         builder.Property(e => e.Email).IsRequired();
+
+        // Owned type for Photo
+        builder.OwnsOne(e => e.Photo, photo =>
+        {
+            photo.Property(p => p.LocationPath).HasColumnName("PhotoLocationPath");
+            photo.Property(p => p.Filename).HasColumnName("PhotoFilename");
+        });
 
         // Navigation to Department
         builder.HasOne(e => e.Department)

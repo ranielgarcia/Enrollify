@@ -147,6 +147,11 @@
           "Microsoft.Extensions.Logging.Abstractions": "8.0.0"
         }
       },
+      "libphonenumber-csharp": {
+        "type": "Transitive",
+        "resolved": "9.0.27",
+        "contentHash": "IBVpG2CC9pC4+CI1/BNJw4B/M5CiIHCd0kfirluTyWDqFb35N46MJ3zy+hDNchfbYFpl5NGrqPGUEvSgdWmghg=="
+      },
       "Mediator.Abstractions": {
         "type": "Transitive",
         "resolved": "3.0.2",
@@ -551,7 +556,8 @@
           "Mediator.Abstractions": "[3.0.2, )",
           "Microsoft.Extensions.Options": "[10.0.5, )",
           "Riok.Mapperly": "[4.3.1, )",
-          "Vogen": "[8.0.5, )"
+          "Vogen": "[8.0.5, )",
+          "libphonenumber-csharp": "[9.0.27, )"
         }
       },
       "enrollify.sharedkernel": {

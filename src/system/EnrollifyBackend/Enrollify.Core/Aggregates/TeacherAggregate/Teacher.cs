@@ -1,4 +1,4 @@
-﻿using Ardalis.GuardClauses;
+using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate.Models;
 using Enrollify.Core.Aggregates.UserAggregate;
@@ -15,10 +15,14 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
     public string LastName { get; private set; }
 
     public TeacherEmail Email { get; private set; }
+    public TeacherPhoneNumber PhoneNumber { get; private set; }
 
     public DepartmentId DepartmentId { get; private set; }
-
     public Department? Department { get; private set; }
+
+    public string AcademicTitle { get; private set; }
+
+    public TeacherPhoto Photo { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
@@ -67,10 +71,24 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
         return this;
     }
 
+    public Teacher UpdateAcademicTitle(string academicTitle)
+    {
+        if (academicTitle == AcademicTitle) return this;
+        AcademicTitle = Guard.Against.Null(academicTitle, message: "Academic title is required.");
+        return this;
+    }
+
     public Teacher UpdateEmail(TeacherEmail email)
     {
         if (email == Email) return this;
         Email = Guard.Against.Null(email, message: "Email is required.");
+        return this;
+    }
+
+    public Teacher UpdatePhoneNumber(TeacherPhoneNumber phoneNumber)
+    {
+        if (phoneNumber == PhoneNumber) return this;
+        PhoneNumber = Guard.Against.Null(phoneNumber, message: "Phone Number is required.");
         return this;
     }
 
@@ -81,4 +99,10 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
         return this;
     }
 
+    public Teacher UpdatePhoto(string locationPath, string fileName)
+    {
+        if (locationPath == null || fileName == null) return this;
+        Photo = new TeacherPhoto(locationPath, fileName);
+        return this;
+    }
 }

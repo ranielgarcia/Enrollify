@@ -140,6 +140,36 @@ public class AzureBlobStorageService : IFileStorageService
         }
     }
 
+    public async Task<bool> UnarchiveFileAsync(
+        string container,
+        string fileName,
+        string[]? subfolders = null,
+        bool highPriority = false,
+        CancellationToken cancellationToken = default)
+    {
+        var containerClient = _blobServiceClient.GetBlobContainerClient(container);
+        var blobPath = BuildBlobPath(subfolders, fileName);
+        var blobClient = containerClient.GetBlobClient(blobPath);
+
+        try
+        {
+            var priority = highPriority
+                ? RehydratePriority.High
+                : RehydratePriority.Standard;
+
+            await blobClient.SetAccessTierAsync(
+                AccessTier.Hot,
+                rehydratePriority: priority,
+                cancellationToken: cancellationToken);
+
+            return true;
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+            return false;
+        }
+    }
+
     public async Task<IReadOnlyList<FileMetadata>> ListFilesAsync(
         string container,
         string[]? subfolders = null,

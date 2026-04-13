@@ -62,6 +62,24 @@ public interface IFileStorageService
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Rehydrates an archived file by moving it back to a hot or cool storage tier.
+    /// Rehydration is an asynchronous operation on the storage side:
+    /// standard priority may take up to 15 hours, high priority completes under 1 hour.
+    /// </summary>
+    /// <param name="container">The target container.</param>
+    /// <param name="fileName">The file name.</param>
+    /// <param name="subfolders">Optional subfolder path segments.</param>
+    /// <param name="highPriority">When <c>true</c>, uses high-priority rehydration (faster but more expensive). Defaults to <c>false</c>.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns><c>true</c> if rehydration was initiated successfully; <c>false</c> if the file was not found.</returns>
+    Task<bool> UnarchiveFileAsync(
+        string container,
+        string fileName,
+        string[]? subfolders = null,
+        bool highPriority = false,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Lists file metadata from the specified container and optional subfolder path
     /// without downloading file content.
     /// </summary>
