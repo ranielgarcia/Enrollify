@@ -1,10 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+using System.ComponentModel;
+using Microsoft.Extensions.Configuration;
 using Spectre.Console;
 using Spectre.Console.Cli;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
 
 namespace Enrollify.DatabaseMigration;
 
@@ -44,10 +41,10 @@ internal sealed class MigrationCommand : Command<MigrationCommand.Settings>
         public bool SeedData { get; init; }
     }
 
-    public override int Execute(CommandContext context, Settings settings)
+    protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         var connectionString = settings.ConnectionString ?? _configuration.GetConnectionString("Default");
-        if (connectionString == null) throw new ArgumentNullException(nameof(connectionString));
+        if (string.IsNullOrEmpty(connectionString)) throw new ArgumentNullException(connectionString);
 
         try
         {
@@ -61,7 +58,4 @@ internal sealed class MigrationCommand : Command<MigrationCommand.Settings>
 
         return 0;
     }
-
-
-
 }
