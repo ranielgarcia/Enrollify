@@ -6,6 +6,7 @@ import {
   Settings2,
   DatabaseIcon,
   Calendar1Icon,
+  GraduationCap,
 } from "lucide-react";
 
 import { NavMain, type NavMainItemProp } from "@/components/nav-main";
@@ -78,6 +79,19 @@ const data = {
         },
       ],
     } as NavMainItemProp,
+    {
+      title: "Faculty Management",
+      url: "/portal/teachers",
+      icon: GraduationCap,
+      isActive: false,
+      items: [
+        {
+          title: "Teachers",
+          url: "/portal/teachers",
+          viewAuthorizationPolicies: [PolicyNames.canViewTeachers],
+        },
+      ],
+    } as unknown as NavMainItemProp,
     {
       title: "Models",
       url: "/",

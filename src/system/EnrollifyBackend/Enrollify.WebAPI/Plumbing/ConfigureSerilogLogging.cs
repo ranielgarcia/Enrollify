@@ -1,4 +1,3 @@
-﻿using Microsoft.ApplicationInsights.Extensibility;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -31,8 +30,7 @@ public static class ConfigureSerilogLogging
                     .Enrich.FromLogContext()
                     .Enrich.WithProperty("Application", "Enrollify.WebAPI")
                     .WriteTo.Console()
-                    .WriteTo.Debug()
-                    .WriteTo.ApplicationInsights(services.GetRequiredService<TelemetryConfiguration>(), TelemetryConverter.Traces));
+                    .WriteTo.Debug());
 
         return services;
     }

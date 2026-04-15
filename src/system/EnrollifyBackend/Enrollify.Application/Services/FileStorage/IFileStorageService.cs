@@ -7,6 +7,8 @@ namespace Enrollify.Core.Services.FileStorage;
 /// </summary>
 public interface IFileStorageService
 {
+    Task EnsureContainerExists(string containerName, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Uploads a file to the specified container and optional subfolder path.
     /// </summary>

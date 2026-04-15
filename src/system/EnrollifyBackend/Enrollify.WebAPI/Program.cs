@@ -1,6 +1,9 @@
+using Enrollify.Core.Aggregates.RoomAggregate;
+using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.WebAPI.Authentication;
 using Enrollify.WebAPI.Infrastructure.Exceptions;
 using Enrollify.WebAPI.Plumbing;
+using Enrollify.WebAPI.StartupServices;
 using Serilog;
 
 Log.Logger = ConfigureSerilogLogging.BootstrapLogger;
@@ -12,9 +15,13 @@ try
     builder.Services.AddControllers();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
-    builder.Services.AddApplicationInsightsTelemetry();
     builder.Services.AddSerilogLogging(builder.Configuration);
 
+    // Currently remove App Insights logging
+    // Due the following:
+    // Root cause: Microsoft.ApplicationInsights.AspNetCore 3.x is a complete rewrite that uses OpenTelemetry under the hood.
+    // Calling AddApplicationInsightsTelemetry() now registers Azure.Monitor.OpenTelemetry.Exporter,
+    // which unconditionally requires an Application Insights connection string — even locally.
 
     // Exception handler
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -33,6 +40,7 @@ try
     builder.Services.AddAzureADAuthentication(builder.Configuration);
     builder.Services.AddAuthorizationPolicies();
     builder.Services.AddServiceConfigs(startupLogger, builder);
+    builder.Services.AddStartupServices(builder.Configuration);
 
     var app = builder.Build();
 

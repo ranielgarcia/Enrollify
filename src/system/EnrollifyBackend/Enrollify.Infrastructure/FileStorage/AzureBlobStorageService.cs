@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -13,6 +14,12 @@ public class AzureBlobStorageService : IFileStorageService
     public AzureBlobStorageService(BlobServiceClient blobServiceClient)
     {
         _blobServiceClient = blobServiceClient;
+    }
+
+    public async Task EnsureContainerExists(string containerName, CancellationToken cancellationToken = default)
+    {
+        var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+        await containerClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
     }
 
     public async Task<string> UploadFileAsync(
