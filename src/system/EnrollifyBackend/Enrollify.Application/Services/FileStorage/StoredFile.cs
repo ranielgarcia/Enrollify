@@ -1,4 +1,4 @@
-namespace Enrollify.Core.FileStorage;
+namespace Enrollify.Core.Services.FileStorage;
 
 /// <summary>
 /// Represents a file retrieved from storage, including its content stream and metadata.

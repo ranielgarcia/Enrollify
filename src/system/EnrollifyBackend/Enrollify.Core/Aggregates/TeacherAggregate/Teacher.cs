@@ -18,7 +18,7 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
     public TeacherPhoneNumber PhoneNumber { get; private set; }
 
     public DepartmentId DepartmentId { get; private set; }
-    public Department? Department { get; private set; }
+    public Department? Department { get; }
 
     public string AcademicTitle { get; private set; }
 

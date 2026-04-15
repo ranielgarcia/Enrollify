@@ -14,7 +14,7 @@ using Enrollify.Application.SubjectEquivalences;
 using Enrollify.Application.Subjects;
 using Enrollify.Application.Teachers;
 using Enrollify.Core.Constants.Authorization;
-using Enrollify.Core.FileStorage;
+using Enrollify.Core.Services.FileStorage;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
 using Enrollify.Infrastructure.Data.Queries;
@@ -81,6 +81,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ICurriculumRepository, CurriculumRepository>();
         services.AddScoped<ISubjectEquivalenceGroupRepository, SubjectEquivalenceGroupRepository>();
         services.AddScoped<ITeacherRepository, TeacherRepository>();
+        services.AddScoped<ITeacherPhotoStorageService, TeacherPhotoStorageService>();
 
         // Azure Blob Storage
         string? azureBlobStorageConnectionString = config.GetConnectionString("AzureBlobStorage");
