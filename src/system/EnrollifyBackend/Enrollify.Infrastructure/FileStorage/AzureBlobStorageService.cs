@@ -45,7 +45,7 @@ public class AzureBlobStorageService : IFileStorageService
 
         await blobClient.UploadAsync(content, uploadOptions, cancellationToken);
 
-        return blobClient.Uri.ToString();
+        return $"{container}/{blobPath}";
     }
 
     public async Task<StoredFile?> GetFileAsync(

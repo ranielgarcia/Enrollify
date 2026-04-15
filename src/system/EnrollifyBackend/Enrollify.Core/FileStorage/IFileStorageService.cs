@@ -10,7 +10,7 @@ public interface IFileStorageService
     /// <summary>
     /// Uploads a file to the specified container and optional subfolder path.
     /// </summary>
-    /// <returns>The URI of the uploaded file.</returns>
+    /// <returns>The relative storage path of the uploaded file (e.g., "container/subfolders/filename"). Store this value instead of absolute URIs to remain storage-account agnostic.</returns>
     Task<string> UploadFileAsync(
         string container,
         string fileName,
