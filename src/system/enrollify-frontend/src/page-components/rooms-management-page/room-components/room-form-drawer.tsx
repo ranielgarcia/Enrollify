@@ -20,8 +20,8 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/form-field";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { useForm } from "@tanstack/react-form";
@@ -164,23 +164,7 @@ export function RoomFormDrawer({
                   <form.Field
                     name="roomNumber"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Room Number:</Label>
-                        <Input
-                          type="text"
-                          placeholder="Room Number:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          id={field.name}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField field={field} label="Room Number:" />
                     )}
                   />
                 </div>
@@ -188,24 +172,11 @@ export function RoomFormDrawer({
                   <form.Field
                     name="capacity"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Capacity:</Label>
-                        <Input
-                          type="number"
-                          value={field.state.value}
-                          placeholder="Capacity:"
-                          onChange={(e) =>
-                            field.handleChange(Number(e.target.value))
-                          }
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField
+                        field={field}
+                        label="Capacity:"
+                        type="number"
+                      />
                     )}
                   />
                 </div>
@@ -228,7 +199,7 @@ export function RoomFormDrawer({
                         />
 
                         {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
+                          <em role="alert" className="text-destructive text-sm">
                             {field.state.meta.errors
                               .map((e) => e?.message)
                               .join(", ")}
@@ -257,7 +228,7 @@ export function RoomFormDrawer({
                         />
 
                         {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
+                          <em role="alert" className="text-destructive text-sm">
                             {field.state.meta.errors
                               .map((e) => e?.message)
                               .join(", ")}

@@ -19,9 +19,9 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FormField } from "@/components/form-field";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { useForm } from "@tanstack/react-form";
@@ -152,23 +152,7 @@ export function BuildingFormDrawer({
                   <form.Field
                     name="name"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Name:</Label>
-                        <Input
-                          type="text"
-                          id={field.name}
-                          placeholder="Name:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField field={field} label="Name:" />
                     )}
                   />
                 </div>
@@ -186,7 +170,7 @@ export function BuildingFormDrawer({
                           onChange={(e) => field.handleChange(e.target.value)}
                         />
                         {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
+                          <em role="alert" className="text-destructive text-sm">
                             {field.state.meta.errors
                               .map((e) => e?.message)
                               .join(", ")}
@@ -200,23 +184,7 @@ export function BuildingFormDrawer({
                   <form.Field
                     name="address"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Address:</Label>
-                        <Input
-                          type="text"
-                          id={field.name}
-                          placeholder="Address:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField field={field} label="Address:" />
                     )}
                   />
                 </div>

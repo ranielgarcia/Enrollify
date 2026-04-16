@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FormField } from "@/components/form-field";
 import { useForm } from "@tanstack/react-form";
 import { Loader2, Plus, Upload } from "lucide-react";
 import { useRef, useState } from "react";
@@ -212,7 +213,7 @@ export function TeacherFormDrawer({
                     <Upload className="size-4" />
                     Upload Photo
                   </Button>
-                  <input
+                  <Input
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
@@ -226,23 +227,7 @@ export function TeacherFormDrawer({
               <form.Field
                 name="firstName"
                 children={(field) => (
-                  <div className="grid w-full items-center gap-3">
-                    <Label htmlFor={field.name}>First Name:</Label>
-                    <Input
-                      type="text"
-                      id={field.name}
-                      placeholder="First Name"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                    {!field.state.meta.isValid && (
-                      <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors
-                          .map((e) => e?.message)
-                          .join(", ")}
-                      </em>
-                    )}
-                  </div>
+                  <FormField field={field} label="First Name:" placeholder="First Name" />
                 )}
               />
 
@@ -250,23 +235,7 @@ export function TeacherFormDrawer({
               <form.Field
                 name="lastName"
                 children={(field) => (
-                  <div className="grid w-full items-center gap-3">
-                    <Label htmlFor={field.name}>Last Name:</Label>
-                    <Input
-                      type="text"
-                      id={field.name}
-                      placeholder="Last Name"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                    {!field.state.meta.isValid && (
-                      <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors
-                          .map((e) => e?.message)
-                          .join(", ")}
-                      </em>
-                    )}
-                  </div>
+                  <FormField field={field} label="Last Name:" placeholder="Last Name" />
                 )}
               />
 
@@ -274,16 +243,7 @@ export function TeacherFormDrawer({
               <form.Field
                 name="middleName"
                 children={(field) => (
-                  <div className="grid w-full items-center gap-3">
-                    <Label htmlFor={field.name}>Middle Name:</Label>
-                    <Input
-                      type="text"
-                      id={field.name}
-                      placeholder="Middle Name"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                  </div>
+                  <FormField field={field} label="Middle Name:" placeholder="Middle Name" />
                 )}
               />
 
@@ -291,23 +251,12 @@ export function TeacherFormDrawer({
               <form.Field
                 name="email"
                 children={(field) => (
-                  <div className="grid w-full items-center gap-3">
-                    <Label htmlFor={field.name}>Email:</Label>
-                    <Input
-                      type="email"
-                      id={field.name}
-                      placeholder="email@university.edu"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                    {!field.state.meta.isValid && (
-                      <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors
-                          .map((e) => e?.message)
-                          .join(", ")}
-                      </em>
-                    )}
-                  </div>
+                  <FormField
+                    field={field}
+                    label="Email:"
+                    type="email"
+                    placeholder="email@university.edu"
+                  />
                 )}
               />
 
@@ -315,23 +264,12 @@ export function TeacherFormDrawer({
               <form.Field
                 name="phoneNumber"
                 children={(field) => (
-                  <div className="grid w-full items-center gap-3">
-                    <Label htmlFor={field.name}>Phone Number:</Label>
-                    <Input
-                      type="tel"
-                      id={field.name}
-                      placeholder="+63 912 345 6789"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                    {!field.state.meta.isValid && (
-                      <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors
-                          .map((e) => e?.message)
-                          .join(", ")}
-                      </em>
-                    )}
-                  </div>
+                  <FormField
+                    field={field}
+                    label="Phone Number:"
+                    type="tel"
+                    placeholder="+63 912 345 6789"
+                  />
                 )}
               />
 
@@ -351,7 +289,7 @@ export function TeacherFormDrawer({
                       emptyMessage="No college found"
                     />
                     {!field.state.meta.isValid && (
-                      <em role="alert" className="text-red-800 text-sm">
+                      <em role="alert" className="text-destructive text-sm">
                         {field.state.meta.errors
                           .map((e) => e?.message)
                           .join(", ")}
@@ -365,23 +303,11 @@ export function TeacherFormDrawer({
               <form.Field
                 name="academicTitle"
                 children={(field) => (
-                  <div className="grid w-full items-center gap-3">
-                    <Label htmlFor={field.name}>Academic Title:</Label>
-                    <Input
-                      type="text"
-                      id={field.name}
-                      placeholder="e.g. Associate Professor"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                    {!field.state.meta.isValid && (
-                      <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors
-                          .map((e) => e?.message)
-                          .join(", ")}
-                      </em>
-                    )}
-                  </div>
+                  <FormField
+                    field={field}
+                    label="Academic Title:"
+                    placeholder="e.g. Associate Professor"
+                  />
                 )}
               />
 
@@ -401,7 +327,7 @@ export function TeacherFormDrawer({
                       emptyMessage="No department found"
                     />
                     {!field.state.meta.isValid && (
-                      <em role="alert" className="text-red-800 text-sm">
+                      <em role="alert" className="text-destructive text-sm">
                         {field.state.meta.errors
                           .map((e) => e?.message)
                           .join(", ")}
@@ -415,23 +341,12 @@ export function TeacherFormDrawer({
               <form.Field
                 name="qualification"
                 children={(field) => (
-                  <div className="grid w-full items-center gap-3">
-                    <Label htmlFor={field.name}>Qualification:</Label>
-                    <Textarea
-                      id={field.name}
-                      placeholder="e.g. Ph.D. in Computer Science, M.Sc. in Software Engineering"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      rows={3}
-                    />
-                    {!field.state.meta.isValid && (
-                      <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors
-                          .map((e) => e?.message)
-                          .join(", ")}
-                      </em>
-                    )}
-                  </div>
+                  <FormField
+                    field={field}
+                    label="Qualification:"
+                    type="textarea"
+                    placeholder="e.g. Ph.D. in Computer Science, M.Sc. in Software Engineering"
+                  />
                 )}
               />
 
@@ -439,23 +354,11 @@ export function TeacherFormDrawer({
               <form.Field
                 name="specialization"
                 children={(field) => (
-                  <div className="grid w-full items-center gap-3">
-                    <Label htmlFor={field.name}>Specialization:</Label>
-                    <Input
-                      type="text"
-                      id={field.name}
-                      placeholder="e.g. Machine Learning, Data Mining"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                    {!field.state.meta.isValid && (
-                      <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors
-                          .map((e) => e?.message)
-                          .join(", ")}
-                      </em>
-                    )}
-                  </div>
+                  <FormField
+                    field={field}
+                    label="Specialization:"
+                    placeholder="e.g. Machine Learning, Data Mining"
+                  />
                 )}
               />
 
@@ -482,7 +385,7 @@ export function TeacherFormDrawer({
                         onChange={(e) => field.handleChange(e.target.value)}
                       />
                       {!field.state.meta.isValid && (
-                        <em role="alert" className="text-red-800 text-sm">
+                        <em role="alert" className="text-destructive text-sm">
                           {field.state.meta.errors
                             .map((e) => e?.message)
                             .join(", ")}
@@ -509,7 +412,7 @@ export function TeacherFormDrawer({
                         onChange={(e) => field.handleChange(e.target.value)}
                       />
                       {!field.state.meta.isValid && (
-                        <em role="alert" className="text-red-800 text-sm">
+                        <em role="alert" className="text-destructive text-sm">
                           {field.state.meta.errors
                             .map((e) => e?.message)
                             .join(", ")}
@@ -558,7 +461,7 @@ export function TeacherFormDrawer({
                       emptyMessage="No subject found"
                     />
                     {!field.state.meta.isValid && (
-                      <em role="alert" className="text-red-800 text-sm">
+                      <em role="alert" className="text-destructive text-sm">
                         {field.state.meta.errors
                           .map((e) => e?.message)
                           .join(", ")}

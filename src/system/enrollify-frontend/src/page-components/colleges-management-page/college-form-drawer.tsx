@@ -20,9 +20,7 @@ import {
 } from "@/api/collections/college-collection";
 import type { College } from "@/api/models/college";
 import { useMutation } from "@tanstack/react-query";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/form-field";
 
 type FormMeta = {
   submitAction: "create" | "update" | null;
@@ -139,23 +137,7 @@ export function CollegeFormDrawer({
                   <form.Field
                     name="code"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Code:</Label>
-                        <Input
-                          type="text"
-                          id={field.name}
-                          placeholder="Code:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField field={field} label="Code:" />
                     )}
                   />
                 </div>
@@ -163,23 +145,7 @@ export function CollegeFormDrawer({
                   <form.Field
                     name="name"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Name:</Label>
-                        <Input
-                          type="text"
-                          id={field.name}
-                          placeholder="Name:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField field={field} label="Name:" />
                     )}
                   />
                 </div>
@@ -187,22 +153,11 @@ export function CollegeFormDrawer({
                   <form.Field
                     name="description"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Description:</Label>
-                        <Textarea
-                          placeholder="Description:"
-                          id={field.name}
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField
+                        field={field}
+                        label="Description:"
+                        type="textarea"
+                      />
                     )}
                   />
                 </div>
@@ -210,23 +165,7 @@ export function CollegeFormDrawer({
                   <form.Field
                     name="dean"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Dean:</Label>
-                        <Input
-                          type="text"
-                          id={field.name}
-                          placeholder="Dean:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField field={field} label="Dean:" />
                     )}
                   />
                 </div>

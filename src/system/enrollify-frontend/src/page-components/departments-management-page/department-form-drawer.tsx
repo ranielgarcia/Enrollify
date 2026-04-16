@@ -19,9 +19,8 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { FormField } from "@/components/form-field";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { useForm } from "@tanstack/react-form";
@@ -156,23 +155,7 @@ export function DepartmentFormDrawer({
                   <form.Field
                     name="code"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Code:</Label>
-                        <Input
-                          type="text"
-                          placeholder="Code:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          id={field.name}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField field={field} label="Code:" />
                     )}
                   />
                 </div>
@@ -180,23 +163,7 @@ export function DepartmentFormDrawer({
                   <form.Field
                     name="name"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Name:</Label>
-                        <Input
-                          type="text"
-                          placeholder="Name:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          id={field.name}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField field={field} label="Name:" />
                     )}
                   />
                 </div>
@@ -204,23 +171,7 @@ export function DepartmentFormDrawer({
                   <form.Field
                     name="chairperson"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Chairperson:</Label>
-                        <Input
-                          type="text"
-                          placeholder="Chairperson:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          id={field.name}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField field={field} label="Chairperson:" />
                     )}
                   />
                 </div>
@@ -228,22 +179,11 @@ export function DepartmentFormDrawer({
                   <form.Field
                     name="description"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Description:</Label>
-                        <Textarea
-                          placeholder="Description:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          id={field.name}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField
+                        field={field}
+                        label="Description:"
+                        type="textarea"
+                      />
                     )}
                   />
                 </div>
@@ -266,7 +206,7 @@ export function DepartmentFormDrawer({
                           emptyMessage="No college found"
                         />
                         {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
+                          <em role="alert" className="text-destructive text-sm">
                             {field.state.meta.errors
                               .map((e) => e?.message)
                               .join(", ")}

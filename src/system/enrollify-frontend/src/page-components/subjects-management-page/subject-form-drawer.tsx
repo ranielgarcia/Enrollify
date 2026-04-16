@@ -19,8 +19,8 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/form-field";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { useForm } from "@tanstack/react-form";
@@ -132,7 +132,7 @@ export function SubjectFormDrawer({
       {/*  className="sm:max-w-[600px]!" */}
       <DrawerContent>
         <AuthorizeView
-          policy="canCreateSubject"
+          policy={isUpdatingSubject ? "canUpdateSubject" : "canCreateSubject"}
           unauthorized={
             <Unauthorized
               message="Your current role does not have the necessary permissions to create subject."
@@ -163,23 +163,7 @@ export function SubjectFormDrawer({
                   <form.Field
                     name="code"
                     children={(field) => (
-                      <div className="grid w-full items-center gap-3">
-                        <Label htmlFor={field.name}>Code:</Label>
-                        <Input
-                          type="text"
-                          placeholder="Code:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          id={field.name}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField field={field} label="Code:" />
                     )}
                   />
                 </div>
@@ -187,22 +171,7 @@ export function SubjectFormDrawer({
                   <form.Field
                     name="title"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Title:</Label>
-                        <Input
-                          type="text"
-                          value={field.state.value}
-                          placeholder="Title:"
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField field={field} label="Title:" />
                     )}
                   />
                 </div>
@@ -210,22 +179,7 @@ export function SubjectFormDrawer({
                   <form.Field
                     name="description"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Description:</Label>
-                        <Input
-                          type="text"
-                          value={field.state.value}
-                          placeholder="Description:"
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField field={field} label="Description:" />
                     )}
                   />
                 </div>
@@ -234,25 +188,11 @@ export function SubjectFormDrawer({
                   <form.Field
                     name="units"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Units:</Label>
-                        <Input
-                          type="number"
-                          step="0.5"
-                          value={field.state.value}
-                          placeholder="Units:"
-                          onChange={(e) =>
-                            field.handleChange(Number(e.target.value))
-                          }
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField
+                        field={field}
+                        label="Units:"
+                        type="number"
+                      />
                     )}
                   />
                 </div>
@@ -275,7 +215,7 @@ export function SubjectFormDrawer({
                         />
 
                         {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
+                          <em role="alert" className="text-destructive text-sm">
                             {field.state.meta.errors
                               .map((e) => e?.message)
                               .join(", ")}

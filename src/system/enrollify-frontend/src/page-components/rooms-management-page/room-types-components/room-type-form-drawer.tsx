@@ -21,9 +21,7 @@ import {
   updateRoomTypeOptions,
 } from "@/api/collections/room-type-collection";
 import { useMutation } from "@tanstack/react-query";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { FormField } from "@/components/form-field";
 
 type FormMeta = {
   submitAction: "create" | "update" | null;
@@ -139,23 +137,7 @@ export function RoomTypeFormDrawer({
                   <form.Field
                     name="name"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Type Name:</Label>
-                        <Input
-                          type="text"
-                          id={field.name}
-                          placeholder="Type Name:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField field={field} label="Type Name:" />
                     )}
                   />
                 </div>
@@ -163,21 +145,12 @@ export function RoomTypeFormDrawer({
                   <form.Field
                     name="description"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Description:</Label>
-                        <Textarea
-                          placeholder="e.g., Large classroom for lectures"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField
+                        field={field}
+                        label="Description:"
+                        type="textarea"
+                        placeholder="e.g., Large classroom for lectures"
+                      />
                     )}
                   />
                 </div>
