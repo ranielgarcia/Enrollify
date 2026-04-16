@@ -87,7 +87,9 @@ public static class InfrastructureServiceExtensions
         string? azureBlobStorageConnectionString = config.GetConnectionString("AzureBlobStorage");
         if (!string.IsNullOrEmpty(azureBlobStorageConnectionString))
         {
-            services.AddSingleton(new BlobServiceClient(azureBlobStorageConnectionString));
+            // TODO: Remove explicit ServiceVersion once Azurite supports the 2026-02-06 API version
+            services.AddSingleton(new BlobServiceClient(azureBlobStorageConnectionString,
+                new BlobClientOptions(BlobClientOptions.ServiceVersion.V2025_01_05)));
             services.AddScoped<IFileStorageService, AzureBlobStorageService>();
             logger.LogInformation("{Service} registered with Azure Blob Storage", nameof(IFileStorageService));
         }
