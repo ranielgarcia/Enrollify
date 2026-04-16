@@ -11,6 +11,8 @@ import {
 } from "@tanstack/react-table";
 import { Edit2, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useMemo } from "react";
+import { useTablePermissions } from "@/hooks/use-table-permissions";
 
 interface TeachersTableProps {
   teachers: Teacher[];
@@ -23,9 +25,10 @@ export function TeachersTable({
   onEdit,
   onDelete,
 }: TeachersTableProps) {
+  const { canUpdate, canDelete } = useTablePermissions("canUpdateTeacher", "canDeleteTeacher");
   const columnHelper = createColumnHelper<Teacher>();
 
-  const columns = [
+  const columns = useMemo(() => [
     columnHelper.display({
       id: "profilePicture",
       header: "",
@@ -116,6 +119,7 @@ export function TeachersTable({
               size="sm"
               onClick={() => onEdit(item)}
               className="hover:bg-blue-500/10 text-blue-600 hover:text-blue-700"
+              disabled={!canUpdate}
             >
               <Edit2 className="size-4" />
             </Button>
@@ -124,6 +128,7 @@ export function TeachersTable({
               size="sm"
               onClick={() => onDelete(item)}
               className="hover:bg-destructive/10 text-destructive hover:text-destructive"
+              disabled={!canDelete}
             >
               <Trash2 className="size-4" />
             </Button>
@@ -131,7 +136,7 @@ export function TeachersTable({
         );
       },
     }),
-  ];
+  ], [canUpdate, canDelete, onEdit, onDelete]);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({

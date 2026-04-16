@@ -1,7 +1,6 @@
 import type { Course } from "@/api/models/course";
 import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
-import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
 import { truncateText } from "@/lib/text-utils";
 import {
   createColumnHelper,
@@ -11,7 +10,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Edit2, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useTablePermissions } from "@/hooks/use-table-permissions";
 
 interface CoursesTableProps {
   courses: Course[];
@@ -20,25 +20,10 @@ interface CoursesTableProps {
 }
 
 export function CoursesTable({ courses, onEdit, onDelete }: CoursesTableProps) {
-  const { checkPolicy } = useAuthorization();
+  const { canUpdate, canDelete } = useTablePermissions("canUpdateCourse", "canDeleteCourse");
   const columnHelper = createColumnHelper<Course>();
-  const [canUpdate, setCanUpdate] = useState(false);
-  const [canDelete, setCanDelete] = useState(false);
 
-  useEffect(() => {
-    const checkPolicies = async () => {
-      const [updatePermission, deletePermission] = await Promise.all([
-        checkPolicy("canUpdateCourse"),
-        checkPolicy("canDeleteCourse"),
-      ]);
-      setCanUpdate(updatePermission);
-      setCanDelete(deletePermission);
-    };
-
-    checkPolicies();
-  }, [checkPolicy]);
-
-  const columns = [
+  const columns = useMemo(() => [
     columnHelper.accessor("code", {
       header: "Code",
       cell: (info) => <span>{info.getValue()}</span>,
@@ -120,7 +105,7 @@ export function CoursesTable({ courses, onEdit, onDelete }: CoursesTableProps) {
         );
       },
     }),
-  ];
+  ], [canUpdate, canDelete, onEdit, onDelete]);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({

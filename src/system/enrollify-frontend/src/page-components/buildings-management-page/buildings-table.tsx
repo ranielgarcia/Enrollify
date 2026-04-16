@@ -1,7 +1,6 @@
 import type { Building } from "@/api/models/building";
 import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
-import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
 import {
   createColumnHelper,
   getCoreRowModel,
@@ -10,7 +9,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Edit2, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useTablePermissions } from "@/hooks/use-table-permissions";
 
 interface BuildingsTableProps {
   buildings?: Building[];
@@ -23,25 +23,10 @@ export function BuildingsTable({
   onEdit,
   onDelete,
 }: BuildingsTableProps) {
-  const { checkPolicy } = useAuthorization();
+  const { canUpdate, canDelete } = useTablePermissions("canUpdateBuilding", "canDeleteBuilding");
   const columnHelper = createColumnHelper<Building>();
-  const [canUpdate, setCanUpdate] = useState(false);
-  const [canDelete, setCanDelete] = useState(false);
 
-  useEffect(() => {
-    const checkPolicies = async () => {
-      const [updatePermission, deletePermission] = await Promise.all([
-        checkPolicy("canUpdateBuilding"),
-        checkPolicy("canDeleteBuilding"),
-      ]);
-      setCanUpdate(updatePermission);
-      setCanDelete(deletePermission);
-    };
-
-    checkPolicies();
-  }, [checkPolicy]);
-
-  const columns = [
+  const columns = useMemo(() => [
     columnHelper.accessor("name", {
       header: "Name",
       cell: (info) => <span>{info.getValue()}</span>,
@@ -119,7 +104,7 @@ export function BuildingsTable({
         );
       },
     }),
-  ];
+  ], [canUpdate, canDelete, onEdit, onDelete]);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({

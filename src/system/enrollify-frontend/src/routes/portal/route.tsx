@@ -1,3 +1,4 @@
+import { PageErrorBoundary } from "@/components/page-error-boundary";
 import AppContainer from "@/components/app-container";
 import { OverlayLoader } from "@/components/app-loading-overlay";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -48,6 +49,7 @@ export const Route = createFileRoute("/portal")({
     crumb: undefined,
   }),
   component: RouteComponent,
+  errorComponent: PageErrorBoundary,
 });
 
 function RouteComponent() {

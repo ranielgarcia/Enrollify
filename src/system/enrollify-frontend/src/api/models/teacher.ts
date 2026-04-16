@@ -1,35 +1,44 @@
-export type TeacherSubject = {
-  id: number;
-  code: string;
-  title: string;
-};
+import { z } from "zod";
+import { AuditInfoSchema } from "@/api/models/audit-info";
+import { CollegeSchema } from "./college";
+import { DepartmentSchema } from "./department";
+import { SubjectSchema } from "./subject";
 
-export type TeacherCollege = {
-  id: number;
-  name: string;
-};
+const TeacherCollegeSchema = CollegeSchema.pick({
+  id: true,
+  name: true,
+});
 
-export type TeacherDepartment = {
-  id: number;
-  name: string;
-};
+const TeacherDepartmentSchema = DepartmentSchema.pick({
+  id: true,
+  name: true,
+});
 
-export type Teacher = {
-  id: number;
-  profilePicture?: string;
-  firstName: string;
-  lastName: string;
-  middleName: string;
-  email: string;
-  phoneNumber: string;
-  college: TeacherCollege;
-  academicTitle: string;
-  department: TeacherDepartment;
-  qualification: string;
-  specialization: string;
-  officeLocation: string;
-  officeHours: string;
-  biography?: string;
-  subjects: TeacherSubject[];
-  createdAt: string;
-};
+const TeacherSubjectSchema = SubjectSchema.pick({
+  id: true,
+  code: true,
+  title: true,
+});
+
+export const TeacherSchema = z
+  .object({
+    id: z.number(),
+    profilePicture: z.string().optional(),
+    firstName: z.string(),
+    lastName: z.string(),
+    middleName: z.string(),
+    email: z.string(),
+    phoneNumber: z.string(),
+    college: TeacherCollegeSchema,
+    academicTitle: z.string(),
+    department: TeacherDepartmentSchema,
+    qualification: z.string(),
+    specialization: z.string(),
+    officeLocation: z.string(),
+    officeHours: z.string(),
+    biography: z.string().optional(),
+    subjects: z.array(TeacherSubjectSchema),
+  })
+  .extend(AuditInfoSchema.shape);
+
+export type Teacher = z.infer<typeof TeacherSchema>;

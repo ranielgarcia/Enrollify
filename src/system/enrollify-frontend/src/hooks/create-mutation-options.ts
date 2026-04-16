@@ -101,6 +101,17 @@ const createMutationOptions = <P extends ApiPath, V extends HttpVerb = "post">({
     mutationKey: Array.isArray(mutationKey)
       ? mutationKey
       : [mutationKey, params],
+    retry: (failureCount, error) => {
+      if (failureCount >= 1) return false;
+      const status = (error as AxiosError)?.response?.status;
+      // Only retry on network errors (no response) or 5xx server errors
+      if (!status) return true;
+      if (status >= 500) return true;
+      return false;
+    },
+    retryDelay: (attemptIndex) =>
+      Math.min(1000 * Math.pow(2, attemptIndex), 30000) +
+      Math.random() * 1000,
     ...options,
     mutationFn: async (
       formData: FormData | JsonRequestBodyForPathVerb<P, V>

@@ -1,11 +1,34 @@
-export default function Loader() {
+import { cn } from "@/lib/utils";
+
+const sizeClasses = {
+  sm: "h-5 w-5",
+  md: "h-8 w-8",
+  lg: "h-12 w-12",
+} as const;
+
+interface LoaderProps {
+  size?: "sm" | "md" | "lg";
+  className?: string;
+  label?: string;
+}
+
+export default function Loader({
+  size = "md",
+  className,
+  label = "Loading",
+}: LoaderProps) {
   return (
-    <div className="flex items-center justify-center">
+    <div
+      className={cn("flex items-center justify-center", className)}
+      role="status"
+      aria-live="polite"
+    >
       <svg
-        className="h-8 w-8 animate-spin text-gray-900 dark:text-gray-50"
+        className={cn("animate-spin text-primary", sizeClasses[size])}
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
       >
         <path
           d="M12 4.75V6.25"
@@ -64,6 +87,7 @@ export default function Loader() {
           strokeLinejoin="round"
         />
       </svg>
+      <span className="sr-only">{label}</span>
     </div>
   );
 }

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useElementWidth } from "@/hooks/use-element-width";
 
 export type MultiSearchableSelectOption = {
   value: string;
@@ -51,35 +52,13 @@ export function MultiSearchableSelect({
   const [open, setOpen] = React.useState(false);
   const [selected, setSelected] = React.useState<string[]>(value || []);
   const inputRef = React.useRef<HTMLDivElement>(null);
-  const [inputWidth, setInputWidth] = React.useState<number>(0);
+  const inputWidth = useElementWidth(inputRef);
 
   React.useEffect(() => {
     if (value !== undefined) {
       setSelected(value);
     }
   }, [value]);
-
-  React.useEffect(() => {
-    if (inputRef.current) {
-      // Set initial width
-      setInputWidth(inputRef.current.offsetWidth);
-
-      // Update width on resize
-      const resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          setInputWidth(entry.contentRect.width);
-        }
-      });
-
-      resizeObserver.observe(inputRef.current);
-
-      return () => {
-        if (inputRef.current) {
-          resizeObserver.unobserve(inputRef.current);
-        }
-      };
-    }
-  }, []);
 
   const selectedOptions = options.filter((option) =>
     selected.includes(option.value)
@@ -110,7 +89,13 @@ export function MultiSearchableSelect({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className={cn("relative", className)} ref={inputRef}>
+        <div
+          className={cn("relative", className)}
+          ref={inputRef}
+          role="combobox"
+          aria-expanded={open}
+          aria-haspopup="listbox"
+        >
           <div
             className={cn(
               "min-h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
@@ -184,8 +169,8 @@ export function MultiSearchableSelect({
         align="start"
       >
         <Command className="w-full">
-          <CommandInput placeholder={searchPlaceholder} />
-          <CommandList style={{ maxHeight: "200px" }}>
+          <CommandInput placeholder={searchPlaceholder} aria-label="Search options" />
+          <CommandList style={{ maxHeight: "200px" }} role="listbox">
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
@@ -193,6 +178,8 @@ export function MultiSearchableSelect({
                   key={option.value}
                   value={option.label} // Use label for searching
                   onSelect={() => handleSelect(option.value)}
+                  role="option"
+                  aria-selected={selected.includes(option.value)}
                 >
                   <div className="flex items-center">
                     <div

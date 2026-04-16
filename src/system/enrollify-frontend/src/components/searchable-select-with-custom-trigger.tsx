@@ -13,6 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useElementWidth } from "@/hooks/use-element-width";
 
 export type MultiSearchableSelectWithTriggerOption = {
   value: string;
@@ -52,33 +53,13 @@ export function SearchableSelectWithCustomTrigger({
   const [open, setOpen] = React.useState(false);
   const [selected, setSelected] = React.useState<string[]>(value || []);
   const triggerRef = React.useRef<HTMLDivElement>(null);
-  const [triggerWidth, setTriggerWidth] = React.useState<number>(0);
+  const triggerWidth = useElementWidth(triggerRef);
 
   React.useEffect(() => {
     if (value !== undefined) {
       setSelected(value);
     }
   }, [value]);
-
-  React.useEffect(() => {
-    if (triggerRef.current && popoverWidth === "trigger") {
-      setTriggerWidth(triggerRef.current.offsetWidth);
-
-      const resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          setTriggerWidth(entry.contentRect.width);
-        }
-      });
-
-      resizeObserver.observe(triggerRef.current);
-
-      return () => {
-        if (triggerRef.current) {
-          resizeObserver.unobserve(triggerRef.current);
-        }
-      };
-    }
-  }, [popoverWidth]);
 
   const handleSelect = (optionValue: string) => {
     const newSelected = selected.includes(optionValue)
@@ -102,7 +83,13 @@ export function SearchableSelectWithCustomTrigger({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild disabled={disabled}>
-        <div ref={triggerRef} className={cn("w-full", className)}>
+        <div
+          ref={triggerRef}
+          className={cn("w-full", className)}
+          role="combobox"
+          aria-expanded={open}
+          aria-haspopup="listbox"
+        >
           {trigger}
           {/* Hidden inputs for form submission */}
           {name &&
@@ -117,8 +104,8 @@ export function SearchableSelectWithCustomTrigger({
         align={align}
       >
         <Command className="w-full">
-          <CommandInput placeholder={searchPlaceholder} />
-          <CommandList style={{ maxHeight: "200px" }}>
+          <CommandInput placeholder={searchPlaceholder} aria-label="Search options" />
+          <CommandList style={{ maxHeight: "200px" }} role="listbox">
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
@@ -126,6 +113,8 @@ export function SearchableSelectWithCustomTrigger({
                   key={option.value}
                   value={option.label}
                   onSelect={() => handleSelect(option.value)}
+                  role="option"
+                  aria-selected={selected.includes(option.value)}
                 >
                   <div className="flex items-center">{option.label}</div>
                 </CommandItem>

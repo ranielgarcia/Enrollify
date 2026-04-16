@@ -10,10 +10,17 @@ interface getCurrentTokenProps {
   forceRefreshToken?: boolean;
 }
 
+let cachedToken: string | null = null;
+let tokenExpiresAt = 0;
+
 export async function getCurrentAccessToken({
   msalInstance,
   forceRefreshToken,
 }: getCurrentTokenProps): Promise<string> {
+  if (cachedToken && Date.now() < tokenExpiresAt && !forceRefreshToken) {
+    return cachedToken;
+  }
+
   const acquireAccessToken = async () => {
     const activeAccount = msalInstance.getActiveAccount();
     const accounts = msalInstance.getAllAccounts();
@@ -33,6 +40,9 @@ export async function getCurrentAccessToken({
 
     try {
       const tokenResponse = await msalInstance.acquireTokenSilent(request);
+      cachedToken = tokenResponse.accessToken;
+      tokenExpiresAt =
+        (tokenResponse.expiresOn?.getTime() ?? Date.now()) - 60_000;
       return tokenResponse.accessToken;
     } catch (error) {
       console.error("Error acquiring token silently:", error);
@@ -40,6 +50,9 @@ export async function getCurrentAccessToken({
       if (error instanceof InteractionRequiredAuthError) {
         try {
           const tokenResponse = await msalInstance.acquireTokenPopup(request);
+          cachedToken = tokenResponse.accessToken;
+          tokenExpiresAt =
+            (tokenResponse.expiresOn?.getTime() ?? Date.now()) - 60_000;
           return tokenResponse.accessToken;
         } catch (popupError) {
           console.error("Error acquiring token via popup:", popupError);

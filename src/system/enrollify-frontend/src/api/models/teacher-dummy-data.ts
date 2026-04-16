@@ -1,3 +1,4 @@
+// TODO: Remove this file when teacher API endpoints are implemented
 import type { Teacher } from "@/api/models/teacher";
 
 export const DUMMY_TEACHERS: Teacher[] = [

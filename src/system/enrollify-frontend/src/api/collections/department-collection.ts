@@ -23,6 +23,7 @@ export const getAllDepartmentsOptions = () =>
     path: "/api/departments",
     options: {
       queryKey: queryKeys.all(),
+      staleTime: 1000 * 60 * 5,
       select: (departments): Department[] => {
         return departments.map((t) => DepartmentSchema.parse(t));
       },

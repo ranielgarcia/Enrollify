@@ -66,6 +66,7 @@ const OverlayLoader = React.forwardRef<HTMLDivElement, OverlayLoaderProps>(
         className={cn(overlayVariants({ variant }), className)}
         role="status"
         aria-live="polite"
+        aria-busy={isLoading}
         {...props}
       >
         <div className="flex flex-col items-center gap-4">

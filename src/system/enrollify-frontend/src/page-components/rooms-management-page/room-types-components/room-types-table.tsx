@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table";
 import { Edit2, Trash2 } from "lucide-react";
 import type { RoomType } from "../../../api/models/room-type";
-import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useTablePermissions } from "@/hooks/use-table-permissions";
 
 interface RoomTypesTableProps {
   roomTypes?: RoomType[];
@@ -23,25 +23,10 @@ export function RoomTypesTable({
   onEdit,
   onDelete,
 }: RoomTypesTableProps) {
-  const { checkPolicy } = useAuthorization();
+  const { canUpdate, canDelete } = useTablePermissions("canUpdateRoomTypes", "canDeleteRoomTypes");
   const columnHelper = createColumnHelper<RoomType>();
-  const [canUpdate, setCanUpdate] = useState(false);
-  const [canDelete, setCanDelete] = useState(false);
 
-  useEffect(() => {
-    const checkPolicies = async () => {
-      const [updatePermission, deletePermission] = await Promise.all([
-        checkPolicy("canUpdateRoomTypes"),
-        checkPolicy("canDeleteRoomTypes"),
-      ]);
-      setCanUpdate(updatePermission);
-      setCanDelete(deletePermission);
-    };
-
-    checkPolicies();
-  }, [checkPolicy]);
-
-  const columns = [
+  const columns = useMemo(() => [
     columnHelper.accessor("name", {
       header: "Name",
       cell: (info) => <span>{info.getValue()}</span>,
@@ -109,7 +94,7 @@ export function RoomTypesTable({
         );
       },
     }),
-  ];
+  ], [canUpdate, canDelete, onEdit, onDelete]);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({

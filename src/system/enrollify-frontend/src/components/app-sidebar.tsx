@@ -1,14 +1,7 @@
 import * as React from "react";
-import {
-  BookOpen,
-  Bot,
-  GalleryVerticalEnd,
-  Settings2,
-  DatabaseIcon,
-  Calendar1Icon,
-} from "lucide-react";
+import { GalleryVerticalEnd } from "lucide-react";
 
-import { NavMain, type NavMainItemProp } from "@/components/nav-main";
+import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
@@ -19,137 +12,10 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { useAuthenticationContext } from "@/infrastructure/authentication/authentication-context";
-import { PolicyNames } from "@/infrastructure/authorization/models/PolicyNames";
+import { navigationItems } from "@/components/navigation-config";
+import type { NavMainItemProp } from "@/components/nav-main";
 
-// This is sample data.
-const data = {
-  navMain: [
-    {
-      title: "Master Data Management",
-      url: "/portal/master-data",
-      icon: DatabaseIcon,
-      isActive: true,
-      items: [
-        {
-          title: "Colleges",
-          url: "/portal/master-data/colleges",
-          viewAuthorizationPolicies: [PolicyNames.canViewColleges],
-        },
-        {
-          title: "Departments",
-          url: "/portal/master-data/departments",
-          viewAuthorizationPolicies: [PolicyNames.canViewDepartments],
-        },
-        {
-          title: "Courses",
-          url: "/portal/master-data/courses",
-          viewAuthorizationPolicies: [PolicyNames.canViewCourses],
-        },
-        {
-          title: "Buildings",
-          url: "/portal/master-data/buildings",
-          viewAuthorizationPolicies: [PolicyNames.canViewBuildings],
-        },
-        {
-          title: "Rooms",
-          url: "/portal/master-data/rooms",
-          viewAuthorizationPolicies: [
-            PolicyNames.canViewRooms,
-            PolicyNames.canViewRoomTypes,
-          ],
-        },
-        {
-          title: "Subjects",
-          url: "/portal/master-data/subjects",
-          viewAuthorizationPolicies: [PolicyNames.canViewSubjects],
-        },
-      ],
-    } as NavMainItemProp,
-    {
-      title: "Curriculum and Scheduling",
-      url: "/portal/curriculum-and-scheduling",
-      icon: Calendar1Icon,
-      isActive: false,
-      items: [
-        {
-          title: "Curriculum",
-          url: "/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}",
-          viewAuthorizationPolicies: [PolicyNames.canViewCurriculums],
-        },
-        {
-          title: "Teachers",
-          url: "/portal/curriculum-and-scheduling/teachers",
-          viewAuthorizationPolicies: [PolicyNames.canViewTeachers],
-        },
-      ],
-    } as NavMainItemProp,
-    {
-      title: "Models",
-      url: "/",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "/login",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    } as NavMainItemProp,
-    {
-      title: "Documentation",
-      url: "/",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "/",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    } as NavMainItemProp,
-    {
-      title: "Settings",
-      url: "/",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "/",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    } as NavMainItemProp,
-  ],
-};
+const navMain = navigationItems as NavMainItemProp[];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const userContext = useAuthenticationContext();
@@ -172,7 +38,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenuButton>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMain} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser

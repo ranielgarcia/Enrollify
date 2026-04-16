@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Edit2, Trash2 } from "lucide-react";
 import { DataTable } from "@/components/data-table";
 import type { College } from "@/api/models/college";
-import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { truncateText } from "@/lib/text-utils";
+import { useTablePermissions } from "@/hooks/use-table-permissions";
 
 interface CollegesTableProps {
   colleges?: College[];
@@ -24,25 +24,10 @@ export function CollegesTable({
   onEdit,
   onDelete,
 }: CollegesTableProps) {
-  const { checkPolicy } = useAuthorization();
+  const { canUpdate, canDelete } = useTablePermissions("canUpdateCollege", "canDeleteCollege");
   const columnHelper = createColumnHelper<College>();
-  const [canUpdate, setCanUpdate] = useState(false);
-  const [canDelete, setCanDelete] = useState(false);
 
-  useEffect(() => {
-    const checkPolicies = async () => {
-      const [updatePermission, deletePermission] = await Promise.all([
-        checkPolicy("canUpdateCollege"),
-        checkPolicy("canDeleteCollege"),
-      ]);
-      setCanUpdate(updatePermission);
-      setCanDelete(deletePermission);
-    };
-
-    checkPolicies();
-  }, [checkPolicy]);
-
-  const columns = [
+  const columns = useMemo(() => [
     columnHelper.accessor("code", {
       header: "Code",
       cell: (info) => <span>{info.getValue()}</span>,
@@ -119,7 +104,7 @@ export function CollegesTable({
         );
       },
     }),
-  ];
+  ], [canUpdate, canDelete, onEdit, onDelete]);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({

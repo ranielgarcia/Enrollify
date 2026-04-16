@@ -16,6 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import { useElementWidth } from "@/hooks/use-element-width";
 
 export type SearchableSelectOption = {
   value: string;
@@ -48,7 +49,7 @@ export function SearchableSelect({
   const [open, setOpen] = React.useState(false);
   const [selected, setSelected] = React.useState<string>(value || "");
   const inputRef = React.useRef<HTMLDivElement>(null);
-  const [inputWidth, setInputWidth] = React.useState<number>(0);
+  const inputWidth = useElementWidth(inputRef);
 
   React.useEffect(() => {
     if (value !== undefined) {
@@ -56,34 +57,18 @@ export function SearchableSelect({
     }
   }, [value]);
 
-  React.useEffect(() => {
-    if (inputRef.current) {
-      // Set initial width
-      setInputWidth(inputRef.current.offsetWidth);
-
-      // Update width on resize
-      const resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          setInputWidth(entry.contentRect.width);
-        }
-      });
-
-      resizeObserver.observe(inputRef.current);
-
-      return () => {
-        if (inputRef.current) {
-          resizeObserver.unobserve(inputRef.current);
-        }
-      };
-    }
-  }, []);
-
   const selectedOption = options.find((option) => option.value === selected);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className={cn("relative", className)} ref={inputRef}>
+        <div
+          className={cn("relative", className)}
+          ref={inputRef}
+          role="combobox"
+          aria-expanded={open}
+          aria-haspopup="listbox"
+        >
           <Input
             readOnly
             value={selectedOption ? selectedOption.label : ""}
@@ -106,8 +91,8 @@ export function SearchableSelect({
         align="start"
       >
         <Command className="w-full">
-          <CommandInput placeholder={searchPlaceholder} />
-          <CommandList style={{ maxHeight: "200px" }}>
+          <CommandInput placeholder={searchPlaceholder} aria-label="Search options" />
+          <CommandList style={{ maxHeight: "200px" }} role="listbox">
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
@@ -119,6 +104,8 @@ export function SearchableSelect({
                     onValueChange?.(option.value);
                     setOpen(false);
                   }}
+                  role="option"
+                  aria-selected={selected === option.value}
                 >
                   <Check
                     className={cn(

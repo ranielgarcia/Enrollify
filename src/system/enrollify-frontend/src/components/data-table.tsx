@@ -53,11 +53,12 @@ export function DataTable<TData>({
             value={(table.getState().globalFilter as string) ?? ""}
             onChange={(event) => table.setGlobalFilter(event.target.value)}
             className="h-10 w-full max-w-sm"
+            aria-label="Search table data"
           />
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto bg-transparent">
+            <Button variant="outline" className="ml-auto bg-transparent" aria-haspopup="true">
               Columns <ChevronDown className="ml-2 size-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -102,6 +103,7 @@ export function DataTable<TData>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  aria-selected={row.getIsSelected()}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="py-4">
@@ -128,7 +130,7 @@ export function DataTable<TData>({
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         {showSelectedRows && (
-          <div className="text-muted-foreground flex-1 text-sm">
+          <div className="text-muted-foreground flex-1 text-sm" role="status">
             {table.getFilteredSelectedRowModel().rows.length} of{" "}
             {table.getFilteredRowModel().rows.length} row(s) selected.
           </div>
