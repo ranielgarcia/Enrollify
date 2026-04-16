@@ -14,6 +14,7 @@ export const Scopes = {
   Subjects: 9,
   Curriculums: 10,
   SubjectEquivalenceGroups: 11,
+  Teachers: 12,
 } as const;
 
 export type ScopeName = keyof typeof Scopes;

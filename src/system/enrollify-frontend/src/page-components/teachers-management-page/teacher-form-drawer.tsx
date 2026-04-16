@@ -70,7 +70,7 @@ const teacherFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   middleName: z.string(),
-  email: z.string().email("Valid email is required"),
+  email: z.email("Valid email is required"),
   phoneNumber: z.string().min(7, "Phone number is required"),
   collegeId: z.string().min(1, "College is required"),
   academicTitle: z.string().min(1, "Academic title is required"),
@@ -121,8 +121,7 @@ export function TeacherFormDrawer({
     officeLocation: teacherToUpdate?.officeLocation ?? "",
     officeHours: teacherToUpdate?.officeHours ?? "",
     biography: teacherToUpdate?.biography ?? "",
-    subjectIds:
-      teacherToUpdate?.subjects.map((s) => s.id.toString()) ?? [],
+    subjectIds: teacherToUpdate?.subjects.map((s) => s.id.toString()) ?? [],
   };
 
   const form = useForm({
@@ -182,7 +181,9 @@ export function TeacherFormDrawer({
               <DrawerTitle>
                 {isUpdateTeacher ? "Update" : "Create"} Teacher
               </DrawerTitle>
-              <DrawerDescription>Set teacher profile details.</DrawerDescription>
+              <DrawerDescription>
+                Set teacher profile details.
+              </DrawerDescription>
             </DrawerHeader>
 
             <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
@@ -236,7 +237,9 @@ export function TeacherFormDrawer({
                     />
                     {!field.state.meta.isValid && (
                       <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors.map((e) => e?.message).join(", ")}
+                        {field.state.meta.errors
+                          .map((e) => e?.message)
+                          .join(", ")}
                       </em>
                     )}
                   </div>
@@ -258,7 +261,9 @@ export function TeacherFormDrawer({
                     />
                     {!field.state.meta.isValid && (
                       <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors.map((e) => e?.message).join(", ")}
+                        {field.state.meta.errors
+                          .map((e) => e?.message)
+                          .join(", ")}
                       </em>
                     )}
                   </div>
@@ -297,7 +302,9 @@ export function TeacherFormDrawer({
                     />
                     {!field.state.meta.isValid && (
                       <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors.map((e) => e?.message).join(", ")}
+                        {field.state.meta.errors
+                          .map((e) => e?.message)
+                          .join(", ")}
                       </em>
                     )}
                   </div>
@@ -319,7 +326,9 @@ export function TeacherFormDrawer({
                     />
                     {!field.state.meta.isValid && (
                       <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors.map((e) => e?.message).join(", ")}
+                        {field.state.meta.errors
+                          .map((e) => e?.message)
+                          .join(", ")}
                       </em>
                     )}
                   </div>
@@ -343,7 +352,9 @@ export function TeacherFormDrawer({
                     />
                     {!field.state.meta.isValid && (
                       <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors.map((e) => e?.message).join(", ")}
+                        {field.state.meta.errors
+                          .map((e) => e?.message)
+                          .join(", ")}
                       </em>
                     )}
                   </div>
@@ -365,7 +376,9 @@ export function TeacherFormDrawer({
                     />
                     {!field.state.meta.isValid && (
                       <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors.map((e) => e?.message).join(", ")}
+                        {field.state.meta.errors
+                          .map((e) => e?.message)
+                          .join(", ")}
                       </em>
                     )}
                   </div>
@@ -389,7 +402,9 @@ export function TeacherFormDrawer({
                     />
                     {!field.state.meta.isValid && (
                       <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors.map((e) => e?.message).join(", ")}
+                        {field.state.meta.errors
+                          .map((e) => e?.message)
+                          .join(", ")}
                       </em>
                     )}
                   </div>
@@ -411,7 +426,9 @@ export function TeacherFormDrawer({
                     />
                     {!field.state.meta.isValid && (
                       <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors.map((e) => e?.message).join(", ")}
+                        {field.state.meta.errors
+                          .map((e) => e?.message)
+                          .join(", ")}
                       </em>
                     )}
                   </div>
@@ -433,7 +450,9 @@ export function TeacherFormDrawer({
                     />
                     {!field.state.meta.isValid && (
                       <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors.map((e) => e?.message).join(", ")}
+                        {field.state.meta.errors
+                          .map((e) => e?.message)
+                          .join(", ")}
                       </em>
                     )}
                   </div>
@@ -449,7 +468,10 @@ export function TeacherFormDrawer({
                   name="officeLocation"
                   children={(field) => (
                     <div className="grid w-full items-center gap-2">
-                      <Label htmlFor={field.name} className="text-muted-foreground text-xs">
+                      <Label
+                        htmlFor={field.name}
+                        className="text-muted-foreground text-xs"
+                      >
                         Office Location:
                       </Label>
                       <Input
@@ -461,7 +483,9 @@ export function TeacherFormDrawer({
                       />
                       {!field.state.meta.isValid && (
                         <em role="alert" className="text-red-800 text-sm">
-                          {field.state.meta.errors.map((e) => e?.message).join(", ")}
+                          {field.state.meta.errors
+                            .map((e) => e?.message)
+                            .join(", ")}
                         </em>
                       )}
                     </div>
@@ -471,7 +495,10 @@ export function TeacherFormDrawer({
                   name="officeHours"
                   children={(field) => (
                     <div className="grid w-full items-center gap-2">
-                      <Label htmlFor={field.name} className="text-muted-foreground text-xs">
+                      <Label
+                        htmlFor={field.name}
+                        className="text-muted-foreground text-xs"
+                      >
                         Office Hours:
                       </Label>
                       <Input
@@ -483,7 +510,9 @@ export function TeacherFormDrawer({
                       />
                       {!field.state.meta.isValid && (
                         <em role="alert" className="text-red-800 text-sm">
-                          {field.state.meta.errors.map((e) => e?.message).join(", ")}
+                          {field.state.meta.errors
+                            .map((e) => e?.message)
+                            .join(", ")}
                         </em>
                       )}
                     </div>
@@ -530,7 +559,9 @@ export function TeacherFormDrawer({
                     />
                     {!field.state.meta.isValid && (
                       <em role="alert" className="text-red-800 text-sm">
-                        {field.state.meta.errors.map((e) => e?.message).join(", ")}
+                        {field.state.meta.errors
+                          .map((e) => e?.message)
+                          .join(", ")}
                       </em>
                     )}
                   </div>

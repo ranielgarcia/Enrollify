@@ -13,15 +13,14 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as PortalRouteRouteImport } from './routes/portal/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PortalHomeRouteImport } from './routes/portal/home'
-import { Route as PortalTeachersRouteRouteImport } from './routes/portal/teachers/route'
 import { Route as PortalMasterDataRouteRouteImport } from './routes/portal/master-data/route'
 import { Route as PortalCurriculumAndSchedulingRouteRouteImport } from './routes/portal/curriculum-and-scheduling/route'
-import { Route as PortalTeachersIndexRouteImport } from './routes/portal/teachers/index'
 import { Route as PortalMasterDataRoomsRouteImport } from './routes/portal/master-data/rooms'
 import { Route as PortalMasterDataDepartmentsRouteImport } from './routes/portal/master-data/departments'
 import { Route as PortalMasterDataCoursesRouteImport } from './routes/portal/master-data/courses'
 import { Route as PortalMasterDataCollegesRouteImport } from './routes/portal/master-data/colleges'
 import { Route as PortalMasterDataBuildingsRouteImport } from './routes/portal/master-data/buildings'
+import { Route as PortalCurriculumAndSchedulingTeachersRouteImport } from './routes/portal/curriculum-and-scheduling/teachers'
 import { Route as PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125RouteImport } from './routes/portal/curriculum-and-scheduling/curriculum.{-$curriculumId}'
 import { Route as PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125RouteImport } from './routes/portal/master-data/subjects.{-$page}.{-$pageSize}'
 
@@ -45,11 +44,6 @@ const PortalHomeRoute = PortalHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => PortalRouteRoute,
 } as any)
-const PortalTeachersRouteRoute = PortalTeachersRouteRouteImport.update({
-  id: '/teachers',
-  path: '/teachers',
-  getParentRoute: () => PortalRouteRoute,
-} as any)
 const PortalMasterDataRouteRoute = PortalMasterDataRouteRouteImport.update({
   id: '/master-data',
   path: '/master-data',
@@ -61,11 +55,6 @@ const PortalCurriculumAndSchedulingRouteRoute =
     path: '/curriculum-and-scheduling',
     getParentRoute: () => PortalRouteRoute,
   } as any)
-const PortalTeachersIndexRoute = PortalTeachersIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => PortalTeachersRouteRoute,
-} as any)
 const PortalMasterDataRoomsRoute = PortalMasterDataRoomsRouteImport.update({
   id: '/rooms',
   path: '/rooms',
@@ -94,6 +83,12 @@ const PortalMasterDataBuildingsRoute =
     path: '/buildings',
     getParentRoute: () => PortalMasterDataRouteRoute,
   } as any)
+const PortalCurriculumAndSchedulingTeachersRoute =
+  PortalCurriculumAndSchedulingTeachersRouteImport.update({
+    id: '/teachers',
+    path: '/teachers',
+    getParentRoute: () => PortalCurriculumAndSchedulingRouteRoute,
+  } as any)
 const PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route =
   PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125RouteImport.update(
     {
@@ -117,14 +112,13 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/portal/curriculum-and-scheduling': typeof PortalCurriculumAndSchedulingRouteRouteWithChildren
   '/portal/master-data': typeof PortalMasterDataRouteRouteWithChildren
-  '/portal/teachers': typeof PortalTeachersRouteRouteWithChildren
   '/portal/home': typeof PortalHomeRoute
+  '/portal/curriculum-and-scheduling/teachers': typeof PortalCurriculumAndSchedulingTeachersRoute
   '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
   '/portal/master-data/courses': typeof PortalMasterDataCoursesRoute
   '/portal/master-data/departments': typeof PortalMasterDataDepartmentsRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
-  '/portal/teachers/': typeof PortalTeachersIndexRoute
   '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}': typeof PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route
   '/portal/master-data/subjects/{-$page}/{-$pageSize}': typeof PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route
 }
@@ -135,12 +129,12 @@ export interface FileRoutesByTo {
   '/portal/curriculum-and-scheduling': typeof PortalCurriculumAndSchedulingRouteRouteWithChildren
   '/portal/master-data': typeof PortalMasterDataRouteRouteWithChildren
   '/portal/home': typeof PortalHomeRoute
+  '/portal/curriculum-and-scheduling/teachers': typeof PortalCurriculumAndSchedulingTeachersRoute
   '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
   '/portal/master-data/courses': typeof PortalMasterDataCoursesRoute
   '/portal/master-data/departments': typeof PortalMasterDataDepartmentsRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
-  '/portal/teachers': typeof PortalTeachersIndexRoute
   '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}': typeof PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route
   '/portal/master-data/subjects/{-$page}/{-$pageSize}': typeof PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route
 }
@@ -151,14 +145,13 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/portal/curriculum-and-scheduling': typeof PortalCurriculumAndSchedulingRouteRouteWithChildren
   '/portal/master-data': typeof PortalMasterDataRouteRouteWithChildren
-  '/portal/teachers': typeof PortalTeachersRouteRouteWithChildren
   '/portal/home': typeof PortalHomeRoute
+  '/portal/curriculum-and-scheduling/teachers': typeof PortalCurriculumAndSchedulingTeachersRoute
   '/portal/master-data/buildings': typeof PortalMasterDataBuildingsRoute
   '/portal/master-data/colleges': typeof PortalMasterDataCollegesRoute
   '/portal/master-data/courses': typeof PortalMasterDataCoursesRoute
   '/portal/master-data/departments': typeof PortalMasterDataDepartmentsRoute
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
-  '/portal/teachers/': typeof PortalTeachersIndexRoute
   '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}': typeof PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route
   '/portal/master-data/subjects/{-$page}/{-$pageSize}': typeof PortalMasterDataSubjectsChar123PageChar125Char123PageSizeChar125Route
 }
@@ -170,14 +163,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal/curriculum-and-scheduling'
     | '/portal/master-data'
-    | '/portal/teachers'
     | '/portal/home'
+    | '/portal/curriculum-and-scheduling/teachers'
     | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
     | '/portal/master-data/courses'
     | '/portal/master-data/departments'
     | '/portal/master-data/rooms'
-    | '/portal/teachers/'
     | '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}'
     | '/portal/master-data/subjects/{-$page}/{-$pageSize}'
   fileRoutesByTo: FileRoutesByTo
@@ -188,12 +180,12 @@ export interface FileRouteTypes {
     | '/portal/curriculum-and-scheduling'
     | '/portal/master-data'
     | '/portal/home'
+    | '/portal/curriculum-and-scheduling/teachers'
     | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
     | '/portal/master-data/courses'
     | '/portal/master-data/departments'
     | '/portal/master-data/rooms'
-    | '/portal/teachers'
     | '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}'
     | '/portal/master-data/subjects/{-$page}/{-$pageSize}'
   id:
@@ -203,14 +195,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/portal/curriculum-and-scheduling'
     | '/portal/master-data'
-    | '/portal/teachers'
     | '/portal/home'
+    | '/portal/curriculum-and-scheduling/teachers'
     | '/portal/master-data/buildings'
     | '/portal/master-data/colleges'
     | '/portal/master-data/courses'
     | '/portal/master-data/departments'
     | '/portal/master-data/rooms'
-    | '/portal/teachers/'
     | '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}'
     | '/portal/master-data/subjects/{-$page}/{-$pageSize}'
   fileRoutesById: FileRoutesById
@@ -251,13 +242,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalHomeRouteImport
       parentRoute: typeof PortalRouteRoute
     }
-    '/portal/teachers': {
-      id: '/portal/teachers'
-      path: '/teachers'
-      fullPath: '/portal/teachers'
-      preLoaderRoute: typeof PortalTeachersRouteRouteImport
-      parentRoute: typeof PortalRouteRoute
-    }
     '/portal/master-data': {
       id: '/portal/master-data'
       path: '/master-data'
@@ -271,13 +255,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/portal/curriculum-and-scheduling'
       preLoaderRoute: typeof PortalCurriculumAndSchedulingRouteRouteImport
       parentRoute: typeof PortalRouteRoute
-    }
-    '/portal/teachers/': {
-      id: '/portal/teachers/'
-      path: '/'
-      fullPath: '/portal/teachers/'
-      preLoaderRoute: typeof PortalTeachersIndexRouteImport
-      parentRoute: typeof PortalTeachersRouteRoute
     }
     '/portal/master-data/rooms': {
       id: '/portal/master-data/rooms'
@@ -314,6 +291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalMasterDataBuildingsRouteImport
       parentRoute: typeof PortalMasterDataRouteRoute
     }
+    '/portal/curriculum-and-scheduling/teachers': {
+      id: '/portal/curriculum-and-scheduling/teachers'
+      path: '/teachers'
+      fullPath: '/portal/curriculum-and-scheduling/teachers'
+      preLoaderRoute: typeof PortalCurriculumAndSchedulingTeachersRouteImport
+      parentRoute: typeof PortalCurriculumAndSchedulingRouteRoute
+    }
     '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}': {
       id: '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}'
       path: '/curriculum/{-$curriculumId}'
@@ -332,11 +316,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface PortalCurriculumAndSchedulingRouteRouteChildren {
+  PortalCurriculumAndSchedulingTeachersRoute: typeof PortalCurriculumAndSchedulingTeachersRoute
   PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route: typeof PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route
 }
 
 const PortalCurriculumAndSchedulingRouteRouteChildren: PortalCurriculumAndSchedulingRouteRouteChildren =
   {
+    PortalCurriculumAndSchedulingTeachersRoute:
+      PortalCurriculumAndSchedulingTeachersRoute,
     PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route:
       PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route,
   }
@@ -370,21 +357,9 @@ const PortalMasterDataRouteRouteWithChildren =
     PortalMasterDataRouteRouteChildren,
   )
 
-interface PortalTeachersRouteRouteChildren {
-  PortalTeachersIndexRoute: typeof PortalTeachersIndexRoute
-}
-
-const PortalTeachersRouteRouteChildren: PortalTeachersRouteRouteChildren = {
-  PortalTeachersIndexRoute: PortalTeachersIndexRoute,
-}
-
-const PortalTeachersRouteRouteWithChildren =
-  PortalTeachersRouteRoute._addFileChildren(PortalTeachersRouteRouteChildren)
-
 interface PortalRouteRouteChildren {
   PortalCurriculumAndSchedulingRouteRoute: typeof PortalCurriculumAndSchedulingRouteRouteWithChildren
   PortalMasterDataRouteRoute: typeof PortalMasterDataRouteRouteWithChildren
-  PortalTeachersRouteRoute: typeof PortalTeachersRouteRouteWithChildren
   PortalHomeRoute: typeof PortalHomeRoute
 }
 
@@ -392,7 +367,6 @@ const PortalRouteRouteChildren: PortalRouteRouteChildren = {
   PortalCurriculumAndSchedulingRouteRoute:
     PortalCurriculumAndSchedulingRouteRouteWithChildren,
   PortalMasterDataRouteRoute: PortalMasterDataRouteRouteWithChildren,
-  PortalTeachersRouteRoute: PortalTeachersRouteRouteWithChildren,
   PortalHomeRoute: PortalHomeRoute,
 }
 
