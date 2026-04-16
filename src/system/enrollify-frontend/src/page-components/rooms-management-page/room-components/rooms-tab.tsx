@@ -1,10 +1,10 @@
-import { useState } from "react";
 import { RoomsTable } from "./rooms-table";
 import type { RoomType } from "../../../api/models/room-type";
 import type { Room } from "@/api/models/room";
 import type { Building } from "@/api/models/building";
 import { RoomFormDrawer } from "./room-form-drawer";
 import { DeleteRoomAlertDialog } from "./delete-room-alert-dialog";
+import { useCrudState } from "@/hooks/use-crud-state";
 
 interface RoomsTabProps {
   rooms?: Room[];
@@ -13,25 +13,15 @@ interface RoomsTabProps {
 }
 
 export function RoomsTab({ roomTypes, rooms, buildings }: RoomsTabProps) {
-  const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
-  const [roomToEdit, setRoomToEdit] = useState<Room | undefined>();
-  const [roomToDelete, setRoomToDelete] = useState<Room | undefined>();
-
-  const handleEdit = (room: Room) => {
-    setRoomToEdit(room);
-    setIsFormOpen(true);
-  };
-
-  const handleDrawerOnOpenChange = (open: boolean) => {
-    setRoomToEdit(undefined);
-    setIsFormOpen(open);
-  };
-
-  const handleDeleteAlertDialogOnOpenChange = (open: boolean) => {
-    if (!open) {
-      setRoomToDelete(undefined);
-    }
-  };
+  const {
+    isFormOpen,
+    entityToEdit,
+    entityToDelete,
+    handleEdit,
+    handleDelete,
+    handleFormOpenChange,
+    handleDeleteDialogOpenChange,
+  } = useCrudState<Room>();
 
   return (
     <>
@@ -39,22 +29,22 @@ export function RoomsTab({ roomTypes, rooms, buildings }: RoomsTabProps) {
         <RoomFormDrawer
           roomTypes={roomTypes}
           buildings={buildings}
-          onOpenChange={handleDrawerOnOpenChange}
-          roomToUpdate={roomToEdit}
+          onOpenChange={handleFormOpenChange}
+          roomToUpdate={entityToEdit}
           isOpen={isFormOpen}
-          setIsOpen={setIsFormOpen}
+          setIsOpen={handleFormOpenChange}
         />
       </div>
       <RoomsTable
         rooms={rooms}
         onEdit={handleEdit}
-        onDelete={setRoomToDelete}
+        onDelete={handleDelete}
       />
 
       <DeleteRoomAlertDialog
-        roomToDelete={roomToDelete}
-        isOpen={!!roomToDelete}
-        onOpenChange={handleDeleteAlertDialogOnOpenChange}
+        roomToDelete={entityToDelete}
+        isOpen={!!entityToDelete}
+        onOpenChange={handleDeleteDialogOpenChange}
       />
     </>
   );

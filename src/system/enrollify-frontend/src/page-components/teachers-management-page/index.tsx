@@ -4,41 +4,27 @@ import { useState } from "react";
 import { DeleteTeacherAlertDialog } from "./delete-teacher-alert-dialog";
 import { TeacherFormDrawer } from "./teacher-form-drawer";
 import { TeachersTable } from "./teachers-table";
+import { useCrudState } from "@/hooks/use-crud-state";
+import { ManagementPageLayout } from "@/components/management-page-layout";
 
 export default function TeachersManagementPage() {
   const [teachers, setTeachers] = useState<Teacher[]>(DUMMY_TEACHERS);
-  const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
-  const [teacherToEdit, setTeacherToEdit] = useState<Teacher | undefined>();
-  const [teacherToDelete, setTeacherToDelete] = useState<Teacher | undefined>();
-
-  const handleEdit = (teacher: Teacher) => {
-    setTeacherToEdit(teacher);
-    setIsFormOpen(true);
-  };
-
-  const handleDelete = (teacher: Teacher) => {
-    setTeacherToDelete(teacher);
-  };
-
-  const handleDrawerOnOpenChange = (open: boolean) => {
-    if (!open) {
-      setTeacherToEdit(undefined);
-    }
-    setIsFormOpen(open);
-  };
-
-  const handleDeleteAlertDialogOnOpenChange = (open: boolean) => {
-    if (!open) {
-      setTeacherToDelete(undefined);
-    }
-  };
+  const {
+    isFormOpen,
+    entityToEdit,
+    entityToDelete,
+    handleEdit,
+    handleDelete,
+    handleFormOpenChange,
+    handleDeleteDialogOpenChange,
+  } = useCrudState<Teacher>();
 
   const handleFormSubmit = (
     data: Parameters<
       React.ComponentProps<typeof TeacherFormDrawer>["onSubmit"]
     >[0],
   ) => {
-    if (teacherToEdit) {
+    if (entityToEdit) {
       const college = {
         id: Number(data.collegeId),
         name:
@@ -65,7 +51,7 @@ export default function TeachersManagementPage() {
       };
       setTeachers((prev) =>
         prev.map((t) =>
-          t.id === teacherToEdit.id
+          t.id === entityToEdit.id
             ? {
                 ...t,
                 ...data,
@@ -129,40 +115,32 @@ export default function TeachersManagementPage() {
   };
 
   return (
-    <main>
-      <div className="p-4 md:p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Teachers Management
-          </h1>
-          <p className="text-muted-foreground">
-            Manage faculty members and their academic profiles
-          </p>
-        </div>
-
-        <div className="flex justify-end mb-4">
-          <TeacherFormDrawer
-            onOpenChange={handleDrawerOnOpenChange}
-            teacherToUpdate={teacherToEdit}
-            isOpen={isFormOpen}
-            setIsOpen={setIsFormOpen}
-            onSubmit={handleFormSubmit}
-          />
-        </div>
-
-        <TeachersTable
-          teachers={teachers}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
-
-        <DeleteTeacherAlertDialog
-          isOpen={!!teacherToDelete}
-          onOpenChange={handleDeleteAlertDialogOnOpenChange}
-          teacherToDelete={teacherToDelete}
-          onConfirmDelete={handleConfirmDelete}
+    <ManagementPageLayout
+      title="Teachers Management"
+      description="Manage faculty members and their academic profiles"
+    >
+      <div className="flex justify-end mb-4">
+        <TeacherFormDrawer
+          onOpenChange={handleFormOpenChange}
+          teacherToUpdate={entityToEdit}
+          isOpen={isFormOpen}
+          setIsOpen={handleFormOpenChange}
+          onSubmit={handleFormSubmit}
         />
       </div>
-    </main>
+
+      <TeachersTable
+        teachers={teachers}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <DeleteTeacherAlertDialog
+        isOpen={!!entityToDelete}
+        onOpenChange={handleDeleteDialogOpenChange}
+        teacherToDelete={entityToDelete}
+        onConfirmDelete={handleConfirmDelete}
+      />
+    </ManagementPageLayout>
   );
 }

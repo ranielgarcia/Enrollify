@@ -1,57 +1,45 @@
 import { RoomTypesTable } from "./room-types-table";
 import { RoomTypeFormDrawer } from "./room-type-form-drawer";
-import { useState } from "react";
 import type { RoomType } from "../../../api/models/room-type";
 import { DeleteRoomTypeAlertDialog } from "./delete-room-type-alert-dialog";
+import { useCrudState } from "@/hooks/use-crud-state";
 
 interface RoomTypeTabProps {
   roomTypes?: RoomType[];
 }
 
 export function RoomTypeTab({ roomTypes }: RoomTypeTabProps) {
-  const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
-  const [roomTypeToEdit, setRoomTypeToEdit] = useState<RoomType | undefined>();
-  const [roomTypeToDelete, setRoomTypeToDelete] = useState<
-    RoomType | undefined
-  >();
-
-  const handleEdit = (roomType: RoomType) => {
-    setRoomTypeToEdit(roomType);
-    setIsFormOpen(true);
-  };
-
-  const handleDrawerOnOpenChange = (open: boolean) => {
-    setRoomTypeToEdit(undefined);
-    setIsFormOpen(open);
-  };
-
-  const handleDeleteAlertDialogOnOpenChange = (open: boolean) => {
-    if (!open) {
-      setRoomTypeToDelete(undefined);
-    }
-  };
+  const {
+    isFormOpen,
+    entityToEdit,
+    entityToDelete,
+    handleEdit,
+    handleDelete,
+    handleFormOpenChange,
+    handleDeleteDialogOpenChange,
+  } = useCrudState<RoomType>();
 
   return (
     <>
       <div className="flex justify-end">
         <RoomTypeFormDrawer
-          onOpenChange={handleDrawerOnOpenChange}
-          roomTypeToUpdate={roomTypeToEdit}
+          onOpenChange={handleFormOpenChange}
+          roomTypeToUpdate={entityToEdit}
           isOpen={isFormOpen}
-          setIsOpen={setIsFormOpen}
+          setIsOpen={handleFormOpenChange}
         />
       </div>
 
       <RoomTypesTable
         roomTypes={roomTypes}
         onEdit={handleEdit}
-        onDelete={setRoomTypeToDelete}
+        onDelete={handleDelete}
       />
 
       <DeleteRoomTypeAlertDialog
-        isOpen={!!roomTypeToDelete}
-        onOpenChange={handleDeleteAlertDialogOnOpenChange}
-        roomTypeToDelete={roomTypeToDelete}
+        isOpen={!!entityToDelete}
+        onOpenChange={handleDeleteDialogOpenChange}
+        roomTypeToDelete={entityToDelete}
       />
     </>
   );
