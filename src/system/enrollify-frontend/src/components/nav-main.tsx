@@ -27,6 +27,7 @@ interface SubItemProps {
   url: FileRouteTypes["to"] & {};
   params?: Record<string, string>;
   viewAuthorizationPolicies: PolicyName[];
+  icon?: LucideIcon;
 }
 
 export interface NavMainItemProp {
@@ -84,14 +85,24 @@ function NavSubItem({
       <SidebarMenuSubButton
         asChild
         className={cn(
-          "transition-colors",
+          "transition-all duration-200 rounded-md",
           isActive
-            ? "bg-sidebar-primary text-sidebar-primary-foreground"
-            : "text-sidebar-foreground hover:bg-sidebar-accent/10",
+            ? "bg-sidebar-primary/10 text-sidebar-primary font-medium border-l-4 border-sidebar-primary"
+            : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
         )}
       >
         <Link to={subItem.url} params={subItem.params}>
-          <span>{subItem.title}</span>
+          {subItem.icon && (
+            <subItem.icon
+              className={cn(
+                "size-4 shrink-0 transition-colors duration-200",
+                isActive
+                  ? "text-sidebar-primary"
+                  : "text-sidebar-foreground/50",
+              )}
+            />
+          )}
+          <span className="text-[13px] tracking-wide">{subItem.title}</span>
         </Link>
       </SidebarMenuSubButton>
     </SidebarMenuSubItem>
@@ -151,38 +162,62 @@ export function NavMain({ items }: NavMainProps) {
   );
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
-      <SidebarMenu>
-        {items.map((item) => (
-          <Collapsible
-            key={item.title}
-            asChild
-            defaultOpen={item.isActive || isParentActive(item)}
-            className="group/collapsible"
-          >
-            <SidebarMenuItem>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {item.items?.map((subItem) => (
-                    <NavSubItem
-                      key={subItem.title}
-                      subItem={subItem}
-                      isActive={isSubItemActive(subItem.url)}
-                    />
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
-            </SidebarMenuItem>
-          </Collapsible>
-        ))}
+    <SidebarGroup className="px-3 py-2">
+      <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-widest text-sidebar-foreground/40 mb-1 px-3">
+        Navigation
+      </SidebarGroupLabel>
+      <SidebarMenu className="gap-1.5">
+        {items.map((item) => {
+          const parentActive = isParentActive(item);
+          return (
+            <Collapsible
+              key={item.title}
+              asChild
+              defaultOpen={item.isActive || parentActive}
+              className="group/collapsible"
+            >
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton
+                    tooltip={item.title}
+                    className={cn(
+                      "rounded-lg transition-all duration-200 h-9",
+                      parentActive
+                        ? "bg-sidebar-primary/10 text-sidebar-primary font-medium"
+                        : "hover:bg-sidebar-accent/50",
+                    )}
+                  >
+                    {item.icon && (
+                      <item.icon
+                        className={cn(
+                          "size-[18px] shrink-0 transition-colors duration-200",
+                          parentActive
+                            ? "text-sidebar-primary"
+                            : "text-sidebar-foreground/60",
+                        )}
+                      />
+                    )}
+                    <span className="text-[13.5px] font-medium tracking-wide">
+                      {item.title}
+                    </span>
+                    <ChevronRight className="ml-auto size-4 text-sidebar-foreground/40 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub className="ml-4 border-l border-sidebar-border/50 pl-3 py-1 mt-0.5">
+                    {item.items?.map((subItem) => (
+                      <NavSubItem
+                        key={subItem.title}
+                        subItem={subItem}
+                        isActive={isSubItemActive(subItem.url)}
+                      />
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
+          );
+        })}
       </SidebarMenu>
     </SidebarGroup>
   );
