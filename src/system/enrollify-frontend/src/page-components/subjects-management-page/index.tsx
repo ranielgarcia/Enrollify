@@ -1,14 +1,19 @@
 import { getAllRoomTypesOptions } from "@/api/collections/room-type-collection";
 import { getAllSubjectsPaginatedOptions } from "@/api/collections/subject-collection";
 import type { Subject } from "@/api/models/subject";
+import type { SubjectEquivalenceGroup } from "@/api/models/subject-equivalence";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { BookOpen, LayoutGrid, Link2, List } from "lucide-react";
+import { BookOpen, LayoutGrid, Link2, List, Plus } from "lucide-react";
 import { useCallback, useState } from "react";
 import { DeleteSubjectAlertDialog } from "./delete-subject-alert-dialog";
-import { EquivalenceGroupsTab } from "./equivalence-groups";
+import {
+  DeleteEquivalenceGroupDialog,
+  EquivalenceGroupFormDialog,
+  EquivalenceGroupsTab,
+} from "./equivalence-groups";
 import { SubjectFormDrawer } from "./subject-form-drawer";
 import { SubjectsCardGrid } from "./subjects-card-grid";
 import { SubjectsTable } from "./subjects-table";
@@ -30,6 +35,17 @@ export default function SubjectsManagementPage() {
     handleFormOpenChange,
     handleDeleteDialogOpenChange,
   } = useCrudState<Subject>();
+
+  const {
+    isFormOpen: isEquivalenceFormOpen,
+    entityToEdit: equivalenceToEdit,
+    entityToDelete: equivalenceToDelete,
+    handleEdit: handleEquivalenceEdit,
+    handleDelete: handleEquivalenceDelete,
+    handleFormOpenChange: handleEquivalenceFormOpenChange,
+    handleDeleteDialogOpenChange: handleEquivalenceDeleteDialogOpenChange,
+    openCreateForm: openEquivalenceCreateForm,
+  } = useCrudState<SubjectEquivalenceGroup>();
 
   const [viewMode, setViewMode] = useState<ViewMode>("table");
 
@@ -90,7 +106,10 @@ export default function SubjectsManagementPage() {
             setIsOpen={handleFormOpenChange}
           />
         ) : (
-          <></>
+          <Button onClick={openEquivalenceCreateForm}>
+            <Plus className="size-4 mr-2" />
+            New Equivalence Group
+          </Button>
         )
       }
     >
@@ -160,8 +179,22 @@ export default function SubjectsManagementPage() {
         </TabsContent>
 
         {/* Equivalence Groups Tab */}
-        <TabsContent value="equivalence">
-          <EquivalenceGroupsTab />
+        <TabsContent value="equivalence" className="space-y-4">
+          <EquivalenceGroupsTab
+            onEdit={handleEquivalenceEdit}
+            onDelete={handleEquivalenceDelete}
+            onCreateNew={openEquivalenceCreateForm}
+          />
+          <EquivalenceGroupFormDialog
+            isOpen={isEquivalenceFormOpen}
+            onOpenChange={handleEquivalenceFormOpenChange}
+            groupToEdit={equivalenceToEdit}
+          />
+          <DeleteEquivalenceGroupDialog
+            isOpen={!!equivalenceToDelete}
+            onOpenChange={handleEquivalenceDeleteDialogOpenChange}
+            groupToDelete={equivalenceToDelete}
+          />
         </TabsContent>
       </Tabs>
 

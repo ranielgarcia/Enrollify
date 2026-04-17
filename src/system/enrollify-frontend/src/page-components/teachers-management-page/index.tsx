@@ -6,6 +6,7 @@ import { TeacherFormDrawer } from "./teacher-form-drawer";
 import { TeachersTable } from "./teachers-table";
 import { useCrudState } from "@/hooks/use-crud-state";
 import { ManagementPageLayout } from "@/components/management-page-layout";
+import { GraduationCap } from "lucide-react";
 
 export default function TeachersManagementPage() {
   const [teachers, setTeachers] = useState<Teacher[]>(DUMMY_TEACHERS);
@@ -118,8 +119,8 @@ export default function TeachersManagementPage() {
     <ManagementPageLayout
       title="Teachers Management"
       description="Manage faculty members and their academic profiles"
-    >
-      <div className="flex justify-end mb-4">
+      icon={<GraduationCap />}
+      createNewItemButton={
         <TeacherFormDrawer
           onOpenChange={handleFormOpenChange}
           teacherToUpdate={entityToEdit}
@@ -127,8 +128,8 @@ export default function TeachersManagementPage() {
           setIsOpen={handleFormOpenChange}
           onSubmit={handleFormSubmit}
         />
-      </div>
-
+      }
+    >
       <TeachersTable
         teachers={teachers}
         onEdit={handleEdit}
