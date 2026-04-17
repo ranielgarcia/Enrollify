@@ -7,6 +7,7 @@ import { DeleteBuildingAlertDialog } from "./delete-building-alert-dialog";
 import { getAllCollegesOptions } from "@/api/collections/college-collection";
 import { useCrudState } from "@/hooks/use-crud-state";
 import { ManagementPageLayout } from "@/components/management-page-layout";
+import { BuildingIcon } from "lucide-react";
 
 export default function BuildingPage() {
   const {
@@ -20,7 +21,7 @@ export default function BuildingPage() {
   } = useCrudState<Building>();
 
   const { data: buildings, isPending: isLoadingBuildings } = useSuspenseQuery(
-    getAllBuildingsOptions()
+    getAllBuildingsOptions(),
   );
 
   const { data: colleges } = useSuspenseQuery(getAllCollegesOptions());
@@ -30,8 +31,7 @@ export default function BuildingPage() {
       title="Building Management"
       description="Manage building resources"
       isLoading={isLoadingBuildings}
-    >
-      <div className="flex justify-end">
+      createNewItemButton={
         <BuildingFormDrawer
           colleges={colleges}
           onOpenChange={handleFormOpenChange}
@@ -39,8 +39,9 @@ export default function BuildingPage() {
           isOpen={isFormOpen}
           setIsOpen={handleFormOpenChange}
         />
-      </div>
-
+      }
+      icon={<BuildingIcon />}
+    >
       <BuildingsTable
         buildings={buildings}
         onEdit={handleEdit}

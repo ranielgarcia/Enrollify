@@ -79,13 +79,27 @@ export default function SubjectsManagementPage() {
     <ManagementPageLayout
       title="Subject Management"
       description="Manage subjects and their equivalence relationships"
+      icon={<BookOpen />}
+      createNewItemButton={
+        activeTab === "subjects" ? (
+          <SubjectFormDrawer
+            roomTypes={roomTypes}
+            onOpenChange={handleFormOpenChange}
+            subjectToUpdate={entityToEdit}
+            isOpen={isFormOpen}
+            setIsOpen={handleFormOpenChange}
+          />
+        ) : (
+          <></>
+        )
+      }
     >
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
         className="space-y-6"
       >
-        <TabsList>
+        <TabsList variant="line">
           <TabsTrigger value="subjects" className="gap-2">
             <BookOpen className="size-4" />
             Subjects
@@ -123,13 +137,6 @@ export default function SubjectsManagementPage() {
             </div>
 
             {/* Add Subject Button */}
-            <SubjectFormDrawer
-              roomTypes={roomTypes}
-              onOpenChange={handleFormOpenChange}
-              subjectToUpdate={entityToEdit}
-              isOpen={isFormOpen}
-              setIsOpen={handleFormOpenChange}
-            />
           </div>
 
           {/* Subjects Display */}

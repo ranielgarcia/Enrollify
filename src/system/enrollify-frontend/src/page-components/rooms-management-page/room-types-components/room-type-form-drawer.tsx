@@ -59,10 +59,10 @@ export function RoomTypeFormDrawer({
   };
 
   const { mutateAsync: createNewRoomTypeAsync } = useMutation(
-    createRoomTypeOptions()
+    createRoomTypeOptions(),
   );
   const { mutateAsync: updateRoomTypeAsync } = useMutation(
-    updateRoomTypeOptions(roomTypeToUpdate?.id ?? 0)
+    updateRoomTypeOptions(roomTypeToUpdate?.id ?? 0),
   );
 
   const form = useForm({
@@ -97,7 +97,10 @@ export function RoomTypeFormDrawer({
       onOpenChange={onOpenChange}
     >
       <DrawerTrigger asChild>
-        <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer">
+        <Button
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+          size="sm"
+        >
           <Plus className="size-4" />
           Add Room Type
         </Button>

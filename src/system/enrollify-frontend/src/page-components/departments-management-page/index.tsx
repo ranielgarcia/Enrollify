@@ -7,6 +7,7 @@ import { DepartmentFormDrawer } from "./department-form-drawer";
 import { DeleteDepartmentAlertDialog } from "./delete-department-alert-dialog";
 import { useCrudState } from "@/hooks/use-crud-state";
 import { ManagementPageLayout } from "@/components/management-page-layout";
+import { Castle } from "lucide-react";
 
 export default function DepartmentPage() {
   const {
@@ -27,8 +28,7 @@ export default function DepartmentPage() {
     <ManagementPageLayout
       title="Department Management"
       description="Manage department resources"
-    >
-      <div className="flex justify-end">
+      createNewItemButton={
         <DepartmentFormDrawer
           colleges={colleges}
           onOpenChange={handleFormOpenChange}
@@ -36,8 +36,9 @@ export default function DepartmentPage() {
           isOpen={isFormOpen}
           setIsOpen={handleFormOpenChange}
         />
-      </div>
-
+      }
+      icon={<Castle />}
+    >
       <DepartmentsTable
         departments={departments}
         onEdit={handleEdit}

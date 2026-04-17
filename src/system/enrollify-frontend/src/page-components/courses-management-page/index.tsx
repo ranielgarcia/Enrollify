@@ -7,6 +7,7 @@ import { CoursesTable } from "./courses-table";
 import { DeleteCourseAlertDialog } from "./delete-course-alert-dialog";
 import { useCrudState } from "@/hooks/use-crud-state";
 import { ManagementPageLayout } from "@/components/management-page-layout";
+import { GraduationCap } from "lucide-react";
 
 export default function CoursesManagementPage() {
   const {
@@ -27,8 +28,7 @@ export default function CoursesManagementPage() {
     <ManagementPageLayout
       title="Course Management"
       description="Manage course resources"
-    >
-      <div className="flex justify-end">
+      createNewItemButton={
         <CourseFormDrawer
           colleges={colleges}
           onOpenChange={handleFormOpenChange}
@@ -36,8 +36,9 @@ export default function CoursesManagementPage() {
           isOpen={isFormOpen}
           setIsOpen={handleFormOpenChange}
         />
-      </div>
-
+      }
+      icon={<GraduationCap />}
+    >
       <CoursesTable
         courses={courses}
         onEdit={handleEdit}
