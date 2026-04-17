@@ -1,3 +1,7 @@
+import {
+  createSubjectEquivalenceGroupOptions,
+  updateSubjectEquivalenceGroupOptions,
+} from "@/api/collections/subject-equivalence-group-collection";
 import type { SubjectEquivalenceGroup } from "@/api/models/subject-equivalence";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import z from "zod";
@@ -30,17 +35,30 @@ interface EquivalenceGroupFormDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   groupToEdit?: SubjectEquivalenceGroup | null;
-  onSubmit: (data: GroupFormData) => Promise<void>;
 }
 
 export function EquivalenceGroupFormDialog({
   isOpen,
   onOpenChange,
   groupToEdit,
-  onSubmit,
 }: EquivalenceGroupFormDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!groupToEdit;
+
+  const { mutateAsync: createSubjectEquivalenceGroupAsync } = useMutation(
+    createSubjectEquivalenceGroupOptions(),
+  );
+  const { mutateAsync: updateSubjectEquivalenceGroupAsync } = useMutation(
+    updateSubjectEquivalenceGroupOptions(groupToEdit?.id ?? 0),
+  );
+
+  const handleFormSubmit = async (data: GroupFormData) => {
+    if (groupToEdit) {
+      await updateSubjectEquivalenceGroupAsync({ name: data.name });
+    } else {
+      await createSubjectEquivalenceGroupAsync({ name: data.name });
+    }
+  };
 
   const form = useForm({
     defaultValues: {
@@ -52,7 +70,7 @@ export function EquivalenceGroupFormDialog({
     onSubmit: async ({ value }) => {
       setIsSubmitting(true);
       try {
-        await onSubmit(value);
+        await handleFormSubmit(value);
         onOpenChange(false);
       } finally {
         setIsSubmitting(false);

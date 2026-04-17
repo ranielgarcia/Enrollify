@@ -9,10 +9,7 @@ import { DeleteEquivalenceGroupDialog } from "./delete-equivalence-group-dialog"
 import { AddSubjectToGroupDialog } from "./add-subject-to-group-dialog";
 import {
   addSubjectsToEquivalenceGroupOptions,
-  createSubjectEquivalenceGroupOptions,
-  deleteSubjectEquivalenceGroupOptions,
   getAllSubjectEquivalenceGroupsOptions,
-  updateSubjectEquivalenceGroupOptions,
 } from "@/api/collections/subject-equivalence-group-collection";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
@@ -37,16 +34,6 @@ export function EquivalenceGroupsTab() {
   const { data: groups } = useQuery(
     getAllSubjectEquivalenceGroupsOptions(true),
   );
-  const { mutateAsync: createSubjectEquivalenceGroupAsync } = useMutation(
-    createSubjectEquivalenceGroupOptions(),
-  );
-  const { mutateAsync: updateSubjectEquivalenceGroupAsync } = useMutation(
-    updateSubjectEquivalenceGroupOptions(groupToEdit?.id ?? 0),
-  );
-  const {
-    mutateAsync: deleteSubjectEquivalenceGroupAsync,
-    isPending: isDeletingSubjectEquivalenceGroup,
-  } = useMutation(deleteSubjectEquivalenceGroupOptions(groupToDelete?.id ?? 0));
 
   const { mutateAsync: addSubjectsToGroupAsync } = useMutation(
     addSubjectsToEquivalenceGroupOptions(groupToAddSubject?.id ?? 0),
@@ -86,19 +73,6 @@ export function EquivalenceGroupsTab() {
   const handleAddSubject = (group: SubjectEquivalenceGroup) => {
     setGroupToAddSubject(group);
     setIsAddSubjectDialogOpen(true);
-  };
-
-  const handleFormSubmit = async (data: { name: string }) => {
-    if (groupToEdit) {
-      await updateSubjectEquivalenceGroupAsync({ name: data.name });
-    } else {
-      await createSubjectEquivalenceGroupAsync({ name: data.name });
-    }
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!groupToDelete) return;
-    await deleteSubjectEquivalenceGroupAsync({});
   };
 
   const handleAddSubjectsToGroup = async (subjectIds: number[]) => {
@@ -163,15 +137,12 @@ export function EquivalenceGroupsTab() {
         isOpen={isFormDialogOpen}
         onOpenChange={setIsFormDialogOpen}
         groupToEdit={groupToEdit}
-        onSubmit={handleFormSubmit}
       />
 
       <DeleteEquivalenceGroupDialog
         isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
-        group={groupToDelete}
-        onConfirm={handleConfirmDelete}
-        isDeleting={isDeletingSubjectEquivalenceGroup}
+        groupToDelete={groupToDelete}
       />
 
       <AddSubjectToGroupDialog

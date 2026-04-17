@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { OverlayLoader } from "@/components/app-loading-overlay";
 import { useMutation } from "@tanstack/react-query";
+import type React from "react";
+import type { ReactNode } from "react";
 
 interface ValidationQuery {
   data: number | undefined;
@@ -24,6 +26,7 @@ type DeleteAlertDialogBaseProps<T> = {
   getEntityName: (entity: T) => string;
   validationQuery?: ValidationQuery;
   validationMessage?: string;
+  customDialogDescription?: ReactNode;
 };
 
 type MutationDeleteProps<T> = DeleteAlertDialogBaseProps<T> & {
@@ -50,9 +53,10 @@ export function DeleteAlertDialog<T>({
   onConfirmDelete,
   validationQuery,
   validationMessage,
+  customDialogDescription,
 }: DeleteAlertDialogProps<T>) {
   const { mutateAsync, isPending: isMutating } = useMutation(
-    deleteMutationOptions ?? { mutationFn: async () => {} }
+    deleteMutationOptions ?? { mutationFn: async () => {} },
   );
 
   const isDeletingInProgress = deleteMutationOptions ? isMutating : false;
@@ -105,9 +109,13 @@ export function DeleteAlertDialog<T>({
             </AlertDialogDescription>
           ) : (
             <AlertDialogDescription>
-              Deleting {lowerLabel} <strong>{entityName}</strong> <br />
-              This action cannot be undone. This will permanently delete your{" "}
-              {lowerLabel} and remove your data from our servers.
+              {customDialogDescription ?? (
+                <>
+                  Deleting {lowerLabel} <strong>{entityName}</strong> <br />
+                  This action cannot be undone. This will permanently delete
+                  your {lowerLabel} and remove your data from our servers.
+                </>
+              )}
             </AlertDialogDescription>
           )}
         </AlertDialogHeader>
