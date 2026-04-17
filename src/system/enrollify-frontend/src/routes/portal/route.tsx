@@ -1,5 +1,4 @@
 import { PageErrorBoundary } from "@/components/page-error-boundary";
-import AppContainer from "@/components/app-container";
 import { OverlayLoader } from "@/components/app-loading-overlay";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
@@ -76,7 +75,7 @@ function RouteComponent() {
           <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-              <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+              <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 bg-sidebar">
                 <div className="flex items-center gap-2 px-4">
                   <SidebarTrigger className="-ml-1" />
                   <Separator
@@ -110,21 +109,19 @@ function RouteComponent() {
                   </Breadcrumb>
                 </div>
               </header>
-              <AppContainer>
-                <Suspense
-                  fallback={
-                    <OverlayLoader
-                      isLoading={true}
-                      text="Loading data..."
-                      size="lg"
-                    />
-                  }
-                >
-                  <Outlet />
-                </Suspense>
+              <Suspense
+                fallback={
+                  <OverlayLoader
+                    isLoading={true}
+                    text="Loading data..."
+                    size="lg"
+                  />
+                }
+              >
+                <Outlet />
+              </Suspense>
 
-                <Toaster position="bottom-right" />
-              </AppContainer>
+              <Toaster position="bottom-right" />
             </SidebarInset>
           </SidebarProvider>
         </SystemSettingsProvider>

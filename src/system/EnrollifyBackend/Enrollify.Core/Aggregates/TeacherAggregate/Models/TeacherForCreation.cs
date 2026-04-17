@@ -13,4 +13,12 @@ public class TeacherForCreation
     public DepartmentId DepartmentId { get; set; }
 
     public string AcademicTitle { get; set; } = null!;
+
+    public TeacherPhotoForCreation? Photo { get; set; }
+}
+
+public class TeacherPhotoForCreation
+{
+    public required byte[] Photo { get; set; }
+    public required string ContentType { get; set; }
 }

@@ -45,9 +45,9 @@ export function DataTable<TData>({
   totalPages,
 }: DataTableProps<TData>) {
   return (
-    <div className="space-y-4">
+    <div className="w-full min-w-0 space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex flex-1 items-center gap-2">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <Input
             placeholder="Search..."
             value={(table.getState().globalFilter as string) ?? ""}
@@ -58,7 +58,11 @@ export function DataTable<TData>({
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto bg-transparent" aria-haspopup="true">
+            <Button
+              variant="outline"
+              className="ml-auto bg-transparent"
+              aria-haspopup="true"
+            >
               Columns <ChevronDown className="ml-2 size-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -79,18 +83,24 @@ export function DataTable<TData>({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="rounded-lg border border-border overflow-hidden">
-        <Table>
+      <div className="w-full min-w-0 overflow-x-auto rounded-md border border-border">
+        <Table className="table-fixed">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent">
+              <TableRow
+                key={headerGroup.id}
+                className="border-b bg-slate-50 hover:bg-slate-50"
+              >
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="h-12">
+                  <TableHead
+                    key={header.id}
+                    className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-600"
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}
@@ -104,12 +114,13 @@ export function DataTable<TData>({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   aria-selected={row.getIsSelected()}
+                  className="border-b hover:bg-slate-50/50 transition-colors"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="py-4">
+                    <TableCell key={cell.id} className="px-4 py-3">
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

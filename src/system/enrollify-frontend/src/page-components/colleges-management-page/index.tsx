@@ -6,6 +6,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { getAllCollegesOptions } from "@/api/collections/college-collection";
 import { useCrudState } from "@/hooks/use-crud-state";
 import { ManagementPageLayout } from "@/components/management-page-layout";
+import { SchoolIcon } from "lucide-react";
 
 export default function CollegesPage() {
   const {
@@ -19,7 +20,7 @@ export default function CollegesPage() {
   } = useCrudState<College>();
 
   const { data: colleges, isPending: isLoadingColleges } = useSuspenseQuery(
-    getAllCollegesOptions()
+    getAllCollegesOptions(),
   );
 
   return (
@@ -27,16 +28,16 @@ export default function CollegesPage() {
       title="College Management"
       description="Manage college resources"
       isLoading={isLoadingColleges}
-    >
-      <div className="flex justify-end">
+      createNewItemButton={
         <CollegeFormDrawer
           onOpenChange={handleFormOpenChange}
           collegeToUpdate={entityToEdit}
           isOpen={isFormOpen}
           setIsOpen={handleFormOpenChange}
         />
-      </div>
-
+      }
+      icon={<SchoolIcon />}
+    >
       <CollegesTable
         colleges={colleges}
         onEdit={handleEdit}

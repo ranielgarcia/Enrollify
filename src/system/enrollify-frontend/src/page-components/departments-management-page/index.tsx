@@ -25,8 +25,8 @@ export default function DepartmentPage() {
 
   return (
     <ManagementPageLayout
-      title="College Management"
-      description="Manage college resources"
+      title="Department Management"
+      description="Manage department resources"
     >
       <div className="flex justify-end">
         <DepartmentFormDrawer
