@@ -117,6 +117,8 @@ interface MultiYearSubjectGridEditorProps {
   curriculum: CurriculumWithSubjects;
 }
 
+const SESSION_STORAGE_KEY = "curr-multi-year-subj-grid-editor-auto-save";
+
 export default function MultiYearSubjectGridEditor({
   curriculum,
 }: MultiYearSubjectGridEditorProps) {
@@ -125,8 +127,18 @@ export default function MultiYearSubjectGridEditor({
 
   const [isDirty, setIsDirty] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
-  const [isAutoSaveEnabled, setIsAutoSaveEnabled] = useState(true);
+  const [isAutoSaveEnabled, setIsAutoSaveEnabled] = useState(() =>
+    sessionStorage.getItem(SESSION_STORAGE_KEY) &&
+    sessionStorage.getItem(SESSION_STORAGE_KEY) === "enabled"
+      ? true
+      : false,
+  );
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleAutoSaveToggle = (value: boolean) => {
+    setIsAutoSaveEnabled(value);
+    sessionStorage.setItem(SESSION_STORAGE_KEY, value ? "enabled" : "disabled");
+  };
 
   // Track pending removals for rollback on save error
   const pendingRemovedSubjectsRef = useRef<
@@ -265,7 +277,13 @@ export default function MultiYearSubjectGridEditor({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- saveStatus is intentionally excluded to prevent re-triggering on status changes
-  }, [grid, isDirty, isAutoSaveEnabled, performSave, saveCurriculumContentAsync]);
+  }, [
+    grid,
+    isDirty,
+    isAutoSaveEnabled,
+    performSave,
+    saveCurriculumContentAsync,
+  ]);
 
   // Helper to mark grid as dirty when updating
   const updateGridWithDirty = (updater: (prev: YearGrid) => YearGrid) => {
@@ -544,7 +562,7 @@ export default function MultiYearSubjectGridEditor({
           <Switch
             id="auto-save-switch"
             checked={isAutoSaveEnabled}
-            onCheckedChange={setIsAutoSaveEnabled}
+            onCheckedChange={handleAutoSaveToggle}
             size="sm"
           />
         </div>
