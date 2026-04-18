@@ -1,13 +1,10 @@
-import {
-  createColumnHelper,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Edit2, Trash2 } from "lucide-react";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/data-table/data-table";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { useDataTable } from "@/hooks/use-data-table";
 import type { College } from "@/api/models/college";
 import { useMemo } from "react";
 import { truncateText } from "@/lib/text-utils";
@@ -33,23 +30,28 @@ export function CollegesTable({
   const columns = useMemo(
     () => [
       columnHelper.accessor("code", {
-        header: "Code",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Code" />,
+        meta: { label: "Code" },
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor("name", {
-        header: "Name",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Name" />,
+        meta: { label: "Name" },
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor("description", {
-        header: "Description",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Description" />,
+        meta: { label: "Description" },
         cell: (info) => <span>{truncateText(info.getValue(), 30)}</span>,
       }),
       columnHelper.accessor("dean", {
-        header: "Dean",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Dean" />,
+        meta: { label: "Dean" },
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor("createdAt", {
-        header: "Created At",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Created At" />,
+        meta: { label: "Created At" },
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor(
@@ -59,12 +61,14 @@ export function CollegesTable({
             : "",
         {
           id: "createdBy",
-          header: "Created By",
+          header: ({ column }) => <DataTableColumnHeader column={column} label="Created By" />,
+          meta: { label: "Created By" },
           cell: (info) => <span>{info.getValue()}</span>,
         },
       ),
       columnHelper.accessor("updatedAt", {
-        header: "Updated At",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Updated At" />,
+        meta: { label: "Updated At" },
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor(
@@ -74,13 +78,15 @@ export function CollegesTable({
             : "",
         {
           id: "updatedBy",
-          header: "Updated By",
+          header: ({ column }) => <DataTableColumnHeader column={column} label="Updated By" />,
+          meta: { label: "Updated By" },
           cell: (info) => <span>{info.getValue()}</span>,
         },
       ),
       columnHelper.display({
         id: "actions",
         header: "Actions",
+        enableHiding: false,
         cell: (info) => {
           const item = info.row.original;
 
@@ -112,14 +118,14 @@ export function CollegesTable({
     [canUpdate, canDelete, onEdit, onDelete],
   );
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
+  const { table } = useDataTable({
     data: colleges ?? [],
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   });
 
-  return <DataTable table={table} columns={columns} />;
+  return (
+    <DataTable table={table}>
+      <DataTableToolbar table={table} />
+    </DataTable>
+  );
 }

@@ -67,29 +67,27 @@ export default function SubjectsManagementPage() {
 
   const { data: roomTypes } = useSuspenseQuery(getAllRoomTypesOptions());
 
+  const handlePageChange = useCallback((newPage: number, newPageSize: number) => {
+    navigate({
+      to: "/portal/master-data/subjects/{-$page}/{-$pageSize}",
+      params: {
+        page: String(newPage),
+        pageSize: String(newPageSize),
+      },
+    });
+  }, [navigate]);
+
   const handlePreviousPage = useCallback(() => {
     if (currentPage > 1) {
-      navigate({
-        to: "/portal/master-data/subjects/{-$page}/{-$pageSize}",
-        params: {
-          page: String(currentPage - 1),
-          pageSize: String(currentPageSize),
-        },
-      });
+      handlePageChange(currentPage - 1, currentPageSize);
     }
-  }, [currentPage, currentPageSize, navigate]);
+  }, [currentPage, currentPageSize, handlePageChange]);
 
   const handleNextPage = useCallback(() => {
     if (pagedSubjects && currentPage < pagedSubjects.totalPages) {
-      navigate({
-        to: "/portal/master-data/subjects/{-$page}/{-$pageSize}",
-        params: {
-          page: String(currentPage + 1),
-          pageSize: String(currentPageSize),
-        },
-      });
+      handlePageChange(currentPage + 1, currentPageSize);
     }
-  }, [currentPage, currentPageSize, navigate, pagedSubjects]);
+  }, [currentPage, currentPageSize, handlePageChange, pagedSubjects]);
 
   return (
     <ManagementPageLayout
@@ -164,8 +162,7 @@ export default function SubjectsManagementPage() {
               pagedSubjects={pagedSubjects}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onPreviousPage={handlePreviousPage}
-              onNextPage={handleNextPage}
+              onPageChange={handlePageChange}
             />
           ) : (
             <SubjectsCardGrid

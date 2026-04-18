@@ -1,14 +1,11 @@
 import type { Teacher } from "@/api/models/teacher";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/data-table/data-table";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  createColumnHelper,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { useDataTable } from "@/hooks/use-data-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import { Edit2, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMemo } from "react";
@@ -32,6 +29,7 @@ export function TeachersTable({
     columnHelper.display({
       id: "profilePicture",
       header: "",
+      enableHiding: false,
       cell: (info) => {
         const teacher = info.row.original;
         const initials = `${teacher.firstName[0]}${teacher.lastName[0]}`;
@@ -49,42 +47,52 @@ export function TeachersTable({
       (row) => `${row.firstName} ${row.middleName ? row.middleName + " " : ""}${row.lastName}`,
       {
         id: "fullName",
-        header: "Full Name",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Full Name" />,
+        meta: { label: "Full Name" },
         cell: (info) => <span className="font-medium">{info.getValue()}</span>,
       },
     ),
     columnHelper.accessor("academicTitle", {
-      header: "Academic Title",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Academic Title" />,
+      meta: { label: "Academic Title" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("email", {
-      header: "Email",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Email" />,
+      meta: { label: "Email" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("phoneNumber", {
-      header: "Phone",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Phone" />,
+      meta: { label: "Phone" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor((row) => row.college.name, {
       id: "college",
-      header: "College",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="College" />,
+      meta: { label: "College" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor((row) => row.department.name, {
       id: "department",
-      header: "Department",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Department" />,
+      meta: { label: "Department" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("specialization", {
-      header: "Specialization",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Specialization" />,
+      meta: { label: "Specialization" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("officeLocation", {
-      header: "Office",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Office" />,
+      meta: { label: "Office" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("subjects", {
-      header: "Subjects",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Subjects" />,
+      meta: { label: "Subjects" },
+      enableSorting: false,
       cell: (info) => {
         const subjects = info.getValue();
         return (
@@ -104,12 +112,14 @@ export function TeachersTable({
       },
     }),
     columnHelper.accessor("createdAt", {
-      header: "Created At",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Created At" />,
+      meta: { label: "Created At" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.display({
       id: "actions",
       header: "Actions",
+      enableHiding: false,
       cell: (info) => {
         const item = info.row.original;
         return (
@@ -138,14 +148,14 @@ export function TeachersTable({
     }),
   ], [canUpdate, canDelete, onEdit, onDelete]);
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
+  const { table } = useDataTable({
     data: teachers,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   });
 
-  return <DataTable table={table} columns={columns} />;
+  return (
+    <DataTable table={table}>
+      <DataTableToolbar table={table} />
+    </DataTable>
+  );
 }

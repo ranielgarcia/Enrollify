@@ -1,61 +1,67 @@
 import type { PagedResult } from "@/api/models/paged-result";
 import type { Subject } from "@/api/models/subject";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/data-table/data-table";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { Button } from "@/components/ui/button";
 import { truncateText } from "@/lib/text-utils";
 import {
   createColumnHelper,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { Edit2, Trash2 } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useTablePermissions } from "@/hooks/use-table-permissions";
 
 interface SubjectsTableProps {
   pagedSubjects: PagedResult<Subject>;
   onEdit: (subject: Subject) => void;
   onDelete: (subject: Subject) => void;
-  onPreviousPage: () => void;
-  onNextPage: () => void;
+  onPageChange: (page: number, pageSize: number) => void;
 }
 
 export function SubjectsTable({
   pagedSubjects,
   onEdit,
   onDelete,
-  onPreviousPage,
-  onNextPage,
+  onPageChange,
 }: SubjectsTableProps) {
   const { canUpdate, canDelete } = useTablePermissions("canUpdateSubject", "canDeleteSubject");
   const columnHelper = createColumnHelper<Subject>();
 
   const columns = useMemo(() => [
     columnHelper.accessor("code", {
-      header: "Code",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Code" />,
+      meta: { label: "Code" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("title", {
-      header: "Title",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Title" />,
+      meta: { label: "Title" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("description", {
-      header: "Description",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Description" />,
+      meta: { label: "Description" },
       cell: (info) => <span>{truncateText(info.getValue(), 30)}</span>,
     }),
     columnHelper.accessor("units", {
-      header: "Units",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Units" />,
+      meta: { label: "Units" },
       cell: (info) => <span>{Number(info.getValue()).toFixed(1)}</span>,
     }),
     columnHelper.accessor((row) => row.preferRoomType?.name, {
       id: "preferRoomType",
-      header: "Prefer Room Type",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Prefer Room Type" />,
+      meta: { label: "Prefer Room Type" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("createdAt", {
-      header: "Created At",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Created At" />,
+      meta: { label: "Created At" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
@@ -65,12 +71,14 @@ export function SubjectsTable({
           : "",
       {
         id: "createdBy",
-        header: "Created By",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Created By" />,
+        meta: { label: "Created By" },
         cell: (info) => <span>{info.getValue()}</span>,
       }
     ),
     columnHelper.accessor("updatedAt", {
-      header: "Updated At",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Updated At" />,
+      meta: { label: "Updated At" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
@@ -80,13 +88,15 @@ export function SubjectsTable({
           : "",
       {
         id: "updatedBy",
-        header: "Updated By",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Updated By" />,
+        meta: { label: "Updated By" },
         cell: (info) => <span>{info.getValue()}</span>,
       }
     ),
     columnHelper.display({
       id: "actions",
       header: "Actions",
+      enableHiding: false,
       cell: (info) => {
         const item = info.row.original;
 
@@ -116,32 +126,38 @@ export function SubjectsTable({
     }),
   ], [canUpdate, canDelete, onEdit, onDelete]);
 
+  const currentPagination = useMemo(() => ({
+    pageIndex: (pagedSubjects?.page ?? 1) - 1,
+    pageSize: pagedSubjects?.pageSize ?? 10,
+  }), [pagedSubjects?.page, pagedSubjects?.pageSize]);
+
+  const handlePaginationChange = useCallback(
+    (updater: unknown) => {
+      const newPagination =
+        typeof updater === "function" ? updater(currentPagination) : updater;
+      onPageChange(newPagination.pageIndex + 1, newPagination.pageSize);
+    },
+    [currentPagination, onPageChange],
+  );
+
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: pagedSubjects?.items ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     manualPagination: true,
     pageCount: pagedSubjects?.totalPages ?? -1,
     state: {
-      pagination: {
-        pageIndex: (pagedSubjects?.page ?? 1) - 1, // Convert 1-indexed to 0-indexed
-        pageSize: pagedSubjects?.pageSize ?? 10,
-      },
+      pagination: currentPagination,
     },
+    onPaginationChange: handlePaginationChange,
   });
 
   return (
-    <DataTable
-      table={table}
-      columns={columns}
-      showPaginationButtons
-      onPreviousPage={onPreviousPage}
-      onNextPage={onNextPage}
-      currentPage={pagedSubjects?.page}
-      totalPages={pagedSubjects?.totalPages}
-    />
+    <DataTable table={table}>
+      <DataTableToolbar table={table} />
+    </DataTable>
   );
 }

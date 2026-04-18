@@ -1,13 +1,10 @@
 import type { Building } from "@/api/models/building";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/data-table/data-table";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { Button } from "@/components/ui/button";
-import {
-  createColumnHelper,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { useDataTable } from "@/hooks/use-data-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import { Edit2, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { useTablePermissions } from "@/hooks/use-table-permissions";
@@ -28,24 +25,29 @@ export function BuildingsTable({
 
   const columns = useMemo(() => [
     columnHelper.accessor("name", {
-      header: "Name",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Name" />,
+      meta: { label: "Name" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("description", {
-      header: "Description",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Description" />,
+      meta: { label: "Description" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("address", {
-      header: "Address",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Address" />,
+      meta: { label: "Address" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor((row) => row.college.name, {
-      header: "College",
       id: "college",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="College" />,
+      meta: { label: "College" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("createdAt", {
-      header: "Created At",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Created At" />,
+      meta: { label: "Created At" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
@@ -55,12 +57,14 @@ export function BuildingsTable({
           : "",
       {
         id: "createdBy",
-        header: "Created By",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Created By" />,
+        meta: { label: "Created By" },
         cell: (info) => <span>{info.getValue()}</span>,
       }
     ),
     columnHelper.accessor("updatedAt", {
-      header: "Updated At",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Updated At" />,
+      meta: { label: "Updated At" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
@@ -70,13 +74,15 @@ export function BuildingsTable({
           : "",
       {
         id: "updatedBy",
-        header: "Updated By",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Updated By" />,
+        meta: { label: "Updated By" },
         cell: (info) => <span>{info.getValue()}</span>,
       }
     ),
     columnHelper.display({
       id: "actions",
       header: "Actions",
+      enableHiding: false,
       cell: (info) => {
         const item = info.row.original;
 
@@ -106,14 +112,14 @@ export function BuildingsTable({
     }),
   ], [canUpdate, canDelete, onEdit, onDelete]);
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
+  const { table } = useDataTable({
     data: buildings ?? [],
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   });
 
-  return <DataTable table={table} columns={columns} />;
+  return (
+    <DataTable table={table}>
+      <DataTableToolbar table={table} />
+    </DataTable>
+  );
 }
