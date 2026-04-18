@@ -1,4 +1,5 @@
-﻿using Vogen;
+﻿using Enrollify.Core.Validators;
+using Vogen;
 
 namespace Enrollify.Core.Aggregates.UserAggregate;
 
@@ -13,6 +14,9 @@ public partial struct UserEmail
 
         if (value.Length > MaxLength)
             return Validation.Invalid($"User email cannot exceed {MaxLength} characters");
+
+        if (!EmailValidator.IsValid(value))
+            return Validation.Invalid("User email is not a valid email address");
 
         return Validation.Ok;
     }

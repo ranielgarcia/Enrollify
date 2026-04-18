@@ -1,17 +1,14 @@
-import {
-  createColumnHelper,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Edit2, Trash2 } from "lucide-react";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/data-table/data-table";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { useDataTable } from "@/hooks/use-data-table";
 import type { College } from "@/api/models/college";
-import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { truncateText } from "@/lib/text-utils";
+import { useTablePermissions } from "@/hooks/use-table-permissions";
 
 interface CollegesTableProps {
   colleges?: College[];
@@ -24,111 +21,128 @@ export function CollegesTable({
   onEdit,
   onDelete,
 }: CollegesTableProps) {
-  const { checkPolicy } = useAuthorization();
+  const { canUpdate, canDelete } = useTablePermissions(
+    "canUpdateCollege",
+    "canDeleteCollege",
+  );
   const columnHelper = createColumnHelper<College>();
-  const [canUpdate, setCanUpdate] = useState(false);
-  const [canDelete, setCanDelete] = useState(false);
 
-  useEffect(() => {
-    const checkPolicies = async () => {
-      const [updatePermission, deletePermission] = await Promise.all([
-        checkPolicy("canUpdateCollege"),
-        checkPolicy("canDeleteCollege"),
-      ]);
-      setCanUpdate(updatePermission);
-      setCanDelete(deletePermission);
-    };
-
-    checkPolicies();
-  }, [checkPolicy]);
-
-  const columns = [
-    columnHelper.accessor("code", {
-      header: "Code",
-      cell: (info) => <span>{info.getValue()}</span>,
-    }),
-    columnHelper.accessor("name", {
-      header: "Name",
-      cell: (info) => <span>{info.getValue()}</span>,
-    }),
-    columnHelper.accessor("description", {
-      header: "Description",
-      cell: (info) => <span>{truncateText(info.getValue(), 30)}</span>,
-    }),
-    columnHelper.accessor("dean", {
-      header: "Dean",
-      cell: (info) => <span>{info.getValue()}</span>,
-    }),
-    columnHelper.accessor("createdAt", {
-      header: "Created At",
-      cell: (info) => <span>{info.getValue()}</span>,
-    }),
-    columnHelper.accessor(
-      (row) =>
-        row.createdBy
-          ? `${row.createdBy.firstName} ${row.createdBy.lastName}`
-          : "",
-      {
-        id: "createdBy",
-        header: "Created By",
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("code", {
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Code" />
+        ),
+        meta: { label: "Code" },
         cell: (info) => <span>{info.getValue()}</span>,
-      }
-    ),
-    columnHelper.accessor("updatedAt", {
-      header: "Updated At",
-      cell: (info) => <span>{info.getValue()}</span>,
-    }),
-    columnHelper.accessor(
-      (row) =>
-        row.updatedBy?.firstName
-          ? `${row.updatedBy.firstName} ${row.updatedBy.lastName}`
-          : "",
-      {
-        id: "updatedBy",
-        header: "Updated By",
+        size: 10,
+      }),
+      columnHelper.accessor("name", {
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Name" />
+        ),
+        meta: { label: "Name" },
         cell: (info) => <span>{info.getValue()}</span>,
-      }
-    ),
-    columnHelper.display({
-      id: "actions",
-      header: "Actions",
-      cell: (info) => {
-        const item = info.row.original;
+      }),
+      columnHelper.accessor("description", {
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Description" />
+        ),
+        meta: { label: "Description" },
+        cell: (info) => <span>{truncateText(info.getValue(), 30)}</span>,
+      }),
+      columnHelper.accessor("dean", {
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Dean" />
+        ),
+        meta: { label: "Dean" },
+        cell: (info) => <span>{info.getValue()}</span>,
+      }),
+      columnHelper.accessor("createdAt", {
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Created At" />
+        ),
+        meta: { label: "Created At" },
+        cell: (info) => <span>{info.getValue()}</span>,
+      }),
+      columnHelper.accessor(
+        (row) =>
+          row.createdBy
+            ? `${row.createdBy.firstName} ${row.createdBy.lastName}`
+            : "",
+        {
+          id: "createdBy",
+          header: ({ column }) => (
+            <DataTableColumnHeader column={column} label="Created By" />
+          ),
+          meta: { label: "Created By" },
+          cell: (info) => <span>{info.getValue()}</span>,
+        },
+      ),
+      columnHelper.accessor("updatedAt", {
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Updated At" />
+        ),
+        meta: { label: "Updated At" },
+        cell: (info) => <span>{info.getValue()}</span>,
+      }),
+      columnHelper.accessor(
+        (row) =>
+          row.updatedBy?.firstName
+            ? `${row.updatedBy.firstName} ${row.updatedBy.lastName}`
+            : "",
+        {
+          id: "updatedBy",
+          header: ({ column }) => (
+            <DataTableColumnHeader column={column} label="Updated By" />
+          ),
+          meta: { label: "Updated By" },
+          cell: (info) => <span>{info.getValue()}</span>,
+        },
+      ),
+      columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        enableHiding: false,
+        cell: (info) => {
+          const item = info.row.original;
 
-        return (
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(item)}
-              className="hover:bg-blue-500/10 text-blue-600 hover:text-blue-700"
-              disabled={!canUpdate}
-            >
-              <Edit2 className="size-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(item)}
-              className="hover:bg-destructive/10 text-destructive hover:text-destructive"
-              disabled={!canDelete}
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          </div>
-        );
-      },
-    }),
-  ];
+          return (
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEdit(item)}
+                className="hover:bg-blue-500/10 text-blue-600 hover:text-blue-700"
+                disabled={!canUpdate}
+              >
+                <Edit2 className="size-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(item)}
+                className="hover:bg-destructive/10 text-destructive hover:text-destructive"
+                disabled={!canDelete}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            </div>
+          );
+        },
+      }),
+    ],
+    [canUpdate, canDelete, onEdit, onDelete],
+  );
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
+  const { table } = useDataTable({
     data: colleges ?? [],
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   });
 
-  return <DataTable table={table} columns={columns} />;
+  return (
+    <DataTable table={table}>
+      <DataTableToolbar table={table} />
+    </DataTable>
+  );
 }

@@ -34,6 +34,7 @@ export const getAllRoomTypesOptions = () =>
     path: "/api/room-types",
     options: {
       queryKey: queryKeys.all(),
+      staleTime: 1000 * 60 * 5,
       select: (roomTypes): RoomType[] => {
         return roomTypes.map((t) => RoomTypeSchema.parse(t));
       },

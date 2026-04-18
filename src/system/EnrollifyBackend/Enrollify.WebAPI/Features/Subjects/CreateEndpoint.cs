@@ -1,5 +1,6 @@
 ﻿using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate.Models;
 
 namespace Enrollify.WebAPI.Features.Subjects;
 

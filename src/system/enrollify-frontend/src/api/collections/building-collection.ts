@@ -15,6 +15,7 @@ export const getAllBuildingsOptions = () =>
     path: "/api/buildings",
     options: {
       queryKey: queryKeys.all(),
+      staleTime: 1000 * 60 * 5,
       select: (buildings): Building[] => {
         return buildings.map((t) => BuildingSchema.parse(t));
       },

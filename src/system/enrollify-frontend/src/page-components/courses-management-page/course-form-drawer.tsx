@@ -4,41 +4,29 @@ import {
 } from "@/api/collections/course-collection";
 import type { College } from "@/api/models/college";
 import type { Course } from "@/api/models/course";
-import {
-  SearchableSelect,
-  type SearchableSelectOption,
-} from "@/components/searchable-select";
+import { type SearchableSelectOption } from "@/components/form/searchable-select";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { FormField } from "@/components/form/form-field";
+import { FormSelectField } from "@/components/form/form-select-field";
+import { FormSection } from "@/components/form/form-section";
+import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
+import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import z from "zod";
-
-type FormMeta = {
-  submitAction: "create" | "update" | null;
-  formAction: "close" | "stayopen" | null;
-};
-// Metadata is not required to call form.handleSubmit().
-// Specify what values to use as default if no meta is passed
-const defaultMeta: FormMeta = {
-  submitAction: null,
-  formAction: null,
-};
 
 const courseFormSchema = z.object({
   code: z.string().min(3, "Code is required"),
@@ -86,15 +74,18 @@ export function CourseFormDrawer({
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
-      onChange: courseFormSchema,
+      onBlur: courseFormSchema,
+      onSubmit: courseFormSchema,
     },
-    onSubmitMeta: defaultMeta,
+    onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
       const formValues = courseFormSchema.parse(value);
       if (meta.submitAction === "create") {
         await createNewCourseAsync(formValues);
+        toast.success("Course created successfully");
       } else if (meta.submitAction === "update") {
         await updateCourseAsync(formValues);
+        toast.success("Course updated successfully");
       }
 
       if (meta.formAction === "close") {
@@ -120,7 +111,10 @@ export function CourseFormDrawer({
       onOpenChange={onOpenChange}
     >
       <DrawerTrigger asChild>
-        <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer">
+        <Button
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+          size="sm"
+        >
           <Plus className="size-4" />
           Add Course
         </Button>
@@ -140,184 +134,105 @@ export function CourseFormDrawer({
           }
         >
           <form
-            className="space-y-4"
+            className="flex flex-col overflow-hidden h-full"
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
           >
-            <div className="mx-auto w-full max-w-sm">
-              <DrawerHeader>
-                <DrawerTitle>
-                  {isUpdateCourse ? "Update" : "Create"} Course
-                </DrawerTitle>
-                <DrawerDescription>Set department details.</DrawerDescription>
-              </DrawerHeader>
-              <div className="p-4 pb-0">
-                <div className="pb-4">
+            <DrawerHeader className="border-b pb-4">
+              <DrawerTitle>
+                {isUpdateCourse ? "Update" : "New"} Course
+              </DrawerTitle>
+              <DrawerDescription>
+                Fill in the details below to{" "}
+                {isUpdateCourse ? "update this" : "create a new"} course.
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
+              <FormSection title="Identification">
+                <div className="grid grid-cols-2 gap-4">
                   <form.Field
                     name="code"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Code:</Label>
-                        <Input
-                          type="text"
-                          placeholder="Code:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          id={field.name}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField
+                        field={field}
+                        label="Code"
+                        required
+                        hint="e.g. BSCS, BSIT"
+                        autoFocus
+                      />
                     )}
                   />
-                </div>
-                <div className="pb-4">
-                  <form.Field
-                    name="name"
-                    children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Name:</Label>
-                        <Input
-                          type="text"
-                          placeholder="Name:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          id={field.name}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
-                    )}
-                  />
-                </div>
-                <div className="pb-4">
-                  <form.Field
-                    name="description"
-                    children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Description:</Label>
-                        <Textarea
-                          placeholder="Description:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          id={field.name}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
-                    )}
-                  />
-                </div>
-
-                <div className="pb-4">
                   <form.Field
                     name="durationYears"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Duration Years:</Label>
-                        <Input
-                          type="number"
-                          placeholder="Duration Years:"
-                          value={field.state.value}
-                          onChange={(e) =>
-                            field.handleChange(Number(e.target.value))
-                          }
-                          id={field.name}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField
+                        field={field}
+                        label="Duration (Years)"
+                        type="number"
+                        required
+                      />
                     )}
                   />
                 </div>
-                <div className="pb-4">
-                  <form.Field
-                    name="collegeId"
-                    children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>College:</Label>
-                        <SearchableSelect
-                          options={collegesOptions}
-                          value={field.state.value.toString()}
-                          onValueChange={(val) =>
-                            field.handleChange(Number(val))
-                          }
-                          name={field.name}
-                          placeholder="Select a college"
-                          searchPlaceholder="Search colleges..."
-                          emptyMessage="No college found"
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <DrawerFooter>
-                <form.Subscribe
-                  selector={(state) => [state.canSubmit, state.isSubmitting]}
-                  children={([canSubmit, isSubmitting]) => (
-                    <Button
-                      className=" cursor-pointer"
-                      disabled={!canSubmit}
-                      type="submit"
-                      onClick={() =>
-                        form.handleSubmit({
-                          submitAction: isUpdateCourse ? "update" : "create",
-                          formAction: "close",
-                        })
-                      }
-                    >
-                      {isSubmitting ? (
-                        <Loader2 />
-                      ) : isUpdateCourse ? (
-                        "Update"
-                      ) : (
-                        "Submit"
-                      )}
-                    </Button>
+                <form.Field
+                  name="name"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Name"
+                      required
+                      hint="Full course name"
+                    />
                   )}
                 />
-                <DrawerClose asChild>
-                  <Button
-                    className=" cursor-pointer"
-                    variant="outline"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                </DrawerClose>
-              </DrawerFooter>
+              </FormSection>
+
+              <Separator />
+
+              <FormSection title="Details">
+                <form.Field
+                  name="description"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Description"
+                      type="textarea"
+                      required
+                      maxLength={500}
+                    />
+                  )}
+                />
+              </FormSection>
+
+              <Separator />
+
+              <FormSection title="Classification">
+                <form.Field
+                  name="collegeId"
+                  children={(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="College"
+                      required
+                      options={collegesOptions}
+                      placeholder="Select a college"
+                      searchPlaceholder="Search colleges..."
+                      emptyMessage="No college found"
+                    />
+                  )}
+                />
+              </FormSection>
             </div>
+
+            <FormDrawerFooter
+              form={form}
+              isUpdate={isUpdateCourse}
+              onCancel={() => setIsOpen(false)}
+              entityLabel="Course"
+              showSaveAndAddAnother
+            />
           </form>
         </AuthorizeView>
       </DrawerContent>

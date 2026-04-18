@@ -18,6 +18,11 @@ export class AuthorizationService {
   private handlerMap: Map<string, IAuthorizationHandler>;
   private policyRegistry: PolicyRegistry;
   private handlers: IAuthorizationHandler[];
+  private cache = new Map<
+    string,
+    { result: AuthorizationResult; timestamp: number }
+  >();
+  private readonly CACHE_TTL = 30_000;
 
   constructor(
     policyRegistry: PolicyRegistry,
@@ -32,10 +37,27 @@ export class AuthorizationService {
     });
   }
 
+  private buildCacheKey(
+    policyName: PolicyName,
+    context: AuthorizationEvaluationContext
+  ): string {
+    const userId = context.user?.id ?? "anonymous";
+    const scope = context.resource?.scope ?? "";
+    const entityId = context.resource?.entityId ?? "";
+    return `${policyName}:${userId}:${scope}:${entityId}`;
+  }
+
   async authorize(
     policyName: PolicyName,
     context: AuthorizationEvaluationContext
   ): Promise<AuthorizationResult> {
+    const cacheKey = this.buildCacheKey(policyName, context);
+    const cached = this.cache.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
+      return cached.result;
+    }
+
     const policy = this.policyRegistry.get(policyName);
 
     if (!policy) {
@@ -46,7 +68,9 @@ export class AuthorizationService {
       };
     }
 
-    return this.evaluatePolicy(policy, context);
+    const result = await this.evaluatePolicy(policy, context);
+    this.cache.set(cacheKey, { result, timestamp: Date.now() });
+    return result;
   }
 
   async authorizeWithRequirements(

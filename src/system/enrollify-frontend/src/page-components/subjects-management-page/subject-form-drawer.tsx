@@ -4,40 +4,29 @@ import {
 } from "@/api/collections/subject-collection";
 import type { RoomType } from "@/api/models/room-type";
 import type { Subject } from "@/api/models/subject";
-import {
-  SearchableSelect,
-  type SearchableSelectOption,
-} from "@/components/searchable-select";
+import { type SearchableSelectOption } from "@/components/form/searchable-select";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { FormField } from "@/components/form/form-field";
+import { FormSelectField } from "@/components/form/form-select-field";
+import { FormSection } from "@/components/form/form-section";
+import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
+import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import z from "zod";
-
-type FormMeta = {
-  submitAction: "create" | "update" | null;
-  formAction: "close" | "stayopen" | null;
-};
-// Metadata is not required to call form.handleSubmit().
-// Specify what values to use as default if no meta is passed
-const defaultMeta: FormMeta = {
-  submitAction: null,
-  formAction: null,
-};
 
 const subjectFormSchema = z.object({
   code: z
@@ -90,16 +79,19 @@ export function SubjectFormDrawer({
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
+      onBlur: subjectFormSchema,
       onSubmit: subjectFormSchema,
     },
-    onSubmitMeta: defaultMeta,
+    onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
       const formValues = subjectFormSchema.parse(value);
 
       if (meta.submitAction === "create") {
         await createNewSubjectAsync(formValues);
+        toast.success("Subject created successfully");
       } else if (meta.submitAction === "update") {
         await updateSubjectAsync(formValues);
+        toast.success("Subject updated successfully");
       }
 
       if (meta.formAction === "close") {
@@ -129,10 +121,9 @@ export function SubjectFormDrawer({
           Add Subject
         </Button>
       </DrawerTrigger>
-      {/*  className="sm:max-w-[600px]!" */}
       <DrawerContent>
         <AuthorizeView
-          policy="canCreateSubject"
+          policy={isUpdatingSubject ? "canUpdateSubject" : "canCreateSubject"}
           unauthorized={
             <Unauthorized
               message="Your current role does not have the necessary permissions to create subject."
@@ -145,184 +136,105 @@ export function SubjectFormDrawer({
           }
         >
           <form
-            className="space-y-4"
+            className="flex flex-col overflow-hidden h-full"
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
           >
-            <div className="w-full">
-              <DrawerHeader>
-                <DrawerTitle>
-                  {isUpdatingSubject ? "Update" : "Create"} Subject
-                </DrawerTitle>
-                <DrawerDescription>Set subject details.</DrawerDescription>
-              </DrawerHeader>
-              <div className="p-4 pb-0">
-                <div className="pb-4">
+            <DrawerHeader className="border-b pb-4">
+              <DrawerTitle>
+                {isUpdatingSubject ? "Update" : "New"} Subject
+              </DrawerTitle>
+              <DrawerDescription>
+                Fill in the details below to{" "}
+                {isUpdatingSubject ? "update this" : "create a new"} subject.
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
+              <FormSection title="Identification">
+                <div className="grid grid-cols-2 gap-4">
                   <form.Field
                     name="code"
                     children={(field) => (
-                      <div className="grid w-full items-center gap-3">
-                        <Label htmlFor={field.name}>Code:</Label>
-                        <Input
-                          type="text"
-                          placeholder="Code:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          id={field.name}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField
+                        field={field}
+                        label="Code"
+                        required
+                        hint="e.g. CS101, MATH201"
+                        autoFocus
+                      />
                     )}
                   />
-                </div>
-                <div className="pb-4">
-                  <form.Field
-                    name="title"
-                    children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Title:</Label>
-                        <Input
-                          type="text"
-                          value={field.state.value}
-                          placeholder="Title:"
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
-                    )}
-                  />
-                </div>
-                <div className="pb-4">
-                  <form.Field
-                    name="description"
-                    children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Description:</Label>
-                        <Input
-                          type="text"
-                          value={field.state.value}
-                          placeholder="Description:"
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
-                    )}
-                  />
-                </div>
-
-                <div className="pb-4">
                   <form.Field
                     name="units"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Units:</Label>
-                        <Input
-                          type="number"
-                          step="0.5"
-                          value={field.state.value}
-                          placeholder="Units:"
-                          onChange={(e) =>
-                            field.handleChange(Number(e.target.value))
-                          }
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField
+                        field={field}
+                        label="Units"
+                        type="number"
+                        required
+                      />
                     )}
                   />
                 </div>
-                <div className="pb-4">
-                  <form.Field
-                    name="preferRoomTypeId"
-                    children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Prefer Room Type:</Label>
-                        <SearchableSelect
-                          options={roomTypeOptions}
-                          value={field.state.value.toString()}
-                          onValueChange={(val) =>
-                            field.handleChange(Number(val))
-                          }
-                          name={field.name}
-                          placeholder="Select a prefer room type"
-                          searchPlaceholder="Search prefer room types..."
-                          emptyMessage="No prefer room type found"
-                        />
-
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <DrawerFooter>
-                <form.Subscribe
-                  selector={(state) => [state.canSubmit, state.isSubmitting]}
-                  children={([canSubmit, isSubmitting]) => (
-                    <Button
-                      className="cursor-pointer"
-                      disabled={!canSubmit}
-                      type="submit"
-                      onClick={() =>
-                        form.handleSubmit({
-                          submitAction: isUpdatingSubject ? "update" : "create",
-                          formAction: "close",
-                        })
-                      }
-                    >
-                      {isSubmitting ? (
-                        <Loader2 />
-                      ) : isUpdatingSubject ? (
-                        "Update"
-                      ) : (
-                        "Submit"
-                      )}
-                    </Button>
+                <form.Field
+                  name="title"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Title"
+                      required
+                      hint="Full subject title"
+                    />
                   )}
                 />
-                <DrawerClose asChild>
-                  <Button
-                    className=" cursor-pointer"
-                    variant="outline"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                </DrawerClose>
-              </DrawerFooter>
+              </FormSection>
+
+              <Separator />
+
+              <FormSection title="Details">
+                <form.Field
+                  name="description"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Description"
+                      type="textarea"
+                      required
+                      maxLength={500}
+                    />
+                  )}
+                />
+              </FormSection>
+
+              <Separator />
+
+              <FormSection title="Classification">
+                <form.Field
+                  name="preferRoomTypeId"
+                  children={(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="Preferred Room Type"
+                      required
+                      options={roomTypeOptions}
+                      placeholder="Select a room type"
+                      searchPlaceholder="Search room types..."
+                      emptyMessage="No room type found"
+                    />
+                  )}
+                />
+              </FormSection>
             </div>
+
+            <FormDrawerFooter
+              form={form}
+              isUpdate={isUpdatingSubject}
+              onCancel={() => setIsOpen(false)}
+              entityLabel="Subject"
+              showSaveAndAddAnother
+            />
           </form>
         </AuthorizeView>
       </DrawerContent>

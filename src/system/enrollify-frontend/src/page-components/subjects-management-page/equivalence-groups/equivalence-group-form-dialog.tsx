@@ -1,3 +1,7 @@
+import {
+  createSubjectEquivalenceGroupOptions,
+  updateSubjectEquivalenceGroupOptions,
+} from "@/api/collections/subject-equivalence-group-collection";
 import type { SubjectEquivalenceGroup } from "@/api/models/subject-equivalence";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,13 +12,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/form/form-field";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import z from "zod";
 
 const groupFormSchema = z.object({
@@ -30,29 +35,45 @@ interface EquivalenceGroupFormDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   groupToEdit?: SubjectEquivalenceGroup | null;
-  onSubmit: (data: GroupFormData) => Promise<void>;
 }
 
 export function EquivalenceGroupFormDialog({
   isOpen,
   onOpenChange,
   groupToEdit,
-  onSubmit,
 }: EquivalenceGroupFormDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!groupToEdit;
+
+  const { mutateAsync: createSubjectEquivalenceGroupAsync } = useMutation(
+    createSubjectEquivalenceGroupOptions(),
+  );
+  const { mutateAsync: updateSubjectEquivalenceGroupAsync } = useMutation(
+    updateSubjectEquivalenceGroupOptions(groupToEdit?.id ?? 0),
+  );
+
+  const handleFormSubmit = async (data: GroupFormData) => {
+    if (groupToEdit) {
+      await updateSubjectEquivalenceGroupAsync({ name: data.name });
+      toast.success("Equivalence group updated successfully");
+    } else {
+      await createSubjectEquivalenceGroupAsync({ name: data.name });
+      toast.success("Equivalence group created successfully");
+    }
+  };
 
   const form = useForm({
     defaultValues: {
       name: groupToEdit?.name ?? "",
     },
     validators: {
+      onBlur: groupFormSchema,
       onSubmit: groupFormSchema,
     },
     onSubmit: async ({ value }) => {
       setIsSubmitting(true);
       try {
-        await onSubmit(value);
+        await handleFormSubmit(value);
         onOpenChange(false);
       } finally {
         setIsSubmitting(false);
@@ -60,7 +81,6 @@ export function EquivalenceGroupFormDialog({
     },
   });
 
-  // Reset form when dialog opens/closes or when editing different group
   useEffect(() => {
     if (isOpen) {
       form.reset({
@@ -113,23 +133,13 @@ export function EquivalenceGroupFormDialog({
               <form.Field
                 name="name"
                 children={(field) => (
-                  <div className="grid gap-2">
-                    <Label htmlFor={field.name}>Group Name</Label>
-                    <Input
-                      id={field.name}
-                      placeholder="e.g., Programming Fundamentals"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
-                    />
-                    {!field.state.meta.isValid && (
-                      <em role="alert" className="text-red-800">
-                        {field.state.meta.errors
-                          .map((e) => e?.message)
-                          .join(", ")}
-                      </em>
-                    )}
-                  </div>
+                  <FormField
+                    field={field}
+                    label="Group Name"
+                    required
+                    placeholder="e.g., Programming Fundamentals"
+                    autoFocus
+                  />
                 )}
               />
             </div>

@@ -16,6 +16,7 @@ export const getAllCollegesOptions = () =>
     path: "/api/colleges",
     options: {
       queryKey: queryKeys.all(),
+      staleTime: 1000 * 60 * 5,
       select: (colleges): College[] => {
         return colleges.map((c) => CollegeSchema.parse(c));
       },

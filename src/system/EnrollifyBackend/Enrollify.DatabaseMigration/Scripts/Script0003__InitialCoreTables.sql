@@ -90,7 +90,7 @@ CREATE TABLE Rooms
 GO;
 
 -- Rooms indexes
-CREATE NONCLUSTERED INDEX IX_Rooms_RoomTypeId 
+CREATE NONCLUSTERED INDEX IX_Rooms_RoomTypeId
 ON Rooms(RoomTypeId);
 GO
 
@@ -110,7 +110,7 @@ CREATE TABLE Departments
 	Chairperson VARCHAR(100) NOT NULL, -- Hard coded name for now
 	Description VARCHAR(255) NULL,
 	CollegeId INT NOT NULL,
-	
+
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
 	UpdatedAt DATETIMEOFFSET NULL,
@@ -137,7 +137,7 @@ WHERE IsActive = 1;
 GO
 
 -- Departments indexes
-CREATE NONCLUSTERED INDEX IX_Departments_CollegeId 
+CREATE NONCLUSTERED INDEX IX_Departments_CollegeId
 ON Departments(CollegeId);
 GO
 
@@ -181,7 +181,7 @@ GO
 
 
 -- Courses indexes
-CREATE NONCLUSTERED INDEX IX_Courses_CollegeId 
+CREATE NONCLUSTERED INDEX IX_Courses_CollegeId
 ON Courses(CollegeId);
 GO
 
@@ -226,11 +226,11 @@ CREATE TABLE Curriculums
 GO;
 
 -- Curriculums indexes
-CREATE NONCLUSTERED INDEX IX_Curriculums_CourseId 
+CREATE NONCLUSTERED INDEX IX_Curriculums_CourseId
 ON Curriculums(CourseId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_Curriculums_Status 
+CREATE NONCLUSTERED INDEX IX_Curriculums_Status
 ON Curriculums(StatusId);
 GO
 
@@ -263,7 +263,7 @@ CREATE TABLE Subjects
 	DeletedAt DATETIMEOFFSET NULL,
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	
+
 	CONSTRAINT UQ_Subjects_Code UNIQUE (Code),
 	CONSTRAINT CHK_Subjects_Units_Valid CHECK (Units > 0 AND Units <= 12),
 	CONSTRAINT FK_Subjects_RoomType FOREIGN KEY (PreferRoomTypeId) REFERENCES RoomTypes(Id),
@@ -315,11 +315,11 @@ CREATE TABLE CurriculumSubjects
 GO;
 
 -- CurriculumSubjects indexes
-CREATE NONCLUSTERED INDEX IX_CurriculumSubjects_CurriculumId 
+CREATE NONCLUSTERED INDEX IX_CurriculumSubjects_CurriculumId
 ON CurriculumSubjects(CurriculumId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_CurriculumSubjects_SubjectId 
+CREATE NONCLUSTERED INDEX IX_CurriculumSubjects_SubjectId
 ON CurriculumSubjects(SubjectId);
 GO
 
@@ -362,11 +362,11 @@ CREATE TABLE CurriculumSubjectPrerequisites
 GO;
 
 -- CurriculumSubjectPrerequisites indexes
-CREATE NONCLUSTERED INDEX IX_CurriculumSubjectPrereqs_CurriculumSubjectId 
+CREATE NONCLUSTERED INDEX IX_CurriculumSubjectPrereqs_CurriculumSubjectId
 ON CurriculumSubjectPrerequisites(CurriculumSubjectId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_CurriculumSubjectPrereqs_PrereqCurriculumSubjectId 
+CREATE NONCLUSTERED INDEX IX_CurriculumSubjectPrereqs_PrereqCurriculumSubjectId
 ON CurriculumSubjectPrerequisites(PrerequisiteCurriculumSubjectId);
 GO
 
@@ -384,7 +384,7 @@ CREATE TABLE SubjectEquivalenceGroups
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	Name VARCHAR(255) NOT NULL,
-	
+
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
 	UpdatedAt DATETIMEOFFSET NULL,
@@ -431,11 +431,11 @@ WHERE IsActive = 1;
 
 
 -- SubjectEquivalence indexes
-CREATE NONCLUSTERED INDEX IX_SubjectEquivalences_SubjectId 
+CREATE NONCLUSTERED INDEX IX_SubjectEquivalences_SubjectId
 ON SubjectEquivalences(SubjectId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_SubjectEquivalences_EquivalenceGroupId 
+CREATE NONCLUSTERED INDEX IX_SubjectEquivalences_EquivalenceGroupId
 ON SubjectEquivalences(EquivalenceGroupId);
 GO
 
@@ -445,9 +445,15 @@ CREATE TABLE Teachers
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	FirstName VARCHAR(50) NOT NULL,
+	MiddleName VARCHAR(50) NOT NULL,
 	LastName VARCHAR(50) NOT NULL,
+    PhoneNumber CHAR(12) NOT NULL,
 	Email VARCHAR(255) NOT NULL,
 	DepartmentId INT NOT NULL,
+    AcademicTitle VARCHAR(100),
+    PhotoLocationPath VARCHAR(255),
+    PhotoFilename VARCHAR(255),
+
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
 	UpdatedAt DATETIMEOFFSET NULL,
@@ -455,6 +461,7 @@ CREATE TABLE Teachers
 	DeletedAt DATETIMEOFFSET NULL,
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT UQ_Teachers_PhoneNumber UNIQUE (PhoneNumber),
 	CONSTRAINT UQ_Teachers_Email UNIQUE (Email),
 	CONSTRAINT FK_Teachers_Department FOREIGN KEY (DepartmentId) REFERENCES Departments(Id),
 	CONSTRAINT FK_Teachers_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
@@ -465,7 +472,7 @@ GO;
 
 
 -- Teachers indexes
-CREATE NONCLUSTERED INDEX IX_Teachers_DepartmentId 
+CREATE NONCLUSTERED INDEX IX_Teachers_DepartmentId
 ON Teachers(DepartmentId);
 GO
 
@@ -493,11 +500,11 @@ GO;
 
 
 -- TeacherSubjects indexes
-CREATE NONCLUSTERED INDEX IX_TeacherSubjects_TeacherId 
+CREATE NONCLUSTERED INDEX IX_TeacherSubjects_TeacherId
 ON TeacherSubjects(TeacherId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_TeacherSubjects_SubjectId 
+CREATE NONCLUSTERED INDEX IX_TeacherSubjects_SubjectId
 ON TeacherSubjects(SubjectId);
 GO
 
@@ -561,15 +568,15 @@ GO;
 
 
 -- ClassSections indexes
-CREATE NONCLUSTERED INDEX IX_ClassSections_CourseId 
+CREATE NONCLUSTERED INDEX IX_ClassSections_CourseId
 ON ClassSections(CourseId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_ClassSections_SemesterId 
+CREATE NONCLUSTERED INDEX IX_ClassSections_SemesterId
 ON ClassSections(SemesterId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_ClassSections_AdviserId 
+CREATE NONCLUSTERED INDEX IX_ClassSections_AdviserId
 ON ClassSections(AdviserId);
 GO
 
@@ -608,19 +615,19 @@ CREATE TABLE ClassSectionSubjectOffering
 GO;
 
 -- ClassSectionSubjectOffering indexes
-CREATE NONCLUSTERED INDEX IX_ClassSectionSubjectOffering_SubjectId 
+CREATE NONCLUSTERED INDEX IX_ClassSectionSubjectOffering_SubjectId
 ON ClassSectionSubjectOffering(SubjectId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_ClassSectionSubjectOffering_TeacherId 
+CREATE NONCLUSTERED INDEX IX_ClassSectionSubjectOffering_TeacherId
 ON ClassSectionSubjectOffering(TeacherId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_ClassSectionSubjectOffering_ClassSectionId 
+CREATE NONCLUSTERED INDEX IX_ClassSectionSubjectOffering_ClassSectionId
 ON ClassSectionSubjectOffering(ClassSectionId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_ClassSectionSubjectOffering_RoomId 
+CREATE NONCLUSTERED INDEX IX_ClassSectionSubjectOffering_RoomId
 ON ClassSectionSubjectOffering(RoomId);
 GO
 
@@ -636,19 +643,19 @@ CREATE TABLE ClassSchedules
     CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
     UpdatedAt DATETIMEOFFSET NULL,
     IsActive BIT NOT NULL DEFAULT 1,
-    
-    CONSTRAINT FK_ClassSchedules_Offering 
-        FOREIGN KEY (ClassSectionSubjectOfferingId) 
+
+    CONSTRAINT FK_ClassSchedules_Offering
+        FOREIGN KEY (ClassSectionSubjectOfferingId)
         REFERENCES ClassSectionSubjectOffering(Id),
-    
-    CONSTRAINT CHK_ClassSchedules_DayOfWeek_Valid 
+
+    CONSTRAINT CHK_ClassSchedules_DayOfWeek_Valid
         CHECK (DayOfWeek IN ('MON','TUE','WED','THU','FRI','SAT','SUN')),
-    
-    CONSTRAINT CHK_ClassSchedules_Time_Valid 
+
+    CONSTRAINT CHK_ClassSchedules_Time_Valid
         CHECK (StartTime < EndTime),
-    
+
     -- Prevent duplicate schedules for same offering
-    CONSTRAINT UQ_ClassSchedules_Offering_Day 
+    CONSTRAINT UQ_ClassSchedules_Offering_Day
         UNIQUE (ClassSectionSubjectOfferingId, DayOfWeek)
 );
 
@@ -693,19 +700,6 @@ CREATE TABLE StudentStatuses
 );
 GO
 
--- Seed data for StudentStatuses
-DECLARE @InitialUserId INT = (SELECT Id FROM Users WHERE Email='system@enrollify.local');
-INSERT INTO StudentStatuses (Id, Code, Name, Description, DisplayOrder, CreatedBy) VALUES
-(1, 'ACTIVE', 'Active', 'Currently enrolled student', 1, @InitialUserId),
-(2, 'INACTIVE', 'Inactive', 'Not currently enrolled but not withdrawn', 2, @InitialUserId),
-(3, 'LOA', 'Leave of Absence', 'Temporarily not attending', 3, @InitialUserId),
-(4, 'GRADUATED', 'Graduated', 'Completed degree requirements', 4, @InitialUserId),
-(5, 'WITHDRAWN', 'Withdrawn', 'Permanently left the institution', 5, @InitialUserId),
-(6, 'SUSPENDED', 'Suspended', 'Temporarily barred from enrollment', 6, @InitialUserId),
-(7, 'EXPELLED', 'Expelled', 'Permanently barred from institution', 7, @InitialUserId);
-GO
-
-
 -- ************************************
 
 CREATE TABLE Students
@@ -740,15 +734,15 @@ GO
 
 
 -- Students indexes
-CREATE NONCLUSTERED INDEX IX_Students_CourseId 
+CREATE NONCLUSTERED INDEX IX_Students_CourseId
 ON Students(CourseId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_Students_CurriculumId 
+CREATE NONCLUSTERED INDEX IX_Students_CurriculumId
 ON Students(CurriculumId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_Students_Status 
+CREATE NONCLUSTERED INDEX IX_Students_Status
 ON Students(Status);
 GO
 
@@ -827,23 +821,23 @@ GO
 
 
 -- Enrollments indexes
-CREATE NONCLUSTERED INDEX IX_Enrollments_StudentId 
+CREATE NONCLUSTERED INDEX IX_Enrollments_StudentId
 ON Enrollments(StudentId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_Enrollments_ClassSectionId 
+CREATE NONCLUSTERED INDEX IX_Enrollments_ClassSectionId
 ON Enrollments(ClassSectionId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_Enrollments_ClassSectionSubjectOfferingId 
+CREATE NONCLUSTERED INDEX IX_Enrollments_ClassSectionSubjectOfferingId
 ON Enrollments(ClassSectionSubjectOfferingId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_Enrollments_SemesterId 
+CREATE NONCLUSTERED INDEX IX_Enrollments_SemesterId
 ON Enrollments(SemesterId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_Enrollments_Status 
+CREATE NONCLUSTERED INDEX IX_Enrollments_Status
 ON Enrollments(Status);
 GO
 
@@ -876,7 +870,7 @@ GO;
 
 
 -- EnrollmentAcademicRecords indexes
-CREATE NONCLUSTERED INDEX IX_EnrollmentAcademicRecords_EnrollmentId 
+CREATE NONCLUSTERED INDEX IX_EnrollmentAcademicRecords_EnrollmentId
 ON EnrollmentAcademicRecords(EnrollmentId);
 GO
 
@@ -904,6 +898,6 @@ CREATE TABLE EnrollmentPayments
 GO;
 
 -- EnrollmentPayments indexes
-CREATE NONCLUSTERED INDEX IX_EnrollmentPayments_EnrollmentId 
+CREATE NONCLUSTERED INDEX IX_EnrollmentPayments_EnrollmentId
 ON EnrollmentPayments(EnrollmentId);
 GO

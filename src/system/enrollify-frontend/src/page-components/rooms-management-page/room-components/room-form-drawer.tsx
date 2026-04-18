@@ -5,40 +5,29 @@ import {
 import type { Building } from "@/api/models/building";
 import type { Room } from "@/api/models/room";
 import type { RoomType } from "@/api/models/room-type";
-import {
-  SearchableSelect,
-  type SearchableSelectOption,
-} from "@/components/searchable-select";
+import { type SearchableSelectOption } from "@/components/form/searchable-select";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { FormField } from "@/components/form/form-field";
+import { FormSelectField } from "@/components/form/form-select-field";
+import { FormSection } from "@/components/form/form-section";
+import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
+import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import z from "zod";
-
-type FormMeta = {
-  submitAction: "create" | "update" | null;
-  formAction: "close" | "stayopen" | null;
-};
-// Metadata is not required to call form.handleSubmit().
-// Specify what values to use as default if no meta is passed
-const defaultMeta: FormMeta = {
-  submitAction: null,
-  formAction: null,
-};
 
 const roomFormSchema = z.object({
   roomNumber: z.string().min(1, "Room number is required"),
@@ -80,22 +69,25 @@ export function RoomFormDrawer({
 
   const { mutateAsync: createNewRoomAsync } = useMutation(createRoomOptions());
   const { mutateAsync: updateRoomAsync } = useMutation(
-    UpdateRoomOptions(roomToUpdate?.id ?? 0)
+    UpdateRoomOptions(roomToUpdate?.id ?? 0),
   );
 
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
-      onChange: roomFormSchema,
+      onBlur: roomFormSchema,
+      onSubmit: roomFormSchema,
     },
-    onSubmitMeta: defaultMeta,
+    onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
       const formValues = roomFormSchema.parse(value);
 
       if (meta.submitAction === "create") {
         await createNewRoomAsync(formValues);
+        toast.success("Room created successfully");
       } else if (meta.submitAction === "update") {
         await updateRoomAsync(formValues);
+        toast.success("Room updated successfully");
       }
 
       if (meta.formAction === "close") {
@@ -126,7 +118,10 @@ export function RoomFormDrawer({
       onOpenChange={onOpenChange}
     >
       <DrawerTrigger asChild>
-        <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer">
+        <Button
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+          size="sm"
+        >
           <Plus className="size-4" />
           Add Room
         </Button>
@@ -146,165 +141,91 @@ export function RoomFormDrawer({
           }
         >
           <form
-            className="space-y-4"
+            className="flex flex-col overflow-hidden h-full"
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
           >
-            <div className="mx-auto w-full max-w-sm">
-              <DrawerHeader>
-                <DrawerTitle>
-                  {isUpdatingRoom ? "Update" : "Create"} Room
-                </DrawerTitle>
-                <DrawerDescription>Set building details.</DrawerDescription>
-              </DrawerHeader>
-              <div className="p-4 pb-0">
-                <div className="pb-4">
+            <DrawerHeader className="border-b pb-4">
+              <DrawerTitle>
+                {isUpdatingRoom ? "Update" : "New"} Room
+              </DrawerTitle>
+              <DrawerDescription>
+                Fill in the details below to{" "}
+                {isUpdatingRoom ? "update this" : "create a new"} room.
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
+              <FormSection title="Room Info">
+                <div className="grid grid-cols-2 gap-4">
                   <form.Field
                     name="roomNumber"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Room Number:</Label>
-                        <Input
-                          type="text"
-                          placeholder="Room Number:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          id={field.name}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField
+                        field={field}
+                        label="Room Number"
+                        required
+                        hint="e.g. 101, A-201"
+                        autoFocus
+                      />
                     )}
                   />
-                </div>
-                <div className="pb-4">
                   <form.Field
                     name="capacity"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Capacity:</Label>
-                        <Input
-                          type="number"
-                          value={field.state.value}
-                          placeholder="Capacity:"
-                          onChange={(e) =>
-                            field.handleChange(Number(e.target.value))
-                          }
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormField
+                        field={field}
+                        label="Capacity"
+                        type="number"
+                        required
+                      />
                     )}
                   />
                 </div>
-                <div className="pb-4">
-                  <form.Field
-                    name="roomTypeId"
-                    children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Room Type:</Label>
-                        <SearchableSelect
-                          options={roomTypeOptions}
-                          value={field.state.value.toString()}
-                          onValueChange={(val) =>
-                            field.handleChange(Number(val))
-                          }
-                          name={field.name}
-                          placeholder="Select a room type"
-                          searchPlaceholder="Search room types..."
-                          emptyMessage="No room type found"
-                        />
+              </FormSection>
 
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
-                    )}
-                  />
-                </div>
-                <div className="pb-4">
-                  <form.Field
-                    name="buildingId"
-                    children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Building:</Label>
-                        <SearchableSelect
-                          options={buildingOptions}
-                          value={field.state.value.toString()}
-                          onValueChange={(val) =>
-                            field.handleChange(Number(val))
-                          }
-                          name={field.name}
-                          placeholder="Select a building"
-                          searchPlaceholder="Search buildings..."
-                          emptyMessage="No building found"
-                        />
+              <Separator />
 
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <DrawerFooter>
-                <form.Subscribe
-                  selector={(state) => [state.canSubmit, state.isSubmitting]}
-                  children={([canSubmit, isSubmitting]) => (
-                    <Button
-                      className=" cursor-pointer"
-                      disabled={!canSubmit}
-                      type="submit"
-                      onClick={() =>
-                        form.handleSubmit({
-                          submitAction: isUpdatingRoom ? "update" : "create",
-                          formAction: "close",
-                        })
-                      }
-                    >
-                      {isSubmitting ? (
-                        <Loader2 />
-                      ) : isUpdatingRoom ? (
-                        "Update"
-                      ) : (
-                        "Submit"
-                      )}
-                    </Button>
+              <FormSection title="Classification">
+                <form.Field
+                  name="roomTypeId"
+                  children={(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="Room Type"
+                      required
+                      options={roomTypeOptions}
+                      placeholder="Select a room type"
+                      searchPlaceholder="Search room types..."
+                      emptyMessage="No room type found"
+                    />
                   )}
                 />
-                <DrawerClose asChild>
-                  <Button
-                    className=" cursor-pointer"
-                    variant="outline"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                </DrawerClose>
-              </DrawerFooter>
+                <form.Field
+                  name="buildingId"
+                  children={(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="Building"
+                      required
+                      options={buildingOptions}
+                      placeholder="Select a building"
+                      searchPlaceholder="Search buildings..."
+                      emptyMessage="No building found"
+                    />
+                  )}
+                />
+              </FormSection>
             </div>
+
+            <FormDrawerFooter
+              form={form}
+              isUpdate={isUpdatingRoom}
+              onCancel={() => setIsOpen(false)}
+              entityLabel="Room"
+              showSaveAndAddAnother
+            />
           </form>
         </AuthorizeView>
       </DrawerContent>

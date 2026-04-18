@@ -1,4 +1,4 @@
-﻿using Ardalis.Result;
+using Ardalis.Result;
 using Enrollify.Application.Departments;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
 using Enrollify.Infrastructure.Data;
@@ -26,12 +26,12 @@ public class DepartmentRepository : IDepartmentRepository
         }
         catch (DbUpdateException ex) when (IsDuplicateCodeInACollegeException(ex))
         {
-            _logger.LogError(ex, "Duplicate department code: {departmentCode}", newDepartment.Code);
+            _logger.LogError(ex, "Duplicate department code: {DepartmentCode}", newDepartment.Code);
             return Result.Conflict($"The department code '{newDepartment.Code}' is already in use. Please choose a different code.");
         }
         catch (DbUpdateException ex) when (IsDuplicateNameInACollegeException(ex))
         {
-            _logger.LogError(ex, "Duplicate department name: {departmentName}", newDepartment.Name);
+            _logger.LogError(ex, "Duplicate department name: {DepartmentName}", newDepartment.Name);
             return Result.Conflict($"The department name '{newDepartment.Name}' is already in use. Please choose a different name.");
         }
     }
@@ -49,12 +49,12 @@ public class DepartmentRepository : IDepartmentRepository
         }
         catch (DbUpdateException ex) when (IsForeignKeyConstraintException(ex))
         {
-            _logger.LogWarning(ex, "Cannot delete department with ID: {departmentId} due to foreign key constraint", id.Value);
+            _logger.LogWarning(ex, "Cannot delete department with ID: {DepartmentId} due to foreign key constraint", id.Value);
             return Result.Conflict("Cannot delete this department because it is currently in use by one or more courses. Please remove all references before deleting.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting department with ID: {departmentId}", id.Value);
+            _logger.LogError(ex, "Error deleting department with ID: {DepartmentId}", id.Value);
             return Result.Error($"Unable to delete the department with ID {id.Value} due to internal error");
         }
     }
@@ -69,30 +69,30 @@ public class DepartmentRepository : IDepartmentRepository
         }
         catch (DbUpdateException ex) when (IsDuplicateCodeInACollegeException(ex))
         {
-            _logger.LogError(ex, "Duplicate department code: {departmentCode}", newDepartment.Code);
+            _logger.LogError(ex, "Duplicate department code: {DepartmentCode}", newDepartment.Code);
             return Result.Conflict($"The department code '{newDepartment.Code}' is already in use. Please choose a different code.");
         }
         catch (DbUpdateException ex) when (IsDuplicateNameInACollegeException(ex))
         {
-            _logger.LogError(ex, "Duplicate department name: {departmentName}", newDepartment.Name);
+            _logger.LogError(ex, "Duplicate department name: {DepartmentName}", newDepartment.Name);
             return Result.Conflict($"The department name '{newDepartment.Name}' is already in use. Please choose a different name.");
         }
     }
 
-    private bool IsDuplicateCodeInACollegeException(DbUpdateException ex)
+    private static bool IsDuplicateCodeInACollegeException(DbUpdateException ex)
     {
         return ex.InnerException?.Message.Contains("duplicate") == true &&
                ex.InnerException?.Message.Contains("UIdx_Departments_Code_College_IsActive") == true;
     }
 
-    private bool IsDuplicateNameInACollegeException(DbUpdateException ex)
+    private static bool IsDuplicateNameInACollegeException(DbUpdateException ex)
     {
         return ex.InnerException?.Message.Contains("duplicate") == true &&
                ex.InnerException?.Message.Contains("UIdx_Departments_Name_College_IsActive") == true;
     }
 
 
-    private bool IsForeignKeyConstraintException(DbUpdateException ex)
+    private static bool IsForeignKeyConstraintException(DbUpdateException ex)
     {
         return ex.InnerException?.Message.Contains("REFERENCE constraint") == true ||
                ex.InnerException?.Message.Contains("FK_") == true ||

@@ -145,6 +145,15 @@ const createAppQueryOptions = <
 
   return queryOptions({
     queryKey,
+    retry: (failureCount, error) => {
+      if (failureCount >= 3) return false;
+      const status = (error as any)?.response?.status;
+      if (status === 401 || status === 403 || status === 404) return false;
+      return true;
+    },
+    retryDelay: (attemptIndex) =>
+      Math.min(1000 * Math.pow(2, attemptIndex), 30000) +
+      Math.random() * 1000,
     ...options,
     queryFn: createQueryFn(path, pathParams, params, forceRefreshToken),
   });
@@ -177,6 +186,15 @@ export const createAppSuspenseQueryOptions = <
 
   return {
     queryKey,
+    retry: (failureCount: number, error: TError) => {
+      if (failureCount >= 3) return false;
+      const status = (error as any)?.response?.status;
+      if (status === 401 || status === 403 || status === 404) return false;
+      return true;
+    },
+    retryDelay: (attemptIndex: number) =>
+      Math.min(1000 * Math.pow(2, attemptIndex), 30000) +
+      Math.random() * 1000,
     ...options,
     queryFn: createQueryFn(path, pathParams, params, forceRefreshToken),
   };

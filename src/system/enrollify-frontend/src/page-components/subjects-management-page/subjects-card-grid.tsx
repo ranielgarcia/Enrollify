@@ -2,7 +2,6 @@ import type { PagedResult } from "@/api/models/paged-result";
 import type { Subject } from "@/api/models/subject";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
 import {
   BookOpen,
   Edit2,
@@ -10,7 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useTablePermissions } from "@/hooks/use-table-permissions";
 
 interface SubjectsCardGridProps {
   pagedSubjects: PagedResult<Subject>;
@@ -27,24 +26,9 @@ export function SubjectsCardGrid({
   onPreviousPage,
   onNextPage,
 }: SubjectsCardGridProps) {
-  const { checkPolicy } = useAuthorization();
-  const [canUpdate, setCanUpdate] = useState(false);
-  const [canDelete, setCanDelete] = useState(false);
+  const { canUpdate, canDelete } = useTablePermissions("canUpdateSubject", "canDeleteSubject");
 
-  useEffect(() => {
-    const checkPolicies = async () => {
-      const [updatePermission, deletePermission] = await Promise.all([
-        checkPolicy("canUpdateSubject"),
-        checkPolicy("canDeleteSubject"),
-      ]);
-      setCanUpdate(updatePermission);
-      setCanDelete(deletePermission);
-    };
-
-    checkPolicies();
-  }, [checkPolicy]);
-
-  const subjects = pagedSubjects?.items ?? [];
+  const subjects= pagedSubjects?.items ?? [];
 
   return (
     <div className="space-y-6">

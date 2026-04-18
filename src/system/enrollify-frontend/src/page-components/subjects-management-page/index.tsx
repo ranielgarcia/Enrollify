@@ -1,17 +1,24 @@
 import { getAllRoomTypesOptions } from "@/api/collections/room-type-collection";
 import { getAllSubjectsPaginatedOptions } from "@/api/collections/subject-collection";
 import type { Subject } from "@/api/models/subject";
+import type { SubjectEquivalenceGroup } from "@/api/models/subject-equivalence";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { BookOpen, LayoutGrid, Link2, List } from "lucide-react";
+import { BookOpen, LayoutGrid, Link2, List, Plus } from "lucide-react";
 import { useCallback, useState } from "react";
 import { DeleteSubjectAlertDialog } from "./delete-subject-alert-dialog";
-import { EquivalenceGroupsTab } from "./equivalence-groups";
+import {
+  DeleteEquivalenceGroupDialog,
+  EquivalenceGroupFormDialog,
+  EquivalenceGroupsTab,
+} from "./equivalence-groups";
 import { SubjectFormDrawer } from "./subject-form-drawer";
 import { SubjectsCardGrid } from "./subjects-card-grid";
 import { SubjectsTable } from "./subjects-table";
+import { useCrudState } from "@/hooks/use-crud-state";
+import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 
 type ViewMode = "table" | "grid";
 
@@ -19,10 +26,37 @@ export default function SubjectsManagementPage() {
   const { page, pageSize } = useParams({ strict: false });
   const navigate = useNavigate();
 
-  const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
-  const [subjectToEdit, setSubjectToEdit] = useState<Subject | undefined>();
-  const [subjectToDelete, setSubjectToDelete] = useState<Subject | undefined>();
+  const {
+    isFormOpen,
+    entityToEdit,
+    entityToDelete,
+    handleEdit,
+    handleDelete,
+    handleFormOpenChange,
+    handleDeleteDialogOpenChange,
+  } = useCrudState<Subject>();
+
+  const {
+    isFormOpen: isEquivalenceFormOpen,
+    entityToEdit: equivalenceToEdit,
+    entityToDelete: equivalenceToDelete,
+    handleEdit: handleEquivalenceEdit,
+    handleDelete: handleEquivalenceDelete,
+    handleFormOpenChange: handleEquivalenceFormOpenChange,
+    handleDeleteDialogOpenChange: handleEquivalenceDeleteDialogOpenChange,
+    openCreateForm: openEquivalenceCreateForm,
+  } = useCrudState<SubjectEquivalenceGroup>();
+
   const [viewMode, setViewMode] = useState<ViewMode>("table");
+
+  const [activeTab, setActiveTab] = useState(
+    () => sessionStorage.getItem("subjects-tab") ?? "subjects",
+  );
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    sessionStorage.setItem("subjects-tab", value);
+  };
 
   const currentPage = page ? Number(page) : 1;
   const currentPageSize = pageSize ? Number(pageSize) : 10;
@@ -33,142 +67,148 @@ export default function SubjectsManagementPage() {
 
   const { data: roomTypes } = useSuspenseQuery(getAllRoomTypesOptions());
 
-  const handlePreviousPage = useCallback(() => {
-    if (currentPage > 1) {
+  const handlePageChange = useCallback(
+    (newPage: number, newPageSize: number) => {
       navigate({
         to: "/portal/master-data/subjects/{-$page}/{-$pageSize}",
         params: {
-          page: String(currentPage - 1),
-          pageSize: String(currentPageSize),
+          page: String(newPage),
+          pageSize: String(newPageSize),
         },
       });
+    },
+    [navigate],
+  );
+
+  const handlePreviousPage = useCallback(() => {
+    if (currentPage > 1) {
+      handlePageChange(currentPage - 1, currentPageSize);
     }
-  }, [currentPage, currentPageSize, navigate]);
+  }, [currentPage, currentPageSize, handlePageChange]);
 
   const handleNextPage = useCallback(() => {
     if (pagedSubjects && currentPage < pagedSubjects.totalPages) {
-      navigate({
-        to: "/portal/master-data/subjects/{-$page}/{-$pageSize}",
-        params: {
-          page: String(currentPage + 1),
-          pageSize: String(currentPageSize),
-        },
-      });
+      handlePageChange(currentPage + 1, currentPageSize);
     }
-  }, [currentPage, currentPageSize, navigate, pagedSubjects]);
-
-  const handleEdit = (subject: Subject) => {
-    setSubjectToEdit(subject);
-    setIsFormOpen(true);
-  };
-
-  const handleDelete = (subject: Subject) => {
-    setSubjectToDelete(subject);
-  };
-
-  const handleDrawerOnOpenChange = (open: boolean) => {
-    setSubjectToEdit(undefined);
-    setIsFormOpen(open);
-  };
-
-  const handleDeleteSubjectAlertDialogOnOpenChange = (open: boolean) => {
-    if (!open) {
-      setSubjectToDelete(undefined);
-    }
-  };
+  }, [currentPage, currentPageSize, handlePageChange, pagedSubjects]);
 
   return (
-    <main>
-      <div className="p-4 md:p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Subject Management
-          </h1>
-          <p className="text-muted-foreground">
-            Manage subjects and their equivalence relationships
-          </p>
-        </div>
+    <ManagementPageLayout
+      title="Subject Management"
+      description="Manage subjects and their equivalence relationships"
+      icon={<BookOpen />}
+      createNewItemButton={
+        activeTab === "subjects" ? (
+          <SubjectFormDrawer
+            roomTypes={roomTypes}
+            onOpenChange={handleFormOpenChange}
+            subjectToUpdate={entityToEdit}
+            isOpen={isFormOpen}
+            setIsOpen={handleFormOpenChange}
+          />
+        ) : (
+          <Button onClick={openEquivalenceCreateForm}>
+            <Plus className="size-4 mr-2" />
+            New Equivalence Group
+          </Button>
+        )
+      }
+    >
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="min-h-0 flex-1 space-y-6"
+      >
+        <TabsList variant="line">
+          <TabsTrigger value="subjects" className="gap-2">
+            <BookOpen className="size-4" />
+            Subjects
+          </TabsTrigger>
+          <TabsTrigger value="equivalence" className="gap-2">
+            <Link2 className="size-4" />
+            Equivalence Groups
+          </TabsTrigger>
+        </TabsList>
 
-        <Tabs defaultValue="subjects" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="subjects" className="gap-2">
-              <BookOpen className="size-4" />
-              Subjects
-            </TabsTrigger>
-            <TabsTrigger value="equivalence" className="gap-2">
-              <Link2 className="size-4" />
-              Equivalence Groups
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Subjects Tab */}
-          <TabsContent value="subjects" className="space-y-4">
-            {/* Toolbar: View Toggle + Add Button */}
-            <div className="flex items-center justify-between">
-              {/* View Mode Toggle */}
-              <div className="flex items-center gap-1 bg-muted p-1 rounded-lg">
-                <Button
-                  variant={viewMode === "table" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("table")}
-                  className="gap-2"
-                >
-                  <List className="size-4" />
-                  Table
-                </Button>
-                <Button
-                  variant={viewMode === "grid" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("grid")}
-                  className="gap-2"
-                >
-                  <LayoutGrid className="size-4" />
-                  Grid
-                </Button>
-              </div>
-
-              {/* Add Subject Button */}
-              <SubjectFormDrawer
-                roomTypes={roomTypes}
-                onOpenChange={handleDrawerOnOpenChange}
-                subjectToUpdate={subjectToEdit}
-                isOpen={isFormOpen}
-                setIsOpen={setIsFormOpen}
-              />
+        {/* Subjects Tab */}
+        <TabsContent
+          value="subjects"
+          className="flex min-h-0 flex-col space-y-4"
+        >
+          {/* Toolbar: View Toggle + Add Button */}
+          <div className="flex items-center justify-between">
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-1 bg-muted p-1 rounded-lg">
+              <Button
+                variant={viewMode === "table" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("table")}
+                className="gap-2"
+              >
+                <List className="size-4" />
+                Table
+              </Button>
+              <Button
+                variant={viewMode === "grid" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+                className="gap-2"
+              >
+                <LayoutGrid className="size-4" />
+                Grid
+              </Button>
             </div>
 
-            {/* Subjects Display */}
-            {viewMode === "table" ? (
-              <SubjectsTable
-                pagedSubjects={pagedSubjects}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onPreviousPage={handlePreviousPage}
-                onNextPage={handleNextPage}
-              />
-            ) : (
-              <SubjectsCardGrid
-                pagedSubjects={pagedSubjects}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onPreviousPage={handlePreviousPage}
-                onNextPage={handleNextPage}
-              />
-            )}
-          </TabsContent>
+            {/* Add Subject Button */}
+          </div>
 
-          {/* Equivalence Groups Tab */}
-          <TabsContent value="equivalence">
-            <EquivalenceGroupsTab />
-          </TabsContent>
-        </Tabs>
+          {/* Subjects Display */}
+          {viewMode === "table" ? (
+            <SubjectsTable
+              pagedSubjects={pagedSubjects}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onPageChange={handlePageChange}
+            />
+          ) : (
+            <SubjectsCardGrid
+              pagedSubjects={pagedSubjects}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onPreviousPage={handlePreviousPage}
+              onNextPage={handleNextPage}
+            />
+          )}
+        </TabsContent>
 
-        <DeleteSubjectAlertDialog
-          isOpen={!!subjectToDelete}
-          onOpenChange={handleDeleteSubjectAlertDialogOnOpenChange}
-          subjectToDelete={subjectToDelete}
-        />
-      </div>
-    </main>
+        {/* Equivalence Groups Tab */}
+        <TabsContent
+          value="equivalence"
+          className="flex min-h-0 flex-col space-y-4"
+        >
+          <EquivalenceGroupsTab
+            onEdit={handleEquivalenceEdit}
+            onDelete={handleEquivalenceDelete}
+            onCreateNew={openEquivalenceCreateForm}
+          />
+          <EquivalenceGroupFormDialog
+            isOpen={isEquivalenceFormOpen}
+            onOpenChange={handleEquivalenceFormOpenChange}
+            groupToEdit={equivalenceToEdit}
+          />
+          <DeleteEquivalenceGroupDialog
+            isOpen={!!equivalenceToDelete}
+            onOpenChange={handleEquivalenceDeleteDialogOpenChange}
+            groupToDelete={equivalenceToDelete}
+          />
+        </TabsContent>
+      </Tabs>
+
+      <DeleteSubjectAlertDialog
+        isOpen={!!entityToDelete}
+        onOpenChange={handleDeleteDialogOpenChange}
+        subjectToDelete={entityToDelete}
+      />
+    </ManagementPageLayout>
   );
 }

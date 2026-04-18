@@ -8,6 +8,7 @@ using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
+using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.BuildingConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CollegeConfigs;
@@ -20,6 +21,7 @@ using Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoomConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoomTypeConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.SubjectConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.SubjectEquivalenceGroupConfigs;
+using Enrollify.Infrastructure.Data.Config.AggregateConfigs.TeacherConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.UserConfigs;
 using SmartEnum.EFCore;
 
@@ -42,6 +44,8 @@ public class EnrollifyDbContext: DbContext
     public DbSet<Subject> Subjects => Set<Subject>();
     public DbSet<Curriculum> Curriculums => Set<Curriculum>();
     public DbSet<SubjectEquivalenceGroup> SubjectEquivalenceGroups => Set<SubjectEquivalenceGroup>();
+
+    public DbSet<Teacher> Teachers => Set<Teacher>();
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
@@ -76,7 +80,7 @@ public class EnrollifyDbContext: DbContext
         configurationBuilder.RegisterAllInSubjectVogenEfCoreConverters();
         configurationBuilder.RegisterAllInCurriculumVogenEfCoreConverters();
         configurationBuilder.RegisterAllInSubjectEquivalenceGroupVogenEfCoreConverters();
-
+        configurationBuilder.RegisterAllInTeacherVogenEfCoreConverters();
 
     }
 }

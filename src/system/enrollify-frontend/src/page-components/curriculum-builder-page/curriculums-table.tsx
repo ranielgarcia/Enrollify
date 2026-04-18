@@ -1,17 +1,14 @@
 import type { Curriculum } from "@/api/models/curriculum";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/data-table/data-table";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { Button } from "@/components/ui/button";
 import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
+import { useDataTable } from "@/hooks/use-data-table";
 import { truncateText } from "@/lib/text-utils";
-import {
-  createColumnHelper,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import { Edit2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface CurriculumsTableProps {
   curriculums?: Curriculum[];
@@ -37,35 +34,42 @@ export function CurriculumsTable({
     checkPolicies();
   }, [checkPolicy]);
 
-  const columns = [
+  const columns = useMemo(() => [
     columnHelper.accessor((row) => row.course.name, {
-      header: "Course",
       id: "course",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Course" />,
+      meta: { label: "Course" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("effectiveYear", {
-      header: "Effective Year",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Effective Year" />,
+      meta: { label: "Effective Year" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("version", {
-      header: "Version",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Version" />,
+      meta: { label: "Version" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor((row) => row.status.name, {
-      header: "Status",
       id: "status",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Status" />,
+      meta: { label: "Status" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("description", {
-      header: "Description",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Description" />,
+      meta: { label: "Description" },
       cell: (info) => <span>{truncateText(info.getValue(), 30)}</span>,
     }),
     columnHelper.accessor("approvedDate", {
-      header: "Approved Date",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Approved Date" />,
+      meta: { label: "Approved Date" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("createdAt", {
-      header: "Created At",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Created At" />,
+      meta: { label: "Created At" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
@@ -75,12 +79,14 @@ export function CurriculumsTable({
           : "",
       {
         id: "createdBy",
-        header: "Created By",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Created By" />,
+        meta: { label: "Created By" },
         cell: (info) => <span>{info.getValue()}</span>,
       },
     ),
     columnHelper.accessor("updatedAt", {
-      header: "Updated At",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Updated At" />,
+      meta: { label: "Updated At" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
@@ -90,13 +96,15 @@ export function CurriculumsTable({
           : "",
       {
         id: "updatedBy",
-        header: "Updated By",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Updated By" />,
+        meta: { label: "Updated By" },
         cell: (info) => <span>{info.getValue()}</span>,
       },
     ),
     columnHelper.display({
       id: "actions",
       header: "Actions",
+      enableHiding: false,
       cell: (info) => {
         const item = info.row.original;
 
@@ -115,16 +123,16 @@ export function CurriculumsTable({
         );
       },
     }),
-  ];
+  ], [canUpdate, onEdit]);
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
+  const { table } = useDataTable({
     data: curriculums ?? [],
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   });
 
-  return <DataTable table={table} columns={columns} />;
+  return (
+    <DataTable table={table}>
+      <DataTableToolbar table={table} />
+    </DataTable>
+  );
 }

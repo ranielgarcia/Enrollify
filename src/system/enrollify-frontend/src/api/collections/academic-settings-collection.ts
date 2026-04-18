@@ -16,7 +16,7 @@ export const getAcademicSettingsQueryOptions = () =>
     options: {
       meta: { persist: true },
       queryKey: queryKeys.AcademicSettings(),
-      staleTime: 1000 * 60 * 5,
+      staleTime: 1000 * 60 * 10,
       gcTime: 1000 * 60 * 60 * 24,
       select: (settings): AcademicSettings => {
         return AcademicSettingsSchema.parse(settings);
@@ -30,7 +30,7 @@ export const getAcademicSettingsSuspenseQueryOptions = () =>
     options: {
       meta: { persist: true },
       queryKey: queryKeys.AcademicSettings(),
-      staleTime: 1000 * 60 * 5,
+      staleTime: 1000 * 60 * 10,
       gcTime: 1000 * 60 * 60 * 24,
       select: (settings): AcademicSettings => {
         return AcademicSettingsSchema.parse(settings);

@@ -2,6 +2,7 @@
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate.Models;
 using Enrollify.SharedKernel;
 using Mediator;
 
@@ -14,7 +15,6 @@ public static class CreateSubject
     public sealed class Handler : ICommandHandler<Command, Result<SubjectId>>
     {
         private readonly ISubjectRepository _subjectRepository;
-        private readonly IReadRepository<Course> _courseReadRepository;
         private readonly IReadRepository<RoomType> _roomTypeReadRepository;
 
         public Handler(ISubjectRepository subjectRepository,
@@ -22,7 +22,6 @@ public static class CreateSubject
             IReadRepository<RoomType> roomTypeReadRepository)
         {
             _subjectRepository = subjectRepository;
-            _courseReadRepository = courseReadRepository;
             _roomTypeReadRepository = roomTypeReadRepository;
         }
         public async ValueTask<Result<SubjectId>> Handle(Command command, CancellationToken cancellationToken)

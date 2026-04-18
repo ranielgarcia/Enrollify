@@ -1,16 +1,13 @@
 import type { Department } from "@/api/models/department";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/data-table/data-table";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { Button } from "@/components/ui/button";
-import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
-import {
-  createColumnHelper,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { useDataTable } from "@/hooks/use-data-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import { Edit2, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useTablePermissions } from "@/hooks/use-table-permissions";
 
 interface DepartmentsTableProps {
   departments?: Department[];
@@ -23,48 +20,39 @@ export function DepartmentsTable({
   onEdit,
   onDelete,
 }: DepartmentsTableProps) {
-  const { checkPolicy } = useAuthorization();
+  const { canUpdate, canDelete } = useTablePermissions("canUpdateDepartment", "canDeleteDepartment");
   const columnHelper = createColumnHelper<Department>();
-  const [canUpdate, setCanUpdate] = useState(false);
-  const [canDelete, setCanDelete] = useState(false);
 
-  useEffect(() => {
-    const checkPolicies = async () => {
-      const [updatePermission, deletePermission] = await Promise.all([
-        checkPolicy("canUpdateDepartment"),
-        checkPolicy("canDeleteDepartment"),
-      ]);
-      setCanUpdate(updatePermission);
-      setCanDelete(deletePermission);
-    };
-
-    checkPolicies();
-  }, [checkPolicy]);
-
-  const columns = [
+  const columns = useMemo(() => [
     columnHelper.accessor("code", {
-      header: "Code",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Code" />,
+      meta: { label: "Code" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("name", {
-      header: "Name",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Name" />,
+      meta: { label: "Name" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("chairperson", {
-      header: "Chairperson",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Chairperson" />,
+      meta: { label: "Chairperson" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("description", {
-      header: "Description",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Description" />,
+      meta: { label: "Description" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor((row) => row.college.name, {
       id: "college",
-      header: "College",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="College" />,
+      meta: { label: "College" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("createdAt", {
-      header: "Created At",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Created At" />,
+      meta: { label: "Created At" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
@@ -74,12 +62,14 @@ export function DepartmentsTable({
           : "",
       {
         id: "createdBy",
-        header: "Created By",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Created By" />,
+        meta: { label: "Created By" },
         cell: (info) => <span>{info.getValue()}</span>,
       }
     ),
     columnHelper.accessor("updatedAt", {
-      header: "Updated At",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Updated At" />,
+      meta: { label: "Updated At" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
@@ -89,13 +79,15 @@ export function DepartmentsTable({
           : "",
       {
         id: "updatedBy",
-        header: "Updated By",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Updated By" />,
+        meta: { label: "Updated By" },
         cell: (info) => <span>{info.getValue()}</span>,
       }
     ),
     columnHelper.display({
       id: "actions",
       header: "Actions",
+      enableHiding: false,
       cell: (info) => {
         const item = info.row.original;
 
@@ -123,16 +115,16 @@ export function DepartmentsTable({
         );
       },
     }),
-  ];
+  ], [canUpdate, canDelete, onEdit, onDelete]);
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
+  const { table } = useDataTable({
     data: departments ?? [],
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   });
 
-  return <DataTable table={table} columns={columns} />;
+  return (
+    <DataTable table={table}>
+      <DataTableToolbar table={table} />
+    </DataTable>
+  );
 }

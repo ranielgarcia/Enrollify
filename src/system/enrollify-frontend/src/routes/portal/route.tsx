@@ -1,6 +1,6 @@
-import AppContainer from "@/components/app-container";
+import { PageErrorBoundary } from "@/components/page-layouts/page-error-boundary";
 import { OverlayLoader } from "@/components/app-loading-overlay";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/navigation/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -48,6 +48,7 @@ export const Route = createFileRoute("/portal")({
     crumb: undefined,
   }),
   component: RouteComponent,
+  errorComponent: PageErrorBoundary,
 });
 
 function RouteComponent() {
@@ -71,10 +72,10 @@ function RouteComponent() {
     <AuthenticationProvider>
       <AuthorizationProvider>
         <SystemSettingsProvider>
-          <SidebarProvider>
+          <SidebarProvider className="h-svh overflow-hidden">
             <AppSidebar />
             <SidebarInset>
-              <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+              <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 bg-sidebar">
                 <div className="flex items-center gap-2 px-4">
                   <SidebarTrigger className="-ml-1" />
                   <Separator
@@ -108,21 +109,19 @@ function RouteComponent() {
                   </Breadcrumb>
                 </div>
               </header>
-              <AppContainer>
-                <Suspense
-                  fallback={
-                    <OverlayLoader
-                      isLoading={true}
-                      text="Loading data..."
-                      size="lg"
-                    />
-                  }
-                >
-                  <Outlet />
-                </Suspense>
+              <Suspense
+                fallback={
+                  <OverlayLoader
+                    isLoading={true}
+                    text="Loading data..."
+                    size="lg"
+                  />
+                }
+              >
+                <Outlet />
+              </Suspense>
 
-                <Toaster position="bottom-right" />
-              </AppContainer>
+              <Toaster position="bottom-right" />
             </SidebarInset>
           </SidebarProvider>
         </SystemSettingsProvider>

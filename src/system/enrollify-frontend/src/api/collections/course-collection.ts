@@ -15,6 +15,7 @@ export const getAllCoursesOptions = () =>
     path: "/api/courses",
     options: {
       queryKey: queryKeys.all(),
+      staleTime: 1000 * 60 * 5,
       select: (courses): Course[] => {
         return courses.map((t) => CourseSchema.parse(t));
       },

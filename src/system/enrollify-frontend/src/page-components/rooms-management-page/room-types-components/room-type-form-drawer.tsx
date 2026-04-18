@@ -1,10 +1,8 @@
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -12,7 +10,6 @@ import {
 import { Plus } from "lucide-react";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { Loader2 } from "lucide-react";
 import type { RoomType } from "../../../api/models/room-type";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Unauthorized } from "@/components/unauthorized";
@@ -21,20 +18,11 @@ import {
   updateRoomTypeOptions,
 } from "@/api/collections/room-type-collection";
 import { useMutation } from "@tanstack/react-query";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-
-type FormMeta = {
-  submitAction: "create" | "update" | null;
-  formAction: "close" | "stayopen" | null;
-};
-// Metadata is not required to call form.handleSubmit().
-// Specify what values to use as default if no meta is passed
-const defaultMeta: FormMeta = {
-  submitAction: null,
-  formAction: null,
-};
+import { FormField } from "@/components/form/form-field";
+import { FormSection } from "@/components/form/form-section";
+import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
+import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
+import { toast } from "sonner";
 
 const roomTypeSchema = z.object({
   name: z.string().min(3, "Name is required"),
@@ -61,26 +49,29 @@ export function RoomTypeFormDrawer({
   };
 
   const { mutateAsync: createNewRoomTypeAsync } = useMutation(
-    createRoomTypeOptions()
+    createRoomTypeOptions(),
   );
   const { mutateAsync: updateRoomTypeAsync } = useMutation(
-    updateRoomTypeOptions(roomTypeToUpdate?.id ?? 0)
+    updateRoomTypeOptions(roomTypeToUpdate?.id ?? 0),
   );
 
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
-      onChange: roomTypeSchema,
+      onBlur: roomTypeSchema,
+      onSubmit: roomTypeSchema,
     },
-    onSubmitMeta: defaultMeta,
+    onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
       const formValues = roomTypeSchema.parse(value);
       if (meta.submitAction === "create") {
         await createNewRoomTypeAsync(formValues);
+        toast.success("Room type created successfully");
       }
 
       if (meta.submitAction === "update" && roomTypeToUpdate) {
         await updateRoomTypeAsync(formValues);
+        toast.success("Room type updated successfully");
       }
 
       if (meta.formAction === "close") {
@@ -99,7 +90,10 @@ export function RoomTypeFormDrawer({
       onOpenChange={onOpenChange}
     >
       <DrawerTrigger asChild>
-        <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer">
+        <Button
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+          size="sm"
+        >
           <Plus className="size-4" />
           Add Room Type
         </Button>
@@ -121,104 +115,57 @@ export function RoomTypeFormDrawer({
           }
         >
           <form
-            className="space-y-4"
+            className="flex flex-col overflow-hidden h-full"
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
           >
-            <div className="mx-auto w-full max-w-sm">
-              <DrawerHeader>
-                <DrawerTitle>
-                  {isUpdateRoomType ? "Update" : "Create"} Room Type
-                </DrawerTitle>
-                <DrawerDescription>Set room type details.</DrawerDescription>
-              </DrawerHeader>
-              <div className="p-4 pb-0">
-                <div className="pb-4">
-                  <form.Field
-                    name="name"
-                    children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Type Name:</Label>
-                        <Input
-                          type="text"
-                          id={field.name}
-                          placeholder="Type Name:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
-                    )}
-                  />
-                </div>
-                <div className="pb-4">
-                  <form.Field
-                    name="description"
-                    children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>Description:</Label>
-                        <Textarea
-                          placeholder="e.g., Large classroom for lectures"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-red-800">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
-                    )}
-                  />
-                </div>
-              </div>
-
-              <DrawerFooter>
-                <form.Subscribe
-                  selector={(state) => [state.canSubmit, state.isSubmitting]}
-                  children={([canSubmit, isSubmitting]) => (
-                    <Button
-                      className=" cursor-pointer"
-                      disabled={!canSubmit}
-                      type="submit"
-                      onClick={() =>
-                        form.handleSubmit({
-                          submitAction: isUpdateRoomType ? "update" : "create",
-                          formAction: "close",
-                        })
-                      }
-                    >
-                      {isSubmitting ? (
-                        <Loader2 />
-                      ) : isUpdateRoomType ? (
-                        "Update"
-                      ) : (
-                        "Submit"
-                      )}
-                    </Button>
+            <DrawerHeader className="border-b pb-4">
+              <DrawerTitle>
+                {isUpdateRoomType ? "Update" : "New"} Room Type
+              </DrawerTitle>
+              <DrawerDescription>
+                Fill in the details below to{" "}
+                {isUpdateRoomType ? "update this" : "create a new"} room type.
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
+              <FormSection>
+                <form.Field
+                  name="name"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Type Name"
+                      required
+                      autoFocus
+                    />
                   )}
                 />
-                <DrawerClose asChild>
-                  <Button
-                    className=" cursor-pointer"
-                    variant="outline"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                </DrawerClose>
-              </DrawerFooter>
+                <form.Field
+                  name="description"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Description"
+                      type="textarea"
+                      required
+                      placeholder="e.g., Large classroom for lectures"
+                      maxLength={500}
+                    />
+                  )}
+                />
+              </FormSection>
             </div>
+
+            <FormDrawerFooter
+              form={form}
+              isUpdate={isUpdateRoomType}
+              onCancel={() => setIsOpen(false)}
+              entityLabel="Room Type"
+              showSaveAndAddAnother
+            />
           </form>
         </AuthorizeView>
       </DrawerContent>

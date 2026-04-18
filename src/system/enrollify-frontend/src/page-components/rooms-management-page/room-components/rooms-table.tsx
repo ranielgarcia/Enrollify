@@ -1,16 +1,13 @@
-import {
-  useReactTable,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  createColumnHelper,
-} from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "@/components/data-table/data-table";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { useDataTable } from "@/hooks/use-data-table";
 import { Edit2, Trash2 } from "lucide-react";
 import type { Room } from "@/api/models/room";
-import { useEffect, useState } from "react";
-import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
+import { useMemo } from "react";
+import { useTablePermissions } from "@/hooks/use-table-permissions";
 
 interface RoomsTableProps {
   rooms?: Room[];
@@ -19,45 +16,35 @@ interface RoomsTableProps {
 }
 
 export function RoomsTable({ rooms, onEdit, onDelete }: RoomsTableProps) {
+  const { canUpdate, canDelete } = useTablePermissions("canUpdateRooms", "canDeleteRooms");
   const columnHelper = createColumnHelper<Room>();
-  const { checkPolicy } = useAuthorization();
-  const [canUpdate, setCanUpdate] = useState(false);
-  const [canDelete, setCanDelete] = useState(false);
 
-  useEffect(() => {
-    const checkPolicies = async () => {
-      const [updatePermission, deletePermission] = await Promise.all([
-        checkPolicy("canUpdateRooms"),
-        checkPolicy("canDeleteRooms"),
-      ]);
-      setCanUpdate(updatePermission);
-      setCanDelete(deletePermission);
-    };
-
-    checkPolicies();
-  }, [checkPolicy]);
-
-  const columns = [
+  const columns = useMemo(() => [
     columnHelper.accessor("roomNumber", {
-      header: "Room Number",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Room Number" />,
+      meta: { label: "Room Number" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("capacity", {
-      header: "Capacity",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Capacity" />,
+      meta: { label: "Capacity" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor((row) => row.roomType.name, {
       id: "roomType",
-      header: "Room Type",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Room Type" />,
+      meta: { label: "Room Type" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor((row) => row.building.name, {
       id: "building",
-      header: "Building",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Building" />,
+      meta: { label: "Building" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor("createdAt", {
-      header: "Created At",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Created At" />,
+      meta: { label: "Created At" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
@@ -67,12 +54,14 @@ export function RoomsTable({ rooms, onEdit, onDelete }: RoomsTableProps) {
           : "",
       {
         id: "createdBy",
-        header: "Created By",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Created By" />,
+        meta: { label: "Created By" },
         cell: (info) => <span>{info.getValue()}</span>,
       }
     ),
     columnHelper.accessor("updatedAt", {
-      header: "Updated At",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Updated At" />,
+      meta: { label: "Updated At" },
       cell: (info) => <span>{info.getValue()}</span>,
     }),
     columnHelper.accessor(
@@ -82,13 +71,15 @@ export function RoomsTable({ rooms, onEdit, onDelete }: RoomsTableProps) {
           : "",
       {
         id: "updatedBy",
-        header: "Updated By",
+        header: ({ column }) => <DataTableColumnHeader column={column} label="Updated By" />,
+        meta: { label: "Updated By" },
         cell: (info) => <span>{info.getValue()}</span>,
       }
     ),
     columnHelper.display({
       id: "actions",
       header: "Actions",
+      enableHiding: false,
       cell: (info) => {
         const item = info.row.original;
         return (
@@ -115,16 +106,16 @@ export function RoomsTable({ rooms, onEdit, onDelete }: RoomsTableProps) {
         );
       },
     }),
-  ];
+  ], [canUpdate, canDelete, onEdit, onDelete]);
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
+  const { table } = useDataTable({
     data: rooms ?? [],
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   });
 
-  return <DataTable table={table} columns={columns} />;
+  return (
+    <DataTable table={table}>
+      <DataTableToolbar table={table} />
+    </DataTable>
+  );
 }

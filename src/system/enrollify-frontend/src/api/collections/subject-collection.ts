@@ -30,6 +30,7 @@ export const getAllSubjectsMinimalOptions = () =>
     path: "/api/subjects",
     options: {
       queryKey: queryKeys.base(),
+      staleTime: 1000 * 60 * 2,
       select: (subjects): Subject[] => {
         return subjects.map((s) => SubjectSchema.parse(s));
       },
@@ -48,6 +49,7 @@ export const getAllSubjectsPaginatedOptions = (
     },
     options: {
       queryKey: queryKeys.paginated(page, pageSize),
+      staleTime: 1000 * 60 * 2,
       select: (pagedResults): PagedResult<Subject> => {
         // Handle empty response or string response
         if (
@@ -89,6 +91,7 @@ export const searchSubjectsPaginatedOptions = (
     options: {
       enabled: !!page && !!pageSize && enabled,
       queryKey: queryKeys.search(page, pageSize, searchTerm),
+      staleTime: 1000 * 60 * 2,
       select: (pagedResults): PagedResult<Subject> => {
         // Handle empty response or string response
         if (

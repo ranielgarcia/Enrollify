@@ -21,6 +21,7 @@ export const getAllCurriculumsOptions = (enabled: boolean) =>
     options: {
       enabled,
       queryKey: queryKeys.all(),
+      staleTime: 1000 * 60 * 5,
       select: (curriculums): Curriculum[] => {
         return curriculums.map((c) => CurriculumSchema.parse(c));
       },

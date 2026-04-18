@@ -1,5 +1,6 @@
-﻿using Ardalis.SmartEnum;
+using Ardalis.SmartEnum;
 using Ardalis.SmartEnum.Dapper;
+using Azure.Storage.Blobs;
 using Dapper;
 using Enrollify.Application.Buildings;
 using Enrollify.Application.Colleges;
@@ -11,13 +12,15 @@ using Enrollify.Application.Rooms;
 using Enrollify.Application.RoomTypes;
 using Enrollify.Application.SubjectEquivalences;
 using Enrollify.Application.Subjects;
+using Enrollify.Application.Teachers;
 using Enrollify.Core.Constants.Authorization;
+using Enrollify.Core.Services.FileStorage;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
 using Enrollify.Infrastructure.Data.Queries;
+using Enrollify.Infrastructure.FileStorage;
 using Enrollify.Infrastructure.Repositories;
 using Enrollify.SharedKernel;
-using System.Reflection;
 
 namespace Enrollify.Infrastructure;
 
@@ -77,6 +80,23 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ISubjectRepository, SubjectRepository>();
         services.AddScoped<ICurriculumRepository, CurriculumRepository>();
         services.AddScoped<ISubjectEquivalenceGroupRepository, SubjectEquivalenceGroupRepository>();
+        services.AddScoped<ITeacherRepository, TeacherRepository>();
+        services.AddScoped<ITeacherPhotoStorageService, TeacherPhotoStorageService>();
+
+        // Azure Blob Storage
+        string? azureBlobStorageConnectionString = config.GetConnectionString("AzureBlobStorage");
+        if (!string.IsNullOrEmpty(azureBlobStorageConnectionString))
+        {
+            // TODO: Remove explicit ServiceVersion once Azurite supports the 2026-02-06 API version
+            services.AddSingleton(new BlobServiceClient(azureBlobStorageConnectionString,
+                new BlobClientOptions(BlobClientOptions.ServiceVersion.V2025_01_05)));
+            services.AddScoped<IFileStorageService, AzureBlobStorageService>();
+            logger.LogInformation("{Service} registered with Azure Blob Storage", nameof(IFileStorageService));
+        }
+        else
+        {
+            logger.LogError("Azure Blob Storage connection string not found. {Service} will not be available. Add 'AzureBlobStorage' to ConnectionStrings configuration.", nameof(IFileStorageService));
+        }
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 
