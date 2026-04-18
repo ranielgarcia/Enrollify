@@ -3,12 +3,14 @@ import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { Button } from "@/components/ui/button";
-import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
 import { useDataTable } from "@/hooks/use-data-table";
+import { useTablePermissions } from "@/hooks/use-table-permissions";
 import { truncateText } from "@/lib/text-utils";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Edit2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+
+const columnHelper = createColumnHelper<Curriculum>();
 
 interface CurriculumsTableProps {
   curriculums?: Curriculum[];
@@ -19,20 +21,7 @@ export function CurriculumsTable({
   curriculums,
   onEdit,
 }: CurriculumsTableProps) {
-  const { checkPolicy } = useAuthorization();
-  const columnHelper = createColumnHelper<Curriculum>();
-  const [canUpdate, setCanUpdate] = useState(false);
-
-  useEffect(() => {
-    const checkPolicies = async () => {
-      const [updatePermission] = await Promise.all([
-        checkPolicy("canUpdateCurriculum"),
-      ]);
-      setCanUpdate(updatePermission);
-    };
-
-    checkPolicies();
-  }, [checkPolicy]);
+  const { canUpdate } = useTablePermissions("canUpdateCurriculum", "canDeleteCurriculum");
 
   const columns = useMemo(() => [
     columnHelper.accessor((row) => row.course.name, {

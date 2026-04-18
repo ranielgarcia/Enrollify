@@ -22,6 +22,8 @@ import { AuthorizeView } from "@/infrastructure/authorization/components/Authori
 import { Unauthorized } from "@/components/unauthorized";
 import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
 import { FormSelectField } from "@/components/form/form-select-field";
+import { FormSection } from "@/components/form/form-section";
+import { Separator } from "@/components/ui/separator";
 import type { Course } from "@/api/models/course";
 import type { SearchableSelectOption } from "@/components/form/searchable-select";
 import { FormField } from "@/components/form/form-field";
@@ -87,15 +89,16 @@ export function CurriculumFormDrawer({
       if (meta.submitAction === "create") {
         await createDraftCurriculumAsync(formValues);
         toast.success("Curriculum created successfully");
-        onOpenChange(false);
       }
 
       if (meta.submitAction === "update" && curriculumToUpdate) {
         await updateCurriculumAsync(formValues);
         toast.success("Curriculum updated successfully");
-        onOpenChange(false);
       }
 
+      if (meta.formAction === "close") {
+        setIsOpen(false);
+      }
       form.reset();
     },
   });
@@ -155,57 +158,66 @@ export function CurriculumFormDrawer({
               </DrawerDescription>
             </DrawerHeader>
             <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
-              <form.Field
-                name="courseId"
-                children={(field) => (
-                  <FormSelectField
-                    field={field}
-                    label="Course"
-                    required
-                    options={coursesOptions}
-                    placeholder="Select Course"
-                    searchPlaceholder="Search Course..."
-                    emptyMessage="No Course found"
-                  />
-                )}
-              />
+              <FormSection title="Course & Year">
+                <form.Field
+                  name="courseId"
+                  children={(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="Course"
+                      required
+                      options={coursesOptions}
+                      placeholder="Select Course"
+                      searchPlaceholder="Search Course..."
+                      emptyMessage="No Course found"
+                    />
+                  )}
+                />
 
-              <form.Field
-                name="effectiveYear"
-                children={(field) => (
-                  <FormField
-                    field={field}
-                    label="Effective Year"
-                    type="number"
-                    required
-                  />
-                )}
-              />
+                <form.Field
+                  name="effectiveYear"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Effective Year"
+                      type="number"
+                      required
+                    />
+                  )}
+                />
+              </FormSection>
 
-              <form.Field
-                name="version"
-                children={(field) => (
-                  <FormField
-                    field={field}
-                    label="Version Identifier"
-                    required
-                    placeholder="e.g., 2024-A"
-                  />
-                )}
-              />
+              <Separator />
 
-              <form.Field
-                name="description"
-                children={(field) => (
-                  <FormField
-                    field={field}
-                    label="Description"
-                    type="textarea"
-                    placeholder="Curriculum details..."
-                    className="md:col-span-2"
-                  />
-                )}
-              />
+              <FormSection title="Identification">
+                <form.Field
+                  name="version"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Version Identifier"
+                      required
+                      placeholder="e.g., 2024-A"
+                    />
+                  )}
+                />
+              </FormSection>
+
+              <Separator />
+
+              <FormSection title="Details">
+                <form.Field
+                  name="description"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Description"
+                      type="textarea"
+                      placeholder="Curriculum details..."
+                    />
+                  )}
+                />
+              </FormSection>
             </div>
 
             <FormDrawerFooter
