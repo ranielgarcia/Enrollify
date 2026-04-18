@@ -4,7 +4,7 @@ import {
 } from "@/api/collections/building-collection";
 import type { Building } from "@/api/models/building";
 import type { College } from "@/api/models/college";
-import { type SearchableSelectOption } from "@/components/searchable-select";
+import { type SearchableSelectOption } from "@/components/form/searchable-select";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -15,10 +15,10 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
-import { FormField } from "@/components/form-field";
-import { FormSelectField } from "@/components/form-select-field";
-import { FormSection } from "@/components/form-section";
-import { FormDrawerFooter } from "@/components/form-drawer-footer";
+import { FormField } from "@/components/form/form-field";
+import { FormSelectField } from "@/components/form/form-select-field";
+import { FormSection } from "@/components/form/form-section";
+import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
@@ -144,69 +144,64 @@ export function BuildingFormDrawer({
               </DrawerDescription>
             </DrawerHeader>
             <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
-                <FormSection title="Identification">
-                  <form.Field
-                    name="name"
-                    children={(field) => (
-                      <FormField
-                        field={field}
-                        label="Name"
-                        required
-                        autoFocus
-                      />
-                    )}
-                  />
-                  <form.Field
-                    name="address"
-                    children={(field) => (
-                      <FormField field={field} label="Address" required />
-                    )}
-                  />
-                </FormSection>
+              <FormSection title="Identification">
+                <form.Field
+                  name="name"
+                  children={(field) => (
+                    <FormField field={field} label="Name" required autoFocus />
+                  )}
+                />
+                <form.Field
+                  name="address"
+                  children={(field) => (
+                    <FormField field={field} label="Address" required />
+                  )}
+                />
+              </FormSection>
 
-                <Separator />
+              <Separator />
 
-                <FormSection title="Details">
-                  <form.Field
-                    name="description"
-                    children={(field) => (
-                      <FormField
-                        field={field}
-                        label="Description"
-                        type="textarea"
-                        required
-                        maxLength={500}
-                      />
-                    )}
-                  />
-                </FormSection>
+              <FormSection title="Details">
+                <form.Field
+                  name="description"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Description"
+                      type="textarea"
+                      required
+                      maxLength={500}
+                    />
+                  )}
+                />
+              </FormSection>
 
-                <Separator />
+              <Separator />
 
-                <FormSection title="Classification">
-                  <form.Field
-                    name="collegeId"
-                    children={(field) => (
-                      <FormSelectField
-                        field={field}
-                        label="College"
-                        options={collegesOptions}
-                        placeholder="Select a college"
-                        searchPlaceholder="Search college"
-                        emptyMessage="No college found"
-                      />
-                    )}
-                  />
-                </FormSection>
-              </div>
+              <FormSection title="Classification">
+                <form.Field
+                  name="collegeId"
+                  children={(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="College"
+                      options={collegesOptions}
+                      placeholder="Select a college"
+                      searchPlaceholder="Search college"
+                      emptyMessage="No college found"
+                    />
+                  )}
+                />
+              </FormSection>
+            </div>
 
-              <FormDrawerFooter
-                form={form}
-                isUpdate={isUpdateBuilding}
-                onCancel={() => setIsOpen(false)}
-                entityLabel="Building"
-                showSaveAndAddAnother
-              />
+            <FormDrawerFooter
+              form={form}
+              isUpdate={isUpdateBuilding}
+              onCancel={() => setIsOpen(false)}
+              entityLabel="Building"
+              showSaveAndAddAnother
+            />
           </form>
         </AuthorizeView>
       </DrawerContent>

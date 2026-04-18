@@ -5,7 +5,7 @@ import {
 import type { Building } from "@/api/models/building";
 import type { Room } from "@/api/models/room";
 import type { RoomType } from "@/api/models/room-type";
-import { type SearchableSelectOption } from "@/components/searchable-select";
+import { type SearchableSelectOption } from "@/components/form/searchable-select";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -16,10 +16,10 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
-import { FormField } from "@/components/form-field";
-import { FormSelectField } from "@/components/form-select-field";
-import { FormSection } from "@/components/form-section";
-import { FormDrawerFooter } from "@/components/form-drawer-footer";
+import { FormField } from "@/components/form/form-field";
+import { FormSelectField } from "@/components/form/form-select-field";
+import { FormSection } from "@/components/form/form-section";
+import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
@@ -157,75 +157,75 @@ export function RoomFormDrawer({
               </DrawerDescription>
             </DrawerHeader>
             <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
-                <FormSection title="Room Info">
-                  <div className="grid grid-cols-2 gap-4">
-                    <form.Field
-                      name="roomNumber"
-                      children={(field) => (
-                        <FormField
-                          field={field}
-                          label="Room Number"
-                          required
-                          hint="e.g. 101, A-201"
-                          autoFocus
-                        />
-                      )}
-                    />
-                    <form.Field
-                      name="capacity"
-                      children={(field) => (
-                        <FormField
-                          field={field}
-                          label="Capacity"
-                          type="number"
-                          required
-                        />
-                      )}
-                    />
-                  </div>
-                </FormSection>
-
-                <Separator />
-
-                <FormSection title="Classification">
+              <FormSection title="Room Info">
+                <div className="grid grid-cols-2 gap-4">
                   <form.Field
-                    name="roomTypeId"
+                    name="roomNumber"
                     children={(field) => (
-                      <FormSelectField
+                      <FormField
                         field={field}
-                        label="Room Type"
+                        label="Room Number"
                         required
-                        options={roomTypeOptions}
-                        placeholder="Select a room type"
-                        searchPlaceholder="Search room types..."
-                        emptyMessage="No room type found"
+                        hint="e.g. 101, A-201"
+                        autoFocus
                       />
                     )}
                   />
                   <form.Field
-                    name="buildingId"
+                    name="capacity"
                     children={(field) => (
-                      <FormSelectField
+                      <FormField
                         field={field}
-                        label="Building"
+                        label="Capacity"
+                        type="number"
                         required
-                        options={buildingOptions}
-                        placeholder="Select a building"
-                        searchPlaceholder="Search buildings..."
-                        emptyMessage="No building found"
                       />
                     )}
                   />
-                </FormSection>
-              </div>
+                </div>
+              </FormSection>
 
-              <FormDrawerFooter
-                form={form}
-                isUpdate={isUpdatingRoom}
-                onCancel={() => setIsOpen(false)}
-                entityLabel="Room"
-                showSaveAndAddAnother
-              />
+              <Separator />
+
+              <FormSection title="Classification">
+                <form.Field
+                  name="roomTypeId"
+                  children={(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="Room Type"
+                      required
+                      options={roomTypeOptions}
+                      placeholder="Select a room type"
+                      searchPlaceholder="Search room types..."
+                      emptyMessage="No room type found"
+                    />
+                  )}
+                />
+                <form.Field
+                  name="buildingId"
+                  children={(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="Building"
+                      required
+                      options={buildingOptions}
+                      placeholder="Select a building"
+                      searchPlaceholder="Search buildings..."
+                      emptyMessage="No building found"
+                    />
+                  )}
+                />
+              </FormSection>
+            </div>
+
+            <FormDrawerFooter
+              form={form}
+              isUpdate={isUpdatingRoom}
+              onCancel={() => setIsOpen(false)}
+              entityLabel="Room"
+              showSaveAndAddAnother
+            />
           </form>
         </AuthorizeView>
       </DrawerContent>

@@ -19,9 +19,9 @@ import {
 } from "@/api/collections/college-collection";
 import type { College } from "@/api/models/college";
 import { useMutation } from "@tanstack/react-query";
-import { FormField } from "@/components/form-field";
-import { FormSection } from "@/components/form-section";
-import { FormDrawerFooter } from "@/components/form-drawer-footer";
+import { FormField } from "@/components/form/form-field";
+import { FormSection } from "@/components/form/form-section";
+import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
 import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { toast } from "sonner";
 
@@ -133,68 +133,68 @@ export function CollegeFormDrawer({
               </DrawerDescription>
             </DrawerHeader>
             <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
-                <FormSection title="Identification">
-                  <form.Field
-                    name="code"
-                    children={(field) => (
-                      <FormField
-                        field={field}
-                        label="Code"
-                        required
-                        hint="e.g. COE, COS"
-                        autoFocus
-                      />
-                    )}
-                  />
-                  <form.Field
-                    name="name"
-                    children={(field) => (
-                      <FormField
-                        field={field}
-                        label="Name"
-                        required
-                        hint="Full college name"
-                      />
-                    )}
-                  />
-                </FormSection>
+              <FormSection title="Identification">
+                <form.Field
+                  name="code"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Code"
+                      required
+                      hint="e.g. COE, COS"
+                      autoFocus
+                    />
+                  )}
+                />
+                <form.Field
+                  name="name"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Name"
+                      required
+                      hint="Full college name"
+                    />
+                  )}
+                />
+              </FormSection>
 
-                <Separator />
+              <Separator />
 
-                <FormSection title="Details">
-                  <form.Field
-                    name="description"
-                    children={(field) => (
-                      <FormField
-                        field={field}
-                        label="Description"
-                        type="textarea"
-                        required
-                        maxLength={500}
-                      />
-                    )}
-                  />
-                </FormSection>
+              <FormSection title="Details">
+                <form.Field
+                  name="description"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Description"
+                      type="textarea"
+                      required
+                      maxLength={500}
+                    />
+                  )}
+                />
+              </FormSection>
 
-                <Separator />
+              <Separator />
 
-                <FormSection title="Leadership">
-                  <form.Field
-                    name="dean"
-                    children={(field) => (
-                      <FormField field={field} label="Dean" required />
-                    )}
-                  />
-                </FormSection>
-              </div>
+              <FormSection title="Leadership">
+                <form.Field
+                  name="dean"
+                  children={(field) => (
+                    <FormField field={field} label="Dean" required />
+                  )}
+                />
+              </FormSection>
+            </div>
 
-              <FormDrawerFooter
-                form={form}
-                isUpdate={isUpdateCollege}
-                onCancel={() => setIsOpen(false)}
-                entityLabel="College"
-                showSaveAndAddAnother
-              />
+            <FormDrawerFooter
+              form={form}
+              isUpdate={isUpdateCollege}
+              onCancel={() => setIsOpen(false)}
+              entityLabel="College"
+              showSaveAndAddAnother
+            />
           </form>
         </AuthorizeView>
       </DrawerContent>

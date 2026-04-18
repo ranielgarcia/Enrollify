@@ -1,9 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, X } from "lucide-react";
-import {
-  type SearchableSelectOption,
-} from "@/components/searchable-select";
+import { type SearchableSelectOption } from "@/components/form/searchable-select";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { getAllCoursesOptions } from "@/api/collections/course-collection";
 import { useForm } from "@tanstack/react-form";
@@ -15,8 +13,8 @@ import {
 import type { CurriculumWithSubjects } from "@/api/models/curriculum";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Unauthorized } from "@/components/unauthorized";
-import { FormField } from "@/components/form-field";
-import { FormSelectField } from "@/components/form-select-field";
+import { FormField } from "@/components/form/form-field";
+import { FormSelectField } from "@/components/form/form-select-field";
 import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { toast } from "sonner";
 

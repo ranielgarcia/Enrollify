@@ -18,9 +18,9 @@ import {
   updateRoomTypeOptions,
 } from "@/api/collections/room-type-collection";
 import { useMutation } from "@tanstack/react-query";
-import { FormField } from "@/components/form-field";
-import { FormSection } from "@/components/form-section";
-import { FormDrawerFooter } from "@/components/form-drawer-footer";
+import { FormField } from "@/components/form/form-field";
+import { FormSection } from "@/components/form/form-section";
+import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
 import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { toast } from "sonner";
 
@@ -131,41 +131,41 @@ export function RoomTypeFormDrawer({
               </DrawerDescription>
             </DrawerHeader>
             <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
-                <FormSection>
-                  <form.Field
-                    name="name"
-                    children={(field) => (
-                      <FormField
-                        field={field}
-                        label="Type Name"
-                        required
-                        autoFocus
-                      />
-                    )}
-                  />
-                  <form.Field
-                    name="description"
-                    children={(field) => (
-                      <FormField
-                        field={field}
-                        label="Description"
-                        type="textarea"
-                        required
-                        placeholder="e.g., Large classroom for lectures"
-                        maxLength={500}
-                      />
-                    )}
-                  />
-                </FormSection>
-              </div>
+              <FormSection>
+                <form.Field
+                  name="name"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Type Name"
+                      required
+                      autoFocus
+                    />
+                  )}
+                />
+                <form.Field
+                  name="description"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Description"
+                      type="textarea"
+                      required
+                      placeholder="e.g., Large classroom for lectures"
+                      maxLength={500}
+                    />
+                  )}
+                />
+              </FormSection>
+            </div>
 
-              <FormDrawerFooter
-                form={form}
-                isUpdate={isUpdateRoomType}
-                onCancel={() => setIsOpen(false)}
-                entityLabel="Room Type"
-                showSaveAndAddAnother
-              />
+            <FormDrawerFooter
+              form={form}
+              isUpdate={isUpdateRoomType}
+              onCancel={() => setIsOpen(false)}
+              entityLabel="Room Type"
+              showSaveAndAddAnother
+            />
           </form>
         </AuthorizeView>
       </DrawerContent>

@@ -4,7 +4,7 @@ import {
 } from "@/api/collections/subject-collection";
 import type { RoomType } from "@/api/models/room-type";
 import type { Subject } from "@/api/models/subject";
-import { type SearchableSelectOption } from "@/components/searchable-select";
+import { type SearchableSelectOption } from "@/components/form/searchable-select";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -15,10 +15,10 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
-import { FormField } from "@/components/form-field";
-import { FormSelectField } from "@/components/form-select-field";
-import { FormSection } from "@/components/form-section";
-import { FormDrawerFooter } from "@/components/form-drawer-footer";
+import { FormField } from "@/components/form/form-field";
+import { FormSelectField } from "@/components/form/form-select-field";
+import { FormSection } from "@/components/form/form-section";
+import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
@@ -152,89 +152,89 @@ export function SubjectFormDrawer({
               </DrawerDescription>
             </DrawerHeader>
             <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
-                <FormSection title="Identification">
-                  <div className="grid grid-cols-2 gap-4">
-                    <form.Field
-                      name="code"
-                      children={(field) => (
-                        <FormField
-                          field={field}
-                          label="Code"
-                          required
-                          hint="e.g. CS101, MATH201"
-                          autoFocus
-                        />
-                      )}
-                    />
-                    <form.Field
-                      name="units"
-                      children={(field) => (
-                        <FormField
-                          field={field}
-                          label="Units"
-                          type="number"
-                          required
-                        />
-                      )}
-                    />
-                  </div>
+              <FormSection title="Identification">
+                <div className="grid grid-cols-2 gap-4">
                   <form.Field
-                    name="title"
+                    name="code"
                     children={(field) => (
                       <FormField
                         field={field}
-                        label="Title"
+                        label="Code"
                         required
-                        hint="Full subject title"
+                        hint="e.g. CS101, MATH201"
+                        autoFocus
                       />
                     )}
                   />
-                </FormSection>
-
-                <Separator />
-
-                <FormSection title="Details">
                   <form.Field
-                    name="description"
+                    name="units"
                     children={(field) => (
                       <FormField
                         field={field}
-                        label="Description"
-                        type="textarea"
+                        label="Units"
+                        type="number"
                         required
-                        maxLength={500}
                       />
                     )}
                   />
-                </FormSection>
+                </div>
+                <form.Field
+                  name="title"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Title"
+                      required
+                      hint="Full subject title"
+                    />
+                  )}
+                />
+              </FormSection>
 
-                <Separator />
+              <Separator />
 
-                <FormSection title="Classification">
-                  <form.Field
-                    name="preferRoomTypeId"
-                    children={(field) => (
-                      <FormSelectField
-                        field={field}
-                        label="Preferred Room Type"
-                        required
-                        options={roomTypeOptions}
-                        placeholder="Select a room type"
-                        searchPlaceholder="Search room types..."
-                        emptyMessage="No room type found"
-                      />
-                    )}
-                  />
-                </FormSection>
-              </div>
+              <FormSection title="Details">
+                <form.Field
+                  name="description"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Description"
+                      type="textarea"
+                      required
+                      maxLength={500}
+                    />
+                  )}
+                />
+              </FormSection>
 
-              <FormDrawerFooter
-                form={form}
-                isUpdate={isUpdatingSubject}
-                onCancel={() => setIsOpen(false)}
-                entityLabel="Subject"
-                showSaveAndAddAnother
-              />
+              <Separator />
+
+              <FormSection title="Classification">
+                <form.Field
+                  name="preferRoomTypeId"
+                  children={(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="Preferred Room Type"
+                      required
+                      options={roomTypeOptions}
+                      placeholder="Select a room type"
+                      searchPlaceholder="Search room types..."
+                      emptyMessage="No room type found"
+                    />
+                  )}
+                />
+              </FormSection>
+            </div>
+
+            <FormDrawerFooter
+              form={form}
+              isUpdate={isUpdatingSubject}
+              onCancel={() => setIsOpen(false)}
+              entityLabel="Subject"
+              showSaveAndAddAnother
+            />
           </form>
         </AuthorizeView>
       </DrawerContent>

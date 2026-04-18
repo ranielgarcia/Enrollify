@@ -4,7 +4,7 @@ import type { CurriculumWithSubjects } from "@/api/models/curriculum";
 import {
   SearchableSelectWithCustomTrigger,
   type MultiSearchableSelectWithTriggerOption,
-} from "@/components/searchable-select-with-custom-trigger";
+} from "@/components/form/searchable-select-with-custom-trigger";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

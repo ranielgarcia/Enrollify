@@ -1,6 +1,6 @@
 import type { Teacher } from "@/api/models/teacher";
-import { type MultiSearchableSelectOption } from "@/components/multi-searchable-select";
-import { type SearchableSelectOption } from "@/components/searchable-select";
+import { type MultiSearchableSelectOption } from "@/components/form/multi-searchable-select";
+import { type SearchableSelectOption } from "@/components/form/searchable-select";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -12,11 +12,11 @@ import {
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { FormField } from "@/components/form-field";
-import { FormSelectField } from "@/components/form-select-field";
-import { FormMultiSelectField } from "@/components/form-multi-select-field";
-import { FormSection } from "@/components/form-section";
-import { FormDrawerFooter } from "@/components/form-drawer-footer";
+import { FormField } from "@/components/form/form-field";
+import { FormSelectField } from "@/components/form/form-select-field";
+import { FormMultiSelectField } from "@/components/form/form-multi-select-field";
+import { FormSection } from "@/components/form/form-section";
+import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
 import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { useForm } from "@tanstack/react-form";
 import { Plus, Upload } from "lucide-react";
@@ -184,245 +184,245 @@ export function TeacherFormDrawer({
           </DrawerHeader>
 
           <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
-              {/* Profile Picture */}
-              <FormSection title="Profile Photo">
-                <div className="flex items-center gap-4">
-                  {profilePicturePreview ? (
-                    <img
-                      src={profilePicturePreview}
-                      alt="Profile preview"
-                      className="size-16 rounded-full object-cover border"
-                    />
-                  ) : (
-                    <div className="size-16 rounded-full bg-muted flex items-center justify-center border text-muted-foreground text-xs">
-                      No photo
-                    </div>
-                  )}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="gap-2 cursor-pointer"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Upload className="size-4" />
-                    Upload Photo
-                  </Button>
-                  <Input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleFileChange}
+            {/* Profile Picture */}
+            <FormSection title="Profile Photo">
+              <div className="flex items-center gap-4">
+                {profilePicturePreview ? (
+                  <img
+                    src={profilePicturePreview}
+                    alt="Profile preview"
+                    className="size-16 rounded-full object-cover border"
                   />
-                </div>
-              </FormSection>
+                ) : (
+                  <div className="size-16 rounded-full bg-muted flex items-center justify-center border text-muted-foreground text-xs">
+                    No photo
+                  </div>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="size-4" />
+                  Upload Photo
+                </Button>
+                <Input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+              </div>
+            </FormSection>
 
-              <Separator />
+            <Separator />
 
-              {/* Personal Information */}
-              <FormSection title="Personal Information">
-                <div className="grid grid-cols-2 gap-4">
-                  <form.Field
-                    name="firstName"
-                    children={(field) => (
-                      <FormField
-                        field={field}
-                        label="First Name"
-                        required
-                        autoFocus
-                      />
-                    )}
+            {/* Personal Information */}
+            <FormSection title="Personal Information">
+              <div className="grid grid-cols-2 gap-4">
+                <form.Field
+                  name="firstName"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="First Name"
+                      required
+                      autoFocus
+                    />
+                  )}
+                />
+                <form.Field
+                  name="lastName"
+                  children={(field) => (
+                    <FormField field={field} label="Last Name" required />
+                  )}
+                />
+              </div>
+              <form.Field
+                name="middleName"
+                children={(field) => (
+                  <FormField field={field} label="Middle Name" />
+                )}
+              />
+            </FormSection>
+
+            <Separator />
+
+            {/* Contact Details */}
+            <FormSection title="Contact Details">
+              <form.Field
+                name="email"
+                children={(field) => (
+                  <FormField
+                    field={field}
+                    label="Email"
+                    type="email"
+                    required
+                    placeholder="email@university.edu"
                   />
-                  <form.Field
-                    name="lastName"
-                    children={(field) => (
-                      <FormField field={field} label="Last Name" required />
-                    )}
+                )}
+              />
+              <form.Field
+                name="phoneNumber"
+                children={(field) => (
+                  <FormField
+                    field={field}
+                    label="Phone Number"
+                    type="tel"
+                    required
+                    placeholder="+63 912 345 6789"
                   />
-                </div>
-                <form.Field
-                  name="middleName"
-                  children={(field) => (
-                    <FormField field={field} label="Middle Name" />
-                  )}
-                />
-              </FormSection>
+                )}
+              />
+            </FormSection>
 
-              <Separator />
+            <Separator />
 
-              {/* Contact Details */}
-              <FormSection title="Contact Details">
-                <form.Field
-                  name="email"
-                  children={(field) => (
-                    <FormField
-                      field={field}
-                      label="Email"
-                      type="email"
-                      required
-                      placeholder="email@university.edu"
-                    />
-                  )}
-                />
-                <form.Field
-                  name="phoneNumber"
-                  children={(field) => (
-                    <FormField
-                      field={field}
-                      label="Phone Number"
-                      type="tel"
-                      required
-                      placeholder="+63 912 345 6789"
-                    />
-                  )}
-                />
-              </FormSection>
+            {/* Academic Details */}
+            <FormSection title="Academic Details">
+              <form.Field
+                name="collegeId"
+                children={(field) => (
+                  <FormSelectField
+                    field={field}
+                    label="College"
+                    required
+                    options={DUMMY_COLLEGES}
+                    placeholder="Select a college"
+                    searchPlaceholder="Search colleges..."
+                    emptyMessage="No college found"
+                    onValueChange={(val) => field.handleChange(val)}
+                  />
+                )}
+              />
+              <form.Field
+                name="departmentId"
+                children={(field) => (
+                  <FormSelectField
+                    field={field}
+                    label="Department"
+                    required
+                    options={DUMMY_DEPARTMENTS}
+                    placeholder="Select a department"
+                    searchPlaceholder="Search departments..."
+                    emptyMessage="No department found"
+                    onValueChange={(val) => field.handleChange(val)}
+                  />
+                )}
+              />
+              <form.Field
+                name="academicTitle"
+                children={(field) => (
+                  <FormField
+                    field={field}
+                    label="Academic Title"
+                    required
+                    placeholder="e.g. Associate Professor"
+                  />
+                )}
+              />
+              <form.Field
+                name="qualification"
+                children={(field) => (
+                  <FormField
+                    field={field}
+                    label="Qualification"
+                    type="textarea"
+                    required
+                    placeholder="e.g. Ph.D. in Computer Science"
+                  />
+                )}
+              />
+              <form.Field
+                name="specialization"
+                children={(field) => (
+                  <FormField
+                    field={field}
+                    label="Specialization"
+                    required
+                    placeholder="e.g. Machine Learning, Data Mining"
+                  />
+                )}
+              />
+            </FormSection>
 
-              <Separator />
+            <Separator />
 
-              {/* Academic Details */}
-              <FormSection title="Academic Details">
-                <form.Field
-                  name="collegeId"
-                  children={(field) => (
-                    <FormSelectField
-                      field={field}
-                      label="College"
-                      required
-                      options={DUMMY_COLLEGES}
-                      placeholder="Select a college"
-                      searchPlaceholder="Search colleges..."
-                      emptyMessage="No college found"
-                      onValueChange={(val) => field.handleChange(val)}
-                    />
-                  )}
-                />
-                <form.Field
-                  name="departmentId"
-                  children={(field) => (
-                    <FormSelectField
-                      field={field}
-                      label="Department"
-                      required
-                      options={DUMMY_DEPARTMENTS}
-                      placeholder="Select a department"
-                      searchPlaceholder="Search departments..."
-                      emptyMessage="No department found"
-                      onValueChange={(val) => field.handleChange(val)}
-                    />
-                  )}
-                />
-                <form.Field
-                  name="academicTitle"
-                  children={(field) => (
-                    <FormField
-                      field={field}
-                      label="Academic Title"
-                      required
-                      placeholder="e.g. Associate Professor"
-                    />
-                  )}
-                />
-                <form.Field
-                  name="qualification"
-                  children={(field) => (
-                    <FormField
-                      field={field}
-                      label="Qualification"
-                      type="textarea"
-                      required
-                      placeholder="e.g. Ph.D. in Computer Science"
-                    />
-                  )}
-                />
-                <form.Field
-                  name="specialization"
-                  children={(field) => (
-                    <FormField
-                      field={field}
-                      label="Specialization"
-                      required
-                      placeholder="e.g. Machine Learning, Data Mining"
-                    />
-                  )}
-                />
-              </FormSection>
+            {/* Office Information */}
+            <FormSection title="Office Information">
+              <form.Field
+                name="officeLocation"
+                children={(field) => (
+                  <FormField
+                    field={field}
+                    label="Office Location"
+                    required
+                    placeholder="e.g. Engineering Building, Room 302"
+                  />
+                )}
+              />
+              <form.Field
+                name="officeHours"
+                children={(field) => (
+                  <FormField
+                    field={field}
+                    label="Office Hours"
+                    required
+                    placeholder="e.g. MWF 10:00 AM - 12:00 PM"
+                  />
+                )}
+              />
+            </FormSection>
 
-              <Separator />
+            <Separator />
 
-              {/* Office Information */}
-              <FormSection title="Office Information">
-                <form.Field
-                  name="officeLocation"
-                  children={(field) => (
-                    <FormField
-                      field={field}
-                      label="Office Location"
-                      required
-                      placeholder="e.g. Engineering Building, Room 302"
-                    />
-                  )}
-                />
-                <form.Field
-                  name="officeHours"
-                  children={(field) => (
-                    <FormField
-                      field={field}
-                      label="Office Hours"
-                      required
-                      placeholder="e.g. MWF 10:00 AM - 12:00 PM"
-                    />
-                  )}
-                />
-              </FormSection>
+            {/* Biography */}
+            <FormSection title="Biography">
+              <form.Field
+                name="biography"
+                children={(field) => (
+                  <FormField
+                    field={field}
+                    label="Biography"
+                    type="textarea"
+                    placeholder="A brief biography about the teacher..."
+                    hint="Optional"
+                    maxLength={1000}
+                  />
+                )}
+              />
+            </FormSection>
 
-              <Separator />
+            <Separator />
 
-              {/* Biography */}
-              <FormSection title="Biography">
-                <form.Field
-                  name="biography"
-                  children={(field) => (
-                    <FormField
-                      field={field}
-                      label="Biography"
-                      type="textarea"
-                      placeholder="A brief biography about the teacher..."
-                      hint="Optional"
-                      maxLength={1000}
-                    />
-                  )}
-                />
-              </FormSection>
+            {/* Teaching Assignment */}
+            <FormSection title="Teaching Assignment">
+              <form.Field
+                name="subjectIds"
+                children={(field) => (
+                  <FormMultiSelectField
+                    field={field}
+                    label="Subjects"
+                    required
+                    options={DUMMY_SUBJECTS}
+                    placeholder="Select subjects..."
+                    searchPlaceholder="Search subjects..."
+                    emptyMessage="No subject found"
+                  />
+                )}
+              />
+            </FormSection>
+          </div>
 
-              <Separator />
-
-              {/* Teaching Assignment */}
-              <FormSection title="Teaching Assignment">
-                <form.Field
-                  name="subjectIds"
-                  children={(field) => (
-                    <FormMultiSelectField
-                      field={field}
-                      label="Subjects"
-                      required
-                      options={DUMMY_SUBJECTS}
-                      placeholder="Select subjects..."
-                      searchPlaceholder="Search subjects..."
-                      emptyMessage="No subject found"
-                    />
-                  )}
-                />
-              </FormSection>
-            </div>
-
-            <FormDrawerFooter
-              form={form}
-              isUpdate={isUpdateTeacher}
-              onCancel={() => setIsOpen(false)}
-              entityLabel="Teacher"
-            />
+          <FormDrawerFooter
+            form={form}
+            isUpdate={isUpdateTeacher}
+            onCancel={() => setIsOpen(false)}
+            entityLabel="Teacher"
+          />
         </form>
       </DrawerContent>
     </Drawer>

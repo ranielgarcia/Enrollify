@@ -4,7 +4,7 @@ import {
 } from "@/api/collections/course-collection";
 import type { College } from "@/api/models/college";
 import type { Course } from "@/api/models/course";
-import { type SearchableSelectOption } from "@/components/searchable-select";
+import { type SearchableSelectOption } from "@/components/form/searchable-select";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -15,10 +15,10 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
-import { FormField } from "@/components/form-field";
-import { FormSelectField } from "@/components/form-select-field";
-import { FormSection } from "@/components/form-section";
-import { FormDrawerFooter } from "@/components/form-drawer-footer";
+import { FormField } from "@/components/form/form-field";
+import { FormSelectField } from "@/components/form/form-select-field";
+import { FormSection } from "@/components/form/form-section";
+import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
@@ -150,89 +150,89 @@ export function CourseFormDrawer({
               </DrawerDescription>
             </DrawerHeader>
             <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
-                <FormSection title="Identification">
-                  <div className="grid grid-cols-2 gap-4">
-                    <form.Field
-                      name="code"
-                      children={(field) => (
-                        <FormField
-                          field={field}
-                          label="Code"
-                          required
-                          hint="e.g. BSCS, BSIT"
-                          autoFocus
-                        />
-                      )}
-                    />
-                    <form.Field
-                      name="durationYears"
-                      children={(field) => (
-                        <FormField
-                          field={field}
-                          label="Duration (Years)"
-                          type="number"
-                          required
-                        />
-                      )}
-                    />
-                  </div>
+              <FormSection title="Identification">
+                <div className="grid grid-cols-2 gap-4">
                   <form.Field
-                    name="name"
+                    name="code"
                     children={(field) => (
                       <FormField
                         field={field}
-                        label="Name"
+                        label="Code"
                         required
-                        hint="Full course name"
+                        hint="e.g. BSCS, BSIT"
+                        autoFocus
                       />
                     )}
                   />
-                </FormSection>
-
-                <Separator />
-
-                <FormSection title="Details">
                   <form.Field
-                    name="description"
+                    name="durationYears"
                     children={(field) => (
                       <FormField
                         field={field}
-                        label="Description"
-                        type="textarea"
+                        label="Duration (Years)"
+                        type="number"
                         required
-                        maxLength={500}
                       />
                     )}
                   />
-                </FormSection>
+                </div>
+                <form.Field
+                  name="name"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Name"
+                      required
+                      hint="Full course name"
+                    />
+                  )}
+                />
+              </FormSection>
 
-                <Separator />
+              <Separator />
 
-                <FormSection title="Classification">
-                  <form.Field
-                    name="collegeId"
-                    children={(field) => (
-                      <FormSelectField
-                        field={field}
-                        label="College"
-                        required
-                        options={collegesOptions}
-                        placeholder="Select a college"
-                        searchPlaceholder="Search colleges..."
-                        emptyMessage="No college found"
-                      />
-                    )}
-                  />
-                </FormSection>
-              </div>
+              <FormSection title="Details">
+                <form.Field
+                  name="description"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Description"
+                      type="textarea"
+                      required
+                      maxLength={500}
+                    />
+                  )}
+                />
+              </FormSection>
 
-              <FormDrawerFooter
-                form={form}
-                isUpdate={isUpdateCourse}
-                onCancel={() => setIsOpen(false)}
-                entityLabel="Course"
-                showSaveAndAddAnother
-              />
+              <Separator />
+
+              <FormSection title="Classification">
+                <form.Field
+                  name="collegeId"
+                  children={(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="College"
+                      required
+                      options={collegesOptions}
+                      placeholder="Select a college"
+                      searchPlaceholder="Search colleges..."
+                      emptyMessage="No college found"
+                    />
+                  )}
+                />
+              </FormSection>
+            </div>
+
+            <FormDrawerFooter
+              form={form}
+              isUpdate={isUpdateCourse}
+              onCancel={() => setIsOpen(false)}
+              entityLabel="Course"
+              showSaveAndAddAnother
+            />
           </form>
         </AuthorizeView>
       </DrawerContent>

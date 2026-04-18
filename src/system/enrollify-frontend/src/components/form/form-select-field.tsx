@@ -1,15 +1,15 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import {
-  MultiSearchableSelect,
-  type MultiSearchableSelectOption,
-} from "@/components/multi-searchable-select";
+  SearchableSelect,
+  type SearchableSelectOption,
+} from "@/components/form/searchable-select";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-interface FormMultiSelectFieldProps {
+interface FormSelectFieldProps {
   field: AnyFieldApi;
   label: string;
-  options: MultiSearchableSelectOption[];
+  options: SearchableSelectOption[];
   placeholder?: string;
   searchPlaceholder?: string;
   emptyMessage?: string;
@@ -17,10 +17,10 @@ interface FormMultiSelectFieldProps {
   hint?: string;
   className?: string;
   disabled?: boolean;
-  maxDisplay?: number;
+  onValueChange?: (value: string) => void;
 }
 
-export function FormMultiSelectField({
+export function FormSelectField({
   field,
   label,
   options,
@@ -31,8 +31,8 @@ export function FormMultiSelectField({
   hint,
   className,
   disabled,
-  maxDisplay,
-}: FormMultiSelectFieldProps) {
+  onValueChange,
+}: FormSelectFieldProps) {
   const errorMessage = field.state.meta.errors
     .map((e: { message?: string } | string) =>
       typeof e === "string" ? e : e?.message,
@@ -40,12 +40,13 @@ export function FormMultiSelectField({
     .join(", ");
   const hasError = !field.state.meta.isValid && errorMessage;
 
-  const describedBy = [
-    hint && !hasError ? `${field.name}-hint` : null,
-    hasError ? `${field.name}-error` : null,
-  ]
-    .filter(Boolean)
-    .join(" ") || undefined;
+  const describedBy =
+    [
+      hint && !hasError ? `${field.name}-hint` : null,
+      hasError ? `${field.name}-error` : null,
+    ]
+      .filter(Boolean)
+      .join(" ") || undefined;
 
   return (
     <div className={cn("grid w-full items-center gap-1.5", className)}>
@@ -53,16 +54,19 @@ export function FormMultiSelectField({
         {label}
         {required && <span className="text-destructive ml-0.5">*</span>}
       </Label>
-      <MultiSearchableSelect
+      <SearchableSelect
         options={options}
-        value={field.state.value}
-        onValueChange={(val) => field.handleChange(val)}
+        value={field.state.value?.toString() ?? ""}
+        onValueChange={(val) => {
+          const parsed = Number(val);
+          field.handleChange(Number.isNaN(parsed) ? val : parsed);
+          onValueChange?.(val);
+        }}
         name={field.name}
         placeholder={placeholder}
         searchPlaceholder={searchPlaceholder}
         emptyMessage={emptyMessage}
         disabled={disabled}
-        maxDisplay={maxDisplay}
         aria-describedby={describedBy}
       />
       <div className="flex items-center justify-between">
