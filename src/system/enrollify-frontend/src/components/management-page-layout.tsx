@@ -20,7 +20,7 @@ export function ManagementPageLayout({
   children,
 }: ManagementPageLayoutProps) {
   return (
-    <main className="px-4 lg:px-6">
+    <main className="min-w-0 px-4 lg:px-6">
       <OverlayLoader isLoading={isLoading} text="Loading" size="sm" />
 
       <div className="flex items-start justify-between py-2">
