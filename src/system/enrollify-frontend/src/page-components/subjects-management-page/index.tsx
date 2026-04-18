@@ -114,7 +114,7 @@ export default function SubjectsManagementPage() {
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="space-y-6"
+        className="min-h-0 flex-1 space-y-6"
       >
         <TabsList variant="line">
           <TabsTrigger value="subjects" className="gap-2">
@@ -128,7 +128,7 @@ export default function SubjectsManagementPage() {
         </TabsList>
 
         {/* Subjects Tab */}
-        <TabsContent value="subjects" className="space-y-4">
+        <TabsContent value="subjects" className="flex min-h-0 flex-col space-y-4">
           {/* Toolbar: View Toggle + Add Button */}
           <div className="flex items-center justify-between">
             {/* View Mode Toggle */}
@@ -176,7 +176,7 @@ export default function SubjectsManagementPage() {
         </TabsContent>
 
         {/* Equivalence Groups Tab */}
-        <TabsContent value="equivalence" className="space-y-4">
+        <TabsContent value="equivalence" className="flex min-h-0 flex-col space-y-4">
           <EquivalenceGroupsTab
             onEdit={handleEquivalenceEdit}
             onDelete={handleEquivalenceDelete}

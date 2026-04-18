@@ -27,11 +27,11 @@ export function DataTable<TData>({
 }: DataTableProps<TData>) {
   return (
     <div
-      className={cn("flex min-w-0 w-full flex-col gap-2.5", className)}
+      className={cn("flex min-h-0 min-w-0 w-full flex-1 flex-col gap-2.5", className)}
       {...props}
     >
       {children}
-      <div className="overflow-auto rounded-md border">
+      <div className="flex-1 overflow-auto rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

@@ -78,7 +78,7 @@ export default function RoomsPage() {
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="space-y-4"
+        className="min-h-0 flex-1 space-y-4"
       >
         <TabsList variant="line">
           <TabsTrigger value="rooms">
@@ -91,7 +91,7 @@ export default function RoomsPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="rooms" className="space-y-4">
+        <TabsContent value="rooms" className="flex min-h-0 flex-col space-y-4">
           <RoomsTable
             rooms={rooms}
             onEdit={handleRoomEdit}
@@ -104,7 +104,7 @@ export default function RoomsPage() {
           />
         </TabsContent>
 
-        <TabsContent value="room-types" className="space-y-4">
+        <TabsContent value="room-types" className="flex min-h-0 flex-col space-y-4">
           <RoomTypesTable
             roomTypes={roomTypes}
             onEdit={handleRoomTypeEdit}
