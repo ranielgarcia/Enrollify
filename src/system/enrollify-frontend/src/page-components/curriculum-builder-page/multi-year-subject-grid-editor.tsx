@@ -8,6 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { useSystemSettingsContext } from "@/infrastructure/system-settings/system-settings-context";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { Check, Cloud, CloudOff, Loader2, Plus, Trash2 } from "lucide-react";
@@ -124,6 +125,7 @@ export default function MultiYearSubjectGridEditor({
 
   const [isDirty, setIsDirty] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [isAutoSaveEnabled, setIsAutoSaveEnabled] = useState(true);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Track pending removals for rollback on save error
@@ -247,9 +249,8 @@ export default function MultiYearSubjectGridEditor({
 
   // Auto-save effect with debounce
   useEffect(() => {
-    // Skip auto-save if not dirty or if in error state (to prevent infinite retry loop)
-    // User must manually retry or make a new change to trigger save after an error
-    if (!isDirty || saveStatus === "error") return;
+    // Skip auto-save if disabled, not dirty, or in error state
+    if (!isAutoSaveEnabled || !isDirty || saveStatus === "error") return;
 
     // Clear any existing timeout
     if (saveTimeoutRef.current) {
@@ -264,7 +265,7 @@ export default function MultiYearSubjectGridEditor({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- saveStatus is intentionally excluded to prevent re-triggering on status changes
-  }, [grid, isDirty, performSave, saveCurriculumContentAsync]);
+  }, [grid, isDirty, isAutoSaveEnabled, performSave, saveCurriculumContentAsync]);
 
   // Helper to mark grid as dirty when updating
   const updateGridWithDirty = (updater: (prev: YearGrid) => YearGrid) => {
@@ -499,37 +500,54 @@ export default function MultiYearSubjectGridEditor({
   return (
     <>
       {/* Auto-save status indicator */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        {saveStatus === "idle" && !isDirty && (
-          <>
-            <Cloud className="size-4" />
-            <span>All changes saved</span>
-          </>
-        )}
-        {saveStatus === "idle" && isDirty && (
-          <>
-            <Cloud className="size-4 animate-pulse" />
-            <span>Unsaved changes</span>
-          </>
-        )}
-        {saveStatus === "saving" && (
-          <>
-            <Loader2 className="size-4 animate-spin" />
-            <span>Saving...</span>
-          </>
-        )}
-        {saveStatus === "saved" && (
-          <>
-            <Check className="size-4 text-green-600" />
-            <span className="text-green-600">Saved</span>
-          </>
-        )}
-        {saveStatus === "error" && (
-          <>
-            <CloudOff className="size-4 text-destructive" />
-            <span className="text-destructive">Save failed</span>
-          </>
-        )}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          {!isAutoSaveEnabled ? (
+            <>
+              <CloudOff className="size-4" />
+              <span>Auto-save disabled</span>
+            </>
+          ) : saveStatus === "idle" && !isDirty ? (
+            <>
+              <Cloud className="size-4" />
+              <span>All changes saved</span>
+            </>
+          ) : saveStatus === "idle" && isDirty ? (
+            <>
+              <Cloud className="size-4 animate-pulse" />
+              <span>Unsaved changes</span>
+            </>
+          ) : saveStatus === "saving" ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              <span>Saving...</span>
+            </>
+          ) : saveStatus === "saved" ? (
+            <>
+              <Check className="size-4 text-green-600" />
+              <span className="text-green-600">Saved</span>
+            </>
+          ) : saveStatus === "error" ? (
+            <>
+              <CloudOff className="size-4 text-destructive" />
+              <span className="text-destructive">Save failed</span>
+            </>
+          ) : null}
+        </div>
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="auto-save-switch"
+            className="text-sm text-muted-foreground cursor-pointer select-none"
+          >
+            Auto-save
+          </label>
+          <Switch
+            id="auto-save-switch"
+            checked={isAutoSaveEnabled}
+            onCheckedChange={setIsAutoSaveEnabled}
+            size="sm"
+          />
+        </div>
       </div>
 
       <div className="space-y-12">
