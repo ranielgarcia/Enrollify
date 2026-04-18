@@ -3,7 +3,7 @@ import { getAllRoomTypesOptions } from "@/api/collections/room-type-collection";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getAllRooms } from "@/api/collections/room-collection";
 import { getAllBuildingsOptions } from "@/api/collections/building-collection";
-import { ManagementPageLayout } from "@/components/management-page-layout";
+import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { useState } from "react";
 import { Bookmark, DoorOpen } from "lucide-react";
 import { useCrudState } from "@/hooks/use-crud-state";
@@ -104,7 +104,10 @@ export default function RoomsPage() {
           />
         </TabsContent>
 
-        <TabsContent value="room-types" className="flex min-h-0 flex-col space-y-4">
+        <TabsContent
+          value="room-types"
+          className="flex min-h-0 flex-col space-y-4"
+        >
           <RoomTypesTable
             roomTypes={roomTypes}
             onEdit={handleRoomTypeEdit}

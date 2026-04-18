@@ -5,7 +5,7 @@ import type { College } from "@/api/models/college";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getAllCollegesOptions } from "@/api/collections/college-collection";
 import { useCrudState } from "@/hooks/use-crud-state";
-import { ManagementPageLayout } from "@/components/management-page-layout";
+import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { SchoolIcon } from "lucide-react";
 
 export default function CollegesPage() {

@@ -1,8 +1,8 @@
 import * as React from "react";
 import { GalleryVerticalEnd } from "lucide-react";
 
-import { NavMain } from "@/components/nav-main";
-import { NavUser } from "@/components/nav-user";
+import { NavMain } from "@/components/navigation/nav-main";
+import { NavUser } from "@/components/navigation/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -13,8 +13,8 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { useAuthenticationContext } from "@/infrastructure/authentication/authentication-context";
-import { navigationItems } from "@/components/navigation-config";
-import type { NavMainItemProp } from "@/components/nav-main";
+import { navigationItems } from "@/components/navigation/navigation-config";
+import type { NavMainItemProp } from "@/components/navigation/nav-main";
 
 const navMain = navigationItems as NavMainItemProp[];
 

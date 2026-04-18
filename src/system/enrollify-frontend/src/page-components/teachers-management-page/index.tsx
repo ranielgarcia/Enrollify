@@ -5,7 +5,7 @@ import { DeleteTeacherAlertDialog } from "./delete-teacher-alert-dialog";
 import { TeacherFormDrawer } from "./teacher-form-drawer";
 import { TeachersTable } from "./teachers-table";
 import { useCrudState } from "@/hooks/use-crud-state";
-import { ManagementPageLayout } from "@/components/management-page-layout";
+import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { BookUser } from "lucide-react";
 
 export default function TeachersManagementPage() {

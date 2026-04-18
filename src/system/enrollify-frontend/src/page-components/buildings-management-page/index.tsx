@@ -6,7 +6,7 @@ import { BuildingFormDrawer } from "./building-form-drawer";
 import { DeleteBuildingAlertDialog } from "./delete-building-alert-dialog";
 import { getAllCollegesOptions } from "@/api/collections/college-collection";
 import { useCrudState } from "@/hooks/use-crud-state";
-import { ManagementPageLayout } from "@/components/management-page-layout";
+import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { BuildingIcon } from "lucide-react";
 
 export default function BuildingPage() {

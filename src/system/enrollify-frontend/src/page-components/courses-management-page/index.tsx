@@ -6,7 +6,7 @@ import { getAllCollegesOptions } from "@/api/collections/college-collection";
 import { CoursesTable } from "./courses-table";
 import { DeleteCourseAlertDialog } from "./delete-course-alert-dialog";
 import { useCrudState } from "@/hooks/use-crud-state";
-import { ManagementPageLayout } from "@/components/management-page-layout";
+import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { GraduationCap } from "lucide-react";
 
 export default function CoursesManagementPage() {

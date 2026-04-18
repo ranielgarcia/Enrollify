@@ -13,7 +13,7 @@ import { obfuscator } from "@/lib/obfuscator";
 import { useQuery } from "@tanstack/react-query";
 import MultiYearSubjectGridEditor from "./multi-year-subject-grid-editor";
 import { CurriculumsTable } from "./curriculums-table";
-import { ManagementPageLayout } from "@/components/management-page-layout";
+import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 
 function CurriculumContent() {
   const navigate = useNavigate();

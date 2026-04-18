@@ -1,6 +1,6 @@
-import { PageErrorBoundary } from "@/components/page-error-boundary";
+import { PageErrorBoundary } from "@/components/page-layouts/page-error-boundary";
 import { OverlayLoader } from "@/components/app-loading-overlay";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/navigation/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,

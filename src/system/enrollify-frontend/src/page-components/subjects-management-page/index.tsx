@@ -18,7 +18,7 @@ import { SubjectFormDrawer } from "./subject-form-drawer";
 import { SubjectsCardGrid } from "./subjects-card-grid";
 import { SubjectsTable } from "./subjects-table";
 import { useCrudState } from "@/hooks/use-crud-state";
-import { ManagementPageLayout } from "@/components/management-page-layout";
+import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 
 type ViewMode = "table" | "grid";
 
@@ -67,15 +67,18 @@ export default function SubjectsManagementPage() {
 
   const { data: roomTypes } = useSuspenseQuery(getAllRoomTypesOptions());
 
-  const handlePageChange = useCallback((newPage: number, newPageSize: number) => {
-    navigate({
-      to: "/portal/master-data/subjects/{-$page}/{-$pageSize}",
-      params: {
-        page: String(newPage),
-        pageSize: String(newPageSize),
-      },
-    });
-  }, [navigate]);
+  const handlePageChange = useCallback(
+    (newPage: number, newPageSize: number) => {
+      navigate({
+        to: "/portal/master-data/subjects/{-$page}/{-$pageSize}",
+        params: {
+          page: String(newPage),
+          pageSize: String(newPageSize),
+        },
+      });
+    },
+    [navigate],
+  );
 
   const handlePreviousPage = useCallback(() => {
     if (currentPage > 1) {
@@ -128,7 +131,10 @@ export default function SubjectsManagementPage() {
         </TabsList>
 
         {/* Subjects Tab */}
-        <TabsContent value="subjects" className="flex min-h-0 flex-col space-y-4">
+        <TabsContent
+          value="subjects"
+          className="flex min-h-0 flex-col space-y-4"
+        >
           {/* Toolbar: View Toggle + Add Button */}
           <div className="flex items-center justify-between">
             {/* View Mode Toggle */}
@@ -176,7 +182,10 @@ export default function SubjectsManagementPage() {
         </TabsContent>
 
         {/* Equivalence Groups Tab */}
-        <TabsContent value="equivalence" className="flex min-h-0 flex-col space-y-4">
+        <TabsContent
+          value="equivalence"
+          className="flex min-h-0 flex-col space-y-4"
+        >
           <EquivalenceGroupsTab
             onEdit={handleEquivalenceEdit}
             onDelete={handleEquivalenceDelete}

@@ -6,7 +6,7 @@ import { getAllCollegesOptions } from "@/api/collections/college-collection";
 import { DepartmentFormDrawer } from "./department-form-drawer";
 import { DeleteDepartmentAlertDialog } from "./delete-department-alert-dialog";
 import { useCrudState } from "@/hooks/use-crud-state";
-import { ManagementPageLayout } from "@/components/management-page-layout";
+import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { Castle } from "lucide-react";
 
 export default function DepartmentPage() {
