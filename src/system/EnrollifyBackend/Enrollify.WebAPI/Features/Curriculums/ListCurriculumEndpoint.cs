@@ -1,5 +1,5 @@
-﻿using Enrollify.Application.Curriculums.DTOs;
-using Enrollify.Application.Curriculums.Features;
+using Enrollify.Application.Features.Curriculums.Features;
+using Enrollify.Application.Features.Curriculums.DTOs;
 
 namespace Enrollify.WebAPI.Features.Curriculums;
 

@@ -1,4 +1,4 @@
-﻿using Enrollify.Application.Curriculums.Features;
+using Enrollify.Application.Features.Curriculums.Features;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 

@@ -1,0 +1,11 @@
+using Ardalis.Result;
+using Enrollify.Core.Aggregates.BuildingAggregate;
+
+namespace Enrollify.Application.Features.Buildings;
+
+public interface IBuildingRepository
+{
+    Task<Result<BuildingId>> Create (Building newBuilding, CancellationToken cancellationToken);
+    Task<Result<BuildingId>> Update (Building newBuilding, CancellationToken cancellationToken);
+    Task<Result> Delete (BuildingId id, CancellationToken cancellationToken);
+}

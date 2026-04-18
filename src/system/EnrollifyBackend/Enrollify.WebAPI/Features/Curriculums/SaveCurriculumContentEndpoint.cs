@@ -1,5 +1,5 @@
-﻿using Enrollify.Application.Curriculums.DTOs;
-using Enrollify.Application.Curriculums.Features;
+using Enrollify.Application.Features.Curriculums.DTOs;
+using Enrollify.Application.Features.Curriculums.Features;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Semester = int;

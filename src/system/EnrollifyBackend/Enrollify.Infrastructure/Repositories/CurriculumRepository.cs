@@ -1,5 +1,5 @@
-﻿using Ardalis.Result;
-using Enrollify.Application.Curriculums;
+using Ardalis.Result;
+using Enrollify.Application.Features.Curriculums;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Infrastructure.Data;
 

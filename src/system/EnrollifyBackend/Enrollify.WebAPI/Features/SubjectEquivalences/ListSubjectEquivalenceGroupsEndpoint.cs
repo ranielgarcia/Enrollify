@@ -1,5 +1,5 @@
-﻿using Enrollify.Application.SubjectEquivalences.DTOs;
-using Enrollify.Application.SubjectEquivalences.Features;
+using Enrollify.Application.Features.SubjectEquivalences.DTOs;
+using Enrollify.Application.Features.SubjectEquivalences.Features;
 
 namespace Enrollify.WebAPI.Features.SubjectEquivalences;
 

@@ -1,4 +1,4 @@
-﻿using Enrollify.Application.SubjectEquivalences.Features;
+using Enrollify.Application.Features.SubjectEquivalences.Features;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 
 namespace Enrollify.WebAPI.Features.SubjectEquivalences;

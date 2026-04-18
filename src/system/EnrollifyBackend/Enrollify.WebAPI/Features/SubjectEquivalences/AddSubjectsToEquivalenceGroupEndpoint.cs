@@ -1,6 +1,6 @@
-﻿using Ardalis.Result;
-using Enrollify.Application.SubjectEquivalences.DTOs;
-using Enrollify.Application.SubjectEquivalences.Features;
+using Ardalis.Result;
+using Enrollify.Application.Features.SubjectEquivalences.DTOs;
+using Enrollify.Application.Features.SubjectEquivalences.Features;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 

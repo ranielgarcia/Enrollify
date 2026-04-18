@@ -1,4 +1,4 @@
-﻿using Enrollify.Application.Departments.Features;
+using Enrollify.Application.Features.Departments.Features;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
 
 namespace Enrollify.WebAPI.Features.Departments;

@@ -1,5 +1,5 @@
-﻿using Enrollify.Application.Colleges.DTOs;
-using Enrollify.Application.Colleges.Features;
+using Enrollify.Application.Features.Colleges.Features;
+using Enrollify.Application.Features.Colleges.DTOs;
 
 namespace Enrollify.WebAPI.Features.Colleges;
 

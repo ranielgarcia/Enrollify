@@ -1,4 +1,4 @@
-﻿using Enrollify.Application.RoomTypes.Features;
+using Enrollify.Application.Features.RoomTypes.Features;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 
 namespace Enrollify.WebAPI.Features.RoomTypes;

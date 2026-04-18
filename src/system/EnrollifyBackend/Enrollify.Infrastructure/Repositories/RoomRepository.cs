@@ -1,5 +1,5 @@
-﻿using Ardalis.Result;
-using Enrollify.Application.Rooms;
+using Ardalis.Result;
+using Enrollify.Application.Features.Rooms;
 using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Infrastructure.Data;
 

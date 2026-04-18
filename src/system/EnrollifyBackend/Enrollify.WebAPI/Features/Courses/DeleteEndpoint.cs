@@ -1,4 +1,4 @@
-﻿using Enrollify.Application.Courses.Features;
+using Enrollify.Application.Features.Courses.Features;
 using Enrollify.Core.Aggregates.CourseAggregate;
 
 namespace Enrollify.WebAPI.Features.Courses;

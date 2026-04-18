@@ -1,5 +1,6 @@
-﻿using Enrollify.Application.Roles.DTOs;
-using Enrollify.Application.Roles.Features.List;
+using Enrollify.Application.Features.Roles.DTOs;
+using Enrollify.Application.Features.Roles.Features.List;
+using Enrollify.Application.Features.Roles.DTOs;
 using Enrollify.Core.Constants.Authorization;
 
 namespace Enrollify.Infrastructure.Data.Queries;
