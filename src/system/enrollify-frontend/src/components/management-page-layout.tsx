@@ -39,7 +39,7 @@ export function ManagementPageLayout({
       </div>
       <Separator />
 
-      <div className="flex min-h-0 flex-1 flex-col py-5">{children}</div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto py-5">{children}</div>
     </main>
   );
 }
