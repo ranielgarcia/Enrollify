@@ -115,22 +115,22 @@ export function RoomTypeFormDrawer({
           }
         >
           <form
+            className="flex flex-col overflow-hidden h-full"
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
           >
-            <div className="mx-auto w-full max-w-sm flex flex-col h-full">
-              <DrawerHeader className="border-b pb-4">
-                <DrawerTitle>
-                  {isUpdateRoomType ? "Update" : "New"} Room Type
-                </DrawerTitle>
-                <DrawerDescription>
-                  Fill in the details below to{" "}
-                  {isUpdateRoomType ? "update this" : "create a new"} room type.
-                </DrawerDescription>
-              </DrawerHeader>
-              <div className="px-4 py-5 space-y-6 overflow-y-auto">
+            <DrawerHeader className="border-b pb-4">
+              <DrawerTitle>
+                {isUpdateRoomType ? "Update" : "New"} Room Type
+              </DrawerTitle>
+              <DrawerDescription>
+                Fill in the details below to{" "}
+                {isUpdateRoomType ? "update this" : "create a new"} room type.
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
                 <FormSection>
                   <form.Field
                     name="name"
@@ -166,7 +166,6 @@ export function RoomTypeFormDrawer({
                 entityLabel="Room Type"
                 showSaveAndAddAnother
               />
-            </div>
           </form>
         </AuthorizeView>
       </DrawerContent>

@@ -134,22 +134,22 @@ export function CourseFormDrawer({
           }
         >
           <form
+            className="flex flex-col overflow-hidden h-full"
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
           >
-            <div className="mx-auto w-full max-w-sm flex flex-col h-full">
-              <DrawerHeader className="border-b pb-4">
-                <DrawerTitle>
-                  {isUpdateCourse ? "Update" : "New"} Course
-                </DrawerTitle>
-                <DrawerDescription>
-                  Fill in the details below to{" "}
-                  {isUpdateCourse ? "update this" : "create a new"} course.
-                </DrawerDescription>
-              </DrawerHeader>
-              <div className="px-4 py-5 space-y-6 overflow-y-auto">
+            <DrawerHeader className="border-b pb-4">
+              <DrawerTitle>
+                {isUpdateCourse ? "Update" : "New"} Course
+              </DrawerTitle>
+              <DrawerDescription>
+                Fill in the details below to{" "}
+                {isUpdateCourse ? "update this" : "create a new"} course.
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
                 <FormSection title="Identification">
                   <div className="grid grid-cols-2 gap-4">
                     <form.Field
@@ -233,7 +233,6 @@ export function CourseFormDrawer({
                 entityLabel="Course"
                 showSaveAndAddAnother
               />
-            </div>
           </form>
         </AuthorizeView>
       </DrawerContent>

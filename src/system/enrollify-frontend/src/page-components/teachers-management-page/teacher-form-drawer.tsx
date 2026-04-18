@@ -1,10 +1,6 @@
 import type { Teacher } from "@/api/models/teacher";
-import {
-  type MultiSearchableSelectOption,
-} from "@/components/multi-searchable-select";
-import {
-  type SearchableSelectOption,
-} from "@/components/searchable-select";
+import { type MultiSearchableSelectOption } from "@/components/multi-searchable-select";
+import { type SearchableSelectOption } from "@/components/searchable-select";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -160,31 +156,34 @@ export function TeacherFormDrawer({
       onOpenChange={onOpenChange}
     >
       <DrawerTrigger asChild>
-        <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer">
+        <Button
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+          size="sm"
+        >
           <Plus className="size-4" />
           Add Teacher
         </Button>
       </DrawerTrigger>
       <DrawerContent>
         <form
+          className="flex flex-col overflow-hidden h-full"
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
           }}
         >
-          <div className="w-full h-full flex flex-col">
-            <DrawerHeader className="border-b pb-4">
-              <DrawerTitle>
-                {isUpdateTeacher ? "Update" : "New"} Teacher
-              </DrawerTitle>
-              <DrawerDescription>
-                Fill in the details below to{" "}
-                {isUpdateTeacher ? "update this" : "create a new"} teacher
-                profile.
-              </DrawerDescription>
-            </DrawerHeader>
+          <DrawerHeader className="border-b pb-4">
+            <DrawerTitle>
+              {isUpdateTeacher ? "Update" : "New"} Teacher
+            </DrawerTitle>
+            <DrawerDescription>
+              Fill in the details below to{" "}
+              {isUpdateTeacher ? "update this" : "create a new"} teacher
+              profile.
+            </DrawerDescription>
+          </DrawerHeader>
 
-            <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
+          <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
               {/* Profile Picture */}
               <FormSection title="Profile Photo">
                 <div className="flex items-center gap-4">
@@ -424,7 +423,6 @@ export function TeacherFormDrawer({
               onCancel={() => setIsOpen(false)}
               entityLabel="Teacher"
             />
-          </div>
         </form>
       </DrawerContent>
     </Drawer>

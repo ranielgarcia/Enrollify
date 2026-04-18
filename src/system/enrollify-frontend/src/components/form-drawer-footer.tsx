@@ -19,7 +19,7 @@ export function FormDrawerFooter({
   showSaveAndAddAnother = false,
 }: FormDrawerFooterProps) {
   return (
-    <DrawerFooter className="border-t bg-background sticky bottom-0 pt-4">
+    <DrawerFooter className="border-t bg-background pt-4">
       <form.Subscribe
         selector={(state: { canSubmit: boolean; isSubmitting: boolean }) => [state.canSubmit, state.isSubmitting]}
         children={([canSubmit, isSubmitting]: [boolean, boolean]) => (
