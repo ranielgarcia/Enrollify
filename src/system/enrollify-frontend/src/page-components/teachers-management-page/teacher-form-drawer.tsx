@@ -1,30 +1,31 @@
 import type { Teacher } from "@/api/models/teacher";
 import {
-  MultiSearchableSelect,
   type MultiSearchableSelectOption,
 } from "@/components/multi-searchable-select";
 import {
-  SearchableSelect,
   type SearchableSelectOption,
 } from "@/components/searchable-select";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import { FormField } from "@/components/form-field";
+import { FormSelectField } from "@/components/form-select-field";
+import { FormMultiSelectField } from "@/components/form-multi-select-field";
+import { FormSection } from "@/components/form-section";
+import { FormDrawerFooter } from "@/components/form-drawer-footer";
+import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { useForm } from "@tanstack/react-form";
-import { Loader2, Plus, Upload } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 import z from "zod";
 
 const DUMMY_COLLEGES: SearchableSelectOption[] = [
@@ -57,15 +58,6 @@ const DUMMY_SUBJECTS: MultiSearchableSelectOption[] = [
   { value: "9", label: "CHEM101 - General Chemistry" },
   { value: "10", label: "CHEM201 - Organic Chemistry" },
 ];
-
-type FormMeta = {
-  submitAction: "create" | "update" | null;
-  formAction: "close" | "stayopen" | null;
-};
-const defaultMeta: FormMeta = {
-  submitAction: null,
-  formAction: null,
-};
 
 const teacherFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -128,11 +120,15 @@ export function TeacherFormDrawer({
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
-      onChange: teacherFormSchema,
+      onBlur: teacherFormSchema,
+      onSubmit: teacherFormSchema,
     },
-    onSubmitMeta: defaultMeta,
+    onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
       onSubmit(value, profilePictureFile);
+      toast.success(
+        `Teacher ${meta.submitAction === "create" ? "created" : "updated"} successfully`,
+      );
       if (meta.formAction === "close") {
         setIsOpen(false);
       }
@@ -171,26 +167,26 @@ export function TeacherFormDrawer({
       </DrawerTrigger>
       <DrawerContent>
         <form
-          className="space-y-4 h-full"
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
           }}
         >
           <div className="w-full h-full flex flex-col">
-            <DrawerHeader>
+            <DrawerHeader className="border-b pb-4">
               <DrawerTitle>
-                {isUpdateTeacher ? "Update" : "Create"} Teacher
+                {isUpdateTeacher ? "Update" : "New"} Teacher
               </DrawerTitle>
               <DrawerDescription>
-                Set teacher profile details.
+                Fill in the details below to{" "}
+                {isUpdateTeacher ? "update this" : "create a new"} teacher
+                profile.
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
+            <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
               {/* Profile Picture */}
-              <div className="grid w-full items-center gap-3">
-                <Label>Profile Picture</Label>
+              <FormSection title="Profile Photo">
                 <div className="flex items-center gap-4">
                   {profilePicturePreview ? (
                     <img
@@ -221,292 +217,213 @@ export function TeacherFormDrawer({
                     onChange={handleFileChange}
                   />
                 </div>
-              </div>
+              </FormSection>
 
-              {/* First Name */}
-              <form.Field
-                name="firstName"
-                children={(field) => (
-                  <FormField field={field} label="First Name:" placeholder="First Name" />
-                )}
-              />
+              <Separator />
 
-              {/* Last Name */}
-              <form.Field
-                name="lastName"
-                children={(field) => (
-                  <FormField field={field} label="Last Name:" placeholder="Last Name" />
-                )}
-              />
-
-              {/* Middle Name */}
-              <form.Field
-                name="middleName"
-                children={(field) => (
-                  <FormField field={field} label="Middle Name:" placeholder="Middle Name" />
-                )}
-              />
-
-              {/* Email */}
-              <form.Field
-                name="email"
-                children={(field) => (
-                  <FormField
-                    field={field}
-                    label="Email:"
-                    type="email"
-                    placeholder="email@university.edu"
+              {/* Personal Information */}
+              <FormSection title="Personal Information">
+                <div className="grid grid-cols-2 gap-4">
+                  <form.Field
+                    name="firstName"
+                    children={(field) => (
+                      <FormField
+                        field={field}
+                        label="First Name"
+                        required
+                        autoFocus
+                      />
+                    )}
                   />
-                )}
-              />
-
-              {/* Phone Number */}
-              <form.Field
-                name="phoneNumber"
-                children={(field) => (
-                  <FormField
-                    field={field}
-                    label="Phone Number:"
-                    type="tel"
-                    placeholder="+63 912 345 6789"
+                  <form.Field
+                    name="lastName"
+                    children={(field) => (
+                      <FormField field={field} label="Last Name" required />
+                    )}
                   />
-                )}
-              />
+                </div>
+                <form.Field
+                  name="middleName"
+                  children={(field) => (
+                    <FormField field={field} label="Middle Name" />
+                  )}
+                />
+              </FormSection>
 
-              {/* College */}
-              <form.Field
-                name="collegeId"
-                children={(field) => (
-                  <div className="grid w-full items-center gap-3">
-                    <Label htmlFor={field.name}>College:</Label>
-                    <SearchableSelect
+              <Separator />
+
+              {/* Contact Details */}
+              <FormSection title="Contact Details">
+                <form.Field
+                  name="email"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Email"
+                      type="email"
+                      required
+                      placeholder="email@university.edu"
+                    />
+                  )}
+                />
+                <form.Field
+                  name="phoneNumber"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Phone Number"
+                      type="tel"
+                      required
+                      placeholder="+63 912 345 6789"
+                    />
+                  )}
+                />
+              </FormSection>
+
+              <Separator />
+
+              {/* Academic Details */}
+              <FormSection title="Academic Details">
+                <form.Field
+                  name="collegeId"
+                  children={(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="College"
+                      required
                       options={DUMMY_COLLEGES}
-                      value={field.state.value}
-                      onValueChange={(val) => field.handleChange(val)}
-                      name={field.name}
                       placeholder="Select a college"
                       searchPlaceholder="Search colleges..."
                       emptyMessage="No college found"
-                    />
-                    {!field.state.meta.isValid && (
-                      <em role="alert" className="text-destructive text-sm">
-                        {field.state.meta.errors
-                          .map((e) => e?.message)
-                          .join(", ")}
-                      </em>
-                    )}
-                  </div>
-                )}
-              />
-
-              {/* Academic Title */}
-              <form.Field
-                name="academicTitle"
-                children={(field) => (
-                  <FormField
-                    field={field}
-                    label="Academic Title:"
-                    placeholder="e.g. Associate Professor"
-                  />
-                )}
-              />
-
-              {/* Department */}
-              <form.Field
-                name="departmentId"
-                children={(field) => (
-                  <div className="grid w-full items-center gap-3">
-                    <Label htmlFor={field.name}>Department:</Label>
-                    <SearchableSelect
-                      options={DUMMY_DEPARTMENTS}
-                      value={field.state.value}
                       onValueChange={(val) => field.handleChange(val)}
-                      name={field.name}
+                    />
+                  )}
+                />
+                <form.Field
+                  name="departmentId"
+                  children={(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="Department"
+                      required
+                      options={DUMMY_DEPARTMENTS}
                       placeholder="Select a department"
                       searchPlaceholder="Search departments..."
                       emptyMessage="No department found"
+                      onValueChange={(val) => field.handleChange(val)}
                     />
-                    {!field.state.meta.isValid && (
-                      <em role="alert" className="text-destructive text-sm">
-                        {field.state.meta.errors
-                          .map((e) => e?.message)
-                          .join(", ")}
-                      </em>
-                    )}
-                  </div>
-                )}
-              />
+                  )}
+                />
+                <form.Field
+                  name="academicTitle"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Academic Title"
+                      required
+                      placeholder="e.g. Associate Professor"
+                    />
+                  )}
+                />
+                <form.Field
+                  name="qualification"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Qualification"
+                      type="textarea"
+                      required
+                      placeholder="e.g. Ph.D. in Computer Science"
+                    />
+                  )}
+                />
+                <form.Field
+                  name="specialization"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Specialization"
+                      required
+                      placeholder="e.g. Machine Learning, Data Mining"
+                    />
+                  )}
+                />
+              </FormSection>
 
-              {/* Qualification */}
-              <form.Field
-                name="qualification"
-                children={(field) => (
-                  <FormField
-                    field={field}
-                    label="Qualification:"
-                    type="textarea"
-                    placeholder="e.g. Ph.D. in Computer Science, M.Sc. in Software Engineering"
-                  />
-                )}
-              />
-
-              {/* Specialization */}
-              <form.Field
-                name="specialization"
-                children={(field) => (
-                  <FormField
-                    field={field}
-                    label="Specialization:"
-                    placeholder="e.g. Machine Learning, Data Mining"
-                  />
-                )}
-              />
+              <Separator />
 
               {/* Office Information */}
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold">
-                  Office Information
-                </Label>
+              <FormSection title="Office Information">
                 <form.Field
                   name="officeLocation"
                   children={(field) => (
-                    <div className="grid w-full items-center gap-2">
-                      <Label
-                        htmlFor={field.name}
-                        className="text-muted-foreground text-xs"
-                      >
-                        Office Location:
-                      </Label>
-                      <Input
-                        type="text"
-                        id={field.name}
-                        placeholder="e.g. Engineering Building, Room 302"
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                      />
-                      {!field.state.meta.isValid && (
-                        <em role="alert" className="text-destructive text-sm">
-                          {field.state.meta.errors
-                            .map((e) => e?.message)
-                            .join(", ")}
-                        </em>
-                      )}
-                    </div>
+                    <FormField
+                      field={field}
+                      label="Office Location"
+                      required
+                      placeholder="e.g. Engineering Building, Room 302"
+                    />
                   )}
                 />
                 <form.Field
                   name="officeHours"
                   children={(field) => (
-                    <div className="grid w-full items-center gap-2">
-                      <Label
-                        htmlFor={field.name}
-                        className="text-muted-foreground text-xs"
-                      >
-                        Office Hours:
-                      </Label>
-                      <Input
-                        type="text"
-                        id={field.name}
-                        placeholder="e.g. MWF 10:00 AM - 12:00 PM"
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                      />
-                      {!field.state.meta.isValid && (
-                        <em role="alert" className="text-destructive text-sm">
-                          {field.state.meta.errors
-                            .map((e) => e?.message)
-                            .join(", ")}
-                        </em>
-                      )}
-                    </div>
+                    <FormField
+                      field={field}
+                      label="Office Hours"
+                      required
+                      placeholder="e.g. MWF 10:00 AM - 12:00 PM"
+                    />
                   )}
                 />
-              </div>
+              </FormSection>
+
+              <Separator />
 
               {/* Biography */}
-              <form.Field
-                name="biography"
-                children={(field) => (
-                  <div className="grid w-full items-center gap-3">
-                    <Label htmlFor={field.name}>
-                      Biography{" "}
-                      <span className="text-muted-foreground text-xs">
-                        (optional)
-                      </span>
-                    </Label>
-                    <Textarea
-                      id={field.name}
+              <FormSection title="Biography">
+                <form.Field
+                  name="biography"
+                  children={(field) => (
+                    <FormField
+                      field={field}
+                      label="Biography"
+                      type="textarea"
                       placeholder="A brief biography about the teacher..."
-                      value={field.state.value ?? ""}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      rows={4}
+                      hint="Optional"
+                      maxLength={1000}
                     />
-                  </div>
-                )}
-              />
+                  )}
+                />
+              </FormSection>
 
-              {/* Subjects */}
-              <form.Field
-                name="subjectIds"
-                children={(field) => (
-                  <div className="grid w-full items-center gap-3">
-                    <Label htmlFor={field.name}>Subjects:</Label>
-                    <MultiSearchableSelect
+              <Separator />
+
+              {/* Teaching Assignment */}
+              <FormSection title="Teaching Assignment">
+                <form.Field
+                  name="subjectIds"
+                  children={(field) => (
+                    <FormMultiSelectField
+                      field={field}
+                      label="Subjects"
+                      required
                       options={DUMMY_SUBJECTS}
-                      value={field.state.value}
-                      onValueChange={(val) => field.handleChange(val)}
-                      name={field.name}
                       placeholder="Select subjects..."
                       searchPlaceholder="Search subjects..."
                       emptyMessage="No subject found"
                     />
-                    {!field.state.meta.isValid && (
-                      <em role="alert" className="text-destructive text-sm">
-                        {field.state.meta.errors
-                          .map((e) => e?.message)
-                          .join(", ")}
-                      </em>
-                    )}
-                  </div>
-                )}
-              />
+                  )}
+                />
+              </FormSection>
             </div>
 
-            <DrawerFooter>
-              <form.Subscribe
-                selector={(state) => [state.canSubmit, state.isSubmitting]}
-                children={([canSubmit, isSubmitting]) => (
-                  <Button
-                    className="cursor-pointer"
-                    disabled={!canSubmit}
-                    type="submit"
-                    onClick={() =>
-                      form.handleSubmit({
-                        submitAction: isUpdateTeacher ? "update" : "create",
-                        formAction: "close",
-                      })
-                    }
-                  >
-                    {isSubmitting ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : isUpdateTeacher ? (
-                      "Update"
-                    ) : (
-                      "Submit"
-                    )}
-                  </Button>
-                )}
-              />
-              <DrawerClose asChild>
-                <Button
-                  className="cursor-pointer"
-                  variant="outline"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Cancel
-                </Button>
-              </DrawerClose>
-            </DrawerFooter>
+            <FormDrawerFooter
+              form={form}
+              isUpdate={isUpdateTeacher}
+              onCancel={() => setIsOpen(false)}
+              entityLabel="Teacher"
+            />
           </div>
         </form>
       </DrawerContent>

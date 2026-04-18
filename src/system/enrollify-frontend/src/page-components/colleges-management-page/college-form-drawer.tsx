@@ -2,16 +2,15 @@ import z from "zod";
 import { useForm } from "@tanstack/react-form";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Unauthorized } from "@/components/unauthorized";
 import {
@@ -21,17 +20,10 @@ import {
 import type { College } from "@/api/models/college";
 import { useMutation } from "@tanstack/react-query";
 import { FormField } from "@/components/form-field";
-
-type FormMeta = {
-  submitAction: "create" | "update" | null;
-  formAction: "close" | "stayopen" | null;
-};
-// Metadata is not required to call form.handleSubmit().
-// Specify what values to use as default if no meta is passed
-const defaultMeta: FormMeta = {
-  submitAction: null,
-  formAction: null,
-};
+import { FormSection } from "@/components/form-section";
+import { FormDrawerFooter } from "@/components/form-drawer-footer";
+import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
+import { toast } from "sonner";
 
 const collegeFormSchema = z.object({
   code: z.string().min(3, "Code is required"),
@@ -72,15 +64,18 @@ export function CollegeFormDrawer({
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
-      onChange: collegeFormSchema,
+      onBlur: collegeFormSchema,
+      onSubmit: collegeFormSchema,
     },
-    onSubmitMeta: defaultMeta,
+    onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
       const formValues = collegeFormSchema.parse(value);
       if (meta.submitAction === "create") {
         await createNewCollegeAsync(formValues);
+        toast.success("College created successfully");
       } else if (meta.submitAction === "update" && collegeToUpdate) {
         await updateCollegeAsync(formValues);
+        toast.success("College updated successfully");
       }
 
       if (meta.formAction === "close") {
@@ -122,93 +117,84 @@ export function CollegeFormDrawer({
           }
         >
           <form
-            className="space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
           >
-            <div className="mx-auto w-full max-w-sm">
-              <DrawerHeader>
+            <div className="mx-auto w-full max-w-sm flex flex-col h-full">
+              <DrawerHeader className="border-b pb-4">
                 <DrawerTitle>
-                  {isUpdateCollege ? "Update" : "Create"} College
+                  {isUpdateCollege ? "Update" : "New"} College
                 </DrawerTitle>
-                <DrawerDescription>Set college details.</DrawerDescription>
+                <DrawerDescription>
+                  Fill in the details below to{" "}
+                  {isUpdateCollege ? "update this" : "create a new"} college.
+                </DrawerDescription>
               </DrawerHeader>
-              <div className="p-4 pb-0">
-                <div className="pb-4">
+              <div className="px-4 py-5 space-y-6 overflow-y-auto">
+                <FormSection title="Identification">
                   <form.Field
                     name="code"
                     children={(field) => (
-                      <FormField field={field} label="Code:" />
+                      <FormField
+                        field={field}
+                        label="Code"
+                        required
+                        hint="e.g. COE, COS"
+                        autoFocus
+                      />
                     )}
                   />
-                </div>
-                <div className="pb-4">
                   <form.Field
                     name="name"
                     children={(field) => (
-                      <FormField field={field} label="Name:" />
+                      <FormField
+                        field={field}
+                        label="Name"
+                        required
+                        hint="Full college name"
+                      />
                     )}
                   />
-                </div>
-                <div className="pb-4">
+                </FormSection>
+
+                <Separator />
+
+                <FormSection title="Details">
                   <form.Field
                     name="description"
                     children={(field) => (
                       <FormField
                         field={field}
-                        label="Description:"
+                        label="Description"
                         type="textarea"
+                        required
+                        maxLength={500}
                       />
                     )}
                   />
-                </div>
-                <div className="pb-4">
+                </FormSection>
+
+                <Separator />
+
+                <FormSection title="Leadership">
                   <form.Field
                     name="dean"
                     children={(field) => (
-                      <FormField field={field} label="Dean:" />
+                      <FormField field={field} label="Dean" required />
                     )}
                   />
-                </div>
+                </FormSection>
               </div>
 
-              <DrawerFooter>
-                <form.Subscribe
-                  selector={(state) => [state.canSubmit, state.isSubmitting]}
-                  children={([canSubmit, isSubmitting]) => (
-                    <Button
-                      className=" cursor-pointer"
-                      disabled={!canSubmit}
-                      type="submit"
-                      onClick={() =>
-                        form.handleSubmit({
-                          submitAction: isUpdateCollege ? "update" : "create",
-                          formAction: "close",
-                        })
-                      }
-                    >
-                      {isSubmitting ? (
-                        <Loader2 />
-                      ) : isUpdateCollege ? (
-                        "Update"
-                      ) : (
-                        "Submit"
-                      )}
-                    </Button>
-                  )}
-                />
-                <DrawerClose asChild>
-                  <Button
-                    className=" cursor-pointer"
-                    variant="outline"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                </DrawerClose>
-              </DrawerFooter>
+              <FormDrawerFooter
+                form={form}
+                isUpdate={isUpdateCollege}
+                onCancel={() => setIsOpen(false)}
+                entityLabel="College"
+                showSaveAndAddAnother
+              />
             </div>
           </form>
         </AuthorizeView>

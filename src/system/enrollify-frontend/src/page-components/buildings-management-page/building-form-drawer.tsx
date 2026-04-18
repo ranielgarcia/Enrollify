@@ -4,41 +4,29 @@ import {
 } from "@/api/collections/building-collection";
 import type { Building } from "@/api/models/building";
 import type { College } from "@/api/models/college";
-import {
-  SearchableSelect,
-  type SearchableSelectOption,
-} from "@/components/searchable-select";
+import { type SearchableSelectOption } from "@/components/searchable-select";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import { FormField } from "@/components/form-field";
+import { FormSelectField } from "@/components/form-select-field";
+import { FormSection } from "@/components/form-section";
+import { FormDrawerFooter } from "@/components/form-drawer-footer";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
+import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { Loader2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import z from "zod";
-
-type FormMeta = {
-  submitAction: "create" | "update" | null;
-  formAction: "close" | "stayopen" | null;
-};
-// Metadata is not required to call form.handleSubmit().
-// Specify what values to use as default if no meta is passed
-const defaultMeta: FormMeta = {
-  submitAction: null,
-  formAction: null,
-};
 
 const buildingFormSchema = z.object({
   name: z.string().min(3, "Name is required"),
@@ -81,15 +69,18 @@ export function BuildingFormDrawer({
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
-      onChange: buildingFormSchema,
+      onBlur: buildingFormSchema,
+      onSubmit: buildingFormSchema,
     },
-    onSubmitMeta: defaultMeta,
+    onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
       const formValues = buildingFormSchema.parse(value);
       if (meta.submitAction === "create") {
         await createNewBuildingAsync(formValues);
+        toast.success("Building created successfully");
       } else if (meta.submitAction === "update" && buildingToUpdate) {
         await updateBuildingAsync(formValues);
+        toast.success("Building updated successfully");
       }
 
       if (meta.formAction === "close") {
@@ -137,118 +128,85 @@ export function BuildingFormDrawer({
           }
         >
           <form
-            className="space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
           >
-            <div className="mx-auto w-full max-w-sm">
-              <DrawerHeader>
+            <div className="mx-auto w-full max-w-sm flex flex-col h-full">
+              <DrawerHeader className="border-b pb-4">
                 <DrawerTitle>
-                  {isUpdateBuilding ? "Update" : "Create"} Building
+                  {isUpdateBuilding ? "Update" : "New"} Building
                 </DrawerTitle>
-                <DrawerDescription>Set building details.</DrawerDescription>
+                <DrawerDescription>
+                  Fill in the details below to{" "}
+                  {isUpdateBuilding ? "update this" : "create a new"} building.
+                </DrawerDescription>
               </DrawerHeader>
-              <div className="p-4 pb-0">
-                <div className="pb-4">
+              <div className="px-4 py-5 space-y-6 overflow-y-auto">
+                <FormSection title="Identification">
                   <form.Field
                     name="name"
                     children={(field) => (
-                      <FormField field={field} label="Name:" />
+                      <FormField
+                        field={field}
+                        label="Name"
+                        required
+                        autoFocus
+                      />
                     )}
                   />
-                </div>
-                <div className="pb-4">
-                  <label className="text-sm font-medium text-foreground block mb-1">
-                    Short Description
-                  </label>
-                  <form.Field
-                    name="description"
-                    children={(field) => (
-                      <>
-                        <Textarea
-                          placeholder="Short Description:"
-                          value={field.state.value}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-destructive text-sm">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </>
-                    )}
-                  />
-                </div>
-                <div className="pb-4">
                   <form.Field
                     name="address"
                     children={(field) => (
-                      <FormField field={field} label="Address:" />
+                      <FormField field={field} label="Address" required />
                     )}
                   />
-                </div>
-                <div className="pb-4">
+                </FormSection>
+
+                <Separator />
+
+                <FormSection title="Details">
+                  <form.Field
+                    name="description"
+                    children={(field) => (
+                      <FormField
+                        field={field}
+                        label="Description"
+                        type="textarea"
+                        required
+                        maxLength={500}
+                      />
+                    )}
+                  />
+                </FormSection>
+
+                <Separator />
+
+                <FormSection title="Classification">
                   <form.Field
                     name="collegeId"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>College:</Label>
-                        <SearchableSelect
-                          options={collegesOptions}
-                          value={field.state.value.toString()}
-                          onValueChange={(val) =>
-                            field.handleChange(Number(val))
-                          }
-                          name={field.name}
-                          placeholder="Select a college"
-                          searchPlaceholder="Search college"
-                          emptyMessage="No college found"
-                        />
-                      </div>
+                      <FormSelectField
+                        field={field}
+                        label="College"
+                        options={collegesOptions}
+                        placeholder="Select a college"
+                        searchPlaceholder="Search college"
+                        emptyMessage="No college found"
+                      />
                     )}
                   />
-                </div>
+                </FormSection>
               </div>
 
-              <DrawerFooter>
-                <form.Subscribe
-                  selector={(state) => [state.canSubmit, state.isSubmitting]}
-                  children={([canSubmit, isSubmitting]) => (
-                    <Button
-                      className=" cursor-pointer"
-                      disabled={!canSubmit}
-                      type="submit"
-                      onClick={() =>
-                        form.handleSubmit({
-                          submitAction: isUpdateBuilding ? "update" : "create",
-                          formAction: "close",
-                        })
-                      }
-                    >
-                      {isSubmitting ? (
-                        <Loader2 />
-                      ) : isUpdateBuilding ? (
-                        "Update"
-                      ) : (
-                        "Submit"
-                      )}
-                    </Button>
-                  )}
-                />
-                <DrawerClose asChild>
-                  <Button
-                    className=" cursor-pointer"
-                    variant="outline"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                </DrawerClose>
-              </DrawerFooter>
+              <FormDrawerFooter
+                form={form}
+                isUpdate={isUpdateBuilding}
+                onCancel={() => setIsOpen(false)}
+                entityLabel="Building"
+                showSaveAndAddAnother
+              />
             </div>
           </form>
         </AuthorizeView>

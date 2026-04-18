@@ -1,10 +1,8 @@
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -12,7 +10,6 @@ import {
 import { Plus } from "lucide-react";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { Loader2 } from "lucide-react";
 import type { RoomType } from "../../../api/models/room-type";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Unauthorized } from "@/components/unauthorized";
@@ -22,17 +19,10 @@ import {
 } from "@/api/collections/room-type-collection";
 import { useMutation } from "@tanstack/react-query";
 import { FormField } from "@/components/form-field";
-
-type FormMeta = {
-  submitAction: "create" | "update" | null;
-  formAction: "close" | "stayopen" | null;
-};
-// Metadata is not required to call form.handleSubmit().
-// Specify what values to use as default if no meta is passed
-const defaultMeta: FormMeta = {
-  submitAction: null,
-  formAction: null,
-};
+import { FormSection } from "@/components/form-section";
+import { FormDrawerFooter } from "@/components/form-drawer-footer";
+import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
+import { toast } from "sonner";
 
 const roomTypeSchema = z.object({
   name: z.string().min(3, "Name is required"),
@@ -68,17 +58,20 @@ export function RoomTypeFormDrawer({
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
-      onChange: roomTypeSchema,
+      onBlur: roomTypeSchema,
+      onSubmit: roomTypeSchema,
     },
-    onSubmitMeta: defaultMeta,
+    onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
       const formValues = roomTypeSchema.parse(value);
       if (meta.submitAction === "create") {
         await createNewRoomTypeAsync(formValues);
+        toast.success("Room type created successfully");
       }
 
       if (meta.submitAction === "update" && roomTypeToUpdate) {
         await updateRoomTypeAsync(formValues);
+        toast.success("Room type updated successfully");
       }
 
       if (meta.formAction === "close") {
@@ -122,78 +115,57 @@ export function RoomTypeFormDrawer({
           }
         >
           <form
-            className="space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
           >
-            <div className="mx-auto w-full max-w-sm">
-              <DrawerHeader>
+            <div className="mx-auto w-full max-w-sm flex flex-col h-full">
+              <DrawerHeader className="border-b pb-4">
                 <DrawerTitle>
-                  {isUpdateRoomType ? "Update" : "Create"} Room Type
+                  {isUpdateRoomType ? "Update" : "New"} Room Type
                 </DrawerTitle>
-                <DrawerDescription>Set room type details.</DrawerDescription>
+                <DrawerDescription>
+                  Fill in the details below to{" "}
+                  {isUpdateRoomType ? "update this" : "create a new"} room type.
+                </DrawerDescription>
               </DrawerHeader>
-              <div className="p-4 pb-0">
-                <div className="pb-4">
+              <div className="px-4 py-5 space-y-6 overflow-y-auto">
+                <FormSection>
                   <form.Field
                     name="name"
                     children={(field) => (
-                      <FormField field={field} label="Type Name:" />
+                      <FormField
+                        field={field}
+                        label="Type Name"
+                        required
+                        autoFocus
+                      />
                     )}
                   />
-                </div>
-                <div className="pb-4">
                   <form.Field
                     name="description"
                     children={(field) => (
                       <FormField
                         field={field}
-                        label="Description:"
+                        label="Description"
                         type="textarea"
+                        required
                         placeholder="e.g., Large classroom for lectures"
+                        maxLength={500}
                       />
                     )}
                   />
-                </div>
+                </FormSection>
               </div>
 
-              <DrawerFooter>
-                <form.Subscribe
-                  selector={(state) => [state.canSubmit, state.isSubmitting]}
-                  children={([canSubmit, isSubmitting]) => (
-                    <Button
-                      className=" cursor-pointer"
-                      disabled={!canSubmit}
-                      type="submit"
-                      onClick={() =>
-                        form.handleSubmit({
-                          submitAction: isUpdateRoomType ? "update" : "create",
-                          formAction: "close",
-                        })
-                      }
-                    >
-                      {isSubmitting ? (
-                        <Loader2 />
-                      ) : isUpdateRoomType ? (
-                        "Update"
-                      ) : (
-                        "Submit"
-                      )}
-                    </Button>
-                  )}
-                />
-                <DrawerClose asChild>
-                  <Button
-                    className=" cursor-pointer"
-                    variant="outline"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                </DrawerClose>
-              </DrawerFooter>
+              <FormDrawerFooter
+                form={form}
+                isUpdate={isUpdateRoomType}
+                onCancel={() => setIsOpen(false)}
+                entityLabel="Room Type"
+                showSaveAndAddAnother
+              />
             </div>
           </form>
         </AuthorizeView>

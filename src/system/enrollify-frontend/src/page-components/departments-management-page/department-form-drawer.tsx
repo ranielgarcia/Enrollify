@@ -4,40 +4,29 @@ import {
 } from "@/api/collections/department-collection";
 import type { College } from "@/api/models/college";
 import type { Department } from "@/api/models/department";
-import {
-  SearchableSelect,
-  type SearchableSelectOption,
-} from "@/components/searchable-select";
+import { type SearchableSelectOption } from "@/components/searchable-select";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { FormField } from "@/components/form-field";
+import { FormSelectField } from "@/components/form-select-field";
+import { FormSection } from "@/components/form-section";
+import { FormDrawerFooter } from "@/components/form-drawer-footer";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
+import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { Loader2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import z from "zod";
-
-type FormMeta = {
-  submitAction: "create" | "update" | null;
-  formAction: "close" | "stayopen" | null;
-};
-// Metadata is not required to call form.handleSubmit().
-// Specify what values to use as default if no meta is passed
-const defaultMeta: FormMeta = {
-  submitAction: null,
-  formAction: null,
-};
 
 const departmentFormSchema = z.object({
   code: z.string().min(3, "Code is required"),
@@ -81,15 +70,18 @@ export function DepartmentFormDrawer({
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
-      onChange: departmentFormSchema,
+      onBlur: departmentFormSchema,
+      onSubmit: departmentFormSchema,
     },
-    onSubmitMeta: defaultMeta,
+    onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
       const formValues = departmentFormSchema.parse(value);
       if (meta.submitAction === "create") {
         await createNewDepartmentAsync(formValues);
+        toast.success("Department created successfully");
       } else if (meta.submitAction === "update") {
         await updateDepartmentAsync(formValues);
+        toast.success("Department updated successfully");
       }
 
       if (meta.formAction === "close") {
@@ -140,124 +132,108 @@ export function DepartmentFormDrawer({
           }
         >
           <form
-            className="space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
           >
-            <div className="mx-auto w-full max-w-sm">
-              <DrawerHeader>
+            <div className="mx-auto w-full max-w-sm flex flex-col h-full">
+              <DrawerHeader className="border-b pb-4">
                 <DrawerTitle>
-                  {isUpdateDepartment ? "Update" : "Create"} Department
+                  {isUpdateDepartment ? "Update" : "New"} Department
                 </DrawerTitle>
-                <DrawerDescription>Set department details.</DrawerDescription>
+                <DrawerDescription>
+                  Fill in the details below to{" "}
+                  {isUpdateDepartment ? "update this" : "create a new"}{" "}
+                  department.
+                </DrawerDescription>
               </DrawerHeader>
-              <div className="p-4 pb-0">
-                <div className="pb-4">
+              <div className="px-4 py-5 space-y-6 overflow-y-auto">
+                <FormSection title="Identification">
                   <form.Field
                     name="code"
                     children={(field) => (
-                      <FormField field={field} label="Code:" />
+                      <FormField
+                        field={field}
+                        label="Code"
+                        required
+                        hint="e.g. CS, IT, EE"
+                        autoFocus
+                      />
                     )}
                   />
-                </div>
-                <div className="pb-4">
                   <form.Field
                     name="name"
                     children={(field) => (
-                      <FormField field={field} label="Name:" />
+                      <FormField
+                        field={field}
+                        label="Name"
+                        required
+                        hint="Full department name"
+                      />
                     )}
                   />
-                </div>
-                <div className="pb-4">
-                  <form.Field
-                    name="chairperson"
-                    children={(field) => (
-                      <FormField field={field} label="Chairperson:" />
-                    )}
-                  />
-                </div>
-                <div className="pb-4">
+                </FormSection>
+
+                <Separator />
+
+                <FormSection title="Details">
                   <form.Field
                     name="description"
                     children={(field) => (
                       <FormField
                         field={field}
-                        label="Description:"
+                        label="Description"
                         type="textarea"
+                        required
+                        maxLength={500}
                       />
                     )}
                   />
-                </div>
+                </FormSection>
 
-                <div className="pb-4">
+                <Separator />
+
+                <FormSection title="Leadership">
+                  <form.Field
+                    name="chairperson"
+                    children={(field) => (
+                      <FormField
+                        field={field}
+                        label="Chairperson"
+                        required
+                      />
+                    )}
+                  />
+                </FormSection>
+
+                <Separator />
+
+                <FormSection title="Classification">
                   <form.Field
                     name="collegeId"
                     children={(field) => (
-                      <div className="grid w-full max-w-sm items-center gap-3">
-                        <Label htmlFor={field.name}>College:</Label>
-                        <SearchableSelect
-                          options={collegesOptions}
-                          value={field.state.value.toString()}
-                          onValueChange={(val) =>
-                            field.handleChange(Number(val))
-                          }
-                          name={field.name}
-                          placeholder="Select a college"
-                          searchPlaceholder="Search colleges..."
-                          emptyMessage="No college found"
-                        />
-                        {!field.state.meta.isValid && (
-                          <em role="alert" className="text-destructive text-sm">
-                            {field.state.meta.errors
-                              .map((e) => e?.message)
-                              .join(", ")}
-                          </em>
-                        )}
-                      </div>
+                      <FormSelectField
+                        field={field}
+                        label="College"
+                        required
+                        options={collegesOptions}
+                        placeholder="Select a college"
+                        searchPlaceholder="Search colleges..."
+                        emptyMessage="No college found"
+                      />
                     )}
                   />
-                </div>
+                </FormSection>
               </div>
 
-              <DrawerFooter>
-                <form.Subscribe
-                  selector={(state) => [state.canSubmit, state.isSubmitting]}
-                  children={([canSubmit, isSubmitting]) => (
-                    <Button
-                      className=" cursor-pointer"
-                      disabled={!canSubmit}
-                      type="submit"
-                      onClick={() =>
-                        form.handleSubmit({
-                          submitAction: isUpdateDepartment
-                            ? "update"
-                            : "create",
-                          formAction: "close",
-                        })
-                      }
-                    >
-                      {isSubmitting ? (
-                        <Loader2 />
-                      ) : isUpdateDepartment ? (
-                        "Update"
-                      ) : (
-                        "Submit"
-                      )}
-                    </Button>
-                  )}
-                />
-                <DrawerClose asChild>
-                  <Button
-                    className=" cursor-pointer"
-                    variant="outline"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                </DrawerClose>
-              </DrawerFooter>
+              <FormDrawerFooter
+                form={form}
+                isUpdate={isUpdateDepartment}
+                onCancel={() => setIsOpen(false)}
+                entityLabel="Department"
+                showSaveAndAddAnother
+              />
             </div>
           </form>
         </AuthorizeView>

@@ -11,6 +11,10 @@ interface FormFieldProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  required?: boolean;
+  hint?: string;
+  maxLength?: number;
+  autoFocus?: boolean;
 }
 
 export function FormField({
@@ -20,6 +24,10 @@ export function FormField({
   placeholder,
   className,
   disabled,
+  required,
+  hint,
+  maxLength,
+  autoFocus,
 }: FormFieldProps) {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -28,16 +36,42 @@ export function FormField({
     field.handleChange(value);
   };
 
+  const errorMessage = field.state.meta.errors
+    .map((e: { message?: string } | string) =>
+      typeof e === "string" ? e : e?.message,
+    )
+    .join(", ");
+  const hasError = !field.state.meta.isValid && errorMessage;
+  const currentLength =
+    type === "textarea" && maxLength
+      ? String(field.state.value ?? "").length
+      : 0;
+
+  const describedBy = [
+    hint && !hasError ? `${field.name}-hint` : null,
+    hasError ? `${field.name}-error` : null,
+  ]
+    .filter(Boolean)
+    .join(" ") || undefined;
+
   return (
-    <div className={cn("grid w-full items-center gap-3", className)}>
-      <Label htmlFor={field.name}>{label}</Label>
+    <div className={cn("grid w-full items-center gap-1.5", className)}>
+      <Label htmlFor={field.name}>
+        {label}
+        {required && <span className="text-destructive ml-0.5">*</span>}
+      </Label>
       {type === "textarea" ? (
         <Textarea
           id={field.name}
           placeholder={placeholder ?? label}
           value={field.state.value ?? ""}
           onChange={handleChange}
+          onBlur={field.handleBlur}
           disabled={disabled}
+          maxLength={maxLength}
+          autoFocus={autoFocus}
+          aria-describedby={describedBy}
+          aria-invalid={!!hasError}
         />
       ) : (
         <Input
@@ -46,18 +80,37 @@ export function FormField({
           placeholder={placeholder ?? label}
           value={field.state.value ?? ""}
           onChange={handleChange}
+          onBlur={field.handleBlur}
           disabled={disabled}
+          autoFocus={autoFocus}
+          aria-describedby={describedBy}
+          aria-invalid={!!hasError}
         />
       )}
-      {!field.state.meta.isValid && (
-        <em role="alert" className="text-destructive text-sm">
-          {field.state.meta.errors
-            .map((e: { message?: string } | string) =>
-              typeof e === "string" ? e : e?.message,
-            )
-            .join(", ")}
-        </em>
-      )}
+      <div className="flex items-center justify-between">
+        {hint && !hasError && (
+          <p
+            id={`${field.name}-hint`}
+            className="text-xs text-muted-foreground"
+          >
+            {hint}
+          </p>
+        )}
+        {hasError && (
+          <p
+            id={`${field.name}-error`}
+            role="alert"
+            className="text-xs text-destructive"
+          >
+            {errorMessage}
+          </p>
+        )}
+        {maxLength && type === "textarea" && (
+          <span className="text-xs text-muted-foreground ml-auto">
+            {currentLength}/{maxLength}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

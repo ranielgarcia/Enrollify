@@ -1,13 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, X } from "lucide-react";
 import {
-  SearchableSelect,
   type SearchableSelectOption,
 } from "@/components/searchable-select";
-import { Label } from "@/components/ui/label";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { getAllCoursesOptions } from "@/api/collections/course-collection";
 import { useForm } from "@tanstack/react-form";
@@ -19,17 +15,10 @@ import {
 import type { CurriculumWithSubjects } from "@/api/models/curriculum";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Unauthorized } from "@/components/unauthorized";
-
-type FormMeta = {
-  submitAction: "create" | "update" | null;
-  formAction: "close" | "stayopen" | null;
-};
-// Metadata is not required to call form.handleSubmit().
-// Specify what values to use as default if no meta is passed
-const defaultMeta: FormMeta = {
-  submitAction: null,
-  formAction: null,
-};
+import { FormField } from "@/components/form-field";
+import { FormSelectField } from "@/components/form-select-field";
+import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
+import { toast } from "sonner";
 
 const curriculaFormSchema = z.object({
   courseId: z.number().min(1, "Course is required"),
@@ -76,19 +65,22 @@ export function CurriculumForm({
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
-      onChange: curriculaFormSchema,
+      onBlur: curriculaFormSchema,
+      onSubmit: curriculaFormSchema,
     },
-    onSubmitMeta: defaultMeta,
+    onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
       const formValues = curriculaFormSchema.parse(value);
 
       if (meta.submitAction === "create") {
         const curriculumId = await createDraftCurriculumAsync(formValues);
+        toast.success("Curriculum created successfully");
         onSave(curriculumId);
       }
 
       if (meta.submitAction === "update" && curriculumToUpdate) {
         await updateCurriculumAsync(formValues);
+        toast.success("Curriculum updated successfully");
       }
 
       form.reset();
@@ -107,7 +99,10 @@ export function CurriculumForm({
   return (
     <Card className="border-2 border-primary">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle>Create New Curriculum</CardTitle>
+        <CardTitle>
+          {isUpdatingCurriculumBasicDetails ? "Update" : "Create New"}{" "}
+          Curriculum
+        </CardTitle>
         <Button variant="ghost" size="sm" onClick={onClose}>
           <X className="size-4" />
         </Button>
@@ -141,93 +136,52 @@ export function CurriculumForm({
               <form.Field
                 name="courseId"
                 children={(field) => (
-                  <div>
-                    <Label htmlFor={field.name}>Course:</Label>
-                    <SearchableSelect
-                      options={coursesOptions}
-                      value={field.state.value.toString()}
-                      onValueChange={(val) => field.handleChange(Number(val))}
-                      name={field.name}
-                      placeholder="Select Course"
-                      searchPlaceholder="Search Course..."
-                      emptyMessage="No Course found"
-                    />
-                    {!field.state.meta.isValid && (
-                      <em role="alert" className="text-red-800">
-                        {field.state.meta.errors
-                          .map((e) => e?.message)
-                          .join(", ")}
-                      </em>
-                    )}
-                  </div>
+                  <FormSelectField
+                    field={field}
+                    label="Course"
+                    required
+                    options={coursesOptions}
+                    placeholder="Select Course"
+                    searchPlaceholder="Search Course..."
+                    emptyMessage="No Course found"
+                  />
                 )}
               />
 
               <form.Field
                 name="effectiveYear"
                 children={(field) => (
-                  <div>
-                    <Label htmlFor={field.name}>Effective Year:</Label>
-                    <Input
-                      name="effectiveYear"
-                      type="number"
-                      value={field.state.value}
-                      onChange={(e) =>
-                        field.handleChange(Number(e.target.value))
-                      }
-                      required
-                      id={field.name}
-                    />
-                    {!field.state.meta.isValid && (
-                      <em role="alert" className="text-red-800">
-                        {field.state.meta.errors
-                          .map((e) => e?.message)
-                          .join(", ")}
-                      </em>
-                    )}
-                  </div>
+                  <FormField
+                    field={field}
+                    label="Effective Year"
+                    type="number"
+                    required
+                  />
                 )}
               />
 
               <form.Field
                 name="version"
                 children={(field) => (
-                  <div>
-                    <Label
-                      className="text-sm font-medium block mb-1"
-                      htmlFor={field.name}
-                    >
-                      Version Identifier:
-                    </Label>
-                    <Input
-                      placeholder="e.g., 2024-A"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      required
-                      id={field.name}
-                    />
-                  </div>
+                  <FormField
+                    field={field}
+                    label="Version Identifier"
+                    required
+                    placeholder="e.g., 2024-A"
+                  />
                 )}
               />
 
               <form.Field
                 name="description"
                 children={(field) => (
-                  <div className="md:col-span-2">
-                    <Label
-                      className="text-sm font-medium block mb-1"
-                      htmlFor="description"
-                    >
-                      Description
-                    </Label>
-                    <Textarea
-                      placeholder="Curriculum details..."
-                      value={field.state.value ?? undefined}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      rows={3}
-                      id={field.name}
-                    />
-                  </div>
+                  <FormField
+                    field={field}
+                    label="Description"
+                    type="textarea"
+                    placeholder="Curriculum details..."
+                    className="md:col-span-2"
+                  />
                 )}
               />
             </div>
@@ -252,7 +206,7 @@ export function CurriculumForm({
                     }
                   >
                     {isSubmitting ? (
-                      <Loader2 />
+                      <Loader2 className="size-4 animate-spin" />
                     ) : isUpdatingCurriculumBasicDetails ? (
                       "Update Curriculum"
                     ) : (
