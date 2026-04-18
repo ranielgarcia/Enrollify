@@ -31,7 +31,8 @@ export function getColumnPinningStyle<TData>({
     right: isPinned === "right" ? `${column.getAfter("right")}px` : undefined,
     opacity: isPinned ? 0.97 : 1,
     position: isPinned ? "sticky" : "relative",
-    background: isPinned ? "var(--background)" : "var(--background)",
+    // Only force a background for pinned columns so section-level backgrounds can render.
+    background: isPinned ? "var(--background)" : undefined,
     width: column.getSize(),
     zIndex: isPinned ? 1 : undefined,
   };

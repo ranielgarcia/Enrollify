@@ -30,27 +30,38 @@ export function CollegesTable({
   const columns = useMemo(
     () => [
       columnHelper.accessor("code", {
-        header: ({ column }) => <DataTableColumnHeader column={column} label="Code" />,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Code" />
+        ),
         meta: { label: "Code" },
         cell: (info) => <span>{info.getValue()}</span>,
+        size: 10,
       }),
       columnHelper.accessor("name", {
-        header: ({ column }) => <DataTableColumnHeader column={column} label="Name" />,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Name" />
+        ),
         meta: { label: "Name" },
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor("description", {
-        header: ({ column }) => <DataTableColumnHeader column={column} label="Description" />,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Description" />
+        ),
         meta: { label: "Description" },
         cell: (info) => <span>{truncateText(info.getValue(), 30)}</span>,
       }),
       columnHelper.accessor("dean", {
-        header: ({ column }) => <DataTableColumnHeader column={column} label="Dean" />,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Dean" />
+        ),
         meta: { label: "Dean" },
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor("createdAt", {
-        header: ({ column }) => <DataTableColumnHeader column={column} label="Created At" />,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Created At" />
+        ),
         meta: { label: "Created At" },
         cell: (info) => <span>{info.getValue()}</span>,
       }),
@@ -61,13 +72,17 @@ export function CollegesTable({
             : "",
         {
           id: "createdBy",
-          header: ({ column }) => <DataTableColumnHeader column={column} label="Created By" />,
+          header: ({ column }) => (
+            <DataTableColumnHeader column={column} label="Created By" />
+          ),
           meta: { label: "Created By" },
           cell: (info) => <span>{info.getValue()}</span>,
         },
       ),
       columnHelper.accessor("updatedAt", {
-        header: ({ column }) => <DataTableColumnHeader column={column} label="Updated At" />,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Updated At" />
+        ),
         meta: { label: "Updated At" },
         cell: (info) => <span>{info.getValue()}</span>,
       }),
@@ -78,7 +93,9 @@ export function CollegesTable({
             : "",
         {
           id: "updatedBy",
-          header: ({ column }) => <DataTableColumnHeader column={column} label="Updated By" />,
+          header: ({ column }) => (
+            <DataTableColumnHeader column={column} label="Updated By" />
+          ),
           meta: { label: "Updated By" },
           cell: (info) => <span>{info.getValue()}</span>,
         },

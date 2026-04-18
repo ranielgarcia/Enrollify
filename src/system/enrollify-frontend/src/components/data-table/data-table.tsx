@@ -27,13 +27,16 @@ export function DataTable<TData>({
 }: DataTableProps<TData>) {
   return (
     <div
-      className={cn("flex min-h-0 min-w-0 w-full flex-1 flex-col gap-2.5", className)}
+      className={cn(
+        "flex min-h-0 min-w-0 w-full flex-1 flex-col gap-2.5",
+        className,
+      )}
       {...props}
     >
       {children}
       <div className="flex-1 overflow-auto rounded-md border">
         <Table>
-          <TableHeader className="bg-muted/50 sticky top-0 z-10">
+          <TableHeader className="bg-muted sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent">
                 {headerGroup.headers.map((header) => (
@@ -55,7 +58,7 @@ export function DataTable<TData>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody className="bg-background">
+          <TableBody className="bg-card">
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
