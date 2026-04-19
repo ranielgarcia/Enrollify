@@ -1,5 +1,5 @@
 using Enrollify.Application.Features.RoomTypes.DTOs;
-using Enrollify.Application.Features.RoomTypes.Features;
+using Enrollify.Application.Features.RoomTypes.Queries;
 
 namespace Enrollify.WebAPI.Features.RoomTypes;
 

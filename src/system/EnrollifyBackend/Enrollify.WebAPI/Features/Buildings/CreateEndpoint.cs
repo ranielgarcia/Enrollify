@@ -1,4 +1,4 @@
-using Enrollify.Application.Features.Buildings.Features;
+using Enrollify.Application.Features.Buildings.Commands;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 
 namespace Enrollify.WebAPI.Features.Buildings;

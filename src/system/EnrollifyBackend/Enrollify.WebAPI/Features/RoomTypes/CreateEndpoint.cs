@@ -1,4 +1,4 @@
-using Enrollify.Application.Features.RoomTypes.Features;
+using Enrollify.Application.Features.RoomTypes.Commands;
 
 namespace Enrollify.WebAPI.Features.RoomTypes;
 

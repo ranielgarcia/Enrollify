@@ -1,7 +1,7 @@
 using Ardalis.Result;
 using Ardalis.Specification;
 using Enrollify.Application.Features.Curriculums;
-using Enrollify.Application.Features.Curriculums.Features;
+using Enrollify.Application.Features.Curriculums.Commands;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate.Models;

@@ -15,4 +15,9 @@
     <ProjectReference Include="..\Enrollify.Analyzers\Enrollify.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Colleges\Features\" />
+    <Folder Include="Features\Roles\Commands\" />
+  </ItemGroup>
+
 </Project>

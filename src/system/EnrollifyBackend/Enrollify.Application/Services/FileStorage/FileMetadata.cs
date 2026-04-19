@@ -1,4 +1,4 @@
-namespace Enrollify.Core.Services.FileStorage;
+namespace Enrollify.Application.Services.FileStorage;
 
 /// <summary>
 /// Represents metadata about a file in storage without its content.

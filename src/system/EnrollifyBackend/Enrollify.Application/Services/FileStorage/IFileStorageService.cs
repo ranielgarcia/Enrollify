@@ -1,4 +1,4 @@
-namespace Enrollify.Core.Services.FileStorage;
+namespace Enrollify.Application.Services.FileStorage;
 
 /// <summary>
 /// Provides a generic abstraction for file storage operations across the application.

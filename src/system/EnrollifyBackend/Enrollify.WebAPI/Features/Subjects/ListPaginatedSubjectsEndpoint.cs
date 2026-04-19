@@ -1,5 +1,5 @@
 using Enrollify.Application.Features.Subjects.DTOs;
-using Enrollify.Application.Features.Subjects.Features;
+using Enrollify.Application.Features.Subjects.Queries;
 
 namespace Enrollify.WebAPI.Features.Subjects;
 

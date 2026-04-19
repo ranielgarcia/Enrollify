@@ -1,5 +1,5 @@
 using Enrollify.Application.Features.Roles.DTOs;
-using Enrollify.Application.Features.Roles.Features.List;
+using Enrollify.Application.Features.Roles.Queries;
 
 namespace Enrollify.WebAPI.Features.Roles;
 

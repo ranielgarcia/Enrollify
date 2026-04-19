@@ -3,7 +3,7 @@ using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
-using Enrollify.Core.Services.FileStorage;
+using Enrollify.Application.Services.FileStorage;
 
 namespace Enrollify.Infrastructure.FileStorage;
 

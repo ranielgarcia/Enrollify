@@ -1,4 +1,4 @@
-using Enrollify.Application.Features.Departments.Features;
+using Enrollify.Application.Features.Departments.Queries;
 using Enrollify.Application.Features.Departments.DTOs;
 
 namespace Enrollify.WebAPI.Features.Departments;

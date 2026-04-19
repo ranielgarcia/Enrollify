@@ -1,4 +1,4 @@
-using Enrollify.Application.Features.Buildings.Features;
+using Enrollify.Application.Features.Buildings.Queries;
 using Enrollify.Application.Features.Buildings.DTOs;
 
 namespace Enrollify.WebAPI.Features.Buildings;

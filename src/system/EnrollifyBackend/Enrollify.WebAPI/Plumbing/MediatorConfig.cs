@@ -1,4 +1,4 @@
-using Enrollify.Application.Features.Users.Get;
+using Enrollify.Application.Features.Users.Queries;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Infrastructure;
 using Enrollify.SharedKernel;

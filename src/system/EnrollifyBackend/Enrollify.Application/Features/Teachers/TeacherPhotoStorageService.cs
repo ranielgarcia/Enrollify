@@ -1,6 +1,6 @@
 using Enrollify.Application.Constants;
+using Enrollify.Application.Services.FileStorage;
 using Enrollify.Core.Aggregates.TeacherAggregate;
-using Enrollify.Core.Services.FileStorage;
 
 namespace Enrollify.Application.Features.Teachers;
 
