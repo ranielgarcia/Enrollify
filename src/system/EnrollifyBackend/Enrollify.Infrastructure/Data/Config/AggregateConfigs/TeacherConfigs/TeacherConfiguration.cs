@@ -17,13 +17,24 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
         builder.Property(e => e.FirstName).IsRequired();
         builder.Property(e => e.MiddleName).IsRequired();
         builder.Property(e => e.LastName).IsRequired();
+
+        builder.Property(e => e.TeacherIdentifier).IsRequired();
         builder.Property(e => e.Email).IsRequired();
+        builder.Property(e => e.PhoneNumber).IsRequired();
+
+        builder.Property(e => e.AcademicTitle).IsRequired();
+        builder.Property(e => e.Qualification).IsRequired();
+        builder.Property(e => e.Specialization).IsRequired();
+        builder.Property(e => e.OfficeLocation).IsRequired();
+        builder.Property(e => e.OfficeHours).IsRequired();
+        builder.Property(e => e.Biography).IsRequired();
 
         // Owned type for Photo
         builder.OwnsOne(e => e.Photo, photo =>
         {
             photo.Property(p => p.LocationPath).HasColumnName("PhotoLocationPath");
             photo.Property(p => p.Filename).HasColumnName("PhotoFilename");
+            photo.Property(p => p.ContentType).HasColumnName("PhotoContentType");
         });
 
         // Navigation to Department
@@ -31,7 +42,6 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
             .WithMany()
             .HasForeignKey(e => e.DepartmentId)
             .OnDelete(DeleteBehavior.NoAction);
-
 
         // Audit fields
         builder.Property(a => a.CreatedAt).HasColumnName("CreatedAt");

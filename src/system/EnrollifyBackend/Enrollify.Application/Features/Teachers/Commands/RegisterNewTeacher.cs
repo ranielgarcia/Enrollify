@@ -8,7 +8,9 @@ namespace Enrollify.Application.Features.Teachers.Commands;
 
 public static class RegisterNewTeacher
 {
-    public sealed record Command (TeacherForCreation teacherForCreation) : ICommand<Result<TeacherId>>;
+    public record TeacherPhoto(byte[] content, string contentType);
+
+    public sealed record Command (TeacherForCreation teacherForCreation, TeacherPhoto? Photo) : ICommand<Result<TeacherId>>;
 
     public sealed class Handler : ICommandHandler<Command, Result<TeacherId>>
     {

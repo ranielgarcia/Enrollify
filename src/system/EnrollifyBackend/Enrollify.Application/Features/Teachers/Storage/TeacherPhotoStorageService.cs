@@ -1,9 +1,8 @@
-using Enrollify.Application.Features.Teachers.Models;
 using Enrollify.Application.Storage;
 using Enrollify.Application.Storage.Blob;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 
-namespace Enrollify.Application.Features.Teachers;
+namespace Enrollify.Application.Features.Teachers.Storage;
 
 public interface ITeacherPhotoStorageService
 {

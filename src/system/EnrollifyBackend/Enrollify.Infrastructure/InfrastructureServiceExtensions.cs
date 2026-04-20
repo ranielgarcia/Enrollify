@@ -13,6 +13,7 @@ using Enrollify.Application.Features.RoomTypes;
 using Enrollify.Application.Features.SubjectEquivalences;
 using Enrollify.Application.Features.Subjects;
 using Enrollify.Application.Features.Teachers;
+using Enrollify.Application.Features.Teachers.Storage;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;

@@ -8,17 +8,15 @@ public class TeacherForCreation
     public string MiddleName { get; set; } = null!;
     public string LastName { get; set; } = null!;
 
-    public string PhoneNumber { get; set; } = null!;
+    public TeacherIdentifier TeacherIdentifier { get; set; }
     public TeacherEmail Email { get; set; }
+    public TeacherPhoneNumber PhoneNumber { get; set; }
     public DepartmentId DepartmentId { get; set; }
 
     public string AcademicTitle { get; set; } = null!;
-
-    public TeacherPhotoForCreation? Photo { get; set; }
-}
-
-public class TeacherPhotoForCreation
-{
-    public required byte[] Photo { get; set; }
-    public required string ContentType { get; set; }
+    public string Qualification { get; set; } = null!;
+    public string Specialization { get; set; } = null!;
+    public string OfficeLocation { get; set; } = null!;
+    public string OfficeHours { get; set; } = null!;
+    public string Biography { get; set; } = null!;
 }

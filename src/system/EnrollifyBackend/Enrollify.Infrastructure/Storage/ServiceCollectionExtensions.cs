@@ -1,4 +1,4 @@
-using Enrollify.Application.Features.Teachers.Models;
+using Enrollify.Application.Features.Teachers.Storage;
 using Enrollify.Application.Storage;
 using Enrollify.Application.Storage.Blob;
 using Enrollify.Infrastructure.Storage.Blob;
