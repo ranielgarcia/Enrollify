@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useViewportFillHeight } from "@/hooks/use-viewport-fill-height";
 import { getColumnPinningStyle } from "@/lib/data-table";
 import { cn } from "@/lib/utils";
 
@@ -25,10 +26,14 @@ export function DataTable<TData>({
   className,
   ...props
 }: DataTableProps<TData>) {
+  const { ref, height } = useViewportFillHeight<HTMLDivElement>(20);
+
   return (
     <div
+      ref={ref}
+      style={height ? { height } : undefined}
       className={cn(
-        "flex min-h-0 min-w-0 w-full flex-1 flex-col gap-2.5",
+        "flex min-w-0 w-full flex-col gap-2.5",
         className,
       )}
       {...props}
