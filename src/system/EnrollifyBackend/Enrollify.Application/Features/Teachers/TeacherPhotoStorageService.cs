@@ -1,5 +1,6 @@
-using Enrollify.Application.Constants;
-using Enrollify.Application.Services.FileStorage;
+using Enrollify.Application.Features.Teachers.Models;
+using Enrollify.Application.Storage;
+using Enrollify.Application.Storage.Blob;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 
 namespace Enrollify.Application.Features.Teachers;
@@ -19,19 +20,17 @@ public interface ITeacherPhotoStorageService
 
 public class TeacherPhotoStorageService : ITeacherPhotoStorageService
 {
-    private static readonly string Container = FileStorageConstants.TeacherFilesContainerName;
     private static readonly string PhotosSubfolder = "photos";
+    private readonly IBlobRepository<DefaultStorageSettings, TeacherBlobConfig> _blobRepository;
 
-    private readonly IFileStorageService _fileStorageService;
-
-    public TeacherPhotoStorageService(IFileStorageService fileStorageService)
+    public TeacherPhotoStorageService(IBlobRepository<DefaultStorageSettings, TeacherBlobConfig> blobRepository)
     {
-        _fileStorageService = fileStorageService;
+        _blobRepository = blobRepository;
     }
 
     public async Task EnsureContainerExistsAsync(CancellationToken cancellationToken = default)
     {
-        await _fileStorageService.EnsureContainerExists(Container, cancellationToken);
+        await _blobRepository.EnsureContainerExists(cancellationToken);
     }
 
     public async Task<string> UploadPhotoAsync(
@@ -42,8 +41,7 @@ public class TeacherPhotoStorageService : ITeacherPhotoStorageService
         bool overwrite = true,
         CancellationToken cancellationToken = default)
     {
-        return await _fileStorageService.UploadFileAsync(
-            Container,
+        return await _blobRepository.UploadFileAsync(
             fileName,
             content,
             subfolders: GetSubfolders(teacherId),
@@ -57,8 +55,7 @@ public class TeacherPhotoStorageService : ITeacherPhotoStorageService
         string fileName,
         CancellationToken cancellationToken = default)
     {
-        return await _fileStorageService.GetFileAsync(
-            Container,
+        return await _blobRepository.GetFileAsync(
             fileName,
             subfolders: GetSubfolders(teacherId),
             cancellationToken: cancellationToken);
@@ -68,8 +65,7 @@ public class TeacherPhotoStorageService : ITeacherPhotoStorageService
         TeacherId teacherId,
         CancellationToken cancellationToken = default)
     {
-        return await _fileStorageService.GetFilesAsync(
-            Container,
+        return await _blobRepository.GetFilesAsync(
             subfolders: GetSubfolders(teacherId),
             cancellationToken: cancellationToken);
     }
@@ -79,8 +75,7 @@ public class TeacherPhotoStorageService : ITeacherPhotoStorageService
         string fileName,
         CancellationToken cancellationToken = default)
     {
-        return await _fileStorageService.DeleteFileAsync(
-            Container,
+        return await _blobRepository.DeleteFileAsync(
             fileName,
             subfolders: GetSubfolders(teacherId),
             cancellationToken: cancellationToken);
@@ -91,8 +86,7 @@ public class TeacherPhotoStorageService : ITeacherPhotoStorageService
         string fileName,
         CancellationToken cancellationToken = default)
     {
-        return await _fileStorageService.FileExistsAsync(
-            Container,
+        return await _blobRepository.FileExistsAsync(
             fileName,
             subfolders: GetSubfolders(teacherId),
             cancellationToken: cancellationToken);
@@ -102,8 +96,7 @@ public class TeacherPhotoStorageService : ITeacherPhotoStorageService
         TeacherId teacherId,
         CancellationToken cancellationToken = default)
     {
-        return await _fileStorageService.ListFilesAsync(
-            Container,
+        return await _blobRepository.ListFilesAsync(
             subfolders: GetSubfolders(teacherId),
             cancellationToken: cancellationToken);
     }
@@ -113,8 +106,7 @@ public class TeacherPhotoStorageService : ITeacherPhotoStorageService
         string fileName,
         CancellationToken cancellationToken = default)
     {
-        return await _fileStorageService.GetFileMetadataAsync(
-            Container,
+        return await _blobRepository.GetFileMetadataAsync(
             fileName,
             subfolders: GetSubfolders(teacherId),
             cancellationToken: cancellationToken);
@@ -126,8 +118,7 @@ public class TeacherPhotoStorageService : ITeacherPhotoStorageService
         TimeSpan? expiry = null,
         CancellationToken cancellationToken = default)
     {
-        return await _fileStorageService.GetFileUrlAsync(
-            Container,
+        return await _blobRepository.GetFileUrlAsync(
             fileName,
             subfolders: GetSubfolders(teacherId),
             expiry: expiry,

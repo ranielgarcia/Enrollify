@@ -1,4 +1,4 @@
-namespace Enrollify.Core.Storage;
+namespace Enrollify.Application.Storage;
 
 /// <summary>
 /// Marker + configuration interface for a storage account.

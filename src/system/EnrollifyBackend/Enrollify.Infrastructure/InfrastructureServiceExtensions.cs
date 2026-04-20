@@ -13,13 +13,12 @@ using Enrollify.Application.Features.RoomTypes;
 using Enrollify.Application.Features.SubjectEquivalences;
 using Enrollify.Application.Features.Subjects;
 using Enrollify.Application.Features.Teachers;
-using Enrollify.Application.Services.FileStorage;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
 using Enrollify.Infrastructure.Data.Queries;
-using Enrollify.Infrastructure.FileStorage;
 using Enrollify.Infrastructure.Repositories;
+using Enrollify.Infrastructure.Storage;
 using Enrollify.SharedKernel;
 
 namespace Enrollify.Infrastructure;
@@ -84,19 +83,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ITeacherPhotoStorageService, TeacherPhotoStorageService>();
 
         // Azure Blob Storage
-        string? azureBlobStorageConnectionString = config.GetConnectionString("AzureBlobStorage");
-        if (!string.IsNullOrEmpty(azureBlobStorageConnectionString))
-        {
-            // TODO: Remove explicit ServiceVersion once Azurite supports the 2026-02-06 API version
-            services.AddSingleton(new BlobServiceClient(azureBlobStorageConnectionString,
-                new BlobClientOptions(BlobClientOptions.ServiceVersion.V2025_01_05)));
-            services.AddScoped<IFileStorageService, AzureBlobStorageService>();
-            logger.LogInformation("{Service} registered with Azure Blob Storage", nameof(IFileStorageService));
-        }
-        else
-        {
-            logger.LogError("Azure Blob Storage connection string not found. {Service} will not be available. Add 'AzureBlobStorage' to ConnectionStrings configuration.", nameof(IFileStorageService));
-        }
+        services.AddStorageSettings(config);
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 
