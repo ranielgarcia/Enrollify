@@ -1,3 +1,5 @@
+using Enrollify.Core.ValueObjects.Storage;
+
 namespace Enrollify.Core.Aggregates.TeacherAggregate;
 
-public record TeacherPhoto(string LocationPath, string Filename, string ContentType);
+public record TeacherPhoto(FileName Filename, string ContentType);

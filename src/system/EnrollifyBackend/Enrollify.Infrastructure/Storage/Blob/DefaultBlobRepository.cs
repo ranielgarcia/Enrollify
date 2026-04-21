@@ -4,6 +4,7 @@ using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 using Enrollify.Application.Storage;
 using Enrollify.Application.Storage.Blob;
+using Enrollify.Core.ValueObjects.Storage;
 using Enrollify.Infrastructure.Storage.Blob.Constants;
 using Enrollify.Infrastructure.Storage.Blob.Models;
 using Enrollify.Infrastructure.Storage.Blob.Providers;
@@ -37,7 +38,7 @@ public class DefaultBlobRepository<TSettings, TEntity>
     }
 
     public async Task<string> UploadFileAsync(
-        string fileName,
+        FileName fileName,
         Stream content,
         string[]? subfolders = null,
         string? contentType = null,
@@ -76,7 +77,7 @@ public class DefaultBlobRepository<TSettings, TEntity>
     }
 
     public async Task<StoredFile?> GetFileAsync(
-        string fileName,
+        FileName fileName,
         string[]? subfolders = null,
         CancellationToken cancellationToken = default)
     {
@@ -119,7 +120,7 @@ public class DefaultBlobRepository<TSettings, TEntity>
 
             files.Add(new StoredFile
             {
-                FileName = System.IO.Path.GetFileName(blobItem.Name),
+                FileName = FileName.From(Path.GetFileName(blobItem.Name)),
                 ContentType = response.Value.Details.ContentType ?? "application/octet-stream",
                 Content = response.Value.Content.ToStream(),
                 Size = response.Value.Details.ContentLength,
@@ -131,7 +132,7 @@ public class DefaultBlobRepository<TSettings, TEntity>
     }
 
     public async Task<bool> DeleteFileAsync(
-        string fileName,
+        FileName fileName,
         string[]? subfolders = null,
         CancellationToken cancellationToken = default)
     {
@@ -144,7 +145,7 @@ public class DefaultBlobRepository<TSettings, TEntity>
     }
 
     public async Task<bool> ArchiveFileAsync(
-        string fileName,
+        FileName fileName,
         string[]? subfolders = null,
         CancellationToken cancellationToken = default)
     {
@@ -164,7 +165,7 @@ public class DefaultBlobRepository<TSettings, TEntity>
     }
 
     public async Task<bool> UnarchiveFileAsync(
-        string fileName,
+        FileName fileName,
         string[]? subfolders = null,
         bool highPriority = false,
         CancellationToken cancellationToken = default)
@@ -204,7 +205,7 @@ public class DefaultBlobRepository<TSettings, TEntity>
         {
             files.Add(new FileMetadata
             {
-                FileName = System.IO.Path.GetFileName(blobItem.Name),
+                FileName = FileName.From(Path.GetFileName(blobItem.Name)),
                 Path = blobItem.Name,
                 ContentType = blobItem.Properties.ContentType ?? "application/octet-stream",
                 Size = blobItem.Properties.ContentLength ?? 0,
@@ -216,7 +217,7 @@ public class DefaultBlobRepository<TSettings, TEntity>
     }
 
     public async Task<bool> FileExistsAsync(
-        string fileName,
+        FileName fileName,
         string[]? subfolders = null,
         CancellationToken cancellationToken = default)
     {
@@ -229,7 +230,7 @@ public class DefaultBlobRepository<TSettings, TEntity>
     }
 
     public async Task<FileMetadata?> GetFileMetadataAsync(
-        string fileName,
+        FileName fileName,
         string[]? subfolders = null,
         CancellationToken cancellationToken = default)
     {
@@ -257,7 +258,7 @@ public class DefaultBlobRepository<TSettings, TEntity>
     }
 
     public async Task<string?> GetFileUrlAsync(
-        string fileName,
+        FileName fileName,
         string[]? subfolders = null,
         TimeSpan? expiry = null,
         CancellationToken cancellationToken = default)
@@ -288,14 +289,14 @@ public class DefaultBlobRepository<TSettings, TEntity>
         return blobClient.GenerateSasUri(sasBuilder).ToString();
     }
 
-    private static string BuildBlobPath(string[]? subfolders, string fileName)
+    private static string BuildBlobPath(string[]? subfolders, FileName fileName)
     {
         if (subfolders is { Length: > 0 })
         {
-            return string.Join("/", subfolders) + "/" + fileName;
+            return string.Join("/", subfolders) + "/" + fileName.Value;
         }
 
-        return fileName;
+        return fileName.Value;
     }
 
     private static string BuildPrefix(string[]? subfolders)
@@ -308,9 +309,9 @@ public class DefaultBlobRepository<TSettings, TEntity>
         return string.Empty;
     }
 
-    private static string ResolveContentType(string fileName)
+    private static string ResolveContentType(FileName fileName)
     {
-        var extension = System.IO.Path.GetExtension(fileName)?.ToLowerInvariant();
+        var extension = System.IO.Path.GetExtension(fileName.Value)?.ToLowerInvariant();
         return extension switch
         {
             ".pdf" => "application/pdf",

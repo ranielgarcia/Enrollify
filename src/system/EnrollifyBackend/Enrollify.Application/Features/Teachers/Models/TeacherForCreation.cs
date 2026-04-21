@@ -1,6 +1,7 @@
 using Enrollify.Core.Aggregates.DepartmentAggregate;
+using Enrollify.Core.Aggregates.TeacherAggregate;
 
-namespace Enrollify.Core.Aggregates.TeacherAggregate.Models;
+namespace Enrollify.Application.Features.Teachers.Models;
 
 public class TeacherForCreation
 {
@@ -13,10 +14,10 @@ public class TeacherForCreation
     public TeacherPhoneNumber PhoneNumber { get; set; }
     public DepartmentId DepartmentId { get; set; }
 
-    public string AcademicTitle { get; set; } = null!;
-    public string Qualification { get; set; } = null!;
-    public string Specialization { get; set; } = null!;
-    public string OfficeLocation { get; set; } = null!;
-    public string OfficeHours { get; set; } = null!;
-    public string Biography { get; set; } = null!;
+    public string? AcademicTitle { get; set; }
+    public string? Qualification { get; set; }
+    public string? Specialization { get; set; }
+    public string? OfficeLocation { get; set; }
+    public string? OfficeHours { get; set; }
+    public string? Biography { get; set; }
 }

@@ -1,3 +1,5 @@
+using Enrollify.Core.ValueObjects.Storage;
+
 namespace Enrollify.Application.Storage.Blob;
 
 /// <summary>
@@ -11,7 +13,7 @@ public interface IBlobRepository<TSettings, TEntity>
     Task EnsureContainerExists(CancellationToken cancellationToken = default);
 
     Task<string> UploadFileAsync(
-        string fileName,
+        FileName fileName,
         Stream content,
         string[]? subfolders = null,
         string? contentType = null,
@@ -19,7 +21,7 @@ public interface IBlobRepository<TSettings, TEntity>
         CancellationToken cancellationToken = default);
 
     Task<StoredFile?> GetFileAsync(
-        string fileName,
+        FileName fileName,
         string[]? subfolders = null,
         CancellationToken cancellationToken = default);
 
@@ -28,17 +30,17 @@ public interface IBlobRepository<TSettings, TEntity>
         CancellationToken cancellationToken = default);
 
     Task<bool> DeleteFileAsync(
-        string fileName,
+        FileName fileName,
         string[]? subfolders = null,
         CancellationToken cancellationToken = default);
 
     Task<bool> ArchiveFileAsync(
-        string fileName,
+        FileName fileName,
         string[]? subfolders = null,
         CancellationToken cancellationToken = default);
 
     Task<bool> UnarchiveFileAsync(
-        string fileName,
+        FileName fileName,
         string[]? subfolders = null,
         bool highPriority = false,
         CancellationToken cancellationToken = default);
@@ -48,16 +50,16 @@ public interface IBlobRepository<TSettings, TEntity>
         CancellationToken cancellationToken = default);
 
     Task<bool> FileExistsAsync(
-        string fileName,
+        FileName fileName,
         string[]? subfolders = null,
         CancellationToken cancellationToken = default);
 
     Task<FileMetadata?> GetFileMetadataAsync(
-        string fileName,
+        FileName fileName,
         string[]? subfolders = null,
         CancellationToken cancellationToken = default);
     Task<string?> GetFileUrlAsync(
-        string fileName,
+        FileName fileName,
         string[]? subfolders = null,
         TimeSpan? expiry = null,
         CancellationToken cancellationToken = default);

@@ -32,7 +32,6 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
         // Owned type for Photo
         builder.OwnsOne(e => e.Photo, photo =>
         {
-            photo.Property(p => p.LocationPath).HasColumnName("PhotoLocationPath");
             photo.Property(p => p.Filename).HasColumnName("PhotoFilename");
             photo.Property(p => p.ContentType).HasColumnName("PhotoContentType");
         });

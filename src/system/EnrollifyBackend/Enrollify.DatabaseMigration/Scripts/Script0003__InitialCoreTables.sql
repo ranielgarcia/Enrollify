@@ -458,8 +458,7 @@ CREATE TABLE Teachers
     OfficeHours VARCHAR(255),
     Biography TEXT,
 
-    PhotoLocationPath VARCHAR(255),
-    PhotoFilename VARCHAR(255),
+    PhotoFileName VARCHAR(255),
     PhotoContentType VARCHAR(50),
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),

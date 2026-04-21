@@ -1,3 +1,5 @@
+using Enrollify.Core.ValueObjects.Storage;
+
 namespace Enrollify.Application.Storage.Blob;
 
 /// <summary>
@@ -5,7 +7,7 @@ namespace Enrollify.Application.Storage.Blob;
 /// </summary>
 public sealed class FileMetadata
 {
-    public required string FileName { get; init; }
+    public required FileName FileName { get; init; }
     public required string Path { get; init; }
     public required string ContentType { get; init; }
     public required long Size { get; init; }

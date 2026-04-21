@@ -1,7 +1,7 @@
 using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
-using Enrollify.Core.Aggregates.TeacherAggregate.Models;
 using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Core.ValueObjects.Storage;
 using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.Aggregates.TeacherAggregate;
@@ -10,27 +10,22 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
 {
     private Teacher() { }
 
-
-    public static Teacher Create(TeacherForCreation teacherForCreation)
+    public Teacher(
+        string firstName,
+        string middleName,
+        string lastName,
+        TeacherIdentifier teacherIdentifier,
+        TeacherEmail email,
+        TeacherPhoneNumber phoneNumber,
+        DepartmentId departmentId)
     {
-        var teacher = new Teacher();
-
-        teacher
-            .UpdateFirstName(teacherForCreation.FirstName)
-            .UpdateMiddleName(teacherForCreation.MiddleName)
-            .UpdateLastName(teacherForCreation.LastName)
-            .UpdateTeacherIdentifier(teacherForCreation.TeacherIdentifier)
-            .UpdateEmail(teacherForCreation.Email)
-            .UpdatePhoneNumber(teacherForCreation.PhoneNumber)
-            .UpdateDepartmentId(teacherForCreation.DepartmentId)
-            .UpdateAcademicTitle(teacherForCreation.AcademicTitle)
-            .UpdateQualification(teacherForCreation.Qualification)
-            .UpdateSpecialization(teacherForCreation.Specialization)
-            .UpdateOfficeLocations(teacherForCreation.OfficeLocation)
-            .UpdateOfficeHours(teacherForCreation.OfficeHours)
-            .UpdateBiography(teacherForCreation.Biography);
-
-        return teacher;
+        FirstName = Guard.Against.Null(firstName, message: "First name is required.");
+        MiddleName = Guard.Against.Null(middleName, message: "Middle name is required.");
+        LastName = Guard.Against.Null(lastName, message: "Last name is required.");
+        TeacherIdentifier = Guard.Against.Null(teacherIdentifier, message: "Teacher identifier is required.");
+        Email = Guard.Against.Null(email, message: "Email is required.");
+        PhoneNumber = Guard.Against.Null(phoneNumber, message: "Phone number is required.");
+        DepartmentId = Guard.Against.Null(departmentId, message: "Department ID is required.");
     }
 
     public string FirstName { get; private set; }
@@ -44,14 +39,14 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
     public DepartmentId DepartmentId { get; private set; }
     public Department? Department { get; }
 
-    public string AcademicTitle { get; private set; }
-    public string Qualification { get; private set; }
-    public string Specialization { get; private set; }
-    public string OfficeLocation { get; private set; }
-    public string OfficeHours { get; private set; }
-    public string Biography { get; private set; }
+    public string? AcademicTitle { get; private set; }
+    public string? Qualification { get; private set; }
+    public string? Specialization { get; private set; }
+    public string? OfficeLocation { get; private set; }
+    public string? OfficeHours { get; private set; }
+    public string? Biography { get; private set; }
 
-    public TeacherPhoto Photo { get; private set; }
+    public TeacherPhoto? Photo { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
@@ -116,55 +111,55 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
         return this;
     }
 
-    public Teacher UpdateAcademicTitle(string academicTitle)
+    public Teacher UpdateAcademicTitle(string? academicTitle)
     {
         if (academicTitle == AcademicTitle) return this;
-        AcademicTitle = Guard.Against.Null(academicTitle, message: "Academic title is required.");
+        AcademicTitle = academicTitle;
         return this;
     }
 
-    public Teacher UpdateQualification(string qualification)
+    public Teacher UpdateQualification(string? qualification)
     {
         if (qualification == Qualification) return this;
-        Qualification = Guard.Against.Null(qualification, message: "Qualification is required.");
+        Qualification = qualification;
         return this;
     }
 
 
-    public Teacher UpdateSpecialization(string specialization)
+    public Teacher UpdateSpecialization(string? specialization)
     {
         if (specialization == Specialization) return this;
-        Specialization = Guard.Against.Null(specialization, message: "Specialization is required.");
+        Specialization = specialization;
         return this;
     }
 
 
-    public Teacher UpdateOfficeLocations(string officeLocations)
+    public Teacher UpdateOfficeLocation(string? officeLocations)
     {
         if (officeLocations == OfficeLocation) return this;
-        OfficeLocation = Guard.Against.Null(officeLocations, message: "Office location is required.");
+        OfficeLocation = officeLocations;
         return this;
     }
 
 
-    public Teacher UpdateOfficeHours(string officeHours)
+    public Teacher UpdateOfficeHours(string? officeHours)
     {
         if (officeHours == OfficeHours) return this;
-        OfficeHours = Guard.Against.Null(officeHours, message: "Office hours is required.");
+        OfficeHours = officeHours;
         return this;
     }
 
-    public Teacher UpdateBiography(string biography)
+    public Teacher UpdateBiography(string? biography)
     {
         if (biography == Biography) return this;
-        Biography = Guard.Against.Null(biography, message: "Biography is required.");
+        Biography = biography;
         return this;
     }
 
-    public Teacher UpdatePhoto(string locationPath, string fileName, string contentType)
+    public Teacher UpdatePhoto(FileName fileName, string contentType)
     {
-        if (string.IsNullOrEmpty(locationPath) || string.IsNullOrEmpty(fileName) || string.IsNullOrEmpty(contentType)) return this;
-        Photo = new TeacherPhoto(locationPath, fileName, contentType);
+        if (fileName == null || string.IsNullOrEmpty(contentType)) return this;
+        Photo = new TeacherPhoto(fileName, contentType);
         return this;
     }
 }

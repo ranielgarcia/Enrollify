@@ -1,4 +1,4 @@
-﻿using Enrollify.Core.Aggregates.BuildingAggregate;
+using Enrollify.Core.Aggregates.BuildingAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
@@ -10,6 +10,7 @@ using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Infrastructure.Data.Config;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.BuildingConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CollegeConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CourseConfigs;
@@ -81,6 +82,7 @@ public class EnrollifyDbContext: DbContext
         configurationBuilder.RegisterAllInCurriculumVogenEfCoreConverters();
         configurationBuilder.RegisterAllInSubjectEquivalenceGroupVogenEfCoreConverters();
         configurationBuilder.RegisterAllInTeacherVogenEfCoreConverters();
+        configurationBuilder.RegisterAllInSharedValueObjectsVogenEfCoreConverters();
 
     }
 }
