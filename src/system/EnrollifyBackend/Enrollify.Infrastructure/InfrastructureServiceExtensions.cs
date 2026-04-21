@@ -43,6 +43,8 @@ public static class InfrastructureServiceExtensions
         services.AddTransient<IDbConnectionFactory>(sp =>
             new SqlConnectionFactory(connectionString));
 
+        // Azure Blob Storage
+        services.AddStorageSettings(config);
 
         // Auto register all Vogen Dapper type handlers/converters
         VogenDapperTypeHandlerRegistration.RegisterTypeHandlers();
@@ -83,8 +85,6 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ITeacherRepository, TeacherRepository>();
         services.AddScoped<ITeacherPhotoStorageService, TeacherPhotoStorageService>();
 
-        // Azure Blob Storage
-        services.AddStorageSettings(config);
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 

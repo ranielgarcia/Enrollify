@@ -7,14 +7,14 @@ namespace Enrollify.Application.Features.Teachers.Storage;
 public interface ITeacherPhotoStorageService
 {
     Task EnsureContainerExistsAsync(CancellationToken cancellationToken = default);
-    Task<bool> DeletePhotoAsync(TeacherId teacherId, string fileName, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<StoredFile>> GetAllPhotosAsync(TeacherId teacherId, CancellationToken cancellationToken = default);
-    Task<StoredFile?> GetPhotoAsync(TeacherId teacherId, string fileName, CancellationToken cancellationToken = default);
-    Task<FileMetadata?> GetPhotoMetadataAsync(TeacherId teacherId, string fileName, CancellationToken cancellationToken = default);
-    Task<string?> GetPhotoUrlAsync(TeacherId teacherId, string fileName, TimeSpan? expiry = null, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<FileMetadata>> ListPhotosAsync(TeacherId teacherId, CancellationToken cancellationToken = default);
-    Task<bool> PhotoExistsAsync(TeacherId teacherId, string fileName, CancellationToken cancellationToken = default);
-    Task<string> UploadPhotoAsync(TeacherId teacherId, string fileName, Stream content, string? contentType = null, bool overwrite = true, CancellationToken cancellationToken = default);
+    Task<bool> DeletePhotoAsync(TeacherIdentifier teacherIdentifier, string fileName, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<StoredFile>> GetAllPhotosAsync(TeacherIdentifier teacherIdentifier, CancellationToken cancellationToken = default);
+    Task<StoredFile?> GetPhotoAsync(TeacherIdentifier teacherIdentifier, string fileName, CancellationToken cancellationToken = default);
+    Task<FileMetadata?> GetPhotoMetadataAsync(TeacherIdentifier teacherIdentifier, string fileName, CancellationToken cancellationToken = default);
+    Task<string?> GetPhotoUrlAsync(TeacherIdentifier teacherIdentifier, string fileName, TimeSpan? expiry = null, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<FileMetadata>> ListPhotosAsync(TeacherIdentifier teacherIdentifier, CancellationToken cancellationToken = default);
+    Task<bool> PhotoExistsAsync(TeacherIdentifier teacherIdentifier, string fileName, CancellationToken cancellationToken = default);
+    Task<string> UploadPhotoAsync(TeacherIdentifier teacherIdentifier, string originalFileName, Stream content, string? contentType = null, bool overwrite = true, CancellationToken cancellationToken = default);
 }
 
 public class TeacherPhotoStorageService : ITeacherPhotoStorageService
@@ -33,97 +33,105 @@ public class TeacherPhotoStorageService : ITeacherPhotoStorageService
     }
 
     public async Task<string> UploadPhotoAsync(
-        TeacherId teacherId,
-        string fileName,
+        TeacherIdentifier teacherIdentifier,
+        string originalFileName,
         Stream content,
         string? contentType = null,
         bool overwrite = true,
         CancellationToken cancellationToken = default)
     {
+        var newFileName = GetFileName(teacherIdentifier, originalFileName);
+
         return await _blobRepository.UploadFileAsync(
-            fileName,
+            newFileName,
             content,
-            subfolders: GetSubfolders(teacherId),
+            subfolders: GetSubfolders(teacherIdentifier),
             contentType: contentType,
             overwrite: overwrite,
             cancellationToken: cancellationToken);
     }
 
     public async Task<StoredFile?> GetPhotoAsync(
-        TeacherId teacherId,
+        TeacherIdentifier teacherIdentifier,
         string fileName,
         CancellationToken cancellationToken = default)
     {
         return await _blobRepository.GetFileAsync(
             fileName,
-            subfolders: GetSubfolders(teacherId),
+            subfolders: GetSubfolders(teacherIdentifier),
             cancellationToken: cancellationToken);
     }
 
     public async Task<IReadOnlyList<StoredFile>> GetAllPhotosAsync(
-        TeacherId teacherId,
+        TeacherIdentifier teacherIdentifier,
         CancellationToken cancellationToken = default)
     {
         return await _blobRepository.GetFilesAsync(
-            subfolders: GetSubfolders(teacherId),
+            subfolders: GetSubfolders(teacherIdentifier),
             cancellationToken: cancellationToken);
     }
 
     public async Task<bool> DeletePhotoAsync(
-        TeacherId teacherId,
+        TeacherIdentifier teacherIdentifier,
         string fileName,
         CancellationToken cancellationToken = default)
     {
         return await _blobRepository.DeleteFileAsync(
             fileName,
-            subfolders: GetSubfolders(teacherId),
+            subfolders: GetSubfolders(teacherIdentifier),
             cancellationToken: cancellationToken);
     }
 
     public async Task<bool> PhotoExistsAsync(
-        TeacherId teacherId,
+        TeacherIdentifier teacherIdentifier,
         string fileName,
         CancellationToken cancellationToken = default)
     {
         return await _blobRepository.FileExistsAsync(
             fileName,
-            subfolders: GetSubfolders(teacherId),
+            subfolders: GetSubfolders(teacherIdentifier),
             cancellationToken: cancellationToken);
     }
 
     public async Task<IReadOnlyList<FileMetadata>> ListPhotosAsync(
-        TeacherId teacherId,
+        TeacherIdentifier teacherIdentifier,
         CancellationToken cancellationToken = default)
     {
         return await _blobRepository.ListFilesAsync(
-            subfolders: GetSubfolders(teacherId),
+            subfolders: GetSubfolders(teacherIdentifier),
             cancellationToken: cancellationToken);
     }
 
     public async Task<FileMetadata?> GetPhotoMetadataAsync(
-        TeacherId teacherId,
+        TeacherIdentifier teacherIdentifier,
         string fileName,
         CancellationToken cancellationToken = default)
     {
         return await _blobRepository.GetFileMetadataAsync(
             fileName,
-            subfolders: GetSubfolders(teacherId),
+            subfolders: GetSubfolders(teacherIdentifier),
             cancellationToken: cancellationToken);
     }
 
     public async Task<string?> GetPhotoUrlAsync(
-        TeacherId teacherId,
+        TeacherIdentifier teacherIdentifier,
         string fileName,
         TimeSpan? expiry = null,
         CancellationToken cancellationToken = default)
     {
         return await _blobRepository.GetFileUrlAsync(
             fileName,
-            subfolders: GetSubfolders(teacherId),
+            subfolders: GetSubfolders(teacherIdentifier),
             expiry: expiry,
             cancellationToken: cancellationToken);
     }
 
-    private static string[] GetSubfolders(TeacherId teacherId) =>
-        [teacherId.Value.ToString(), PhotosSubfolder];
+    private static string GetFileName(TeacherIdentifier teacherIdentifier, string originalFileName)
+    {
+        var extension = Path.GetExtension(originalFileName);
+        return $"{teacherIdentifier.Value}_profile{extension}";
+    }
+
+    private static string[] GetSubfolders(TeacherIdentifier teacherIdentifier) =>
+        new[] { teacherIdentifier.Value.ToString(), PhotosSubfolder };
 }
