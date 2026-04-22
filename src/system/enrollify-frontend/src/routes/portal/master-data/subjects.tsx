@@ -1,11 +1,16 @@
 import SubjectsManagementPage from "@/page-components/subjects-management-page";
+import { searchParams } from "@/page-components/subjects-management-page/searchParams";
 import type { RouteLoaderData } from "@/types/route.types";
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createStandardSchemaV1 } from "nuqs";
 
 export const Route = createFileRoute(
-  "/portal/master-data/subjects/{-$page}/{-$pageSize}"
+  "/portal/master-data/subjects",
 )({
   component: SubjectsManagementPage,
+  validateSearch: createStandardSchemaV1(searchParams, {
+    partialOutput: true,
+  }),
   loader: (): RouteLoaderData => ({
     crumb: "Subjects",
   }),
