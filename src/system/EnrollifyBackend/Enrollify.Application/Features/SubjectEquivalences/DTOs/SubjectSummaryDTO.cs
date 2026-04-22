@@ -2,16 +2,16 @@ using Enrollify.Core.Aggregates.SubjectAggregate;
 
 namespace Enrollify.Application.Features.SubjectEquivalences.DTOs;
 
-public class SubjectSummaryDTO
+public class SubjectSummaryDto
 {
     public SubjectId Id { get; set; }
     public SubjectCode Code { get; set; }
     public string Title { get; set; } = null!;
     public decimal Units { get; set; }
 
-    public static SubjectSummaryDTO FromEntity(Subject subject)
+    public static SubjectSummaryDto FromEntity(Subject subject)
     {
-        return new SubjectSummaryDTO
+        return new SubjectSummaryDto
         {
             Id = subject.Id,
             Code = subject.Code,

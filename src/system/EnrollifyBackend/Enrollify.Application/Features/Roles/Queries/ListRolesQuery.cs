@@ -4,11 +4,11 @@ using Mediator;
 
 namespace Enrollify.Application.Features.Roles.Queries;
 
-public class ListRolesQuery : IQuery<Result<List<RoleDTO>>>
+public class ListRolesQuery : IQuery<Result<List<RoleDto>>>
 {
 }
 
-public class ListRolesQueryHandler : IQueryHandler<ListRolesQuery, Result<List<RoleDTO>>>
+public class ListRolesQueryHandler : IQueryHandler<ListRolesQuery, Result<List<RoleDto>>>
 {
     private readonly IListRolesQueryService _queryService;
 
@@ -16,7 +16,7 @@ public class ListRolesQueryHandler : IQueryHandler<ListRolesQuery, Result<List<R
     {
         _queryService = queryService;
     }
-    public async ValueTask<Result<List<RoleDTO>>> Handle(ListRolesQuery request, CancellationToken cancellationToken)
+    public async ValueTask<Result<List<RoleDto>>> Handle(ListRolesQuery request, CancellationToken cancellationToken)
     {
         var roles = await _queryService.ListRolesAsync(cancellationToken);
         return Result.Success(roles);

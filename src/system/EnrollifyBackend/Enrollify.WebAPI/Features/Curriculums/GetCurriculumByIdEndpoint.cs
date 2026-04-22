@@ -6,7 +6,7 @@ namespace Enrollify.WebAPI.Features.Curriculums;
 [HttpGet("{curriculumId}")]
 [Group<CurriculumEndpointGroup>]
 [Authorize(Policy = PolicyName.HasViewCurriculumsPermission)]
-public class GetCurriculumByIdEndpoint (IMediator mediator) : EndpointWithoutRequest<CurriculumDetailDTO>
+public class GetCurriculumByIdEndpoint (IMediator mediator) : EndpointWithoutRequest<CurriculumDetailDto>
 {
     public override async Task HandleAsync(CancellationToken ct)
     {

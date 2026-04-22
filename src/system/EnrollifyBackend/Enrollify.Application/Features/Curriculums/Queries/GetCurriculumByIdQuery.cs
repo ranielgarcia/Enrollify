@@ -8,20 +8,20 @@ using Mediator;
 
 namespace Enrollify.Application.Features.Curriculums.Queries;
 
-public record GetCurriculumByIdQuery(int Id) : IQuery<Result<CurriculumDetailDTO>>;
+public record GetCurriculumByIdQuery(int Id) : IQuery<Result<CurriculumDetailDto>>;
 
 public class GetCurriculumByIdQueryHandler(IReadRepository<Curriculum> readRepository)
-    : IQueryHandler<GetCurriculumByIdQuery, Result<CurriculumDetailDTO>>
+    : IQueryHandler<GetCurriculumByIdQuery, Result<CurriculumDetailDto>>
 {
-    public async ValueTask<Result<CurriculumDetailDTO>> Handle(GetCurriculumByIdQuery query, CancellationToken cancellationToken)
+    public async ValueTask<Result<CurriculumDetailDto>> Handle(GetCurriculumByIdQuery query, CancellationToken cancellationToken)
     {
         var spec = new GetCurriculumByIdSpec(CurriculumId.From(query.Id));
-        var projectionSpec = new CurriculumToCurriculumDetailDTO();
+        var projectionSpec = new CurriculumToCurriculumDetailDto();
         var combinedSpec = spec.WithProjectionOf(projectionSpec);
 
         var curriculumDto = await readRepository.FirstOrDefaultAsync(combinedSpec, cancellationToken);
         return curriculumDto != null 
-            ? Result<CurriculumDetailDTO>.Success(curriculumDto) 
+            ? Result<CurriculumDetailDto>.Success(curriculumDto) 
             : Result.NotFound($"Curriculum with an ID of {query.Id} not found");
     }
 }

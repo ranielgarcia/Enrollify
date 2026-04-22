@@ -6,17 +6,17 @@ using Mediator;
 
 namespace Enrollify.Application.Features.Users.Queries;
 
-public record GetUserByEmailQuery(UserEmail email) : IQuery<Result<UserDTO>>;
+public record GetUserByEmailQuery(UserEmail email) : IQuery<Result<UserDto>>;
 
 public class GetUserByEmailQueryHandler(IReadRepository<User> _repository)
-    : IQueryHandler<GetUserByEmailQuery, Result<UserDTO>>
+    : IQueryHandler<GetUserByEmailQuery, Result<UserDto>>
 {
-    public async ValueTask<Result<UserDTO>> Handle(GetUserByEmailQuery query, CancellationToken cancellationToken)
+    public async ValueTask<Result<UserDto>> Handle(GetUserByEmailQuery query, CancellationToken cancellationToken)
     {
         var spec = new UserByEmailSpec(query.email);
         var entity = await _repository.FirstOrDefaultAsync(spec, cancellationToken);
         if (entity == null) return Result.NotFound();
 
-        return UserDTO.FromUser(entity);
+        return UserDto.FromUser(entity);
     }
 }

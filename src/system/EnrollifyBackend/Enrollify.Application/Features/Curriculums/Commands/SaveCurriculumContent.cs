@@ -19,9 +19,9 @@ public class SaveCurriculumContent
         public SubjectCode[] Prerequisites { get; set; } = [];
     }
 
-    public sealed record Command(CurriculumId CurriculumId, Dictionary<Year, Dictionary<Semester, SubjectInCurriculum[]>> SubjectsGrid) : ICommand<Result<CurriculumDTO>>;
+    public sealed record Command(CurriculumId CurriculumId, Dictionary<Year, Dictionary<Semester, SubjectInCurriculum[]>> SubjectsGrid) : ICommand<Result<CurriculumDto>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<CurriculumDTO>>
+    public sealed class Handler : ICommandHandler<Command, Result<CurriculumDto>>
     {
         private readonly IReadRepository<Curriculum> _readRepository;
         private readonly IReadRepository<Subject> _subjectReadRepository;
@@ -37,7 +37,7 @@ public class SaveCurriculumContent
             _curriculumRepository = curriculumRepository;
         }
 
-        public async ValueTask<Result<CurriculumDTO>> Handle(Command command, CancellationToken cancellationToken)
+        public async ValueTask<Result<CurriculumDto>> Handle(Command command, CancellationToken cancellationToken)
         {
             var spec = new GetCurriculumWithSubjectsByIdSpec(command.CurriculumId);
             var curriculum = await _readRepository.FirstOrDefaultAsync(spec, cancellationToken);
@@ -286,7 +286,7 @@ public class SaveCurriculumContent
             // Save the prerequisites
             var updateResult = await _curriculumRepository.UpdateCurriculum(curriculum, cancellationToken);
 
-            return updateResult.IsSuccess ? Result.Success(CurriculumDTO.FromEntity(curriculum)) : Result.Invalid(updateResult.ValidationErrors);
+            return updateResult.IsSuccess ? Result.Success(CurriculumDto.FromEntity(curriculum)) : Result.Invalid(updateResult.ValidationErrors);
         }
     }
 }

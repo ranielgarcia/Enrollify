@@ -35,7 +35,7 @@ public class SearchSubjectsPaginatedRequestValidator : Validator<SearchSubjectsP
 [HttpGet("search/{page}/{pageSize}")]
 [Group<SubjectEndpointGroup>]
 [Authorize(Policy = PolicyName.HasViewSubjectsPermission)]
-public class SearchSubjectsPaginatedEndpoint (IMediator mediator) : Endpoint<SearchSubjectsPaginatedRequest, Application.PagedResult<SubjectDTO>>
+public class SearchSubjectsPaginatedEndpoint (IMediator mediator) : Endpoint<SearchSubjectsPaginatedRequest, Application.PagedResult<SubjectDto>>
 {
     public override async Task HandleAsync(SearchSubjectsPaginatedRequest request, CancellationToken cancellationToken)
     {

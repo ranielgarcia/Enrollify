@@ -4,7 +4,7 @@ using Enrollify.Core.Constants;
 
 namespace Enrollify.Application.Features.Curriculums.DTOs;
 
-public class CurriculumDetailDTO
+public class CurriculumDetailDto
 {
     public CurriculumId Id { get; set; }
 
@@ -14,11 +14,11 @@ public class CurriculumDetailDTO
 
     public CurriculumStatusEnum Status { get; set; } = null!;
 
-    public CourseSummaryDTO? Course { get; set; }
+    public CourseSummaryDto? Course { get; set; }
 
     public string? Description { get; set; }
 
     public DateTimeOffset? ApprovedDate { get; set; }
 
-    public IReadOnlyCollection<CurriculumSubjectDTO> CurriculumSubjects { get; set; } = [];
+    public IReadOnlyCollection<CurriculumSubjectDto> CurriculumSubjects { get; set; } = [];
 }

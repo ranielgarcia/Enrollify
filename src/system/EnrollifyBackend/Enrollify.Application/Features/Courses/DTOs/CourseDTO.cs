@@ -3,7 +3,7 @@ using Enrollify.Core.Aggregates.CourseAggregate;
 
 namespace Enrollify.Application.Features.Courses.DTOs;
 
-public class CourseDTO : BaseDTO
+public class CourseDto : BaseDto
 {
     public CourseId Id { get; set; }
     public CourseCode Code { get; private set; }
@@ -11,11 +11,11 @@ public class CourseDTO : BaseDTO
     public int DurationYears { get; private set; }
     public string Description { get; private set; } = null!;
 
-    public CollegeSummaryDTO? College { get; set; }
+    public CollegeSummaryDto? College { get; set; }
    
-    public static CourseDTO FromEntity (Course entity)
+    public static CourseDto FromEntity (Course entity)
     {
-        return new CourseDTO
+        return new CourseDto
         {
             Id = entity.Id,
             Code = entity.Code,
@@ -23,11 +23,11 @@ public class CourseDTO : BaseDTO
             DurationYears = entity.DurationYears,
             Description =  entity.Description,
             CreatedAt = entity.CreatedAt,
-            CreatedBy = BaseUserDTO.FromUser(entity.CreatedByUser),
+            CreatedBy = BaseUserDto.FromUser(entity.CreatedByUser),
             UpdatedAt = entity.UpdatedAt,
-            UpdatedBy = BaseUserDTO.FromUser(entity.UpdatedByUser),
+            UpdatedBy = BaseUserDto.FromUser(entity.UpdatedByUser),
             IsActive = entity.IsActive,
-            College = entity.College != null ? CollegeSummaryDTO.FromEntity(entity.College) : null,
+            College = entity.College != null ? CollegeSummaryDto.FromEntity(entity.College) : null,
         };
     }
 }

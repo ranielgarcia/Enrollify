@@ -6,7 +6,7 @@ namespace Enrollify.WebAPI.Features.Buildings;
 [HttpGet("")]
 [Group<BuildingEndpointGroup>]
 [Authorize(Policy = PolicyName.HasViewBuildingPermission)]
-public class ListBuildingsEndpoint(IMediator mediator) : EndpointWithoutRequest<List<BuildingDTO>>
+public class ListBuildingsEndpoint(IMediator mediator) : EndpointWithoutRequest<List<BuildingDto>>
 {
     public override async Task HandleAsync(CancellationToken cancellationToken)
     {

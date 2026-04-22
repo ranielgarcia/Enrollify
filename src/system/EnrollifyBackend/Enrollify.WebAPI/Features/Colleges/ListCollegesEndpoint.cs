@@ -6,7 +6,7 @@ namespace Enrollify.WebAPI.Features.Colleges;
 [HttpGet("")]
 [Group<CollegeEndpointsGroup>]
 [Authorize(Policy = PolicyName.HasViewCollegePermission)]
-public class ListCollegesEndpoint : EndpointWithoutRequest<List<CollegeDTO>>
+public class ListCollegesEndpoint : EndpointWithoutRequest<List<CollegeDto>>
 {
     private readonly IMediator _mediator;
 

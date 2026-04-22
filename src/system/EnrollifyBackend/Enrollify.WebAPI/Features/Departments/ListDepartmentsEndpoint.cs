@@ -6,7 +6,7 @@ namespace Enrollify.WebAPI.Features.Departments;
 [HttpGet("")]
 [Group<DepartmentEndpointGroup>]
 [Authorize(Policy = PolicyName.HasViewDepartmentPermission)]
-public class ListDepartmentsEndpoint (IMediator mediator) : EndpointWithoutRequest<List<DepartmentDTO>>
+public class ListDepartmentsEndpoint (IMediator mediator) : EndpointWithoutRequest<List<DepartmentDto>>
 {
     public override async Task HandleAsync(CancellationToken cancellationToken)
     {

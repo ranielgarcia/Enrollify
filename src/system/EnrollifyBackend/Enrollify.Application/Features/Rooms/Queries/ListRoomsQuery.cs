@@ -7,21 +7,21 @@ using Mediator;
 
 namespace Enrollify.Application.Features.Rooms.Queries;
 
-public class ListRoomsQuery : IQuery<Result<List<RoomDTO>>>
+public class ListRoomsQuery : IQuery<Result<List<RoomDto>>>
 {
 }
 
 public class ListRoomsQueryHandler(IReadRepository<Room> readRepository) 
-    : IQueryHandler<ListRoomsQuery, Result<List<RoomDTO>>>
+    : IQueryHandler<ListRoomsQuery, Result<List<RoomDto>>>
 {
-    public async ValueTask<Result<List<RoomDTO>>> Handle(ListRoomsQuery query, CancellationToken cancellationToken)
+    public async ValueTask<Result<List<RoomDto>>> Handle(ListRoomsQuery query, CancellationToken cancellationToken)
     {
         var spec = new ListRoomsIncludeAllSpec();
         var rooms = await readRepository.ListAsync(spec, cancellationToken);
 
         var toReturn = rooms
-            .Select(RoomDTO.FromProjection).ToList();
+            .Select(RoomDto.FromProjection).ToList();
 
-        return Result<List<RoomDTO>>.Success(toReturn);
+        return Result<List<RoomDto>>.Success(toReturn);
     }
 }

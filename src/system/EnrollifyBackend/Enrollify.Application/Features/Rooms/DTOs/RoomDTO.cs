@@ -4,28 +4,28 @@ using Enrollify.Core.Aggregates.RoomAggregate;
 
 namespace Enrollify.Application.Features.Rooms.DTOs;
 
-public class RoomDTO : BaseDTO
+public class RoomDto : BaseDto
 {
     public RoomId Id { get; set; }
     public string RoomNumber { get; set; } = string.Empty;
     public int Capacity { get; set; }
-    public RoomTypeSummaryDTO? RoomType { get; set; }
-    public BuildingSummaryDTO? Building { get; set; }
+    public RoomTypeSummaryDto? RoomType { get; set; }
+    public BuildingSummaryDto? Building { get; set; }
 
-    public static RoomDTO FromProjection (RoomProjection room)
+    public static RoomDto FromProjection (RoomProjection room)
     {
-        return new RoomDTO
+        return new RoomDto
         {
             Id = room.Id,
             RoomNumber = room.RoomNumber,
             Capacity = room.Capacity,
             CreatedAt = room.CreatedAt,
-            CreatedBy = BaseUserDTO.FromUser(room.CreatedBy),
+            CreatedBy = BaseUserDto.FromUser(room.CreatedBy),
             UpdatedAt = room.UpdatedAt,
-            UpdatedBy = BaseUserDTO.FromUser(room.UpdatedBy),
+            UpdatedBy = BaseUserDto.FromUser(room.UpdatedBy),
             IsActive = room.IsActive,
-            RoomType = room.RoomType != null ? RoomTypeSummaryDTO.FromProject(room.RoomType) : null,
-            Building = room.Building != null ? BuildingSummaryDTO.FromEntity(room.Building) : null,
+            RoomType = room.RoomType != null ? RoomTypeSummaryDto.FromProject(room.RoomType) : null,
+            Building = room.Building != null ? BuildingSummaryDto.FromEntity(room.Building) : null,
         };
     }
 }

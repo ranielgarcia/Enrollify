@@ -1,15 +1,15 @@
-﻿using Enrollify.Core.Aggregates.CollegeAggregate;
+using Enrollify.Core.Aggregates.CollegeAggregate;
 
 namespace Enrollify.Application.SharedDTOs;
 
-public class CollegeSummaryDTO
+public class CollegeSummaryDto
 {
     public CollegeId Id { get; set; }
     public string Name { get; set; } = string.Empty;
 
-    public static CollegeSummaryDTO FromEntity(College entity)
+    public static CollegeSummaryDto FromEntity(College entity)
     {
-        return new CollegeSummaryDTO
+        return new CollegeSummaryDto
         {
             Id = entity.Id,
             Name = entity.Name

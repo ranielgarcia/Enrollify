@@ -1,24 +1,23 @@
 using Ardalis.Specification;
-using Enrollify.Application.Features.Curriculums.DTOs;
 using Enrollify.Application.SharedDTOs;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 
-namespace Enrollify.Application.Features.Curriculums.Specifications;
+namespace Enrollify.Application.Features.Curriculums.DTOs;
 
-public class CurriculumToCurriculumDetailDTO : Specification<Curriculum, CurriculumDetailDTO>
+public class CurriculumToCurriculumDetailDto : Specification<Curriculum, CurriculumDetailDto>
 {
-    public CurriculumToCurriculumDetailDTO()
+    public CurriculumToCurriculumDetailDto()
     {
         Query
         .AsNoTracking()
         .AsSplitQuery()
-        .Select(c => new CurriculumDetailDTO
+        .Select(c => new CurriculumDetailDto
         {
             Id = c.Id,
             EffectiveYear = c.EffectiveYear,
             Version = c.Version,
             Status = c.StatusId,
-            Course = c.Course != null ? new CourseSummaryDTO
+            Course = c.Course != null ? new CourseSummaryDto
             {
                 Id = c.Course.Id,
                 Name = c.Course.Name
@@ -27,7 +26,7 @@ public class CurriculumToCurriculumDetailDTO : Specification<Curriculum, Curricu
             ApprovedDate = c.ApprovedDate,
             CurriculumSubjects = c.CurriculumSubjects
                 .Where(cs => cs.IsActive)
-                .Select(cs => new CurriculumSubjectDTO
+                .Select(cs => new CurriculumSubjectDto
                 {
                     Id = cs.Id,
                     SubjectId = cs.SubjectId,
@@ -35,7 +34,7 @@ public class CurriculumToCurriculumDetailDTO : Specification<Curriculum, Curricu
                     TermNumber = cs.TermNumber,
                     IsElective = cs.IsElective,
                     ElectiveGroupName = cs.ElectiveGroupName,
-                    Subject = cs.Subject != null ? new SubjectSummaryDTO
+                    Subject = cs.Subject != null ? new SubjectSummaryDto
                     {
                         Id = cs.Subject.Id,
                         Code = cs.Subject.Code,
@@ -44,7 +43,7 @@ public class CurriculumToCurriculumDetailDTO : Specification<Curriculum, Curricu
                     } : null,
                     Prerequisites = cs.Prerequisites
                         .Where(p => p.IsActive)
-                        .Select(p => new CurriculumSubjectPrerequisiteDTO
+                        .Select(p => new CurriculumSubjectPrerequisiteDto
                         {
                             PrerequisiteCurriculumSubjectId = p.PrerequisiteCurriculumSubjectId,
                             MinimumGrade = p.MinimumGrade

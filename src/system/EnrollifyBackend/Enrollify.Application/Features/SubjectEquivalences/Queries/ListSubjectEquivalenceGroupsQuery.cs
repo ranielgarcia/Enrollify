@@ -7,18 +7,18 @@ using Mediator;
 
 namespace Enrollify.Application.Features.SubjectEquivalences.Queries;
 
-public class ListSubjectEquivalenceGroupsQuery : IQuery<Result<List<SubjectEquivalenceGroupDTO>>>
+public class ListSubjectEquivalenceGroupsQuery : IQuery<Result<List<SubjectEquivalenceGroupDto>>>
 {
 }
 
 public class ListSubjectEquivalenceGroupsQueryHandler(IReadRepository<SubjectEquivalenceGroup> readRepository)
-    : IQueryHandler<ListSubjectEquivalenceGroupsQuery, Result<List<SubjectEquivalenceGroupDTO>>>
+    : IQueryHandler<ListSubjectEquivalenceGroupsQuery, Result<List<SubjectEquivalenceGroupDto>>>
 {
-    public async ValueTask<Result<List<SubjectEquivalenceGroupDTO>>> Handle(ListSubjectEquivalenceGroupsQuery query, CancellationToken cancellationToken)
+    public async ValueTask<Result<List<SubjectEquivalenceGroupDto>>> Handle(ListSubjectEquivalenceGroupsQuery query, CancellationToken cancellationToken)
     {
         var groups = await readRepository.ListAsync(new ListSubjectEquivalenceGroupsSpec(), cancellationToken);
         var toReturn =
-            groups.Select(SubjectEquivalenceGroupDTO.FromEntity).ToList();
+            groups.Select(SubjectEquivalenceGroupDto.FromEntity).ToList();
         return Result.Success(toReturn);
     }
 }

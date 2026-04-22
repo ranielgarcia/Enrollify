@@ -2,7 +2,7 @@ using Enrollify.Core.Aggregates.CollegeAggregate;
 
 namespace Enrollify.Application.Features.Colleges.DTOs;
 
-public class CollegeDTO : BaseDTO
+public class CollegeDto : BaseDto
 {
     public CollegeId Id { get; set; }
     public string Code { get; set; } = string.Empty;
@@ -10,9 +10,9 @@ public class CollegeDTO : BaseDTO
     public string Description { get; set; } = string.Empty;
     public string Dean { get; set; } = string.Empty;
 
-    public static CollegeDTO FromEntity (College entity)
+    public static CollegeDto FromEntity (College entity)
     {
-        return new CollegeDTO
+        return new CollegeDto
         {
             Id = entity.Id,
             Code = entity.Code.Value,
@@ -20,8 +20,8 @@ public class CollegeDTO : BaseDTO
             Description = entity.Description,
             Dean = entity.Dean,
             CreatedAt = entity.CreatedAt,
-            CreatedBy = BaseUserDTO.FromUser(entity.CreatedByUser),
-            UpdatedBy = BaseUserDTO.FromUser(entity.UpdatedByUser),
+            CreatedBy = BaseUserDto.FromUser(entity.CreatedByUser),
+            UpdatedBy = BaseUserDto.FromUser(entity.UpdatedByUser),
             UpdatedAt = entity.UpdatedAt,
             DeletedAt = entity.DeletedAt,
             IsActive = entity.IsActive

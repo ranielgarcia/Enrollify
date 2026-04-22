@@ -25,9 +25,9 @@ public class CurriculumContentRequest
 [Group<CurriculumEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateCurriculumPermission)]
 public class SaveCurriculumContentEndpoint (IMediator mediator)
-    : Endpoint<CurriculumContentRequest, OkOrNotFoundApiResult<CurriculumDTO>>
+    : Endpoint<CurriculumContentRequest, OkOrNotFoundApiResult<CurriculumDto>>
 {
-    public override async Task<OkOrNotFoundApiResult<CurriculumDTO>>
+    public override async Task<OkOrNotFoundApiResult<CurriculumDto>>
         ExecuteAsync(CurriculumContentRequest request, CancellationToken ct)
     {
         var subjectsGrid = new Dictionary<Year, Dictionary<Semester, SaveCurriculumContent.SubjectInCurriculum[]>>();

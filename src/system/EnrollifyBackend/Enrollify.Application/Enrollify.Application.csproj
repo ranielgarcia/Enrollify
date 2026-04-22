@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Colleges\Features\" />
     <Folder Include="Features\Roles\Commands\" />
   </ItemGroup>
 

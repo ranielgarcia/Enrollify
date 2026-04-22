@@ -7,11 +7,11 @@ using Mediator;
 
 namespace Enrollify.Application.Features.Buildings.Queries;
 
-public class ListBuildingsQuery : IQuery<Result<List<BuildingDTO>>>
+public class ListBuildingsQuery : IQuery<Result<List<BuildingDto>>>
 {
 }
 
-public class ListBuildingsQueryHandler : IQueryHandler<ListBuildingsQuery, Result<List<BuildingDTO>>>
+public class ListBuildingsQueryHandler : IQueryHandler<ListBuildingsQuery, Result<List<BuildingDto>>>
 {
     private readonly IReadRepository<Building> _buildingRepository;
 
@@ -20,13 +20,13 @@ public class ListBuildingsQueryHandler : IQueryHandler<ListBuildingsQuery, Resul
         _buildingRepository = buildingRepository;
     }
 
-    public async ValueTask<Result<List<BuildingDTO>>> Handle (ListBuildingsQuery request, CancellationToken cancellationToken)
+    public async ValueTask<Result<List<BuildingDto>>> Handle (ListBuildingsQuery request, CancellationToken cancellationToken)
     {
         var spec = new ListBuildingsWithAllNavigationSpec();
         var buildings = await _buildingRepository.ListAsync(spec, cancellationToken);
 
         var toReturn = buildings
-            .Select(BuildingDTO.FromEntity).ToList();
+            .Select(BuildingDto.FromEntity).ToList();
 
         return Result.Success(toReturn);
     }

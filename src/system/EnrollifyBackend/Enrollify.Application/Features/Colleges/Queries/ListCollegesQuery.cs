@@ -7,11 +7,11 @@ using Mediator;
 
 namespace Enrollify.Application.Features.Colleges.Queries;
 
-public class ListCollegesQuery : IQuery<Result<List<CollegeDTO>>>
+public class ListCollegesQuery : IQuery<Result<List<CollegeDto>>>
 {
 }
 
-public class ListCollegesQueryHandler : IQueryHandler<ListCollegesQuery, Result<List<CollegeDTO>>>
+public class ListCollegesQueryHandler : IQueryHandler<ListCollegesQuery, Result<List<CollegeDto>>>
 {
     private readonly IReadRepository<College> _collegeRepository;
 
@@ -19,12 +19,12 @@ public class ListCollegesQueryHandler : IQueryHandler<ListCollegesQuery, Result<
     {
         _collegeRepository = collegeRepository;
     }
-    public async ValueTask<Result<List<CollegeDTO>>> Handle(ListCollegesQuery request, CancellationToken cancellationToken)
+    public async ValueTask<Result<List<CollegeDto>>> Handle(ListCollegesQuery request, CancellationToken cancellationToken)
     {
         var spec = new ListCollegesOrderByNameSpec();
         var colleges = await _collegeRepository.ListAsync(spec, cancellationToken);
         var toReturn = colleges
-            .Select(CollegeDTO.FromEntity).ToList();
+            .Select(CollegeDto.FromEntity).ToList();
         return Result.Success(toReturn);
     }
 }

@@ -11,9 +11,9 @@ namespace Enrollify.Application.Features.SubjectEquivalences.Commands;
 
 public static class AddSubjectsToEquivalenceGroup
 {
-    public sealed record Command(SubjectEquivalenceGroupId groupId, List<SubjectId> subjectIds) : ICommand<Result<SubjectEquivalenceGroupDTO>>;
+    public sealed record Command(SubjectEquivalenceGroupId groupId, List<SubjectId> subjectIds) : ICommand<Result<SubjectEquivalenceGroupDto>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<SubjectEquivalenceGroupDTO>>
+    public sealed class Handler : ICommandHandler<Command, Result<SubjectEquivalenceGroupDto>>
     {
         private readonly ISubjectEquivalenceGroupRepository _repository;
         private readonly IReadRepository<SubjectEquivalenceGroup> _readRepository;
@@ -24,7 +24,7 @@ public static class AddSubjectsToEquivalenceGroup
             _readRepository = readRepository;
             _subjectReadRepository = subjectReadRepository;
         }
-        public async ValueTask<Result<SubjectEquivalenceGroupDTO>> Handle(Command command, CancellationToken cancellationToken)
+        public async ValueTask<Result<SubjectEquivalenceGroupDto>> Handle(Command command, CancellationToken cancellationToken)
         {
             var groupToUpdate = await _readRepository.FirstOrDefaultAsync(new GetSubjectEquivalenceGroupByIdWithSubjectsSpec(command.groupId), cancellationToken);
             if (groupToUpdate is null)
@@ -51,7 +51,7 @@ public static class AddSubjectsToEquivalenceGroup
             }
             var result = await _repository.UpdateSubjectEquivalenceGroup(groupToUpdate, cancellationToken);
 
-            return Result.Success(SubjectEquivalenceGroupDTO.FromEntity(groupToUpdate));
+            return Result.Success(SubjectEquivalenceGroupDto.FromEntity(groupToUpdate));
         }
     }
 }

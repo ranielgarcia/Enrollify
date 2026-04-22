@@ -6,7 +6,7 @@ namespace Enrollify.WebAPI.Features.Subjects;
 [HttpGet("")]
 [Group<SubjectEndpointGroup>]
 [Authorize(Policy = PolicyName.HasViewSubjectsPermission)]
-public class ListMinimalSubjectsEndpoint(IMediator mediator) : EndpointWithoutRequest<List<SubjectDTO>>
+public class ListMinimalSubjectsEndpoint(IMediator mediator) : EndpointWithoutRequest<List<SubjectDto>>
 {
     public override async Task HandleAsync(CancellationToken cancellationToken)
     {

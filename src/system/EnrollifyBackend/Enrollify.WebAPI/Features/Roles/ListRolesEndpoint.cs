@@ -6,7 +6,7 @@ namespace Enrollify.WebAPI.Features.Roles;
 [HttpGet("")]
 [Group<RoleEndpointsGroup>]
 [Authorize(Policy = PolicyName.HasViewRolesPermission)]
-public class ListRolesEndpoint : EndpointWithoutRequest<List<RoleDTO>>
+public class ListRolesEndpoint : EndpointWithoutRequest<List<RoleDto>>
 {
     private readonly IMediator _mediator;
 

@@ -3,27 +3,27 @@ using Enrollify.Core.Aggregates.BuildingAggregate;
 
 namespace Enrollify.Application.Features.Buildings.DTOs;
 
-public class BuildingDTO : BaseDTO
+public class BuildingDto : BaseDto
 {
     public BuildingId Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
 
-    public CollegeSummaryDTO? College { get; set; }
+    public CollegeSummaryDto? College { get; set; }
 
-    public static BuildingDTO FromEntity (Building entity)
+    public static BuildingDto FromEntity (Building entity)
     {
-        return new BuildingDTO
+        return new BuildingDto
         {
             Id = entity.Id,
             Name = entity.Name,
             Description = entity.Description,
             Address = entity.Address,
-            College = entity.College != null ? CollegeSummaryDTO.FromEntity(entity.College) : null,
+            College = entity.College != null ? CollegeSummaryDto.FromEntity(entity.College) : null,
             CreatedAt = entity.CreatedAt,
-            CreatedBy = BaseUserDTO.FromUser(entity.CreatedByUser),
-            UpdatedBy = BaseUserDTO.FromUser(entity.UpdatedByUser),
+            CreatedBy = BaseUserDto.FromUser(entity.CreatedByUser),
+            UpdatedBy = BaseUserDto.FromUser(entity.UpdatedByUser),
             UpdatedAt = entity.UpdatedAt,
             DeletedAt = entity.DeletedAt,
             IsActive = entity.IsActive

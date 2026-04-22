@@ -4,5 +4,5 @@ namespace Enrollify.Application.Features.Roles.Queries;
 
 public interface IListRolesQueryService
 {
-    Task<List<RoleDTO>> ListRolesAsync(CancellationToken cancellationToken = default);
+    Task<List<RoleDto>> ListRolesAsync(CancellationToken cancellationToken = default);
 }

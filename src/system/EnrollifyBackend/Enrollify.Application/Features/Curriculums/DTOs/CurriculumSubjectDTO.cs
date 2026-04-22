@@ -4,7 +4,7 @@ using Enrollify.Core.Aggregates.SubjectAggregate;
 
 namespace Enrollify.Application.Features.Curriculums.DTOs;
 
-public class CurriculumSubjectDTO
+public class CurriculumSubjectDto
 {
     public CurriculumSubjectId Id { get; set; }
     public SubjectId SubjectId { get; set; }
@@ -29,7 +29,7 @@ public class CurriculumSubjectDTO
     /// </summary>
     public string? ElectiveGroupName { get; set; }
 
-    public SubjectSummaryDTO? Subject { get; set; }
+    public SubjectSummaryDto? Subject { get; set; }
 
-    public IReadOnlyCollection<CurriculumSubjectPrerequisiteDTO> Prerequisites { get; set; } = [];
+    public IReadOnlyCollection<CurriculumSubjectPrerequisiteDto> Prerequisites { get; set; } = [];
 }
