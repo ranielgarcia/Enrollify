@@ -21,7 +21,10 @@ import { searchParams } from "./searchParams";
 import { useQueryStates } from "nuqs";
 
 export default function SubjectsManagementPage() {
-  const [{ page, perPage }] = useQueryStates(searchParams);
+  const [{ page, perPage, filters, sort }] = useQueryStates(searchParams);
+
+  console.log(filters);
+  console.log(sort);
 
   const {
     isFormOpen,

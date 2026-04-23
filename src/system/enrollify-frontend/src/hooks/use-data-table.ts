@@ -34,21 +34,22 @@ import type { ExtendedColumnSort, QueryKeys } from "@/types/data-table";
 const PAGE_KEY = "page";
 const PER_PAGE_KEY = "perPage";
 const SORT_KEY = "sort";
+const FILTERS_KEY = "filters";
+const JOIN_OPERATOR_KEY = "joinOperator";
 const ARRAY_SEPARATOR = ",";
 const DEBOUNCE_MS = 300;
 const THROTTLE_MS = 50;
 
-interface UseDataTableProps<TData>
-  extends Omit<
-    TableOptions<TData>,
-    | "state"
-    | "getCoreRowModel"
-    | "onPaginationChange"
-    | "onSortingChange"
-    | "onColumnFiltersChange"
-    | "onColumnVisibilityChange"
-    | "onRowSelectionChange"
-  > {
+interface UseDataTableProps<TData> extends Omit<
+  TableOptions<TData>,
+  | "state"
+  | "getCoreRowModel"
+  | "onPaginationChange"
+  | "onSortingChange"
+  | "onColumnFiltersChange"
+  | "onColumnVisibilityChange"
+  | "onRowSelectionChange"
+> {
   initialState?: Omit<Partial<TableState>, "sorting"> & {
     sorting?: ExtendedColumnSort<TData>[];
   };
@@ -80,6 +81,8 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
   const pageKey = queryKeys?.page ?? PAGE_KEY;
   const perPageKey = queryKeys?.perPage ?? PER_PAGE_KEY;
   const sortKey = queryKeys?.sort ?? SORT_KEY;
+  const filtersKey = queryKeys?.filters ?? FILTERS_KEY;
+  const joinOperatorKey = queryKeys?.joinOperator ?? JOIN_OPERATOR_KEY;
 
   const queryStateOptions = React.useMemo<
     Omit<UseQueryStateOptions<string>, "parse">
@@ -286,8 +289,8 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
         page: pageKey,
         perPage: perPageKey,
         sort: sortKey,
-        filters: "",
-        joinOperator: "",
+        filters: filtersKey,
+        joinOperator: joinOperatorKey,
       },
     },
   });

@@ -2,7 +2,6 @@ import type { PagedResult } from "@/api/models/paged-result";
 import type { Subject } from "@/api/models/subject";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
-import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { Button } from "@/components/ui/button";
 import { truncateText } from "@/lib/text-utils";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -10,6 +9,10 @@ import { Edit2, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { useTablePermissions } from "@/hooks/use-table-permissions";
 import { useDataTable } from "@/hooks/use-data-table";
+import { SubjectsTableActionBar } from "./subjects-table-action-bar";
+import { DataTableSortList } from "@/components/data-table/data-table-sort-list";
+import { DataTableAdvancedToolbar } from "@/components/data-table/data-table-advanced-toolbar";
+import { DataTableFilterList } from "@/components/data-table/data-table-filter-list";
 
 interface SubjectsTableProps {
   pagedSubjects: PagedResult<Subject>;
@@ -31,31 +34,45 @@ export function SubjectsTable({
   const columns = useMemo(
     () => [
       columnHelper.accessor("code", {
+        id: "code",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Code" />
         ),
-        meta: { label: "Code" },
+        meta: { label: "Code", variant: "text" },
+        enableColumnFilter: true,
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor("title", {
+        id: "title",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Title" />
         ),
-        meta: { label: "Title" },
+        meta: { label: "Title", variant: "text" },
+        enableColumnFilter: true,
+        enableSorting: true,
+        enableHiding: true,
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor("description", {
+        id: "description",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Description" />
         ),
-        meta: { label: "Description" },
+        meta: { label: "Description", variant: "text" },
+        enableColumnFilter: true,
+        enableSorting: true,
+        enableHiding: true,
         cell: (info) => <span>{truncateText(info.getValue(), 30)}</span>,
       }),
       columnHelper.accessor("units", {
+        id: "units",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Units" />
         ),
-        meta: { label: "Units" },
+        meta: { label: "Units", variant: "number" },
+        enableColumnFilter: true,
+        enableSorting: true,
+        enableHiding: true,
         cell: (info) => <span>{Number(info.getValue()).toFixed(1)}</span>,
       }),
       columnHelper.accessor((row) => row.preferRoomType?.name, {
@@ -63,7 +80,10 @@ export function SubjectsTable({
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Prefer Room Type" />
         ),
-        meta: { label: "Prefer Room Type" },
+        meta: { label: "Prefer Room Type", variant: "text" },
+        enableColumnFilter: true,
+        enableSorting: true,
+        enableHiding: true,
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor("createdAt", {
@@ -143,7 +163,7 @@ export function SubjectsTable({
     [canUpdate, canDelete, onEdit, onDelete],
   );
 
-  const { table } = useDataTable({
+  const { table, shallow, debounceMs, throttleMs } = useDataTable({
     data: pagedSubjects?.items ?? [],
     columns,
     pageCount: pagedSubjects?.totalPages ?? -1,
@@ -151,8 +171,24 @@ export function SubjectsTable({
   });
 
   return (
-    <DataTable table={table}>
-      <DataTableToolbar table={table} />
+    <DataTable
+      table={table}
+      actionBar={<SubjectsTableActionBar table={table} />}
+    >
+      {/* <DataTableToolbar table={table}>
+        <DataTableSortList table={table} align="end" />
+      </DataTableToolbar> */}
+
+      <DataTableAdvancedToolbar table={table}>
+        <DataTableSortList table={table} align="start" />
+        <DataTableFilterList
+          table={table}
+          shallow={shallow}
+          debounceMs={debounceMs}
+          throttleMs={throttleMs}
+          align="start"
+        />
+      </DataTableAdvancedToolbar>
     </DataTable>
   );
 }
