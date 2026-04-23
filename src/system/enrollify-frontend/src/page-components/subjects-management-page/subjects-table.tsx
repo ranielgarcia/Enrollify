@@ -168,7 +168,10 @@ export function SubjectsTable({
     columns,
     pageCount: pagedSubjects?.totalPages ?? -1,
     manualPagination: true,
+    debounceMs: 600,
   });
+
+  console.log(debounceMs);
 
   return (
     <DataTable

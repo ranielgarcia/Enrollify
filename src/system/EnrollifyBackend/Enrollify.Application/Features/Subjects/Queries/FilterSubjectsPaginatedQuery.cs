@@ -8,7 +8,13 @@ using Mediator;
 
 namespace Enrollify.Application.Features.Subjects.Queries;
 
-public record FilterSubjectsPaginatedQuery(int page = 1, int pageSize = 10, IEnumerable<FilterItem>? filters = null, IEnumerable<SortItem>? sorts = null) : IQuery<Result<PagedResult<SubjectDto>>>;
+public record FilterSubjectsPaginatedQuery(
+    int page = 1,
+    int pageSize = 10,
+    IEnumerable<FilterItem>? filters = null,
+    IEnumerable<SortItem>? sorts = null,
+    string? joinOperator = null
+    ) : IQuery<Result<PagedResult<SubjectDto>>>;
 
 public class FilterSubjectsPaginatedQueryHandler : IQueryHandler<FilterSubjectsPaginatedQuery, Result<PagedResult<SubjectDto>>>
 {
@@ -21,7 +27,9 @@ public class FilterSubjectsPaginatedQueryHandler : IQueryHandler<FilterSubjectsP
 
     public async ValueTask<Result<PagedResult<SubjectDto>>> Handle(FilterSubjectsPaginatedQuery request, CancellationToken cancellationToken)
     {
-        var spec = new FilterSubjectsPaginatedSpec(request.page, request.pageSize, request.filters, request.sorts);
+        JoinOperator joinOperator = (request.joinOperator != null && request.joinOperator.ToLower().Trim() == "and") ? JoinOperator.and : JoinOperator.or;
+
+        var spec = new FilterSubjectsPaginatedSpec(request.page, request.pageSize, request.filters, request.sorts, joinOperator);
         var subjects = await _readRepository.ListAsync(spec, cancellationToken);
         // https://specification.ardalis.com/usage/use-built-in-abstract-repository.html#countasync-and-anyasync-methods
         // CountAsync and AnyAsync methods

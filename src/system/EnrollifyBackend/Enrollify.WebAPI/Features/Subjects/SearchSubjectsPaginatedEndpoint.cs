@@ -1,9 +1,8 @@
-using System.Text.Json;
 using Enrollify.Application.Features.Subjects.DTOs;
-using Enrollify.Application.Features.Subjects.Queries;
-using Enrollify.Application.Filtering;
+using Enrollify.Application.Subjects.Features;
 
 namespace Enrollify.WebAPI.Features.Subjects;
+
 
 public class SearchSubjectsPaginatedRequest
 {
@@ -15,11 +14,9 @@ public class SearchSubjectsPaginatedRequest
     public required int PageSize { get; set; }
 
     [QueryParam]
-    public string? Filters { get; set; }
-
-    [QueryParam]
-    public string? Sort { get; set; }
+    public string? SearchTerm { get; set; }
 }
+
 
 public class SearchSubjectsPaginatedRequestValidator : Validator<SearchSubjectsPaginatedRequest>
 {
@@ -30,54 +27,22 @@ public class SearchSubjectsPaginatedRequestValidator : Validator<SearchSubjectsP
         RuleFor(x => x.PageSize)
             .GreaterThan(0).WithMessage("Page size must be greater than 0.")
             .LessThanOrEqualTo(100).WithMessage("Page size must be 100 or fewer.");
-        RuleFor(x => x.Filters)
-            .Must(filters =>
-            {
-                try
-                {
-                    var result = JsonSerializer.Deserialize<List<FilterItem>>(filters!);
-                    return result is not null;
-                }
-                catch (JsonException)
-                {
-                    return false;
-                }
-            }).WithMessage("Filters must be a valid JSON array of filter items.")
-            .When(x => !string.IsNullOrEmpty(x.Filters));
-
-        RuleFor(x => x.Sort)
-            .Must(sort =>
-            {
-                try
-                {
-                    var result = JsonSerializer.Deserialize<List<FilterItem>>(sort!);
-                    return result is not null;
-                }
-                catch (JsonException)
-                {
-                    return false;
-                }
-            }).WithMessage("Sort must be a valid JSON array of sort items.")
-            .When(x => !string.IsNullOrEmpty(x.Sort));
+        RuleFor(x => x.SearchTerm)
+            .NotEmpty().WithMessage("Please provide a search term.")
+            .MaximumLength(100).WithMessage("Search term must be 100 characters or fewer.")
+            .When(x => !string.IsNullOrEmpty(x.SearchTerm));
     }
 }
 
 [HttpGet("search/{page}/{pageSize}")]
 [Group<SubjectEndpointGroup>]
 [Authorize(Policy = PolicyName.HasViewSubjectsPermission)]
-public class SearchSubjectsPaginatedEndpoint (IMediator mediator) : Endpoint<SearchSubjectsPaginatedRequest, Application.PagedResult<SubjectDto>>
+public class SearchSubjectsPaginatedEndpoint(IMediator mediator)
+    : Endpoint<SearchSubjectsPaginatedRequest, Application.PagedResult<SubjectDto>>
 {
     public override async Task HandleAsync(SearchSubjectsPaginatedRequest request, CancellationToken cancellationToken)
     {
-        var filters = request.Filters is not null
-            ? JsonSerializer.Deserialize<List<FilterItem>>(request.Filters)
-            : null;
-
-        var sorts = request.Sort is not null
-            ? JsonSerializer.Deserialize<List<SortItem>>(request.Sort)
-            : null;
-
-        var result = await mediator.Send(new FilterSubjectsPaginatedQuery(request.Page, request.PageSize, filters, sorts), cancellationToken);
+        var result = await mediator.Send(new SearchSubjectsPaginatedQuery(request.SearchTerm, request.Page, request.PageSize), cancellationToken);
         await Send.OkAsync(result.Value);
     }
 }

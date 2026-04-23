@@ -1,6 +1,4 @@
-using System.Drawing;
 using System.Linq.Expressions;
-using System.Reflection.Metadata;
 using Ardalis.Specification;
 using Enrollify.Application.Filtering;
 using Enrollify.Core.Aggregates.SubjectAggregate;
@@ -16,7 +14,7 @@ public class FilterSubjectsPaginatedSpec : Specification<Subject>
         nameof(Subject.Units).ToLower()
     ];
 
-    public FilterSubjectsPaginatedSpec(int pageNumber, int pageSize, IEnumerable<FilterItem>? filters, IEnumerable<SortItem>? sorts)
+    public FilterSubjectsPaginatedSpec(int pageNumber, int pageSize, IEnumerable<FilterItem>? filters, IEnumerable<SortItem>? sorts, JoinOperator joinOperator = JoinOperator.and)
     {
         // The explicit cast `((string)s.Code).Contains(searchTerm)` leverages Vogen's generated explicit operator string(SubjectCode) to let EF Core resolve it to the
         // underlying string column. string.Contains then translates to SQL LIKE '%term%'.
@@ -24,6 +22,8 @@ public class FilterSubjectsPaginatedSpec : Specification<Subject>
         Query
             .AsNoTracking()
             .Include(s => s.PreferRoomType);
+
+        var filterExpressions = new List<Expression<Func<Subject, bool>>>();
 
         foreach (var filter in filters ?? [])
         {
@@ -42,7 +42,7 @@ public class FilterSubjectsPaginatedSpec : Specification<Subject>
                         FilterOperators.IsNotEmpty => s => ((string)s.Code) != string.Empty,
                         _ => null
                     };
-                    if (codeExpr is not null) Query.Where(codeExpr);
+                    if (codeExpr is not null) filterExpressions.Add(codeExpr);
                     break;
                 case "title":
                     Expression<Func<Subject, bool>>? titleExpr = filter.Operator switch
@@ -55,7 +55,7 @@ public class FilterSubjectsPaginatedSpec : Specification<Subject>
                         FilterOperators.IsNotEmpty => s => !string.IsNullOrEmpty(s.Title),
                         _ => null
                     };
-                    if (titleExpr is not null) Query.Where(titleExpr);
+                    if (titleExpr is not null) filterExpressions.Add(titleExpr);
                     break;
                 case "description":
                     Expression<Func<Subject, bool>>? descExpr = filter.Operator switch
@@ -68,7 +68,7 @@ public class FilterSubjectsPaginatedSpec : Specification<Subject>
                         FilterOperators.IsNotEmpty => s => !string.IsNullOrEmpty(s.Description),
                         _ => null
                     };
-                    if (descExpr is not null) Query.Where(descExpr);
+                    if (descExpr is not null) filterExpressions.Add(descExpr);
                     break;
                 case "units":
                     if (!decimal.TryParse(filter.Value, out var unitsValue)) break;
@@ -82,9 +82,23 @@ public class FilterSubjectsPaginatedSpec : Specification<Subject>
                         FilterOperators.Gte => s => s.Units >= unitsValue,
                         _ => null
                     };
-                    if (unitsExpr is not null) Query.Where(unitsExpr);
+                    if (unitsExpr is not null) filterExpressions.Add(unitsExpr);
                     break;
             }
+        }
+
+        if (filterExpressions.Count > 0)
+        {
+            var combined = filterExpressions.Aggregate((left, right) =>
+            {
+                var param = left.Parameters[0];
+                var rightBody = ExpressionParameterReplacer.Replace(right.Body, right.Parameters[0], param);
+                var body = joinOperator == JoinOperator.or
+                    ? Expression.OrElse(left.Body, rightBody)
+                    : Expression.AndAlso(left.Body, rightBody);
+                return Expression.Lambda<Func<Subject, bool>>(body, param);
+            });
+            Query.Where(combined);
         }
 
 
@@ -143,4 +157,13 @@ public class FilterSubjectsPaginatedSpec : Specification<Subject>
             };
         }
     }
+}
+
+file sealed class ExpressionParameterReplacer(ParameterExpression from, Expression to) : ExpressionVisitor
+{
+    protected override Expression VisitParameter(ParameterExpression node)
+        => node == from ? to : base.VisitParameter(node);
+
+    public static Expression Replace(Expression body, ParameterExpression from, Expression to)
+        => new ExpressionParameterReplacer(from, to).Visit(body);
 }

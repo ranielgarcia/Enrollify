@@ -1,5 +1,5 @@
 import { getAllRoomTypesOptions } from "@/api/collections/room-type-collection";
-import { getAllSubjectsPaginatedOptions } from "@/api/collections/subject-collection";
+import { filterSubjectsPaginatedOptions } from "@/api/collections/subject-collection";
 import type { Subject } from "@/api/models/subject";
 import type { SubjectEquivalenceGroup } from "@/api/models/subject-equivalence";
 import { Button } from "@/components/ui/button";
@@ -21,11 +21,10 @@ import { searchParams } from "./searchParams";
 import { useQueryStates } from "nuqs";
 
 export default function SubjectsManagementPage() {
-  const [{ page, perPage, filters, sort }] = useQueryStates(searchParams);
+  const [{ page, perPage, filters, sort, joinOperator }] =
+    useQueryStates(searchParams);
 
-  console.log(filters);
-  console.log(sort);
-
+  console.log(joinOperator);
   const {
     isFormOpen,
     entityToEdit,
@@ -60,7 +59,13 @@ export default function SubjectsManagementPage() {
   const currentPageSize = perPage ? Number(perPage) : 10;
 
   const { data: pagedSubjects } = useSuspenseQuery(
-    getAllSubjectsPaginatedOptions(currentPage, currentPageSize),
+    filterSubjectsPaginatedOptions(
+      currentPage,
+      currentPageSize,
+      filters,
+      sort,
+      joinOperator,
+    ),
   );
 
   const { data: roomTypes } = useSuspenseQuery(getAllRoomTypesOptions());
