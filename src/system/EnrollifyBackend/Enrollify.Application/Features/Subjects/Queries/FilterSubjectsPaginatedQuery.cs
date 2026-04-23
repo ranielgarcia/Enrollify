@@ -1,26 +1,27 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.Subjects.DTOs;
 using Enrollify.Application.Features.Subjects.Specifications;
+using Enrollify.Application.Filtering;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.SharedKernel;
 using Mediator;
 
 namespace Enrollify.Application.Features.Subjects.Queries;
 
-public record SearchSubjectsPaginatedQuery(string? searchTerm, int page = 1, int pageSize = 10) : IQuery<Result<PagedResult<SubjectDto>>>;
+public record FilterSubjectsPaginatedQuery(int page = 1, int pageSize = 10, IEnumerable<FilterItem>? filters = null, IEnumerable<SortItem>? sorts = null) : IQuery<Result<PagedResult<SubjectDto>>>;
 
-public class SearchSubjectsPaginatedQueryHandler : IQueryHandler<SearchSubjectsPaginatedQuery, Result<PagedResult<SubjectDto>>>
+public class FilterSubjectsPaginatedQueryHandler : IQueryHandler<FilterSubjectsPaginatedQuery, Result<PagedResult<SubjectDto>>>
 {
     private readonly IReadRepository<Subject> _readRepository;
 
-    public SearchSubjectsPaginatedQueryHandler(IReadRepository<Subject> readRepository)
+    public FilterSubjectsPaginatedQueryHandler(IReadRepository<Subject> readRepository)
     {
         _readRepository = readRepository;
     }
 
-    public async ValueTask<Result<PagedResult<SubjectDto>>> Handle(SearchSubjectsPaginatedQuery request, CancellationToken cancellationToken)
+    public async ValueTask<Result<PagedResult<SubjectDto>>> Handle(FilterSubjectsPaginatedQuery request, CancellationToken cancellationToken)
     {
-        var spec = new SearchSubjectsPaginatedSpec(request.page, request.pageSize, request.searchTerm);
+        var spec = new FilterSubjectsPaginatedSpec(request.page, request.pageSize, request.filters, request.sorts);
         var subjects = await _readRepository.ListAsync(spec, cancellationToken);
         // https://specification.ardalis.com/usage/use-built-in-abstract-repository.html#countasync-and-anyasync-methods
         // CountAsync and AnyAsync methods
