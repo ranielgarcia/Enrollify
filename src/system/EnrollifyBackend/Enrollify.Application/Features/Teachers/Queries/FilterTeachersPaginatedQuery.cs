@@ -25,8 +25,8 @@ public class FilterTeachersPaginatedQueryHandler : IQueryHandler<FilterTeachersP
     }
     public async ValueTask<Result<PagedResult<TeacherDto>>> Handle(FilterTeachersPaginatedQuery request, CancellationToken cancellationToken)
     {
-        JoinOperator joinOperator = (request.joinOperator != null && request.joinOperator.ToLower().Trim() == "And")
-            ? JoinOperator.And : JoinOperator.Or;
+        JoinOperator joinOperator = Enum.TryParse<JoinOperator>(request.joinOperator, ignoreCase: true, out var parsed)
+                ? parsed : JoinOperator.Or;
 
         var spec = new FilterTeachersPaginatedSpec(request.page, request.pageSize, request.filters, request.sorts, joinOperator);
         var teachers = await _readRepository.ListAsync(spec, cancellationToken);

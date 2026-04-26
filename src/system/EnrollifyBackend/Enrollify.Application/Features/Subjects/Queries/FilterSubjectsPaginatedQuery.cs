@@ -27,7 +27,8 @@ public class FilterSubjectsPaginatedQueryHandler : IQueryHandler<FilterSubjectsP
 
     public async ValueTask<Result<PagedResult<SubjectDto>>> Handle(FilterSubjectsPaginatedQuery request, CancellationToken cancellationToken)
     {
-        JoinOperator joinOperator = (request.joinOperator != null && request.joinOperator.ToLower().Trim() == "And") ? JoinOperator.And : JoinOperator.Or;
+        JoinOperator joinOperator = Enum.TryParse<JoinOperator>(request.joinOperator, ignoreCase: true, out var parsed)
+                ? parsed : JoinOperator.Or;
 
         var spec = new FilterSubjectsPaginatedSpec(request.page, request.pageSize, request.filters, request.sorts, joinOperator);
         var subjects = await _readRepository.ListAsync(spec, cancellationToken);
