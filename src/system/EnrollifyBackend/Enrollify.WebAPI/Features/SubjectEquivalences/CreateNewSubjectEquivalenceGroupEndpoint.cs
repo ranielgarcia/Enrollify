@@ -1,4 +1,4 @@
-﻿using Enrollify.Application.SubjectEquivalences.Features;
+using Enrollify.Application.Features.SubjectEquivalences.Commands;
 
 namespace Enrollify.WebAPI.Features.SubjectEquivalences;
 

@@ -1,4 +1,4 @@
-﻿namespace Enrollify.WebAPI.Authorization;
+namespace Enrollify.WebAPI.Authorization;
 
 public class PolicyName
 {
@@ -64,5 +64,12 @@ public class PolicyName
     public const string HasUpdateSubjectEquivalenceGroupPermission = "HasUpdateSubjectEquivalenceGroupPermission";
     public const string HasDeleteSubjectEquivalenceGroupPermission = "HasDeleteSubjectEquivalenceGroupPermission";
     public const string HasViewSubjectEquivalenceGroupsPermission = "HasViewSubjectEquivalenceGroupsPermission";
+
+    // Teachers
+
+    public const string HasCreateTeacherPermission = "HasCreateTeacherPermission";
+    public const string HasUpdateTeacherPermission = "HasUpdateTeacherPermission";
+    public const string HasDeleteTeacherPermission = "HasDeleteTeacherPermission";
+    public const string HasViewTeacherPermission = "HasViewTeacherPermission";
 
 }

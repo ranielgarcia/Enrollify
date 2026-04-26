@@ -1,5 +1,5 @@
-﻿using Enrollify.Application.Roles.DTOs;
-using Enrollify.Application.Roles.Features.List;
+using Enrollify.Application.Features.Roles.DTOs;
+using Enrollify.Application.Features.Roles.Queries;
 using Enrollify.Core.Constants.Authorization;
 
 namespace Enrollify.Infrastructure.Data.Queries;
@@ -12,17 +12,17 @@ internal class ListRolesQueryService : IListRolesQueryService
     {
         _dbContext = dbContext;
     }
-    public async Task<List<RoleDTO>> ListRolesAsync(CancellationToken cancellationToken = default)
+    public async Task<List<RoleDto>> ListRolesAsync(CancellationToken cancellationToken = default)
     {
         var roles = await _dbContext.Roles
             .Include(r => r.RolePermissions)
-            .Select(role => new RoleDTO
+            .Select(role => new RoleDto
             {
                 Id = role.Id,
                 Name = role.Name,
                 Description = role.Description,
                 PermissionScopes = role.RolePermissions
-                        .Select(ps => new RolePermissionDTO
+                        .Select(ps => new RolePermissionDto
                         {
                             PermissionScope = PermissionScopeEnum.FromValue(ps.PermissionScopeId.Value),
                             Permissions = PermissionEnum.FromValue(ps.BitmaskPermission)

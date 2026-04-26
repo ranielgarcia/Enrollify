@@ -1,0 +1,32 @@
+using Ardalis.Result;
+using Enrollify.Application.Features.RoomTypes.DTOs;
+using Enrollify.Application.Features.RoomTypes.Specifications;
+using Enrollify.Core.Aggregates.RoomTypeAggregate;
+using Enrollify.SharedKernel;
+using Mediator;
+
+namespace Enrollify.Application.Features.RoomTypes.Queries;
+
+public class ListRoomTypesQuery : IQuery<Result<List<RoomTypeDto>>>
+{
+}
+
+public class ListRoomTypesQueryHandler : IQueryHandler<ListRoomTypesQuery, Result<List<RoomTypeDto>>>
+{
+    private readonly IReadRepository<RoomType> _repository;
+
+    public ListRoomTypesQueryHandler(IReadRepository<RoomType> repository)
+    {
+        _repository = repository;
+    }
+    public async ValueTask<Result<List<RoomTypeDto>>> Handle(ListRoomTypesQuery request, CancellationToken cancellationToken)
+    {
+        var spec = new ListRoomTypesWithAllNavigationSpec();
+        var roomTypes = await _repository.ListAsync(spec, cancellationToken);
+
+        var toReturn = roomTypes
+            .Select(RoomTypeDto.FromEntity).ToList();
+
+        return Result.Success(toReturn);
+    }
+}

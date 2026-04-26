@@ -1,25 +1,25 @@
-﻿using Enrollify.Application.Rooms.Models;
+using Enrollify.Application.Features.Rooms.Models;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 
 namespace Enrollify.Application.SharedDTOs;
 
-public class RoomTypeSummaryDTO
+public class RoomTypeSummaryDto
 {
     public RoomTypeId Id { get; set; }
     public string Name { get; set; } = string.Empty;
 
-    public static RoomTypeSummaryDTO FromEntity (RoomType entity)
+    public static RoomTypeSummaryDto FromEntity (RoomType entity)
     {
-        return new RoomTypeSummaryDTO
+        return new RoomTypeSummaryDto
         {
             Id = entity.Id,
             Name = entity.Name,
         };
     }
 
-    public static RoomTypeSummaryDTO FromProject(RoomTypeProjection entity)
+    public static RoomTypeSummaryDto FromProject(RoomTypeProjection entity)
     {
-        return new RoomTypeSummaryDTO
+        return new RoomTypeSummaryDto
         {
             Id = entity.Id,
             Name = entity.Name

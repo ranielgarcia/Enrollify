@@ -1,12 +1,12 @@
-﻿using Enrollify.Application.Rooms.DTOs;
-using Enrollify.Application.Rooms.Features;
+using Enrollify.Application.Features.Rooms.DTOs;
+using Enrollify.Application.Features.Rooms.Queries;
 
 namespace Enrollify.WebAPI.Features.Rooms;
 
 [HttpGet("")]
 [Group<RoomsEndpointGroup>]
 [Authorize(Policy = PolicyName.HasViewRoomsPermission)]
-public class ListRoomsEndpoint (IMediator mediator) : EndpointWithoutRequest<List<RoomDTO>>
+public class ListRoomsEndpoint (IMediator mediator) : EndpointWithoutRequest<List<RoomDto>>
 {
     public override async Task HandleAsync(CancellationToken c)
     {

@@ -1,7 +1,7 @@
 using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
-using Enrollify.Core.Aggregates.TeacherAggregate.Models;
 using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Core.ValueObjects.Storage;
 using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.Aggregates.TeacherAggregate;
@@ -10,19 +10,43 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
 {
     private Teacher() { }
 
+    public Teacher(
+        string firstName,
+        string middleName,
+        string lastName,
+        TeacherIdentifier teacherIdentifier,
+        TeacherEmail email,
+        TeacherPhoneNumber phoneNumber,
+        DepartmentId departmentId)
+    {
+        FirstName = Guard.Against.Null(firstName, message: "First name is required.");
+        MiddleName = Guard.Against.Null(middleName, message: "Middle name is required.");
+        LastName = Guard.Against.Null(lastName, message: "Last name is required.");
+        TeacherIdentifier = Guard.Against.Null(teacherIdentifier, message: "Teacher identifier is required.");
+        Email = Guard.Against.Null(email, message: "Email is required.");
+        PhoneNumber = Guard.Against.Null(phoneNumber, message: "Phone number is required.");
+        DepartmentId = Guard.Against.Null(departmentId, message: "Department ID is required.");
+    }
+
     public string FirstName { get; private set; }
     public string MiddleName { get; private set; }
     public string LastName { get; private set; }
 
+    public TeacherIdentifier TeacherIdentifier { get; private set; }
     public TeacherEmail Email { get; private set; }
     public TeacherPhoneNumber PhoneNumber { get; private set; }
 
     public DepartmentId DepartmentId { get; private set; }
     public Department? Department { get; }
 
-    public string AcademicTitle { get; private set; }
+    public string? AcademicTitle { get; private set; }
+    public string? Qualification { get; private set; }
+    public string? Specialization { get; private set; }
+    public string? OfficeLocation { get; private set; }
+    public string? OfficeHours { get; private set; }
+    public string? Biography { get; private set; }
 
-    public TeacherPhoto Photo { get; private set; }
+    public TeacherPhoto? Photo { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
@@ -36,19 +60,6 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
     public bool IsActive { get; private set; }
 
 
-    public static Teacher Create(TeacherForCreation teacherForCreation)
-    {
-        var teacher = new Teacher();
-
-        teacher
-            .UpdateFirstName(teacherForCreation.FirstName)
-            .UpdateMiddleName(teacherForCreation.MiddleName)
-            .UpdateLastName(teacherForCreation.LastName)
-            .UpdateEmail(teacherForCreation.Email)
-            .UpdateDepartmentId(teacherForCreation.DepartmentId);
-
-        return teacher;
-    }
 
     public Teacher UpdateFirstName (string firstName)
     {
@@ -71,10 +82,10 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
         return this;
     }
 
-    public Teacher UpdateAcademicTitle(string academicTitle)
+    public Teacher UpdateTeacherIdentifier(TeacherIdentifier identifier)
     {
-        if (academicTitle == AcademicTitle) return this;
-        AcademicTitle = Guard.Against.Null(academicTitle, message: "Academic title is required.");
+        if (identifier == TeacherIdentifier) return this;
+        TeacherIdentifier = Guard.Against.Null(identifier, message: "Teacher identifier is required");
         return this;
     }
 
@@ -92,6 +103,7 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
         return this;
     }
 
+
     public Teacher UpdateDepartmentId(DepartmentId departmentId)
     {
         if (departmentId == DepartmentId) return this;
@@ -99,10 +111,55 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
         return this;
     }
 
-    public Teacher UpdatePhoto(string locationPath, string fileName)
+    public Teacher UpdateAcademicTitle(string? academicTitle)
     {
-        if (locationPath == null || fileName == null) return this;
-        Photo = new TeacherPhoto(locationPath, fileName);
+        if (academicTitle == AcademicTitle) return this;
+        AcademicTitle = academicTitle;
+        return this;
+    }
+
+    public Teacher UpdateQualification(string? qualification)
+    {
+        if (qualification == Qualification) return this;
+        Qualification = qualification;
+        return this;
+    }
+
+
+    public Teacher UpdateSpecialization(string? specialization)
+    {
+        if (specialization == Specialization) return this;
+        Specialization = specialization;
+        return this;
+    }
+
+
+    public Teacher UpdateOfficeLocation(string? officeLocations)
+    {
+        if (officeLocations == OfficeLocation) return this;
+        OfficeLocation = officeLocations;
+        return this;
+    }
+
+
+    public Teacher UpdateOfficeHours(string? officeHours)
+    {
+        if (officeHours == OfficeHours) return this;
+        OfficeHours = officeHours;
+        return this;
+    }
+
+    public Teacher UpdateBiography(string? biography)
+    {
+        if (biography == Biography) return this;
+        Biography = biography;
+        return this;
+    }
+
+    public Teacher UpdatePhoto(FileName fileName, string contentType)
+    {
+        if (fileName == null || string.IsNullOrEmpty(contentType)) return this;
+        Photo = new TeacherPhoto(fileName, contentType);
         return this;
     }
 }

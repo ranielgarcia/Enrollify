@@ -1,7 +1,8 @@
-﻿using Enrollify.Application.Subjects.DTOs;
+using Enrollify.Application.Features.Subjects.DTOs;
 using Enrollify.Application.Subjects.Features;
 
 namespace Enrollify.WebAPI.Features.Subjects;
+
 
 public class SearchSubjectsPaginatedRequest
 {
@@ -15,6 +16,7 @@ public class SearchSubjectsPaginatedRequest
     [QueryParam]
     public string? SearchTerm { get; set; }
 }
+
 
 public class SearchSubjectsPaginatedRequestValidator : Validator<SearchSubjectsPaginatedRequest>
 {
@@ -35,7 +37,8 @@ public class SearchSubjectsPaginatedRequestValidator : Validator<SearchSubjectsP
 [HttpGet("search/{page}/{pageSize}")]
 [Group<SubjectEndpointGroup>]
 [Authorize(Policy = PolicyName.HasViewSubjectsPermission)]
-public class SearchSubjectsPaginatedEndpoint (IMediator mediator) : Endpoint<SearchSubjectsPaginatedRequest, Application.PagedResult<SubjectDTO>>
+public class SearchSubjectsPaginatedEndpoint(IMediator mediator)
+    : Endpoint<SearchSubjectsPaginatedRequest, Application.PagedResult<SubjectDto>>
 {
     public override async Task HandleAsync(SearchSubjectsPaginatedRequest request, CancellationToken cancellationToken)
     {

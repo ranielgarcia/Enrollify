@@ -1,12 +1,12 @@
-﻿using Enrollify.Application.Roles.DTOs;
-using Enrollify.Application.Roles.Features.List;
+using Enrollify.Application.Features.Roles.DTOs;
+using Enrollify.Application.Features.Roles.Queries;
 
 namespace Enrollify.WebAPI.Features.Roles;
 
 [HttpGet("")]
 [Group<RoleEndpointsGroup>]
 [Authorize(Policy = PolicyName.HasViewRolesPermission)]
-public class ListRolesEndpoint : EndpointWithoutRequest<List<RoleDTO>>
+public class ListRolesEndpoint : EndpointWithoutRequest<List<RoleDto>>
 {
     private readonly IMediator _mediator;
 

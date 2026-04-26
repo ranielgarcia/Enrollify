@@ -2,24 +2,24 @@ using Ardalis.SmartEnum;
 using Ardalis.SmartEnum.Dapper;
 using Azure.Storage.Blobs;
 using Dapper;
-using Enrollify.Application.Buildings;
-using Enrollify.Application.Colleges;
-using Enrollify.Application.Courses;
-using Enrollify.Application.Curriculums;
-using Enrollify.Application.Departments;
-using Enrollify.Application.Roles.Features.List;
-using Enrollify.Application.Rooms;
-using Enrollify.Application.RoomTypes;
-using Enrollify.Application.SubjectEquivalences;
-using Enrollify.Application.Subjects;
-using Enrollify.Application.Teachers;
+using Enrollify.Application.Features.Buildings;
+using Enrollify.Application.Features.Colleges;
+using Enrollify.Application.Features.Courses;
+using Enrollify.Application.Features.Curriculums;
+using Enrollify.Application.Features.Departments;
+using Enrollify.Application.Features.Roles.Queries;
+using Enrollify.Application.Features.Rooms;
+using Enrollify.Application.Features.RoomTypes;
+using Enrollify.Application.Features.SubjectEquivalences;
+using Enrollify.Application.Features.Subjects;
+using Enrollify.Application.Features.Teachers;
+using Enrollify.Application.Features.Teachers.Storage;
 using Enrollify.Core.Constants.Authorization;
-using Enrollify.Core.Services.FileStorage;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
 using Enrollify.Infrastructure.Data.Queries;
-using Enrollify.Infrastructure.FileStorage;
 using Enrollify.Infrastructure.Repositories;
+using Enrollify.Infrastructure.Storage;
 using Enrollify.SharedKernel;
 
 namespace Enrollify.Infrastructure;
@@ -29,7 +29,8 @@ public static class InfrastructureServiceExtensions
     public static IServiceCollection AddInfrastructureServices(
       this IServiceCollection services,
       ConfigurationManager config,
-      ILogger logger)
+      ILogger logger,
+      bool isDevelopment = false)
     {
         // Try to get connection strings in order of priority:
         // 1. "cleanarchitecture" - provided by Aspire when using .WithReference(cleanArchDb)
@@ -43,6 +44,8 @@ public static class InfrastructureServiceExtensions
         services.AddTransient<IDbConnectionFactory>(sp =>
             new SqlConnectionFactory(connectionString));
 
+        // Azure Blob Storage
+        services.AddStorageSettings(config);
 
         // Auto register all Vogen Dapper type handlers/converters
         VogenDapperTypeHandlerRegistration.RegisterTypeHandlers();
@@ -61,6 +64,9 @@ public static class InfrastructureServiceExtensions
             var preSaveChangesInterceptor = provider.GetRequiredService<PreSaveChangesInterceptor>();
             
             options.UseSqlServer(connectionString);
+
+            if (isDevelopment)
+                options.EnableSensitiveDataLogging();
 
             options.AddInterceptors(eventDispatchInterceptor);
             options.AddInterceptors(preSaveChangesInterceptor);
@@ -83,20 +89,6 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ITeacherRepository, TeacherRepository>();
         services.AddScoped<ITeacherPhotoStorageService, TeacherPhotoStorageService>();
 
-        // Azure Blob Storage
-        string? azureBlobStorageConnectionString = config.GetConnectionString("AzureBlobStorage");
-        if (!string.IsNullOrEmpty(azureBlobStorageConnectionString))
-        {
-            // TODO: Remove explicit ServiceVersion once Azurite supports the 2026-02-06 API version
-            services.AddSingleton(new BlobServiceClient(azureBlobStorageConnectionString,
-                new BlobClientOptions(BlobClientOptions.ServiceVersion.V2025_01_05)));
-            services.AddScoped<IFileStorageService, AzureBlobStorageService>();
-            logger.LogInformation("{Service} registered with Azure Blob Storage", nameof(IFileStorageService));
-        }
-        else
-        {
-            logger.LogError("Azure Blob Storage connection string not found. {Service} will not be available. Add 'AzureBlobStorage' to ConnectionStrings configuration.", nameof(IFileStorageService));
-        }
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 

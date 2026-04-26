@@ -1,4 +1,4 @@
-﻿using Enrollify.Application.Subjects.Features;
+using Enrollify.Application.Features.Subjects.Commands;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 

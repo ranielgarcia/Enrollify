@@ -3,6 +3,10 @@ import { SubjectSchema, type Subject } from "../models/subject";
 import { pagedResultSchema, type PagedResult } from "../models/paged-result";
 import createMutationOptions from "@/hooks/create-mutation-options";
 import { toast } from "sonner";
+import type {
+  ExtendedColumnFilter,
+  ExtendedColumnSort,
+} from "@/types/data-table";
 
 const queryKeys = {
   base: () => ["subjects"],
@@ -10,6 +14,21 @@ const queryKeys = {
     ...queryKeys.base(),
     page,
     pageSize,
+  ],
+  filter: (
+    page: number,
+    pageSize: number,
+    filters: ExtendedColumnFilter<Subject>[],
+    sort: ExtendedColumnSort<Subject>[],
+    joinOperator: string,
+  ) => [
+    ...queryKeys.base(),
+    "search",
+    page,
+    pageSize,
+    filters,
+    sort,
+    joinOperator,
   ],
   search: (page: number, pageSize: number, searchTerm?: string | null) => [
     ...queryKeys.base(),
@@ -37,18 +56,24 @@ export const getAllSubjectsMinimalOptions = () =>
     },
   });
 
-export const getAllSubjectsPaginatedOptions = (
+export const searchSubjectsPaginatedOptions = (
   page: number,
   pageSize: number,
+  searchTerm?: string | null,
+  enabled: boolean = false,
 ) =>
   createQueryOptions({
-    path: "/api/subjects/{page}/{pageSize}",
+    path: "/api/subjects/search/{page}/{pageSize}",
     pathParams: {
-      page: page.toString(),
-      pageSize: pageSize.toString(),
+      page: page,
+      pageSize: pageSize,
+    },
+    params: {
+      searchTerm,
     },
     options: {
-      queryKey: queryKeys.paginated(page, pageSize),
+      enabled: !!page && !!pageSize && enabled,
+      queryKey: queryKeys.search(page, pageSize, searchTerm),
       staleTime: 1000 * 60 * 2,
       select: (pagedResults): PagedResult<Subject> => {
         // Handle empty response or string response
@@ -73,24 +98,27 @@ export const getAllSubjectsPaginatedOptions = (
     },
   });
 
-export const searchSubjectsPaginatedOptions = (
+export const filterSubjectsPaginatedOptions = (
   page: number,
   pageSize: number,
-  searchTerm?: string | null,
-  enabled: boolean = false,
+  filters: ExtendedColumnFilter<Subject>[],
+  sort: ExtendedColumnSort<Subject>[],
+  joinOperator: string,
 ) =>
   createQueryOptions({
-    path: "/api/subjects/search/{page}/{pageSize}",
+    path: "/api/subjects/filter/{page}/{pageSize}",
     pathParams: {
       page: page,
       pageSize: pageSize,
     },
     params: {
-      searchTerm,
+      filters: filters.length ? JSON.stringify(filters) : undefined,
+      sort: sort.length ? JSON.stringify(sort) : undefined,
+      joinOperator,
     },
     options: {
-      enabled: !!page && !!pageSize && enabled,
-      queryKey: queryKeys.search(page, pageSize, searchTerm),
+      // enabled: !!page && !!pageSize && enabled,
+      queryKey: queryKeys.filter(page, pageSize, filters, sort, joinOperator),
       staleTime: 1000 * 60 * 2,
       select: (pagedResults): PagedResult<Subject> => {
         // Handle empty response or string response

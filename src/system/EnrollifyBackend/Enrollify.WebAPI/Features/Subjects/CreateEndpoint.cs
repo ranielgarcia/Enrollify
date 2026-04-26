@@ -1,4 +1,5 @@
-﻿using Enrollify.Core.Aggregates.RoomTypeAggregate;
+using Enrollify.Application.Features.Subjects.Commands;
+using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate.Models;
 
@@ -56,7 +57,7 @@ public class CreateEndpoint : Endpoint<CreateSubjectRequest, CreatedApiResult<Cr
     public override async Task<CreatedApiResult<CreateSubjectResponse>>
         ExecuteAsync (CreateSubjectRequest request, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new Application.Subjects.Features.CreateSubject.Command(
+        var result = await _mediator.Send(new CreateSubject.Command(
             new SubjectForCreation
             {
                 Code = SubjectCode.From(request.Code),

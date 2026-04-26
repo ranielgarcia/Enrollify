@@ -1,12 +1,12 @@
-﻿using Enrollify.Application.Colleges.DTOs;
-using Enrollify.Application.Colleges.Features;
+using Enrollify.Application.Features.Colleges.Queries;
+using Enrollify.Application.Features.Colleges.DTOs;
 
 namespace Enrollify.WebAPI.Features.Colleges;
 
 [HttpGet("")]
 [Group<CollegeEndpointsGroup>]
 [Authorize(Policy = PolicyName.HasViewCollegePermission)]
-public class ListCollegesEndpoint : EndpointWithoutRequest<List<CollegeDTO>>
+public class ListCollegesEndpoint : EndpointWithoutRequest<List<CollegeDto>>
 {
     private readonly IMediator _mediator;
 

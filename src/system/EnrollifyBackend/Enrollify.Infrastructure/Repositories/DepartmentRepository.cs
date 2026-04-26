@@ -1,5 +1,5 @@
 using Ardalis.Result;
-using Enrollify.Application.Departments;
+using Enrollify.Application.Features.Departments;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
 using Enrollify.Infrastructure.Data;
 

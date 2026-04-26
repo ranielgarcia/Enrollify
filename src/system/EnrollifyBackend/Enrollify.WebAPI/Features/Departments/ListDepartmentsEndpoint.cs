@@ -1,12 +1,12 @@
-﻿using Enrollify.Application.Departments.DTOs;
-using Enrollify.Application.Departments.Features;
+using Enrollify.Application.Features.Departments.Queries;
+using Enrollify.Application.Features.Departments.DTOs;
 
 namespace Enrollify.WebAPI.Features.Departments;
 
 [HttpGet("")]
 [Group<DepartmentEndpointGroup>]
 [Authorize(Policy = PolicyName.HasViewDepartmentPermission)]
-public class ListDepartmentsEndpoint (IMediator mediator) : EndpointWithoutRequest<List<DepartmentDTO>>
+public class ListDepartmentsEndpoint (IMediator mediator) : EndpointWithoutRequest<List<DepartmentDto>>
 {
     public override async Task HandleAsync(CancellationToken cancellationToken)
     {

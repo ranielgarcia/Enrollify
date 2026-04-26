@@ -8,7 +8,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Edit2, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { useTablePermissions } from "@/hooks/use-table-permissions";
-import { formatDateTime, formatDateTimeString } from "@/lib/date-utils";
+import { formatDateTimeString } from "@/lib/date-utils";
 
 interface BuildingsTableProps {
   buildings?: Building[];

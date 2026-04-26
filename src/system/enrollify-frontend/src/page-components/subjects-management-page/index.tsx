@@ -1,13 +1,12 @@
 import { getAllRoomTypesOptions } from "@/api/collections/room-type-collection";
-import { getAllSubjectsPaginatedOptions } from "@/api/collections/subject-collection";
+import { filterSubjectsPaginatedOptions } from "@/api/collections/subject-collection";
 import type { Subject } from "@/api/models/subject";
 import type { SubjectEquivalenceGroup } from "@/api/models/subject-equivalence";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useNavigate, useParams } from "@tanstack/react-router";
-import { BookOpen, LayoutGrid, Link2, List, Plus } from "lucide-react";
-import { useCallback, useState } from "react";
+import { BookOpen, Link2, Plus } from "lucide-react";
+import { useState } from "react";
 import { DeleteSubjectAlertDialog } from "./delete-subject-alert-dialog";
 import {
   DeleteEquivalenceGroupDialog,
@@ -15,17 +14,17 @@ import {
   EquivalenceGroupsTab,
 } from "./equivalence-groups";
 import { SubjectFormDrawer } from "./subject-form-drawer";
-import { SubjectsCardGrid } from "./subjects-card-grid";
 import { SubjectsTable } from "./subjects-table";
 import { useCrudState } from "@/hooks/use-crud-state";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
-
-type ViewMode = "table" | "grid";
+import { searchParams } from "./searchParams";
+import { useQueryStates } from "nuqs";
 
 export default function SubjectsManagementPage() {
-  const { page, pageSize } = useParams({ strict: false });
-  const navigate = useNavigate();
+  const [{ page, perPage, filters, sort, joinOperator }] =
+    useQueryStates(searchParams);
 
+  console.log(joinOperator);
   const {
     isFormOpen,
     entityToEdit,
@@ -47,8 +46,6 @@ export default function SubjectsManagementPage() {
     openCreateForm: openEquivalenceCreateForm,
   } = useCrudState<SubjectEquivalenceGroup>();
 
-  const [viewMode, setViewMode] = useState<ViewMode>("table");
-
   const [activeTab, setActiveTab] = useState(
     () => sessionStorage.getItem("subjects-tab") ?? "subjects",
   );
@@ -59,38 +56,19 @@ export default function SubjectsManagementPage() {
   };
 
   const currentPage = page ? Number(page) : 1;
-  const currentPageSize = pageSize ? Number(pageSize) : 10;
+  const currentPageSize = perPage ? Number(perPage) : 10;
 
   const { data: pagedSubjects } = useSuspenseQuery(
-    getAllSubjectsPaginatedOptions(currentPage, currentPageSize),
+    filterSubjectsPaginatedOptions(
+      currentPage,
+      currentPageSize,
+      filters,
+      sort,
+      joinOperator,
+    ),
   );
 
   const { data: roomTypes } = useSuspenseQuery(getAllRoomTypesOptions());
-
-  const handlePageChange = useCallback(
-    (newPage: number, newPageSize: number) => {
-      navigate({
-        to: "/portal/master-data/subjects/{-$page}/{-$pageSize}",
-        params: {
-          page: String(newPage),
-          pageSize: String(newPageSize),
-        },
-      });
-    },
-    [navigate],
-  );
-
-  const handlePreviousPage = useCallback(() => {
-    if (currentPage > 1) {
-      handlePageChange(currentPage - 1, currentPageSize);
-    }
-  }, [currentPage, currentPageSize, handlePageChange]);
-
-  const handleNextPage = useCallback(() => {
-    if (pagedSubjects && currentPage < pagedSubjects.totalPages) {
-      handlePageChange(currentPage + 1, currentPageSize);
-    }
-  }, [currentPage, currentPageSize, handlePageChange, pagedSubjects]);
 
   return (
     <ManagementPageLayout
@@ -135,50 +113,11 @@ export default function SubjectsManagementPage() {
           value="subjects"
           className="flex min-h-0 flex-col space-y-4"
         >
-          {/* Toolbar: View Toggle + Add Button */}
-          <div className="flex items-center justify-between">
-            {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 bg-muted p-1 rounded-lg">
-              <Button
-                variant={viewMode === "table" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("table")}
-                className="gap-2"
-              >
-                <List className="size-4" />
-                Table
-              </Button>
-              <Button
-                variant={viewMode === "grid" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("grid")}
-                className="gap-2"
-              >
-                <LayoutGrid className="size-4" />
-                Grid
-              </Button>
-            </div>
-
-            {/* Add Subject Button */}
-          </div>
-
-          {/* Subjects Display */}
-          {viewMode === "table" ? (
-            <SubjectsTable
-              pagedSubjects={pagedSubjects}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onPageChange={handlePageChange}
-            />
-          ) : (
-            <SubjectsCardGrid
-              pagedSubjects={pagedSubjects}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onPreviousPage={handlePreviousPage}
-              onNextPage={handleNextPage}
-            />
-          )}
+          <SubjectsTable
+            pagedSubjects={pagedSubjects}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </TabsContent>
 
         {/* Equivalence Groups Tab */}

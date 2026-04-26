@@ -1,6 +1,6 @@
-﻿using Ardalis.Result;
-using Enrollify.Application.SubjectEquivalences.DTOs;
-using Enrollify.Application.SubjectEquivalences.Features;
+using Ardalis.Result;
+using Enrollify.Application.Features.SubjectEquivalences.Commands;
+using Enrollify.Application.Features.SubjectEquivalences.DTOs;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 
@@ -29,9 +29,9 @@ public class AddSubjectsToEquivalenceGroupRequestValidator : Validator<AddSubjec
 [Group<SubjectEquivalenceGroupEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateSubjectEquivalenceGroupPermission)]
 public class AddSubjectsToEquivalenceGroupEndpoint (IMediator mediator)
-    : Endpoint<AddSubjectsToEquivalenceGroupRequest, OkOrNotFoundApiResult<SubjectEquivalenceGroupDTO>>
+    : Endpoint<AddSubjectsToEquivalenceGroupRequest, OkOrNotFoundApiResult<SubjectEquivalenceGroupDto>>
 {
-    public override async Task<OkOrNotFoundApiResult<SubjectEquivalenceGroupDTO>>
+    public override async Task<OkOrNotFoundApiResult<SubjectEquivalenceGroupDto>>
         ExecuteAsync(AddSubjectsToEquivalenceGroupRequest request, CancellationToken ct)
     {
         var subjectIds = request.SubjectIds.Select(id => SubjectId.From(id)).ToList();

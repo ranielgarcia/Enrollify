@@ -1,12 +1,12 @@
-﻿using Enrollify.Application.RoomTypes.DTOs;
-using Enrollify.Application.RoomTypes.Features;
+using Enrollify.Application.Features.RoomTypes.DTOs;
+using Enrollify.Application.Features.RoomTypes.Queries;
 
 namespace Enrollify.WebAPI.Features.RoomTypes;
 
 [HttpGet("")]
 [Group<RoomTypeEndpointsGroup>]
 [Authorize(Policy = PolicyName.HasViewRoomTypesPermission)]
-public class ListRoomTypesEndpoint : EndpointWithoutRequest<List<RoomTypeDTO>>
+public class ListRoomTypesEndpoint : EndpointWithoutRequest<List<RoomTypeDto>>
 {
     private readonly IMediator _mediator;
 

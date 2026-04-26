@@ -1,4 +1,4 @@
-using Enrollify.Application.Teachers;
+using Enrollify.Application.Features.Teachers.Storage;
 
 namespace Enrollify.WebAPI.StartupServices;
 

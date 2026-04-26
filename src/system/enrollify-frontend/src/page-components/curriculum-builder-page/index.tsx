@@ -1,7 +1,5 @@
-import { useState, Suspense } from "react";
-import { CurriculumForm } from "./curriculum-form";
-import { Button } from "@/components/ui/button";
-import { Plus, BookOpen, OctagonAlert, Scroll } from "lucide-react";
+import { Suspense } from "react";
+import { BookOpen, OctagonAlert, Scroll } from "lucide-react";
 
 import { useNavigate, useParams } from "@tanstack/react-router";
 import {
@@ -10,16 +8,21 @@ import {
 } from "@/api/collections/curriculum-collection";
 import CurriculumBasicDetails from "./curriculum-basic-details";
 import { obfuscator } from "@/lib/obfuscator";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import MultiYearSubjectGridEditor from "./multi-year-subject-grid-editor";
 import { CurriculumsTable } from "./curriculums-table";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
+import { useCrudState } from "@/hooks/use-crud-state";
+import type { CurriculumWithSubjects } from "@/api/models/curriculum";
+import { getAllCoursesOptions } from "@/api/collections/course-collection";
+import { CurriculumFormDrawer } from "./curriculum-form-drawer";
 
 function CurriculumContent() {
   const navigate = useNavigate();
   const { curriculumId } = useParams({ strict: false });
 
-  const [showForm, setShowForm] = useState(false);
+  const { isFormOpen, handleEdit, handleFormOpenChange } =
+    useCrudState<CurriculumWithSubjects>();
 
   const { data: curriculum, isPending: isLoadingCurriculum } = useQuery(
     getCurriculumQueryOption(obfuscator.decode(curriculumId ?? "").at(0)),
@@ -29,62 +32,40 @@ function CurriculumContent() {
     getAllCurriculumsOptions(curriculumId === undefined),
   );
 
+  const { data: courses } = useSuspenseQuery(getAllCoursesOptions());
+
   return (
     <ManagementPageLayout
       title="Curriculum Builder"
       description="Design and manage multi-year academic curricula"
       icon={<Scroll />}
       createNewItemButton={
-        !curriculum &&
-        !showForm && (
-          <Button
-            onClick={() => setShowForm(true)}
-            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
-            size="sm"
-          >
-            <Plus className="size-4" />
-            Create New Curriculum
-          </Button>
-        )
+        <CurriculumFormDrawer
+          courses={courses}
+          onOpenChange={handleFormOpenChange}
+          curriculumToUpdate={curriculum}
+          isOpen={isFormOpen}
+          setIsOpen={handleFormOpenChange}
+          disabled={!!curriculum}
+        />
       }
       isLoading={!!curriculumId && isLoadingCurriculum}
     >
-      {showForm && (
-        <div className="mb-8">
-          <CurriculumForm
-            onClose={() => setShowForm(false)}
-            onSave={(curriculumId) => {
-              const obfuscatedId = obfuscator.encode([curriculumId]);
-              navigate({
-                to: "/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}",
-                params: (prev) => ({ ...prev, curriculumId: obfuscatedId }),
-              });
-              setShowForm(false);
-            }}
-            curriculumToUpdate={curriculum}
-          />
-        </div>
-      )}
-
       {curriculum ? (
         <div className="space-y-8 animate-in fade-in duration-500">
-          {!showForm && (
-            <CurriculumBasicDetails
-              curriculum={curriculum}
-              onEditDetails={() => {
-                setShowForm(true);
-              }}
-              onClose={() => {
-                navigate({
-                  to: "/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}",
-                  params: (prev) => ({
-                    ...prev,
-                    curriculumId: undefined,
-                  }),
-                });
-              }}
-            />
-          )}
+          <CurriculumBasicDetails
+            curriculum={curriculum}
+            onEditDetails={() => handleEdit(curriculum)}
+            onClose={() => {
+              navigate({
+                to: "/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}",
+                params: (prev) => ({
+                  ...prev,
+                  curriculumId: undefined,
+                }),
+              });
+            }}
+          />
 
           {/* Multi-Year Subject Grid */}
           <MultiYearSubjectGridEditor curriculum={curriculum} />
