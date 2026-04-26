@@ -20,7 +20,16 @@ const queryKeys = {
     pageSize: number,
     filters: ExtendedColumnFilter<Subject>[],
     sort: ExtendedColumnSort<Subject>[],
-  ) => [...queryKeys.base(), "search", page, pageSize, filters, sort],
+    joinOperator: string,
+  ) => [
+    ...queryKeys.base(),
+    "search",
+    page,
+    pageSize,
+    filters,
+    sort,
+    joinOperator,
+  ],
   search: (page: number, pageSize: number, searchTerm?: string | null) => [
     ...queryKeys.base(),
     "search",
@@ -109,7 +118,7 @@ export const filterSubjectsPaginatedOptions = (
     },
     options: {
       // enabled: !!page && !!pageSize && enabled,
-      queryKey: queryKeys.filter(page, pageSize, filters, sort),
+      queryKey: queryKeys.filter(page, pageSize, filters, sort, joinOperator),
       staleTime: 1000 * 60 * 2,
       select: (pagedResults): PagedResult<Subject> => {
         // Handle empty response or string response

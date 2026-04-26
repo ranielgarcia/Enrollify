@@ -1,6 +1,6 @@
 namespace Enrollify.Application.Filtering;
 
-public static class FilterOperators
+public static class FilterOperator
 {
     public const string ILike = "iLike";
     public const string NotILike = "notILike";

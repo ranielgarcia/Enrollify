@@ -32,14 +32,15 @@ public class FilterSubjectsPaginatedSpec : Specification<Subject>
             switch (filter.Id)
             {
                 case "code":
+
                     Expression<Func<Subject, bool>>? codeExpr = filter.Operator switch
                     {
-                        FilterOperators.ILike => s => ((string)s.Code).ToLower().Contains(filter.Value.ToLower()),
-                        FilterOperators.NotILike => s => !((string)s.Code).ToLower().Contains(filter.Value.ToLower()),
-                        FilterOperators.Eq => s => ((string)s.Code) == filter.Value,
-                        FilterOperators.Ne => s => ((string)s.Code) != filter.Value,
-                        FilterOperators.IsEmpty => s => ((string)s.Code) == string.Empty,
-                        FilterOperators.IsNotEmpty => s => ((string)s.Code) != string.Empty,
+                        FilterOperator.ILike => s => ((string)s.Code).Contains(filter.Value),
+                        FilterOperator.NotILike => s => !((string)s.Code).Contains(filter.Value),
+                        FilterOperator.Eq => s => ((string)s.Code) == filter.Value,
+                        FilterOperator.Ne => s => ((string)s.Code) != filter.Value,
+                        FilterOperator.IsEmpty => s => ((string)s.Code) == string.Empty,
+                        FilterOperator.IsNotEmpty => s => ((string)s.Code) != string.Empty,
                         _ => null
                     };
                     if (codeExpr is not null) filterExpressions.Add(codeExpr);
@@ -47,12 +48,12 @@ public class FilterSubjectsPaginatedSpec : Specification<Subject>
                 case "title":
                     Expression<Func<Subject, bool>>? titleExpr = filter.Operator switch
                     {
-                        FilterOperators.ILike => s => s.Title.ToLower().Contains(filter.Value.ToLower()),
-                        FilterOperators.NotILike => s => !s.Title.ToLower().Contains(filter.Value.ToLower()),
-                        FilterOperators.Eq => s => s.Title == filter.Value,
-                        FilterOperators.Ne => s => s.Title != filter.Value,
-                        FilterOperators.IsEmpty => s => string.IsNullOrEmpty(s.Title),
-                        FilterOperators.IsNotEmpty => s => !string.IsNullOrEmpty(s.Title),
+                        FilterOperator.ILike => s => s.Title.Contains(filter.Value),
+                        FilterOperator.NotILike => s => !s.Title.Contains(filter.Value),
+                        FilterOperator.Eq => s => s.Title == filter.Value,
+                        FilterOperator.Ne => s => s.Title != filter.Value,
+                        FilterOperator.IsEmpty => s => string.IsNullOrEmpty(s.Title),
+                        FilterOperator.IsNotEmpty => s => !string.IsNullOrEmpty(s.Title),
                         _ => null
                     };
                     if (titleExpr is not null) filterExpressions.Add(titleExpr);
@@ -60,12 +61,12 @@ public class FilterSubjectsPaginatedSpec : Specification<Subject>
                 case "description":
                     Expression<Func<Subject, bool>>? descExpr = filter.Operator switch
                     {
-                        FilterOperators.ILike => s => s.Description.ToLower().Contains(filter.Value.ToLower()),
-                        FilterOperators.NotILike => s => !s.Description.ToLower().Contains(filter.Value.ToLower()),
-                        FilterOperators.Eq => s => s.Description == filter.Value,
-                        FilterOperators.Ne => s => s.Description != filter.Value,
-                        FilterOperators.IsEmpty => s => string.IsNullOrEmpty(s.Description),
-                        FilterOperators.IsNotEmpty => s => !string.IsNullOrEmpty(s.Description),
+                        FilterOperator.ILike => s => s.Description.Contains(filter.Value),
+                        FilterOperator.NotILike => s => !s.Description.Contains(filter.Value),
+                        FilterOperator.Eq => s => s.Description == filter.Value,
+                        FilterOperator.Ne => s => s.Description != filter.Value,
+                        FilterOperator.IsEmpty => s => string.IsNullOrEmpty(s.Description),
+                        FilterOperator.IsNotEmpty => s => !string.IsNullOrEmpty(s.Description),
                         _ => null
                     };
                     if (descExpr is not null) filterExpressions.Add(descExpr);
@@ -74,12 +75,12 @@ public class FilterSubjectsPaginatedSpec : Specification<Subject>
                     if (!decimal.TryParse(filter.Value, out var unitsValue)) break;
                     Expression<Func<Subject, bool>>? unitsExpr = filter.Operator switch
                     {
-                        FilterOperators.Eq => s => s.Units == unitsValue,
-                        FilterOperators.Ne => s => s.Units != unitsValue,
-                        FilterOperators.Lt => s => s.Units < unitsValue,
-                        FilterOperators.Lte => s => s.Units <= unitsValue,
-                        FilterOperators.Gt => s => s.Units > unitsValue,
-                        FilterOperators.Gte => s => s.Units >= unitsValue,
+                        FilterOperator.Eq => s => s.Units == unitsValue,
+                        FilterOperator.Ne => s => s.Units != unitsValue,
+                        FilterOperator.Lt => s => s.Units < unitsValue,
+                        FilterOperator.Lte => s => s.Units <= unitsValue,
+                        FilterOperator.Gt => s => s.Units > unitsValue,
+                        FilterOperator.Gte => s => s.Units >= unitsValue,
                         _ => null
                     };
                     if (unitsExpr is not null) filterExpressions.Add(unitsExpr);
