@@ -6,7 +6,6 @@ namespace Enrollify.WebAPI.Features.Curriculums;
 
 public class UpdateCurriculumRequest
 {
-    [QueryParam]
     public int Id { get; set; }
     public required int CourseId { get; set; }
     public required int EffectiveYear { get; set; }
@@ -38,7 +37,7 @@ public class UpdateCurriculumRequestValidator : Validator<UpdateCurriculumReques
     }
 }
 
-[HttpPut("")]
+[HttpPut("{id:int}")]
 [Group<CurriculumEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateCurriculumPermission)]
 public class UpdateEndpoint(IMediator mediator)

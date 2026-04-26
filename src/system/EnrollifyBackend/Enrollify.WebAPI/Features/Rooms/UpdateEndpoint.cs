@@ -17,7 +17,6 @@ public class UpdateRoomResponse
 
 public class UpdateRoomRequest
 {
-    [QueryParam]
     public int Id { get; set; }
     public string RoomNumber { get; set; } = string.Empty;
     public int Capacity { get; set; }
@@ -42,7 +41,7 @@ public class UpdateRoomRequestValidator : Validator<UpdateRoomRequest>
     }
 }
 
-[HttpPut("")]
+[HttpPut("{id:int}")]
 [Group<RoomsEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateRoomPermission)]
 public class UpdateEndpoint : Endpoint<UpdateRoomRequest, OkOrNotFoundApiResult<UpdateRoomResponse>>

@@ -5,7 +5,7 @@ namespace Enrollify.WebAPI.Features.SubjectEquivalences;
 
 public class UpdateSubjectEquivalenceGroupRequest
 {
-    [Microsoft.AspNetCore.Mvc.FromRoute]
+    //[Microsoft.AspNetCore.Mvc.FromRoute]
     public int Id { get; set; }
     public required string Name { get; set; }
 }

@@ -15,8 +15,6 @@ public class UpdateCollegeResponse
 
 public class UpdateCollegeRequest
 {
-
-    [QueryParam]
     public int Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
@@ -44,7 +42,7 @@ public class UpdateCollegeRequestValidator : Validator<UpdateCollegeRequest>
     }
 }
 
-[HttpPut("")]
+[HttpPut("{id:int}")]
 [Group<CollegeEndpointsGroup>]
 [Authorize(Policy = PolicyName.HasUpdateCollegePermission)]
 public class UpdateEndpoint : Endpoint<UpdateCollegeRequest, OkOrNotFoundApiResult<UpdateCollegeResponse>>

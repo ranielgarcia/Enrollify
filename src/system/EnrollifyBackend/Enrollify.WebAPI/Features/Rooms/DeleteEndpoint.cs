@@ -5,7 +5,6 @@ namespace Enrollify.WebAPI.Features.Rooms;
 
 public class DeleteRoomRequest
 {
-    [QueryParam]
     public int Id { get; set; }
 }
 
@@ -18,7 +17,7 @@ public class DeleteRoomRequestValidator : Validator<DeleteRoomRequest>
     }
 }
 
-[HttpDelete("")]
+[HttpDelete("{id:int}")]
 [Group<RoomsEndpointGroup>]
 [Authorize(Policy = PolicyName.HasDeleteRoomPermission)]
 public class DeleteEndpoint : Endpoint<DeleteRoomRequest, DeleteApiResult>
@@ -31,9 +30,9 @@ public class DeleteEndpoint : Endpoint<DeleteRoomRequest, DeleteApiResult>
     }
 
     public override async Task<DeleteApiResult>
-        ExecuteAsync(DeleteRoomRequest request, CancellationToken cancellationToken)
+        ExecuteAsync(DeleteRoomRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new DeleteRoom.Command(RoomId.From(request.Id)), cancellationToken);
+        var result = await _mediator.Send(new DeleteRoom.Command(RoomId.From(request.Id)), ct);
         return result.ToDeleteResult();
     }
 }

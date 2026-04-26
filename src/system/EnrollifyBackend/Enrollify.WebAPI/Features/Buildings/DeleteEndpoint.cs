@@ -5,7 +5,6 @@ namespace Enrollify.WebAPI.Features.Buildings;
 
 public class DeleteRequest
 {
-    [QueryParam]
     public int Id { get; set; }
 }
 
@@ -18,7 +17,7 @@ public class DeleteRequestValidator : Validator<DeleteRequest>
     }
 }
 
-[HttpDelete("")]
+[HttpDelete("{id:int}")]
 [Group<BuildingEndpointGroup>]
 [Authorize(Policy = PolicyName.HasDeleteBuildingPermission)]
 public class DeleteEndpoint : Endpoint<DeleteRequest, DeleteApiResult>
@@ -31,9 +30,9 @@ public class DeleteEndpoint : Endpoint<DeleteRequest, DeleteApiResult>
     }
 
     public override async Task<DeleteApiResult>
-        ExecuteAsync (DeleteRequest request, CancellationToken cancellationToken)
+        ExecuteAsync (DeleteRequest request, CancellationToken ct)
     {
-        var result = await _mediator.Send(new DeleteBuilding.Command(BuildingId.From(request.Id)), cancellationToken);
+        var result = await _mediator.Send(new DeleteBuilding.Command(BuildingId.From(request.Id)), ct);
         return result.ToDeleteResult();
     }
 }

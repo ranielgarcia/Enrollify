@@ -6,7 +6,7 @@ namespace Enrollify.WebAPI.Features.SubjectEquivalences;
 
 public class RemoveSubjectFromEquivalenceGroupRequest
 {
-    [Microsoft.AspNetCore.Mvc.FromRoute]
+    //[Microsoft.AspNetCore.Mvc.FromRoute]
     public int Id { get; set; }
     public string SubjectCode { get; set; } = null!;
 }

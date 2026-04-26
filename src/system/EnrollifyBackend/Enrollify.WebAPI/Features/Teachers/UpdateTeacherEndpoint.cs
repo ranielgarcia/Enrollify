@@ -27,7 +27,6 @@ public class UpdateTeacherResponse
 
 public class UpdateTeacherRequest
 {
-    [Microsoft.AspNetCore.Mvc.FromRoute]
     public int Id { get; set; }
     public string FirstName { get; set; } = string.Empty;
     public string MiddleName { get; set; } = string.Empty;
@@ -94,7 +93,7 @@ public class UpdateTeacherEndpoint : Endpoint<UpdateTeacherRequest, OkOrNotFound
     }
 
     public override async Task<OkOrNotFoundApiResult<UpdateTeacherResponse>>
-        ExecuteAsync(UpdateTeacherRequest request, CancellationToken cancellationToken)
+        ExecuteAsync(UpdateTeacherRequest request, CancellationToken ct)
     {
         UpdateTeacherDetails.TeacherPhoto? photo = null;
 
@@ -125,7 +124,7 @@ public class UpdateTeacherEndpoint : Endpoint<UpdateTeacherRequest, OkOrNotFound
                 OfficeHours = request.OfficeHours,
                 Biography = request.Biography
             },
-            photo), cancellationToken);
+            photo), ct);
 
         return result.ToUpdateResult(
             id => new UpdateTeacherResponse

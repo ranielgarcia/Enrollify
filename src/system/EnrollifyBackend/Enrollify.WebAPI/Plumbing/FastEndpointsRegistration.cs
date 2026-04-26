@@ -1,4 +1,4 @@
-﻿using FastEndpoints.Swagger;
+using FastEndpoints.Swagger;
 using System.Text.Json;
 
 namespace Enrollify.WebAPI.Plumbing;
@@ -11,6 +11,7 @@ public static class FastEndpointsRegistration
         services.AddFastEndpoints()
             .SwaggerDocument(o =>
             {
+                o.UsePropertyNamingPolicy = false;
                 o.DocumentSettings = s =>
                 {
                     s.Title = "Laundro API";

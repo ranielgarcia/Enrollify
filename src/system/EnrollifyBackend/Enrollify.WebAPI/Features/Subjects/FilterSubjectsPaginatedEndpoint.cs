@@ -8,10 +8,10 @@ namespace Enrollify.WebAPI.Features.Subjects;
 public class FilterSubjectsPaginatedRequest
 {
 
-    [Microsoft.AspNetCore.Mvc.FromRoute]
+    //[Microsoft.AspNetCore.Mvc.FromRoute]
     public required int Page { get; set; }
 
-    [Microsoft.AspNetCore.Mvc.FromRoute]
+    //[Microsoft.AspNetCore.Mvc.FromRoute]
     public required int PageSize { get; set; }
 
     [QueryParam]
