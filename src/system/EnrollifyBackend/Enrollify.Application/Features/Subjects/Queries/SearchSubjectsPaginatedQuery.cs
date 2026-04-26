@@ -22,8 +22,8 @@ public class SearchSubjectsPaginatedQueryHandler : IQueryHandler<SearchSubjectsP
     {
         var spec = new SearchSubjectsPaginatedSpec(request.page, request.pageSize, request.searchTerm);
         var subjects = await _readRepository.ListAsync(spec, cancellationToken);
-        // https://specification.ardalis.com/usage/use-built-in-abstract-repository.html#countasync-and-anyasync-methods
-        // CountAsync and AnyAsync methods
+        // https://specification.ardalis.com/usage/use-built-in-abstract-repository.html#countasync-And-anyasync-methods
+        // CountAsync And AnyAsync methods
         var totalCount = await _readRepository.CountAsync(spec, cancellationToken);
 
         var items = subjects

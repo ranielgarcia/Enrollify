@@ -1,11 +1,12 @@
 using System.Text.Json;
-using Enrollify.Application.Features.Subjects.DTOs;
-using Enrollify.Application.Features.Subjects.Queries;
+using Enrollify.Application.Features.Teachers.DTOs;
+using Enrollify.Application.Features.Teachers.Queries;
 using Enrollify.Application.Filtering;
 
-namespace Enrollify.WebAPI.Features.Subjects;
+namespace Enrollify.WebAPI.Features.Teachers;
 
-public class FilterSubjectsPaginatedRequest
+
+public class FilterTeachersPaginatedRequest
 {
 
     [Microsoft.AspNetCore.Mvc.FromRoute]
@@ -24,15 +25,16 @@ public class FilterSubjectsPaginatedRequest
     public string? JoinOperator { get; set; }
 }
 
-public class FilterSubjectsPaginatedRequestValidator : Validator<FilterSubjectsPaginatedRequest>
+
+public class FilterTeachersPaginatedRequestValidator : Validator<FilterTeachersPaginatedRequest>
 {
-    public FilterSubjectsPaginatedRequestValidator()
+    public FilterTeachersPaginatedRequestValidator()
     {
         RuleFor(x => x.Page)
             .GreaterThan(0).WithMessage("Page number must be greater than 0.");
         RuleFor(x => x.PageSize)
             .GreaterThan(0).WithMessage("Page size must be greater than 0.")
-            .LessThanOrEqualTo(100).WithMessage("Page size must be 100 or fewer.");
+            .LessThanOrEqualTo(100).WithMessage("Page size must be 100 Or fewer.");
         RuleFor(x => x.Filters)
             .Must(filters =>
             {
@@ -64,27 +66,27 @@ public class FilterSubjectsPaginatedRequestValidator : Validator<FilterSubjectsP
             .When(x => !string.IsNullOrEmpty(x.Sort));
 
         RuleFor(x => x.JoinOperator)
-            .Must(jo => jo != null && (jo.ToLower().Trim() == "and" || jo.ToLower().Trim() == "or"))
+            .Must(jo => jo != null && (jo.ToLower().Trim() == "And" || jo.ToLower().Trim() == "Or"))
             .When(x => !string.IsNullOrEmpty(x.JoinOperator));
     }
 }
 
 [HttpGet("filter/{page}/{pageSize}")]
-[Group<SubjectEndpointGroup>]
-[Authorize(Policy = PolicyName.HasViewSubjectsPermission)]
-public class FilterSubjectsPaginatedEndpoint (IMediator mediator) : Endpoint<FilterSubjectsPaginatedRequest, Application.PagedResult<SubjectDto>>
+[Group<TeacherEndpointGroup>]
+[Authorize(Policy = PolicyName.HasViewTeacherPermission)]
+public class FilterTeachersPaginatedEndpoint (IMediator mediator)
+    : Endpoint<FilterTeachersPaginatedRequest, Application.PagedResult<TeacherDto>>
 {
-    public override async Task HandleAsync(FilterSubjectsPaginatedRequest request, CancellationToken ct)
+    public override async Task HandleAsync(FilterTeachersPaginatedRequest req, CancellationToken ct)
     {
-        var filters = request.Filters is not null
-            ? JsonSerializer.Deserialize<List<FilterItem>>(request.Filters, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-            : null;
+        var filters = string.IsNullOrEmpty(req.Filters)
+            ? null
+            : JsonSerializer.Deserialize<List<FilterItem>>(req.Filters!, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var sorts = string.IsNullOrEmpty(req.Sort)
+            ? null
+            : JsonSerializer.Deserialize<List<SortItem>>(req.Sort!, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        var sorts = request.Sort is not null
-            ? JsonSerializer.Deserialize<List<SortItem>>(request.Sort, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-            : null;
-
-        var result = await mediator.Send(new FilterSubjectsPaginatedQuery(request.Page, request.PageSize, filters, sorts, request.JoinOperator), ct);
-        await Send.OkAsync(result.Value);
+        var result = await mediator.Send(new FilterTeachersPaginatedQuery(req.Page, req.PageSize, filters, sorts, req.JoinOperator), ct);
+        await Send.OkAsync(result, ct);
     }
 }

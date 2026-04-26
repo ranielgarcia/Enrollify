@@ -67,7 +67,7 @@ public static class FilterExpressionBuilder
     }
 
     /// <summary>
-    /// Combines multiple filter expressions using AND or OR logic.
+    /// Combines multiple filter expressions using AND Or OR logic.
     /// Returns null if the list is empty.
     /// </summary>
     public static Expression<Func<T, bool>>? Combine<T>(
@@ -81,7 +81,7 @@ public static class FilterExpressionBuilder
         {
             var param = left.Parameters[0];
             var rightBody = ExpressionParameterReplacer.Replace(right.Body, right.Parameters[0], param);
-            var body = joinOperator == JoinOperator.or
+            var body = joinOperator == JoinOperator.Or
                 ? Expression.OrElse(left.Body, rightBody)
                 : Expression.AndAlso(left.Body, rightBody);
             return Expression.Lambda<Func<T, bool>>(body, param);

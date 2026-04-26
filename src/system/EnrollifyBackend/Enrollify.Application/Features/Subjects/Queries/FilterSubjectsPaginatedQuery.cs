@@ -27,17 +27,17 @@ public class FilterSubjectsPaginatedQueryHandler : IQueryHandler<FilterSubjectsP
 
     public async ValueTask<Result<PagedResult<SubjectDto>>> Handle(FilterSubjectsPaginatedQuery request, CancellationToken cancellationToken)
     {
-        JoinOperator joinOperator = (request.joinOperator != null && request.joinOperator.ToLower().Trim() == "and") ? JoinOperator.and : JoinOperator.or;
+        JoinOperator joinOperator = (request.joinOperator != null && request.joinOperator.ToLower().Trim() == "And") ? JoinOperator.And : JoinOperator.Or;
 
         var spec = new FilterSubjectsPaginatedSpec(request.page, request.pageSize, request.filters, request.sorts, joinOperator);
         var subjects = await _readRepository.ListAsync(spec, cancellationToken);
-        // https://specification.ardalis.com/usage/use-built-in-abstract-repository.html#countasync-and-anyasync-methods
-        // CountAsync and AnyAsync methods
+        // https://specification.ardalis.com/usage/use-built-in-abstract-repository.html#countasync-And-anyasync-methods
+        // CountAsync And AnyAsync methods
         // The ISpecificationEvaluator.GetQuery() method accepts an additional optional bool evaluateCriteriaOnly = false
-        // parameter.If set to true it will ignore the Take, Skip, OrderBy and Include conditions.
+        // parameter.If set to true it will ignore the Take, Skip, OrderBy And Include conditions.
         // For paginated results, commonly we’d like to retrieve items in a given page, but also the total number of items.
         // The CountAsync repository method evaluates the specification in this special mode,
-        // therefore we can reuse the same specification and avoid having unnecessary duplicates(one with pagination and another one without it).
+        // therefore we can reuse the same specification And avoid having unnecessary duplicates(one with pagination And another one without it).
         var totalCount = await _readRepository.CountAsync(spec, cancellationToken);
 
         var items = subjects

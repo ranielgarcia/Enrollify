@@ -26,7 +26,7 @@ public class FilterSubjectsPaginatedSpec : Specification<Subject>
 
     private readonly SpecSortBuilder<Subject> _sortBuilder = new();
 
-    public FilterSubjectsPaginatedSpec(int pageNumber, int pageSize, IEnumerable<FilterItem>? filters, IEnumerable<SortItem>? sorts, JoinOperator joinOperator = JoinOperator.and)
+    public FilterSubjectsPaginatedSpec(int pageNumber, int pageSize, IEnumerable<FilterItem>? filters, IEnumerable<SortItem>? sorts, JoinOperator joinOperator = JoinOperator.And)
     {
         // The explicit cast `(string)s.Code` leverages Vogen's generated explicit operator to let EF Core resolve
         // it to the underlying string column. No EF Core dependency needed — only Ardalis.Specification.

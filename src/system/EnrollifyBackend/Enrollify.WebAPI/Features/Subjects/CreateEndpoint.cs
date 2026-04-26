@@ -66,7 +66,7 @@ public class CreateEndpoint : Endpoint<CreateSubjectRequest, CreatedApiResult<Cr
                 Description = request.Description,
                 PreferRoomTypeId = RoomTypeId.From(request.PreferRoomTypeId)
             }), cancellationToken);
-        
+
         return result.ToCreatedResult(
             id => $"/subjects/{id}",
             id => new CreateSubjectResponse

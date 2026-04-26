@@ -41,7 +41,7 @@ public class FilterTeachersPaginatedSpec : Specification<Teacher>
 
     private readonly SpecSortBuilder<Teacher> _sortBuilder = new();
 
-    public FilterTeachersPaginatedSpec(int pageNumber, int pageSize, IEnumerable<FilterItem>? filters, IEnumerable<SortItem>? sorts, JoinOperator joinOperator = JoinOperator.and)
+    public FilterTeachersPaginatedSpec(int pageNumber, int pageSize, IEnumerable<FilterItem>? filters, IEnumerable<SortItem>? sorts, JoinOperator joinOperator = JoinOperator.And)
     {
         // Explicit casts like `(string)t.TeacherIdentifier` leverage Vogen's generated explicit operator
         // to let EF Core resolve them to the underlying string column.
