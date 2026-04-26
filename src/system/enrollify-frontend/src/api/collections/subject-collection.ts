@@ -69,7 +69,7 @@ export const searchSubjectsPaginatedOptions = (
       pageSize: pageSize,
     },
     params: {
-      searchTerm,
+      SearchTerm: searchTerm,
     },
     options: {
       enabled: !!page && !!pageSize && enabled,
@@ -112,9 +112,9 @@ export const filterSubjectsPaginatedOptions = (
       pageSize: pageSize,
     },
     params: {
-      filters: filters.length ? JSON.stringify(filters) : undefined,
-      sort: sort.length ? JSON.stringify(sort) : undefined,
-      joinOperator,
+      Filters: filters.length ? JSON.stringify(filters) : undefined,
+      Sort: sort.length ? JSON.stringify(sort) : undefined,
+      JoinOperator: joinOperator,
     },
     options: {
       // enabled: !!page && !!pageSize && enabled,
@@ -175,8 +175,8 @@ export const updateSubjectOptions = (id: number) =>
 export const deleteSubjectOptions = (id: number) =>
   createMutationOptions({
     httpVerb: "delete",
-    path: "/api/subjects",
-    params: {
+    path: "/api/subjects/{id}",
+    pathParams: {
       id,
     },
     mutationKey: queryKeys.delete(id),

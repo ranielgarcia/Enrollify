@@ -20,7 +20,7 @@ public class RemoveSubjectFromEquivalenceGroupRequestValidator : Validator<Remov
     }
 }
 
-[HttpDelete("{Id}/remove-subject")]
+[HttpDelete("{id}/remove-subject")]
 [Group<SubjectEquivalenceGroupEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateSubjectEquivalenceGroupPermission)]
 public class RemoveSubjectFromEquivalenceGroupEndpoint (IMediator mediator)

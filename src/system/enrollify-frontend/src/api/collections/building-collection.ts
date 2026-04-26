@@ -40,8 +40,8 @@ export const createBuildingOptions = () =>
 export const updateBuildingOptions = (buildingId: number) =>
   createMutationOptions({
     httpVerb: "put",
-    path: "/api/buildings",
-    params: {
+    path: "/api/buildings/{id}",
+    pathParams: {
       id: buildingId,
     },
     mutationKey: queryKeys.update(buildingId),
@@ -56,9 +56,9 @@ export const updateBuildingOptions = (buildingId: number) =>
 export const deleteBuildingOptions = (buildingId: number) =>
   createMutationOptions({
     httpVerb: "delete",
-    path: "/api/buildings",
+    path: "/api/buildings/{id}",
     mutationKey: queryKeys.delete(buildingId),
-    params: {
+    pathParams: {
       id: buildingId,
     },
     options: {

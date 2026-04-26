@@ -41,8 +41,8 @@ export const createCollegeOptions = () =>
 export const updateCollegeOptions = (collegeId: number) =>
   createMutationOptions({
     httpVerb: "put",
-    path: "/api/colleges",
-    params: {
+    path: "/api/colleges/{id}",
+    pathParams: {
       id: collegeId,
     },
     mutationKey: queryKeys.update(collegeId),
@@ -58,9 +58,9 @@ export const updateCollegeOptions = (collegeId: number) =>
 export const deleteCollegeOptions = (collegeId: number) =>
   createMutationOptions({
     httpVerb: "delete",
-    path: "/api/colleges",
+    path: "/api/colleges/{id}",
     mutationKey: queryKeys.delete(collegeId),
-    params: {
+    pathParams: {
       id: collegeId,
     },
     options: {

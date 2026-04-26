@@ -51,9 +51,9 @@ export const filterTeachersPaginatedOptions = (
       pageSize: pageSize,
     },
     params: {
-      filters: filters.length ? JSON.stringify(filters) : undefined,
-      sort: sort.length ? JSON.stringify(sort) : undefined,
-      joinOperator,
+      Filters: filters.length ? JSON.stringify(filters) : undefined,
+      Sort: sort.length ? JSON.stringify(sort) : undefined,
+      JoinOperator: joinOperator,
     },
     options: {
       queryKey: queryKeys.filter(page, pageSize, filters, sort, joinOperator),

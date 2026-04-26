@@ -94,6 +94,22 @@ export interface paths {
         get: operations["EnrollifyWebAPIFeaturesSubjectsListMinimalSubjectsEndpoint"];
         put?: never;
         post: operations["EnrollifyWebAPIFeaturesSubjectsCreateEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/subjects/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesSubjectsUpdateEndpoint"];
+        post?: never;
         delete: operations["EnrollifyWebAPIFeaturesSubjectsDeleteEndpoint"];
         options?: never;
         head?: never;
@@ -141,22 +157,6 @@ export interface paths {
         };
         get: operations["EnrollifyWebAPIFeaturesSubjectsSearchSubjectsPaginatedEndpoint"];
         put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/subjects/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["EnrollifyWebAPIFeaturesSubjectsUpdateEndpoint"];
         post?: never;
         delete?: never;
         options?: never;
@@ -252,8 +252,24 @@ export interface paths {
             cookie?: never;
         };
         get: operations["EnrollifyWebAPIFeaturesRoomTypesListRoomTypesEndpoint"];
-        put: operations["EnrollifyWebAPIFeaturesRoomTypesUpdateEndpoint"];
+        put?: never;
         post: operations["EnrollifyWebAPIFeaturesRoomTypesCreateEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/room-types/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesRoomTypesUpdateEndpoint"];
+        post?: never;
         delete: operations["EnrollifyWebAPIFeaturesRoomTypesDeleteEndpoint"];
         options?: never;
         head?: never;
@@ -268,8 +284,24 @@ export interface paths {
             cookie?: never;
         };
         get: operations["EnrollifyWebAPIFeaturesRoomsListRoomsEndpoint"];
-        put: operations["EnrollifyWebAPIFeaturesRoomsUpdateEndpoint"];
+        put?: never;
         post: operations["EnrollifyWebAPIFeaturesRoomsCreateEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/rooms/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesRoomsUpdateEndpoint"];
+        post?: never;
         delete: operations["EnrollifyWebAPIFeaturesRoomsDeleteEndpoint"];
         options?: never;
         head?: never;
@@ -300,8 +332,24 @@ export interface paths {
             cookie?: never;
         };
         get: operations["EnrollifyWebAPIFeaturesDepartmentsListDepartmentsEndpoint"];
-        put: operations["EnrollifyWebAPIFeaturesDepartmentsUpdateEndpoint"];
+        put?: never;
         post: operations["EnrollifyWebAPIFeaturesDepartmentsCreateEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/departments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesDepartmentsUpdateEndpoint"];
+        post?: never;
         delete: operations["EnrollifyWebAPIFeaturesDepartmentsDeleteEndpoint"];
         options?: never;
         head?: never;
@@ -316,7 +364,7 @@ export interface paths {
             cookie?: never;
         };
         get: operations["EnrollifyWebAPIFeaturesCurriculumsListCurriculumEndpoint"];
-        put: operations["EnrollifyWebAPIFeaturesCurriculumsUpdateEndpoint"];
+        put?: never;
         post: operations["EnrollifyWebAPIFeaturesCurriculumsCreateDraftCurriculumEndpoint"];
         delete?: never;
         options?: never;
@@ -356,6 +404,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/curriculums/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesCurriculumsUpdateEndpoint"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/courses": {
         parameters: {
             query?: never;
@@ -364,8 +428,24 @@ export interface paths {
             cookie?: never;
         };
         get: operations["EnrollifyWebAPIFeaturesCoursesListCoursesEndpoint"];
-        put: operations["EnrollifyWebAPIFeaturesCoursesUpdateEndpoint"];
+        put?: never;
         post: operations["EnrollifyWebAPIFeaturesCoursesCreateEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/courses/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesCoursesUpdateEndpoint"];
+        post?: never;
         delete: operations["EnrollifyWebAPIFeaturesCoursesDeleteEndpoint"];
         options?: never;
         head?: never;
@@ -380,8 +460,24 @@ export interface paths {
             cookie?: never;
         };
         get: operations["EnrollifyWebAPIFeaturesCollegesListCollegesEndpoint"];
-        put: operations["EnrollifyWebAPIFeaturesCollegesUpdateEndpoint"];
+        put?: never;
         post: operations["EnrollifyWebAPIFeaturesCollegesCreateEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/colleges/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesCollegesUpdateEndpoint"];
+        post?: never;
         delete: operations["EnrollifyWebAPIFeaturesCollegesDeleteEndpoint"];
         options?: never;
         head?: never;
@@ -396,8 +492,24 @@ export interface paths {
             cookie?: never;
         };
         get: operations["EnrollifyWebAPIFeaturesBuildingsListBuildingsEndpoint"];
-        put: operations["EnrollifyWebAPIFeaturesBuildingsUpdateEndpoint"];
+        put?: never;
         post: operations["EnrollifyWebAPIFeaturesBuildingsCreateEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/buildings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesBuildingsUpdateEndpoint"];
+        post?: never;
         delete: operations["EnrollifyWebAPIFeaturesBuildingsDeleteEndpoint"];
         options?: never;
         head?: never;
@@ -1020,9 +1132,9 @@ export interface operations {
     EnrollifyWebAPIFeaturesTeachersFilterTeachersPaginatedEndpoint: {
         parameters: {
             query?: {
-                filters?: string | null;
-                sort?: string | null;
-                joinOperator?: string | null;
+                Filters?: string | null;
+                Sort?: string | null;
+                JoinOperator?: string | null;
             };
             header?: never;
             path: {
@@ -1251,13 +1363,53 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesSubjectsDeleteEndpoint: {
+    EnrollifyWebAPIFeaturesSubjectsUpdateEndpoint: {
         parameters: {
-            query: {
+            query?: never;
+            header?: never;
+            path: {
                 id: number;
             };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesSubjectsUpdateSubjectRequest"];
+            };
+        };
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesSubjectsDeleteEndpoint: {
+        parameters: {
+            query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: number;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1290,9 +1442,9 @@ export interface operations {
     EnrollifyWebAPIFeaturesSubjectsFilterSubjectsPaginatedEndpoint: {
         parameters: {
             query?: {
-                filters?: string | null;
-                sort?: string | null;
-                joinOperator?: string | null;
+                Filters?: string | null;
+                Sort?: string | null;
+                JoinOperator?: string | null;
             };
             header?: never;
             path: {
@@ -1377,7 +1529,7 @@ export interface operations {
     EnrollifyWebAPIFeaturesSubjectsSearchSubjectsPaginatedEndpoint: {
         parameters: {
             query?: {
-                searchTerm?: string | null;
+                SearchTerm?: string | null;
             };
             header?: never;
             path: {
@@ -1397,46 +1549,6 @@ export interface operations {
                     "application/json": components["schemas"]["EnrollifyApplicationPagedResultOfSubjectDto"];
                 };
             };
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    EnrollifyWebAPIFeaturesSubjectsUpdateEndpoint: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesSubjectsUpdateSubjectRequest"];
-            };
-        };
-        responses: {
             /** @description Bad Request */
             400: {
                 headers: {
@@ -1752,46 +1864,6 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesRoomTypesUpdateEndpoint: {
-        parameters: {
-            query: {
-                id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesRoomTypesUpdateRoomTypeRequest"];
-            };
-        };
-        responses: {
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     EnrollifyWebAPIFeaturesRoomTypesCreateEndpoint: {
         parameters: {
             query?: never;
@@ -1830,13 +1902,53 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesRoomTypesDeleteEndpoint: {
+    EnrollifyWebAPIFeaturesRoomTypesUpdateEndpoint: {
         parameters: {
-            query: {
+            query?: never;
+            header?: never;
+            path: {
                 id: number;
             };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesRoomTypesUpdateRoomTypeRequest"];
+            };
+        };
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesRoomTypesDeleteEndpoint: {
+        parameters: {
+            query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: number;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1900,46 +2012,6 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesRoomsUpdateEndpoint: {
-        parameters: {
-            query: {
-                id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesRoomsUpdateRoomRequest"];
-            };
-        };
-        responses: {
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     EnrollifyWebAPIFeaturesRoomsCreateEndpoint: {
         parameters: {
             query?: never;
@@ -1978,13 +2050,53 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesRoomsDeleteEndpoint: {
+    EnrollifyWebAPIFeaturesRoomsUpdateEndpoint: {
         parameters: {
-            query: {
+            query?: never;
+            header?: never;
+            path: {
                 id: number;
             };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesRoomsUpdateRoomRequest"];
+            };
+        };
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesRoomsDeleteEndpoint: {
+        parameters: {
+            query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: number;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -2082,46 +2194,6 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesDepartmentsUpdateEndpoint: {
-        parameters: {
-            query: {
-                id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesDepartmentsUpdateDepartmentRequest"];
-            };
-        };
-        responses: {
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     EnrollifyWebAPIFeaturesDepartmentsCreateEndpoint: {
         parameters: {
             query?: never;
@@ -2160,13 +2232,53 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesDepartmentsDeleteEndpoint: {
+    EnrollifyWebAPIFeaturesDepartmentsUpdateEndpoint: {
         parameters: {
-            query: {
+            query?: never;
+            header?: never;
+            path: {
                 id: number;
             };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesDepartmentsUpdateDepartmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesDepartmentsDeleteEndpoint: {
+        parameters: {
+            query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: number;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -2212,46 +2324,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EnrollifyApplicationFeaturesCurriculumsDTOsCurriculumDto"][];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    EnrollifyWebAPIFeaturesCurriculumsUpdateEndpoint: {
-        parameters: {
-            query: {
-                id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCurriculumsUpdateCurriculumRequest"];
-            };
-        };
-        responses: {
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
                 };
             };
             /** @description Unauthorized */
@@ -2375,22 +2447,28 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesCoursesListCoursesEndpoint: {
+    EnrollifyWebAPIFeaturesCurriculumsUpdateEndpoint: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: number;
+            };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCurriculumsUpdateCurriculumRequest"];
+            };
+        };
         responses: {
-            /** @description Success */
-            200: {
+            /** @description Bad Request */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EnrollifyApplicationFeaturesCoursesDTOsCourseDto"][];
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
                 };
             };
             /** @description Unauthorized */
@@ -2409,28 +2487,22 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesCoursesUpdateEndpoint: {
+    EnrollifyWebAPIFeaturesCoursesListCoursesEndpoint: {
         parameters: {
-            query: {
-                id: number;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCoursesUpdateCourseRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
-            /** @description Bad Request */
-            400: {
+            /** @description Success */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                    "application/json": components["schemas"]["EnrollifyApplicationFeaturesCoursesDTOsCourseDto"][];
                 };
             };
             /** @description Unauthorized */
@@ -2487,13 +2559,53 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesCoursesDeleteEndpoint: {
+    EnrollifyWebAPIFeaturesCoursesUpdateEndpoint: {
         parameters: {
-            query: {
+            query?: never;
+            header?: never;
+            path: {
                 id: number;
             };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCoursesUpdateCourseRequest"];
+            };
+        };
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCoursesDeleteEndpoint: {
+        parameters: {
+            query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: number;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -2557,46 +2669,6 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesCollegesUpdateEndpoint: {
-        parameters: {
-            query: {
-                id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCollegesUpdateCollegeRequest"];
-            };
-        };
-        responses: {
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     EnrollifyWebAPIFeaturesCollegesCreateEndpoint: {
         parameters: {
             query?: never;
@@ -2635,13 +2707,53 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesCollegesDeleteEndpoint: {
+    EnrollifyWebAPIFeaturesCollegesUpdateEndpoint: {
         parameters: {
-            query: {
+            query?: never;
+            header?: never;
+            path: {
                 id: number;
             };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesCollegesUpdateCollegeRequest"];
+            };
+        };
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCollegesDeleteEndpoint: {
+        parameters: {
+            query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: number;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -2705,46 +2817,6 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesBuildingsUpdateEndpoint: {
-        parameters: {
-            query: {
-                id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesBuildingsUpdateBuildingRequest"];
-            };
-        };
-        responses: {
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     EnrollifyWebAPIFeaturesBuildingsCreateEndpoint: {
         parameters: {
             query?: never;
@@ -2783,13 +2855,53 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesBuildingsDeleteEndpoint: {
+    EnrollifyWebAPIFeaturesBuildingsUpdateEndpoint: {
         parameters: {
-            query: {
+            query?: never;
+            header?: never;
+            path: {
                 id: number;
             };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesBuildingsUpdateBuildingRequest"];
+            };
+        };
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesBuildingsDeleteEndpoint: {
+        parameters: {
+            query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: number;
+            };
             cookie?: never;
         };
         requestBody?: never;

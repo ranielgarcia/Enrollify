@@ -19,7 +19,7 @@ public class UpdateSubjectEquivalenceGroupRequestValidator : Validator<UpdateSub
     }
 }
 
-[HttpPut("{Id}")]
+[HttpPut("{id:int}")]
 [Group<SubjectEquivalenceGroupEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateSubjectEquivalenceGroupPermission)]
 public class UpdateSubjectEquivalenceGroupEndpoint (IMediator mediator)

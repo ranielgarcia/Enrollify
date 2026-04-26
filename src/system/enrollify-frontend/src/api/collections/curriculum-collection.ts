@@ -63,8 +63,8 @@ export const createDraftCurriculumOptions = () =>
 export const updateCurriculumOptions = (curriculumId: number) =>
   createMutationOptions({
     httpVerb: "put",
-    path: "/api/curriculums",
-    params: {
+    path: "/api/curriculums/{id}",
+    pathParams: {
       id: curriculumId,
     },
     mutationKey: queryKeys.update(curriculumId),

@@ -1,4 +1,4 @@
-﻿namespace Enrollify.WebAPI.Features.SubjectEquivalences;
+namespace Enrollify.WebAPI.Features.SubjectEquivalences;
 
 public class SubjectEquivalenceGroupEndpointGroup : Group
 {

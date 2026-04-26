@@ -24,7 +24,7 @@ public class AddSubjectsToEquivalenceGroupRequestValidator : Validator<AddSubjec
     }
 }
 
-[HttpPut("{Id}/add-subjects")]
+[HttpPut("{id}/add-subjects")]
 [Group<SubjectEquivalenceGroupEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateSubjectEquivalenceGroupPermission)]
 public class AddSubjectsToEquivalenceGroupEndpoint (IMediator mediator)

@@ -60,9 +60,9 @@ export const createRoomTypeOptions = () =>
 export const updateRoomTypeOptions = (roomTypeId: number) =>
   createMutationOptions({
     httpVerb: "put",
-    path: "/api/room-types",
+    path: "/api/room-types/{id}",
     mutationKey: queryKeys.update(roomTypeId),
-    params: {
+    pathParams: {
       id: roomTypeId,
     },
     options: {
@@ -77,9 +77,9 @@ export const updateRoomTypeOptions = (roomTypeId: number) =>
 export const deleteRoomTypeOptions = (roomTypeId: number) =>
   createMutationOptions({
     httpVerb: "delete",
-    path: "/api/room-types",
+    path: "/api/room-types/{id}",
     mutationKey: queryKeys.delete(roomTypeId),
-    params: {
+    pathParams: {
       id: roomTypeId,
     },
     options: {
