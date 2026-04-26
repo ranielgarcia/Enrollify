@@ -70,6 +70,6 @@ public class PolicyName
     public const string HasCreateTeacherPermission = "HasCreateTeacherPermission";
     public const string HasUpdateTeacherPermission = "HasUpdateTeacherPermission";
     public const string HasDeleteTeacherPermission = "HasDeleteTeacherPermission";
-    public const string HasViewTeacherPermission = "HasDeleteTeacherPermission";
+    public const string HasViewTeacherPermission = "HasViewTeacherPermission";
 
 }
