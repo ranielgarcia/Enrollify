@@ -15,7 +15,6 @@ public class SubjectInCurriculum
 
 public class CurriculumContentRequest
 {
-    //[Microsoft.AspNetCore.Mvc.FromRoute]
     public int CurriculumId { get; set; }
     public Dictionary<Year, Dictionary<Semester, SubjectInCurriculum[]>> Grid { get; set; } = new Dictionary<Year, Dictionary<Semester, SubjectInCurriculum[]>>();
 }

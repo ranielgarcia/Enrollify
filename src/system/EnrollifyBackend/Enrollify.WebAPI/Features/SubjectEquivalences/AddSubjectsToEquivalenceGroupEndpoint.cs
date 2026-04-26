@@ -8,7 +8,6 @@ namespace Enrollify.WebAPI.Features.SubjectEquivalences;
 
 public class AddSubjectsToEquivalenceGroupRequest
 {
-    //[Microsoft.AspNetCore.Mvc.FromRoute]
     public int Id { get; set; }
     public List<int> SubjectIds { get; set; } = new List<int>();
 }

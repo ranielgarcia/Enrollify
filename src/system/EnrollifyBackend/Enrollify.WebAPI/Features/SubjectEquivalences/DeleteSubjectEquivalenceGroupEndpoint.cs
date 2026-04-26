@@ -5,11 +5,10 @@ namespace Enrollify.WebAPI.Features.SubjectEquivalences;
 
 public class DeleteSubjectEquivalenceGroupRequest
 {
-    //[Microsoft.AspNetCore.Mvc.FromRoute]
     public int Id { get; set; }
 }
 
-[HttpDelete("{id}")]
+[HttpDelete("{id:int}")]
 [Group<SubjectEquivalenceGroupEndpointGroup>]
 [Authorize(Policy = PolicyName.HasDeleteSubjectEquivalenceGroupPermission)]
 public class DeleteSubjectEquivalenceGroupEndpoint (IMediator mediator)

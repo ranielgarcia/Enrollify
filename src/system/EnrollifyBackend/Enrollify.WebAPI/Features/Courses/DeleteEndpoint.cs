@@ -5,7 +5,6 @@ namespace Enrollify.WebAPI.Features.Courses;
 
 public class DeleteCourseRequest
 {
-    [QueryParam]
     public int Id { get; set; }
 }
 
@@ -19,7 +18,7 @@ public class DeleteCourseRequestValidator : Validator<DeleteCourseRequest>
     }
 }
 
-[HttpDelete("")]
+[HttpDelete("{id:int}")]
 [Group<CourseEndpointGroup>]
 [Authorize(Policy = PolicyName.HasDeleteCoursePermission)]
 public class DeleteEndpoint(IMediator mediator) : Endpoint<DeleteCourseRequest, DeleteApiResult>
