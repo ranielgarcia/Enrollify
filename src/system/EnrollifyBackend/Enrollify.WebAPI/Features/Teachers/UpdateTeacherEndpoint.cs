@@ -82,6 +82,7 @@ public class UpdateTeacherRequestValidator : Validator<UpdateTeacherRequest>
 
 [HttpPut("{id:int}")]
 [Group<TeacherEndpointGroup>]
+[AllowFileUploads]
 [Authorize(Policy = PolicyName.HasUpdateTeacherPermission)]
 public class UpdateTeacherEndpoint : Endpoint<UpdateTeacherRequest, OkOrNotFoundApiResult<UpdateTeacherResponse>>
 {

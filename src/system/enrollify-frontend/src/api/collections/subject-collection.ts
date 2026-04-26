@@ -159,8 +159,8 @@ export const createSubjectOptions = () =>
 export const updateSubjectOptions = (id: number) =>
   createMutationOptions({
     httpVerb: "put",
-    path: "/api/subjects",
-    params: {
+    path: "/api/subjects/{id}",
+    pathParams: {
       id,
     },
     mutationKey: queryKeys.update(id),

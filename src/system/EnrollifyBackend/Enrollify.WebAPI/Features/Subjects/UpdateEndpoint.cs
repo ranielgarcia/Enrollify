@@ -16,7 +16,6 @@ public class UpdateSubjectResponse
 
 public class UpdateSubjectRequest
 {
-    [QueryParam]
     public int Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
@@ -47,7 +46,7 @@ public class UpdateSubjectRequestValidator : Validator<UpdateSubjectRequest>
     }
 }
 
-[HttpPut("")]
+[HttpPut("{id:int}")]
 [Group<SubjectEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateSubjectPermission)]
 public class UpdateEndpoint : Endpoint<UpdateSubjectRequest, OkOrNotFoundApiResult<UpdateSubjectResponse>>

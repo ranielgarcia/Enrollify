@@ -78,6 +78,7 @@ public class RegisterTeacherRequestValidator : Validator<RegisterTeacherRequest>
 
 [HttpPost("")]
 [Group<TeacherEndpointGroup>]
+[AllowFileUploads]
 [Authorize(Policy = PolicyName.HasCreateTeacherPermission)]
 public class RegisterTeacherEndpoint : Endpoint<RegisterTeacherRequest, CreatedApiResult<RegisterTeacherResponse>>
 {
