@@ -1,4 +1,4 @@
-﻿using Enrollify.Infrastructure;
+using Enrollify.Infrastructure;
 
 namespace Enrollify.WebAPI.Plumbing;
 
@@ -9,7 +9,7 @@ public static class ServiceConfigs
         Microsoft.Extensions.Logging.ILogger logger, 
         WebApplicationBuilder builder)
     {
-        services.AddInfrastructureServices(builder.Configuration, logger)
+        services.AddInfrastructureServices(builder.Configuration, logger, builder.Environment.IsDevelopment())
             .AddMediatorSourceGen(logger);
 
         return services;

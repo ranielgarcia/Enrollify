@@ -29,7 +29,8 @@ public static class InfrastructureServiceExtensions
     public static IServiceCollection AddInfrastructureServices(
       this IServiceCollection services,
       ConfigurationManager config,
-      ILogger logger)
+      ILogger logger,
+      bool isDevelopment = false)
     {
         // Try to get connection strings in order of priority:
         // 1. "cleanarchitecture" - provided by Aspire when using .WithReference(cleanArchDb)
@@ -63,6 +64,9 @@ public static class InfrastructureServiceExtensions
             var preSaveChangesInterceptor = provider.GetRequiredService<PreSaveChangesInterceptor>();
             
             options.UseSqlServer(connectionString);
+
+            if (isDevelopment)
+                options.EnableSensitiveDataLogging();
 
             options.AddInterceptors(eventDispatchInterceptor);
             options.AddInterceptors(preSaveChangesInterceptor);
