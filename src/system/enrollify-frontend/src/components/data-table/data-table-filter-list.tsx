@@ -7,7 +7,7 @@ import {
   ListFilter,
   Trash2,
 } from "lucide-react";
-import { parseAsStringEnum, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsStringEnum, useQueryState } from "nuqs";
 import * as React from "react";
 
 import { DataTableRangeFilter } from "@/components/data-table/data-table-range-filter";
@@ -101,6 +101,11 @@ export function DataTableFilterList<TData>({
       .filter((column) => column.columnDef.enableColumnFilter);
   }, [table]);
 
+  const [, setPage] = useQueryState(
+    table.options.meta?.queryKeys?.page ?? "page",
+    parseAsInteger.withOptions({ shallow }).withDefault(1),
+  );
+
   const [filters, setFilters] = useQueryState(
     table.options.meta?.queryKeys?.filters ?? "filters",
     getFiltersStateParser<TData>(columns.map((field) => field.id))
@@ -145,6 +150,7 @@ export function DataTableFilterList<TData>({
       filterId: string,
       updates: Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>,
     ) => {
+      void setPage(1);
       debouncedSetFilters((prevFilters) => {
         const updatedFilters = prevFilters.map((filter) => {
           if (filter.filterId === filterId) {
@@ -155,7 +161,7 @@ export function DataTableFilterList<TData>({
         return updatedFilters;
       });
     },
-    [debouncedSetFilters],
+    [debouncedSetFilters, setPage],
   );
 
   const onFilterRemove = React.useCallback(
@@ -163,18 +169,20 @@ export function DataTableFilterList<TData>({
       const updatedFilters = filters.filter(
         (filter) => filter.filterId !== filterId,
       );
+      void setPage(1);
       void setFilters(updatedFilters);
       requestAnimationFrame(() => {
         addButtonRef.current?.focus();
       });
     },
-    [filters, setFilters],
+    [filters, setFilters, setPage],
   );
 
   const onFiltersReset = React.useCallback(() => {
+    void setPage(1);
     void setFilters(null);
     void setJoinOperator("and");
-  }, [setFilters, setJoinOperator]);
+  }, [setFilters, setJoinOperator, setPage]);
 
   React.useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
