@@ -32,7 +32,6 @@ const queryKeys = {
   ],
   create: () => [...queryKeys.base(), `create`],
   update: (teacherId: number) => [...queryKeys.base(), "update", teacherId],
-  delete: (teacherId: number) => [...queryKeys.base(), "delete", teacherId],
 };
 
 const pagedTeachersSchema = pagedResultSchema(TeacherSchema);
@@ -85,11 +84,12 @@ export const createTeacherOptions = () =>
   createMutationOptions({
     httpVerb: "post",
     path: "/api/teachers",
+    isMultipart: true,
     mutationKey: queryKeys.create(),
     options: {
       meta: { invalidateQueries: [queryKeys.base()] },
       onSuccess: () => {
-        toast.success("Teacher created successfully");
+        toast.success("Teacher registered successfully");
       },
     },
   });
@@ -101,6 +101,7 @@ export const updateTeacherOptions = (id: number) =>
     pathParams: {
       id,
     },
+    isMultipart: true,
     mutationKey: queryKeys.update(id),
     options: {
       meta: { invalidateQueries: [queryKeys.base()] },

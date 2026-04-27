@@ -6,6 +6,7 @@ namespace Enrollify.Application.Features.Teachers.DTOs;
 
 public class TeacherDto : BaseDto
 {
+    public TeacherId Id { get; set; }
     public string FirstName { get; set; } = null!;
     public string MiddleName { get; set; } = null!;
     public string LastName { get; set; } = null!;
@@ -27,6 +28,7 @@ public class TeacherDto : BaseDto
     {
         return new TeacherDto
         {
+            Id = teacher.Id,
             FirstName = teacher.FirstName,
             MiddleName = teacher.MiddleName,
             LastName = teacher.LastName,

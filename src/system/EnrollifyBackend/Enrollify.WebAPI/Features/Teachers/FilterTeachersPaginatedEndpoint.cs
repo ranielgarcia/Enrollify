@@ -66,7 +66,7 @@ public class FilterTeachersPaginatedRequestValidator : Validator<FilterTeachersP
             .When(x => !string.IsNullOrEmpty(x.Sort));
 
         RuleFor(x => x.JoinOperator)
-            .Must(jo => jo != null && (jo.ToLower().Trim() == "And" || jo.ToLower().Trim() == "Or"))
+            .Must(jo => jo != null && (jo.ToLower().Trim() == "and" || jo.ToLower().Trim() == "or"))
             .When(x => !string.IsNullOrEmpty(x.JoinOperator));
     }
 }

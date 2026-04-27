@@ -532,6 +532,11 @@ export interface components {
             totalPages?: number;
         };
         EnrollifyApplicationFeaturesTeachersDTOsTeacherDto: components["schemas"]["EnrollifyApplicationBaseDto"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
             firstName?: string;
             middleName?: string;
             lastName?: string;

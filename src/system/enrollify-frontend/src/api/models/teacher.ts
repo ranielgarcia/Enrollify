@@ -1,36 +1,28 @@
 import { z } from "zod";
 import { AuditInfoSchema } from "@/api/models/audit-info";
-import { DepartmentSchema } from "./department";
-// import { SubjectSchema } from "./subject";
 
-const TeacherDepartmentSchema = DepartmentSchema.pick({
-  id: true,
-  name: true,
+const TeacherDepartmentSchema = z.object({
+  id: z.number().optional(),
+  code: z.string().optional(),
+  name: z.string().optional(),
 });
-
-// const TeacherSubjectSchema = SubjectSchema.pick({
-//   id: true,
-//   code: true,
-//   title: true,
-// });
 
 export const TeacherSchema = z
   .object({
     id: z.number(),
     firstName: z.string(),
     lastName: z.string(),
-    middleName: z.string(),
+    middleName: z.string().default(""),
+    teacherIdentifier: z.string(),
     email: z.string(),
     phoneNumber: z.string(),
-    department: TeacherDepartmentSchema,
-    academicTitle: z.string(),
-    qualification: z.string(),
-    specialization: z.string(),
-    officeLocation: z.string(),
-    officeHours: z.string(),
-    biography: z.string().optional(),
-    profilePicture: z.string().optional(),
-    // subjects: z.array(TeacherSubjectSchema).optional(),
+    department: TeacherDepartmentSchema.optional(),
+    academicTitle: z.string().nullable().optional(),
+    qualification: z.string().nullable().optional(),
+    specialization: z.string().nullable().optional(),
+    officeLocation: z.string().nullable().optional(),
+    officeHours: z.string().nullable().optional(),
+    biography: z.string().nullable().optional(),
   })
   .extend(AuditInfoSchema.shape);
 

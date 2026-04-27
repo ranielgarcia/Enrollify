@@ -5,14 +5,12 @@ interface DeleteTeacherAlertDialogProps {
   teacherToDelete?: Teacher;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirmDelete: (teacher: Teacher) => void;
 }
 
 export function DeleteTeacherAlertDialog({
   teacherToDelete,
   isOpen,
   onOpenChange,
-  onConfirmDelete,
 }: DeleteTeacherAlertDialogProps) {
   return (
     <DeleteAlertDialog
@@ -21,7 +19,13 @@ export function DeleteTeacherAlertDialog({
       onOpenChange={onOpenChange}
       entityLabel="Teacher"
       getEntityName={(t) => `${t.firstName} ${t.lastName}`}
-      onConfirmDelete={onConfirmDelete}
+      onConfirmDelete={() => onOpenChange(false)}
+      customDialogDescription={
+        <span>
+          Teacher deletion is not currently supported. Please contact your
+          system administrator to remove teacher records.
+        </span>
+      }
     />
   );
 }
