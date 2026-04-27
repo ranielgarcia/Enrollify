@@ -1,4 +1,4 @@
-﻿using Enrollify.Core.Aggregates.RoleAggregate;
+using Enrollify.Core.Aggregates.RoleAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 
 namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.UserConfigs;
@@ -70,7 +70,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
             ra.Property(e => e.ExpiresAt)
                 //.HasColumnType("DATETIMEOFFSET")
-                .IsRequired();
+                .IsRequired(false);
 
 
             ra.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
