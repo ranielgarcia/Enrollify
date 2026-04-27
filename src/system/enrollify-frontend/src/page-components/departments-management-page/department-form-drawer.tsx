@@ -29,7 +29,7 @@ import { toast } from "sonner";
 import z from "zod";
 
 const departmentFormSchema = z.object({
-  code: z.string().min(3, "Code is required"),
+  code: z.string().min(2, "Code is required"),
   name: z.string().min(3, "Name is required"),
   chairperson: z.string().min(3, "Chairperson is required"),
   description: z.string().min(3, "Description is required"),

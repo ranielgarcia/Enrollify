@@ -32,6 +32,8 @@ public class FilterSubjectsPaginatedSpec : Specification<Subject>
         // it to the underlying string column. No EF Core dependency needed — only Ardalis.Specification.
         Query
             .AsNoTracking()
+            .Include(r => r.CreatedByUser)
+            .Include(r => r.UpdatedByUser)
             .Include(s => s.PreferRoomType);
 
         var filterExpressions = new List<Expression<Func<Subject, bool>>>();

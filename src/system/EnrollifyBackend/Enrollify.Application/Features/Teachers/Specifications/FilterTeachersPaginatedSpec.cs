@@ -48,6 +48,8 @@ public class FilterTeachersPaginatedSpec : Specification<Teacher>
         // No EF Core dependency needed — only Ardalis.Specification.
         Query
             .AsNoTracking()
+            .Include(r => r.CreatedByUser)
+            .Include(r => r.UpdatedByUser)
             .Include(t => t.Department);
 
         var filterExpressions = new List<Expression<Func<Teacher, bool>>>();
