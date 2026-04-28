@@ -41,7 +41,7 @@ public class TeacherPhotoStorageService : ITeacherPhotoStorageService
         bool overwrite = true,
         CancellationToken cancellationToken = default)
     {
-        var newFileName = GetFileName(teacherIdentifier, originalFileName);
+        var newFileName = GetFileName(originalFileName);
 
         await _blobRepository.UploadFileAsync(
             newFileName,
@@ -129,10 +129,11 @@ public class TeacherPhotoStorageService : ITeacherPhotoStorageService
             cancellationToken: cancellationToken);
     }
 
-    private static FileName GetFileName(TeacherIdentifier teacherIdentifier, string originalFileName)
+    private static FileName GetFileName(string originalFileName)
     {
         var extension = Path.GetExtension(originalFileName);
-        return FileName.From($"{teacherIdentifier.Value}_profile{extension}");
+        var guid = Guid.NewGuid().ToString();
+        return FileName.From($"{guid}_profile{extension}");
     }
 
     private static string[] GetSubfolders(TeacherIdentifier teacherIdentifier) =>
