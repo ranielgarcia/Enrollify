@@ -8,8 +8,8 @@ public partial struct TeacherIdentifier
 {
     public const int MaxLength = 20;
 
-    [GeneratedRegex(@"^[a-zA-Z0-9\-]+$")]
-    private static partial Regex AlphanumericPattern();
+    //[GeneratedRegex(@"^[a-zA-Z0-9\-]+$")]
+    //private static partial Regex AlphanumericPattern();
 
     private static Validation Validate(string value)
     {
@@ -19,8 +19,8 @@ public partial struct TeacherIdentifier
         if (value.Length > MaxLength)
             return Validation.Invalid($"Teacher identifier number cannot exceed {MaxLength} characters");
 
-        if (!AlphanumericPattern().IsMatch(value))
-            return Validation.Invalid("Teacher identifier number must contain only alphanumeric characters and hyphens");
+        //if (!AlphanumericPattern().IsMatch(value))
+        //    return Validation.Invalid("Teacher identifier number must contain only alphanumeric characters and hyphens");
 
         return Validation.Ok;
     }

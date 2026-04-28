@@ -30,6 +30,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Plus, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import z from "zod";
+import { FormPhoneField } from "@/components/form/form-phone-field";
 
 const teacherFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -37,7 +38,10 @@ const teacherFormSchema = z.object({
   middleName: z.string(),
   teacherIdentifier: z.string().min(1, "Teacher ID is required"),
   email: z.string().email("Valid email is required"),
-  phoneNumber: z.string().min(7, "Phone number is required"),
+  phoneNumber: z
+    .string()
+    .min(11, "Phone number is required")
+    .max(11, "Phone number must be 11 digits"),
   departmentId: z.number().min(1, "Department is required"),
   academicTitle: z.string().optional(),
   qualification: z.string().optional(),
@@ -65,14 +69,22 @@ export function TeacherFormDrawer({
 }: TeacherFormDrawerProps) {
   const [selectedCollegeId, setSelectedCollegeId] = useState<string>(
     teacherToUpdate?.department?.id
-      ? (departments.find((d) => d.id === teacherToUpdate.department?.id)?.college.id.toString() ?? "")
+      ? (departments
+          .find((d) => d.id === teacherToUpdate.department?.id)
+          ?.college.id.toString() ?? "")
       : "",
   );
-  const [profilePictureFile, setProfilePictureFile] = useState<File | undefined>();
-  const [profilePicturePreview, setProfilePicturePreview] = useState<string | undefined>();
+  const [profilePictureFile, setProfilePictureFile] = useState<
+    File | undefined
+  >();
+  const [profilePicturePreview, setProfilePicturePreview] = useState<
+    string | undefined
+  >();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { mutateAsync: createTeacherAsync } = useMutation(createTeacherOptions());
+  const { mutateAsync: createTeacherAsync } = useMutation(
+    createTeacherOptions(),
+  );
   const { mutateAsync: updateTeacherAsync } = useMutation(
     updateTeacherOptions(teacherToUpdate?.id ?? 0),
   );
@@ -108,11 +120,16 @@ export function TeacherFormDrawer({
       formData.append("teacherIdentifier", value.teacherIdentifier);
       formData.append("email", value.email);
       formData.append("phoneNumber", value.phoneNumber);
-      if (value.departmentId) formData.append("departmentId", String(value.departmentId));
-      if (value.academicTitle) formData.append("academicTitle", value.academicTitle);
-      if (value.qualification) formData.append("qualification", value.qualification);
-      if (value.specialization) formData.append("specialization", value.specialization);
-      if (value.officeLocation) formData.append("officeLocation", value.officeLocation);
+      if (value.departmentId)
+        formData.append("departmentId", String(value.departmentId));
+      if (value.academicTitle)
+        formData.append("academicTitle", value.academicTitle);
+      if (value.qualification)
+        formData.append("qualification", value.qualification);
+      if (value.specialization)
+        formData.append("specialization", value.specialization);
+      if (value.officeLocation)
+        formData.append("officeLocation", value.officeLocation);
       if (value.officeHours) formData.append("officeHours", value.officeHours);
       if (value.biography) formData.append("biography", value.biography);
       if (profilePictureFile) formData.append("photo", profilePictureFile);
@@ -151,10 +168,12 @@ export function TeacherFormDrawer({
     ? departments.filter((d) => d.college?.id.toString() === selectedCollegeId)
     : departments;
 
-  const departmentOptions: SearchableSelectOption[] = filteredDepartments.map((d) => ({
-    value: d.id.toString(),
-    label: d.name,
-  }));
+  const departmentOptions: SearchableSelectOption[] = filteredDepartments.map(
+    (d) => ({
+      value: d.id.toString(),
+      label: d.name,
+    }),
+  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -214,7 +233,10 @@ export function TeacherFormDrawer({
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
+            <div
+              className="flex-1 overflow-y-auto px-4 py-5 space-y-6"
+              tabIndex={-1}
+            >
               {/* Profile Photo */}
               <FormSection title="Profile Photo">
                 <div className="flex items-center gap-4">
@@ -317,12 +339,10 @@ export function TeacherFormDrawer({
                 <form.Field
                   name="phoneNumber"
                   children={(field) => (
-                    <FormField
+                    <FormPhoneField
                       field={field}
                       label="Phone Number"
-                      type="tel"
                       required
-                      placeholder="+63 912 345 6789"
                     />
                   )}
                 />
@@ -457,4 +477,3 @@ export function TeacherFormDrawer({
     </Drawer>
   );
 }
-

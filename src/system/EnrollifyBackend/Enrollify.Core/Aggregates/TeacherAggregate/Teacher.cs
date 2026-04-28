@@ -46,7 +46,7 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
     public string? OfficeHours { get; private set; }
     public string? Biography { get; private set; }
 
-    public TeacherPhoto? Photo { get; private set; }
+    public TeacherPhoto Photo { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }

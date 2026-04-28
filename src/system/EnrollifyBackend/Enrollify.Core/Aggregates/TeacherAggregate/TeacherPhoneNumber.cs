@@ -6,7 +6,7 @@ namespace Enrollify.Core.Aggregates.TeacherAggregate;
 [ValueObject<string>(conversions: Conversions.SystemTextJson)]
 public partial struct TeacherPhoneNumber
 {
-    public const int MaxLength = 12;
+    public const int MaxLength = 11;
     private static Validation Validate(string value)
     {
         if (string.IsNullOrWhiteSpace(value))

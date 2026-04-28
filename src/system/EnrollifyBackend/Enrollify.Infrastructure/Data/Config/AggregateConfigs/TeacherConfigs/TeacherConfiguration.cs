@@ -13,7 +13,6 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
           .UseIdentityColumn()
           .IsRequired();
 
-
         builder.Property(e => e.FirstName).IsRequired();
         builder.Property(e => e.MiddleName).IsRequired();
         builder.Property(e => e.LastName).IsRequired();
@@ -22,18 +21,18 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
         builder.Property(e => e.Email).IsRequired();
         builder.Property(e => e.PhoneNumber).IsRequired();
 
-        builder.Property(e => e.AcademicTitle).IsRequired();
-        builder.Property(e => e.Qualification).IsRequired();
-        builder.Property(e => e.Specialization).IsRequired();
-        builder.Property(e => e.OfficeLocation).IsRequired();
-        builder.Property(e => e.OfficeHours).IsRequired();
-        builder.Property(e => e.Biography).IsRequired();
+        builder.Property(e => e.AcademicTitle).IsRequired(false);
+        builder.Property(e => e.Qualification).IsRequired(false);
+        builder.Property(e => e.Specialization).IsRequired(false);
+        builder.Property(e => e.OfficeLocation).IsRequired(false);
+        builder.Property(e => e.OfficeHours).IsRequired(false);
+        builder.Property(e => e.Biography).IsRequired(false);
 
         // Owned type for Photo
         builder.OwnsOne(e => e.Photo, photo =>
         {
-            photo.Property(p => p.Filename).HasColumnName("PhotoFilename");
-            photo.Property(p => p.ContentType).HasColumnName("PhotoContentType");
+            photo.Property(p => p.Filename).HasColumnName("PhotoFilename").IsRequired(false);
+            photo.Property(p => p.ContentType).HasColumnName("PhotoContentType").IsRequired(false);
         });
 
         // Navigation to Department
