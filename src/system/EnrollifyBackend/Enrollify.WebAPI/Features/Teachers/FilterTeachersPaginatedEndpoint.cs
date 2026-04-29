@@ -8,11 +8,8 @@ namespace Enrollify.WebAPI.Features.Teachers;
 
 public class FilterTeachersPaginatedRequest
 {
-
-    [Microsoft.AspNetCore.Mvc.FromRoute]
     public required int Page { get; set; }
 
-    [Microsoft.AspNetCore.Mvc.FromRoute]
     public required int PageSize { get; set; }
 
     [QueryParam]

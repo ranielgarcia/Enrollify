@@ -17,8 +17,6 @@ interface PageErrorBoundaryProps {
 export function PageErrorBoundary({ error, reset }: PageErrorBoundaryProps) {
   const navigate = useNavigate();
 
-  console.log(error);
-
   return (
     <div className="flex min-h-[400px] items-center justify-center p-4">
       <Card className="w-full max-w-md text-center">
