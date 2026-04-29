@@ -16,7 +16,6 @@ public class UpdateBuildingResponse
 
 public class UpdateBuildingRequest
 {
-    [QueryParam]
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
@@ -48,7 +47,7 @@ public class UpdateBuildingRequestValidator : Validator<UpdateBuildingRequest>
     }
 }
 
-[HttpPut("")]
+[HttpPut("{id:int}")]
 [Group<BuildingEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateBuildingPermission)]
 public class UpdateEndpoint : Endpoint<UpdateBuildingRequest, OkOrNotFoundApiResult<UpdateBuildingResponse>>

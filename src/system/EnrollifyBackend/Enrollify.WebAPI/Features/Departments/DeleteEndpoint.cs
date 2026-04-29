@@ -5,8 +5,6 @@ namespace Enrollify.WebAPI.Features.Departments;
 
 public class DeleteDepartmentRequest
 {
-
-    [QueryParam]
     public int Id { get; set; }
 }
 
@@ -19,7 +17,7 @@ public class DeleteDepartmentRequestValidator : Validator<DeleteDepartmentReques
     }
 }
 
-[HttpDelete("")]
+[HttpDelete("{id:int}")]
 [Group<DepartmentEndpointGroup>]
 [Authorize(Policy = PolicyName.HasDeleteDepartmentPermission)]
 public class DeleteEndpoint(IMediator mediator)
@@ -27,9 +25,9 @@ public class DeleteEndpoint(IMediator mediator)
 {
 
     public override async Task<DeleteApiResult>
-        ExecuteAsync(DeleteDepartmentRequest request, CancellationToken cancellationToken)
+        ExecuteAsync(DeleteDepartmentRequest request, CancellationToken ct)
     { 
-        var result = await mediator.Send(new DeleteDepartment.Command(DepartmentId.From(request.Id)), cancellationToken);
+        var result = await mediator.Send(new DeleteDepartment.Command(DepartmentId.From(request.Id)), ct);
         return result.ToDeleteResult();
     }
 }

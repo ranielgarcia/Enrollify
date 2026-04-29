@@ -8,7 +8,6 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Edit2, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { useTablePermissions } from "@/hooks/use-table-permissions";
-import { formatDateTimeString } from "@/lib/date-utils";
 
 interface BuildingsTableProps {
   buildings?: Building[];
@@ -63,7 +62,7 @@ export function BuildingsTable({
           <DataTableColumnHeader column={column} label="Created At" />
         ),
         meta: { label: "Created At" },
-        cell: (info) => <span>{formatDateTimeString(info.getValue())}</span>,
+        cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor(
         (row) =>

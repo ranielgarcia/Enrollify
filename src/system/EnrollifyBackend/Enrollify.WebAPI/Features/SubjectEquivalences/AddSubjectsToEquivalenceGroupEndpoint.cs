@@ -8,7 +8,6 @@ namespace Enrollify.WebAPI.Features.SubjectEquivalences;
 
 public class AddSubjectsToEquivalenceGroupRequest
 {
-    [Microsoft.AspNetCore.Mvc.FromRoute]
     public int Id { get; set; }
     public List<int> SubjectIds { get; set; } = new List<int>();
 }
@@ -25,7 +24,7 @@ public class AddSubjectsToEquivalenceGroupRequestValidator : Validator<AddSubjec
     }
 }
 
-[HttpPut("{Id}/add-subjects")]
+[HttpPut("{id}/add-subjects")]
 [Group<SubjectEquivalenceGroupEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateSubjectEquivalenceGroupPermission)]
 public class AddSubjectsToEquivalenceGroupEndpoint (IMediator mediator)

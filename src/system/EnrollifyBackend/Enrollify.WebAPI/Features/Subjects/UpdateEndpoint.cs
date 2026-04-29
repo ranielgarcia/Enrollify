@@ -16,7 +16,6 @@ public class UpdateSubjectResponse
 
 public class UpdateSubjectRequest
 {
-    [QueryParam]
     public int Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
@@ -47,7 +46,7 @@ public class UpdateSubjectRequestValidator : Validator<UpdateSubjectRequest>
     }
 }
 
-[HttpPut("")]
+[HttpPut("{id:int}")]
 [Group<SubjectEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateSubjectPermission)]
 public class UpdateEndpoint : Endpoint<UpdateSubjectRequest, OkOrNotFoundApiResult<UpdateSubjectResponse>>
@@ -58,7 +57,7 @@ public class UpdateEndpoint : Endpoint<UpdateSubjectRequest, OkOrNotFoundApiResu
         _mediator = mediator;
     }
     public override async Task<OkOrNotFoundApiResult<UpdateSubjectResponse>>
-        ExecuteAsync(UpdateSubjectRequest request, CancellationToken cancellationToken)
+        ExecuteAsync(UpdateSubjectRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new UpdateSubject.Command
         {
@@ -68,7 +67,7 @@ public class UpdateEndpoint : Endpoint<UpdateSubjectRequest, OkOrNotFoundApiResu
             Units = request.Units,
             Description = request.Description,
             PreferRoomTypeId = RoomTypeId.From(request.PreferRoomTypeId)
-        }, cancellationToken);
+        }, ct);
 
         return result.ToUpdateResult(
             id => new UpdateSubjectResponse

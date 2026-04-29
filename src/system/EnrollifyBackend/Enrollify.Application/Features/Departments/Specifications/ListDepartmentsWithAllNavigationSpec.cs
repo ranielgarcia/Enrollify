@@ -8,5 +8,6 @@ public class ListDepartmentsWithAllNavigationSpec : Specification<Department>
     public ListDepartmentsWithAllNavigationSpec() =>
         Query
         .Include(d => d.College)
-        .AsSplitQuery();
+        .Include(r => r.CreatedByUser)
+        .Include(r => r.UpdatedByUser);
 }

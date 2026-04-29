@@ -48,8 +48,8 @@ export const createDepartmentOptions = () =>
 export const updateDepartmentOptions = (departmentId: number) =>
   createMutationOptions({
     httpVerb: "put",
-    path: "/api/departments",
-    params: {
+    path: "/api/departments/{id}",
+    pathParams: {
       id: departmentId,
     },
     mutationKey: queryKeys.update(departmentId),
@@ -65,8 +65,8 @@ export const updateDepartmentOptions = (departmentId: number) =>
 export const deleteDepartmentOptions = (departmentId: number) =>
   createMutationOptions({
     httpVerb: "delete",
-    path: "/api/departments",
-    params: {
+    path: "/api/departments/{id}",
+    pathParams: {
       id: departmentId,
     },
     mutationKey: queryKeys.delete(departmentId),

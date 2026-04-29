@@ -17,7 +17,6 @@ public class UpdateCourseResponse
 
 public class UpdateCourseRequest
 {
-    [QueryParam]
     public int Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
@@ -48,7 +47,7 @@ public class UpdateCourseRequestValidator : Validator<UpdateCourseRequest>
     }
 }
 
-[HttpPut("")]
+[HttpPut("{id:int}")]
 [Group<CourseEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateCoursePermission)]
 public class UpdateEndpoint (IMediator mediator)

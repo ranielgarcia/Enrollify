@@ -6,7 +6,6 @@ namespace Enrollify.WebAPI.Features.SubjectEquivalences;
 
 public class RemoveSubjectFromEquivalenceGroupRequest
 {
-    [Microsoft.AspNetCore.Mvc.FromRoute]
     public int Id { get; set; }
     public string SubjectCode { get; set; } = null!;
 }
@@ -21,7 +20,7 @@ public class RemoveSubjectFromEquivalenceGroupRequestValidator : Validator<Remov
     }
 }
 
-[HttpDelete("{Id}/remove-subject")]
+[HttpDelete("{id}/remove-subject")]
 [Group<SubjectEquivalenceGroupEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateSubjectEquivalenceGroupPermission)]
 public class RemoveSubjectFromEquivalenceGroupEndpoint (IMediator mediator)

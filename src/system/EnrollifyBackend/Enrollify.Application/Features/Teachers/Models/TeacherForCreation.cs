@@ -6,7 +6,7 @@ namespace Enrollify.Application.Features.Teachers.Models;
 public class TeacherForCreation
 {
     public string FirstName { get; set; } = null!;
-    public string MiddleName { get; set; } = null!;
+    public string? MiddleName { get; set; }
     public string LastName { get; set; } = null!;
 
     public TeacherIdentifier TeacherIdentifier { get; set; }

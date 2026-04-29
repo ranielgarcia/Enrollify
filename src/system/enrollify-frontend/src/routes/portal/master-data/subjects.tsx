@@ -4,11 +4,10 @@ import type { RouteLoaderData } from "@/types/route.types";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { createStandardSchemaV1 } from "nuqs";
 
-export const Route = createFileRoute(
-  "/portal/master-data/subjects",
-)({
+export const Route = createFileRoute("/portal/master-data/subjects")({
   component: SubjectsManagementPage,
   validateSearch: createStandardSchemaV1(searchParams, {
+    // https://nuqs.dev/docs/adapters#tanstack-router
     partialOutput: true,
   }),
   loader: (): RouteLoaderData => ({

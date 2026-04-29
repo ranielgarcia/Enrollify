@@ -17,7 +17,6 @@ public class UpdateDepartmentResponse
 
 public class UpdateDepartmentRequest
 {
-    [QueryParam]
     public int Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
@@ -55,7 +54,7 @@ public class UpdateDepartmentRequestValidator : Validator<UpdateDepartmentReques
 }
 
 
-[HttpPut("")]
+[HttpPut("{id:int}")]
 [Group<DepartmentEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateDepartmentPermission)]
 public class UpdateEndpoint(IMediator mediator)

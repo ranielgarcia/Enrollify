@@ -5,7 +5,6 @@ namespace Enrollify.WebAPI.Features.Subjects;
 
 public class DeleteSubjectRequest
 {
-    [QueryParam]
     public int Id { get; set; }
 }
 
@@ -18,16 +17,16 @@ public class DeleteSubjectRequestValidator : Validator<DeleteSubjectRequest>
     }
 }
 
-[HttpDelete("")]
+[HttpDelete("{id:int}")]
 [Group<SubjectEndpointGroup>]
 [Authorize(Policy = PolicyName.HasDeleteSubjectPermission)]
 public class DeleteEndpoint (IMediator mediator) 
     : Endpoint<DeleteSubjectRequest, DeleteApiResult>
 {
     public override async Task<DeleteApiResult>
-        ExecuteAsync (DeleteSubjectRequest request, CancellationToken cancellationToken)
+        ExecuteAsync (DeleteSubjectRequest request, CancellationToken ct)
     {
-        var result = await mediator.Send(new DeleteSubject.Command(SubjectId.From(request.Id)), cancellationToken);
+        var result = await mediator.Send(new DeleteSubject.Command(SubjectId.From(request.Id)), ct);
         return result.ToDeleteResult();
     }
 }

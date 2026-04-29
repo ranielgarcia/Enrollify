@@ -12,7 +12,6 @@ public class UpdateRoomTypeResponse
 
 public class UpdateRoomTypeRequest
 {
-    [QueryParam]
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
@@ -32,7 +31,7 @@ public class UpdateRoomTypeRequestValidator : Validator<UpdateRoomTypeRequest>
     }
 }
 
-[HttpPut("")]
+[HttpPut("{id:int}")]
 [Group<RoomTypeEndpointsGroup>]
 [Authorize(Policy = PolicyName.HasUpdateRoomTypesPermission)]
 public class UpdateEndpoint : Endpoint<UpdateRoomTypeRequest, OkOrNotFoundApiResult<UpdateRoomTypeResponse>>

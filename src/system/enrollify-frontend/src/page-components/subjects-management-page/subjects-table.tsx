@@ -81,7 +81,6 @@ export function SubjectsTable({
           <DataTableColumnHeader column={column} label="Prefer Room Type" />
         ),
         meta: { label: "Prefer Room Type", variant: "text" },
-        enableColumnFilter: true,
         enableSorting: true,
         enableHiding: true,
         cell: (info) => <span>{info.getValue()}</span>,
@@ -170,8 +169,6 @@ export function SubjectsTable({
     manualPagination: true,
     debounceMs: 600,
   });
-
-  console.log(debounceMs);
 
   return (
     <DataTable

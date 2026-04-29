@@ -5,7 +5,6 @@ namespace Enrollify.WebAPI.Features.Colleges;
 
 public class DeleteRequest 
 {
-    [QueryParam]
     public int Id { get; set; }
 }
 
@@ -18,7 +17,7 @@ public class DeleteRequestValidator : Validator<DeleteRequest>
     }
 }
 
-[HttpDelete("")]
+[HttpDelete("{id:int}")]
 [Group<CollegeEndpointsGroup>]
 [Authorize(Policy = PolicyName.HasDeleteCollegePermission)]
 public class DeleteEndpoint : Endpoint<DeleteRequest, DeleteApiResult>

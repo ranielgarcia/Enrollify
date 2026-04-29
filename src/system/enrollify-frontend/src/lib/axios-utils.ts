@@ -3,13 +3,18 @@ import { AxiosError } from "axios";
 /**
  * ProblemDetails structure returned by ASP.NET Core APIs
  */
+interface ValidationErrorItem {
+  name: string;
+  reason: string;
+}
+
 export interface ProblemDetails {
   type?: string | null;
   title?: string | null;
   status?: number | null;
   detail?: string | null;
   instance?: string | null;
-  errors?: Record<string, string[]>;
+  errors?: Record<string, string[]> | ValidationErrorItem[];
   [key: string]: unknown;
 }
 
@@ -58,11 +63,27 @@ export function parseApiError(
 
   // If we have ProblemDetails response
   if (data && typeof data === "object") {
+    let validationErrors: Record<string, string[]> | null = null;
+    if (data.errors) {
+      if (Array.isArray(data.errors)) {
+        validationErrors = (data.errors as ValidationErrorItem[]).reduce(
+          (acc, { name, reason }) => {
+            if (!acc[name]) acc[name] = [];
+            acc[name].push(reason);
+            return acc;
+          },
+          {} as Record<string, string[]>,
+        );
+      } else {
+        validationErrors = data.errors;
+      }
+    }
+
     return {
       title: data.title || getDefaultErrorTitle(status),
       detail: data.detail || null,
       status: data.status ?? status,
-      validationErrors: data.errors || null,
+      validationErrors,
       isNetworkError: false,
     };
   }

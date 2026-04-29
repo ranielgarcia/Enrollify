@@ -7,11 +7,8 @@ namespace Enrollify.WebAPI.Features.Subjects;
 
 public class FilterSubjectsPaginatedRequest
 {
-
-    [Microsoft.AspNetCore.Mvc.FromRoute]
     public required int Page { get; set; }
 
-    [Microsoft.AspNetCore.Mvc.FromRoute]
     public required int PageSize { get; set; }
 
     [QueryParam]
@@ -74,7 +71,7 @@ public class FilterSubjectsPaginatedRequestValidator : Validator<FilterSubjectsP
 [Authorize(Policy = PolicyName.HasViewSubjectsPermission)]
 public class FilterSubjectsPaginatedEndpoint (IMediator mediator) : Endpoint<FilterSubjectsPaginatedRequest, Application.PagedResult<SubjectDto>>
 {
-    public override async Task HandleAsync(FilterSubjectsPaginatedRequest request, CancellationToken cancellationToken)
+    public override async Task HandleAsync(FilterSubjectsPaginatedRequest request, CancellationToken ct)
     {
         var filters = request.Filters is not null
             ? JsonSerializer.Deserialize<List<FilterItem>>(request.Filters, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
@@ -84,7 +81,7 @@ public class FilterSubjectsPaginatedEndpoint (IMediator mediator) : Endpoint<Fil
             ? JsonSerializer.Deserialize<List<SortItem>>(request.Sort, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
             : null;
 
-        var result = await mediator.Send(new FilterSubjectsPaginatedQuery(request.Page, request.PageSize, filters, sorts, request.JoinOperator), cancellationToken);
+        var result = await mediator.Send(new FilterSubjectsPaginatedQuery(request.Page, request.PageSize, filters, sorts, request.JoinOperator), ct);
         await Send.OkAsync(result.Value);
     }
 }

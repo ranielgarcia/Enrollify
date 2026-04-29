@@ -16,6 +16,7 @@ import {
 import { SubjectFormDrawer } from "./subject-form-drawer";
 import { SubjectsTable } from "./subjects-table";
 import { useCrudState } from "@/hooks/use-crud-state";
+import { useDebounce } from "@/hooks/use-debounce";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { searchParams } from "./searchParams";
 import { useQueryStates } from "nuqs";
@@ -24,7 +25,6 @@ export default function SubjectsManagementPage() {
   const [{ page, perPage, filters, sort, joinOperator }] =
     useQueryStates(searchParams);
 
-  console.log(joinOperator);
   const {
     isFormOpen,
     entityToEdit,
@@ -58,12 +58,15 @@ export default function SubjectsManagementPage() {
   const currentPage = page ? Number(page) : 1;
   const currentPageSize = perPage ? Number(perPage) : 10;
 
+  const debouncedFilters = useDebounce(filters, 600);
+  const debouncedSort = useDebounce(sort, 600);
+
   const { data: pagedSubjects } = useSuspenseQuery(
     filterSubjectsPaginatedOptions(
       currentPage,
       currentPageSize,
-      filters,
-      sort,
+      debouncedFilters,
+      debouncedSort,
       joinOperator,
     ),
   );

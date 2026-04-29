@@ -40,8 +40,8 @@ export const createCourseOptions = () =>
 export const updateCourseOptions = (courseId: number) =>
   createMutationOptions({
     httpVerb: "put",
-    path: `/api/courses`,
-    params: {
+    path: `/api/courses/{id}`,
+    pathParams: {
       id: courseId,
     },
     mutationKey: queryKeys.update(courseId),
@@ -57,8 +57,8 @@ export const updateCourseOptions = (courseId: number) =>
 export const deleteCourseOptions = (courseId: number) =>
   createMutationOptions({
     httpVerb: "delete",
-    path: `/api/courses`,
-    params: {
+    path: `/api/courses/{id}`,
+    pathParams: {
       id: courseId,
     },
     mutationKey: queryKeys.delete(courseId),

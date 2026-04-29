@@ -28,8 +28,7 @@ export function PageErrorBoundary({ error, reset }: PageErrorBoundaryProps) {
             Something went wrong
           </CardTitle>
           <CardDescription className="text-base">
-            {error.message ||
-              "An unexpected error occurred. Please try again."}
+            {error.message || "An unexpected error occurred. Please try again."}
           </CardDescription>
         </CardHeader>
         <CardFooter className="justify-center gap-2">
