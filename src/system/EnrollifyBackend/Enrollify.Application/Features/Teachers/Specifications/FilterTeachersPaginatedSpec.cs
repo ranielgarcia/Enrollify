@@ -9,9 +9,7 @@ public class FilterTeachersPaginatedSpec : Specification<Teacher>
 {
     private static readonly HashSet<string> AllowedFilterColumns =
         [
-            nameof(Teacher.FirstName).ToLower(),
-            nameof(Teacher.MiddleName).ToLower(),
-            nameof(Teacher.LastName).ToLower(),
+            "fullname",
             nameof(Teacher.TeacherIdentifier).ToLower(),
             nameof(Teacher.Email).ToLower(),
             nameof(Teacher.PhoneNumber).ToLower(),
@@ -28,9 +26,7 @@ public class FilterTeachersPaginatedSpec : Specification<Teacher>
     private static readonly IReadOnlyDictionary<string, Expression<Func<Teacher, object?>>> SortMap =
         new Dictionary<string, Expression<Func<Teacher, object?>>>
         {
-            ["firstname"]         = t => t.FirstName,
-            ["middlename"]        = t => t.MiddleName,
-            ["lastname"]          = t => t.LastName,
+            ["fullname"]         = t => new { t.FirstName, t.MiddleName, t.LastName},
             ["teacheridentifier"] = t => (object?)t.TeacherIdentifier,
             ["email"]             = t => (object?)t.Email,
             ["academictitle"]     = t => t.AcademicTitle,
@@ -56,15 +52,15 @@ public class FilterTeachersPaginatedSpec : Specification<Teacher>
 
         foreach (var filter in filters ?? [])
         {
-            if (!AllowedFilterColumns.Contains(filter.Id)) continue;
+            var filterId = filter.Id.ToLower();
+            if (!AllowedFilterColumns.Contains(filterId, StringComparer.InvariantCultureIgnoreCase)) continue;
 
-            var expr = filter.Id switch
+            var expr = filterId switch
             {
-                // Non-nullable strings
-                "firstname"  => FilterExpressionBuilder.ForString<Teacher>(t => t.FirstName, filter),
-                "middlename" => FilterExpressionBuilder.ForString<Teacher>(t => t.MiddleName, filter),
-                "lastname"   => FilterExpressionBuilder.ForString<Teacher>(t => t.LastName, filter),
+                "fullname" => FilterExpressionBuilder.ForString<Teacher>(t => t.FirstName + " " + t.MiddleName + " " + t.LastName, filter),
 
+                "department" => FilterExpressionBuilder.ForNullableString<Teacher>(t => t.Department != null ? t.Department.Name : null, filter),
+                
                 // Vogen value objects (explicit cast to string)
                 "teacheridentifier" => FilterExpressionBuilder.ForString<Teacher>(t => (string)t.TeacherIdentifier, filter),
                 "email"             => FilterExpressionBuilder.ForString<Teacher>(t => (string)t.Email, filter),
