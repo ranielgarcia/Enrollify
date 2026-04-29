@@ -29,7 +29,7 @@ public class UpdateTeacherRequest
 {
     public int Id { get; set; }
     public string FirstName { get; set; } = string.Empty;
-    public string MiddleName { get; set; } = string.Empty;
+    public string? MiddleName { get; set; }
     public string LastName { get; set; } = string.Empty;
     public string TeacherIdentifier { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
@@ -50,24 +50,31 @@ public class UpdateTeacherRequestValidator : Validator<UpdateTeacherRequest>
     {
         RuleFor(x => x.Id)
             .GreaterThan(0).WithMessage("Please provide a valid teacher ID.");
+
         RuleFor(x => x.FirstName)
             .NotEmpty().WithMessage("Please provide a first name.")
             .MaximumLength(100).WithMessage("First name must be 100 characters or fewer.");
+
         RuleFor(x => x.MiddleName)
-            .NotEmpty().WithMessage("Please provide a middle name.")
-            .MaximumLength(100).WithMessage("Middle name must be 100 characters or fewer.");
+            .MaximumLength(100).WithMessage("Middle name must be 100 characters or fewer.")
+            .When(x => !string.IsNullOrEmpty(x.MiddleName));
+
         RuleFor(x => x.LastName)
             .NotEmpty().WithMessage("Please provide a last name.")
             .MaximumLength(100).WithMessage("Last name must be 100 characters or fewer.");
+
         RuleFor(x => x.TeacherIdentifier)
             .NotEmpty().WithMessage("Please provide a teacher identifier.");
+
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("Please provide an email address.")
             .EmailAddress().WithMessage("Please provide a valid email address.");
         RuleFor(x => x.PhoneNumber)
             .NotEmpty().WithMessage("Please provide a phone number.");
+
         RuleFor(x => x.DepartmentId)
             .GreaterThan(0).WithMessage("Please provide a valid department ID.");
+
         RuleFor(x => x.Photo)
             .Must(photo =>
             {
@@ -131,7 +138,7 @@ public class UpdateTeacherEndpoint : Endpoint<UpdateTeacherRequest, OkOrNotFound
             {
                 Id = id.Value,
                 FirstName = request.FirstName,
-                MiddleName = request.MiddleName,
+                MiddleName = request.MiddleName ?? string.Empty,
                 LastName = request.LastName,
                 TeacherIdentifier = request.TeacherIdentifier,
                 Email = request.Email,

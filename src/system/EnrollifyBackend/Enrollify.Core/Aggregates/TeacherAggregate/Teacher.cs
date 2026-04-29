@@ -12,7 +12,7 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
 
     public Teacher(
         string firstName,
-        string middleName,
+        string? middleName,
         string lastName,
         TeacherIdentifier teacherIdentifier,
         TeacherEmail email,
@@ -29,7 +29,7 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
     }
 
     public string FirstName { get; private set; }
-    public string MiddleName { get; private set; }
+    public string? MiddleName { get; private set; }
     public string LastName { get; private set; }
 
     public TeacherIdentifier TeacherIdentifier { get; private set; }
@@ -46,7 +46,7 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
     public string? OfficeHours { get; private set; }
     public string? Biography { get; private set; }
 
-    public TeacherPhoto Photo { get; private set; }
+    public TeacherPhoto? Photo { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
@@ -68,10 +68,10 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
         return this;
     }
 
-    public Teacher UpdateMiddleName(string middleName)
+    public Teacher UpdateMiddleName(string? middleName)
     {
         if (middleName == MiddleName) return this;
-        MiddleName = Guard.Against.Null(middleName, message: "Middle name is required.");
+        MiddleName = middleName;
         return this;
     }
 

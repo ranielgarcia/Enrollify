@@ -445,7 +445,7 @@ CREATE TABLE Teachers
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	FirstName VARCHAR(50) NOT NULL,
-	MiddleName VARCHAR(50) NOT NULL,
+	MiddleName VARCHAR(50) NULL,
 	LastName VARCHAR(50) NOT NULL,
     TeacherIdentifier CHAR(20) NOT NULL,
     PhoneNumber CHAR(11) NOT NULL, -- format: 09xxxxxxxxx

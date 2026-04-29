@@ -35,7 +35,7 @@ import { FormPhoneField } from "@/components/form/form-phone-field";
 const teacherFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  middleName: z.string(),
+  middleName: z.string().optional(),
   teacherIdentifier: z.string().min(1, "Teacher ID is required"),
   email: z.string().email("Valid email is required"),
   phoneNumber: z

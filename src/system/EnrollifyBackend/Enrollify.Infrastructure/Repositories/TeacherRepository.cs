@@ -29,6 +29,16 @@ public class TeacherRepository : ITeacherRepository
             _logger.LogError(ex, "Duplicate email: {Email}", newTeacher.Email);
             return Result.Conflict("Unable to create teacher with the provided email. Please use a different email.");
         }
+        catch (DbUpdateException ex) when (IsDuplicatePhoneException(ex))
+        {
+            _logger.LogError(ex, "Duplicate phone number: {PhoneNumber}", newTeacher.PhoneNumber);
+            return Result.Conflict("Unable to create teacher with the provided phone number. Please use a different phone number.");
+        }
+        catch (DbUpdateException ex) when (IsDuplicateTeacherIdentifierException(ex))
+        {
+            _logger.LogError(ex, "Duplicate teacher identifier: {Email}", newTeacher.TeacherIdentifier);
+            return Result.Conflict("Unable to create teacher with the provided identifier. Please use a different identifier.");
+        }
     }
 
     public async Task<Result> Delete(TeacherId id, CancellationToken cancellationToken)
@@ -65,12 +75,36 @@ public class TeacherRepository : ITeacherRepository
             _logger.LogError(ex, "Duplicate email: {Email}", updatedTeacher.Email);
             return Result.Conflict("Unable to create teacher with the provided email. Please use a different email.");
         }
+        catch (DbUpdateException ex) when (IsDuplicatePhoneException(ex))
+        {
+            _logger.LogError(ex, "Duplicate phone number: {PhoneNumber}", updatedTeacher.PhoneNumber);
+            return Result.Conflict("Unable to create teacher with the provided phone number. Please use a different phone number.");
+        }
+        catch (DbUpdateException ex) when (IsDuplicateTeacherIdentifierException(ex))
+        {
+            _logger.LogError(ex, "Duplicate teacher identifier: {Email}", updatedTeacher.TeacherIdentifier);
+            return Result.Conflict("Unable to create teacher with the provided identifier. Please use a different identifier.");
+        }
     }
 
-    private bool IsDuplicateEmailException(DbUpdateException ex)
+    private static bool IsDuplicateEmailException(DbUpdateException ex)
     {
         var message = ex.InnerException?.Message;
         return message?.Contains("UQ_Teachers_Email") == true;
     }
+
+
+    private static bool IsDuplicatePhoneException(DbUpdateException ex)
+    {
+        var message = ex.InnerException?.Message;
+        return message?.Contains("UQ_Teachers_PhoneNumber") == true;
+    }
+
+    private static bool IsDuplicateTeacherIdentifierException(DbUpdateException ex)
+    {
+        var message = ex.InnerException?.Message;
+        return message?.Contains("UQ_Teachers_TeacherIdentifier") == true;
+    }
+
 
 }

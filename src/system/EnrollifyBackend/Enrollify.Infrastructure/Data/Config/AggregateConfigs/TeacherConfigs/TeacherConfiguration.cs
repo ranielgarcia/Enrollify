@@ -14,7 +14,7 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
           .IsRequired();
 
         builder.Property(e => e.FirstName).IsRequired();
-        builder.Property(e => e.MiddleName).IsRequired();
+        builder.Property(e => e.MiddleName).IsRequired(false);
         builder.Property(e => e.LastName).IsRequired();
 
         builder.Property(e => e.TeacherIdentifier).IsRequired();
