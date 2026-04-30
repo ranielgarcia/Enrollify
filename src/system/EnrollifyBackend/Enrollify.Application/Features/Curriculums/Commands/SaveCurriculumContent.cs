@@ -63,7 +63,7 @@ public class SaveCurriculumContent
                 .Distinct()
                 .ToHashSet();
 
-            var allSubjects = await _subjectReadRepository.ListAsync(new ListMinimumSubjectsByCodesSpec(allSubjectCodes), cancellationToken);
+            var allSubjects = await _subjectReadRepository.ListAsync(new ListSubjectsByCodesSpec(allSubjectCodes), cancellationToken);
 
             // Create lookup from SubjectCode to Subject
             var subjectsByCode = allSubjects.ToDictionary(s => s.Code, s => s);
