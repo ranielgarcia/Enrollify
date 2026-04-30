@@ -20,6 +20,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { searchParams } from "./searchParams";
 import { useQueryStates } from "nuqs";
+import { ModuleIcons } from "@/config/module-icons";
 
 export default function SubjectsManagementPage() {
   const [{ page, perPage, filters, sort, joinOperator }] =
@@ -77,7 +78,7 @@ export default function SubjectsManagementPage() {
     <ManagementPageLayout
       title="Subject Management"
       description="Manage subjects and their equivalence relationships"
-      icon={<BookOpen />}
+      icon={<ModuleIcons.subjects />}
       createNewItemButton={
         activeTab === "subjects" ? (
           <SubjectFormDrawer

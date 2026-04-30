@@ -181,6 +181,15 @@ export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
               >
                 <Edit2 className="size-4" />
               </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEdit(item)}
+                className="hover:bg-blue-500/10 text-blue-600 hover:text-blue-700"
+                disabled={!canUpdate}
+              >
+                <Edit2 className="size-4" />
+              </Button>
             </div>
           );
         },
@@ -215,4 +224,3 @@ export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
     </DataTable>
   );
 }
-

@@ -7,7 +7,7 @@ import { DepartmentFormDrawer } from "./department-form-drawer";
 import { DeleteDepartmentAlertDialog } from "./delete-department-alert-dialog";
 import { useCrudState } from "@/hooks/use-crud-state";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
-import { Castle } from "lucide-react";
+import { ModuleIcons } from "@/config/module-icons";
 
 export default function DepartmentPage() {
   const {
@@ -37,7 +37,7 @@ export default function DepartmentPage() {
           setIsOpen={handleFormOpenChange}
         />
       }
-      icon={<Castle />}
+      icon={<ModuleIcons.departments />}
     >
       <DepartmentsTable
         departments={departments}

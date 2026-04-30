@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { BookOpen, OctagonAlert, Scroll } from "lucide-react";
+import { BookOpen, OctagonAlert } from "lucide-react";
 
 import { useNavigate, useParams } from "@tanstack/react-router";
 import {
@@ -16,6 +16,7 @@ import { useCrudState } from "@/hooks/use-crud-state";
 import type { CurriculumWithSubjects } from "@/api/models/curriculum";
 import { getAllCoursesOptions } from "@/api/collections/course-collection";
 import { CurriculumFormDrawer } from "./curriculum-form-drawer";
+import { ModuleIcons } from "@/config/module-icons";
 
 function CurriculumContent() {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ function CurriculumContent() {
     <ManagementPageLayout
       title="Curriculum Builder"
       description="Design and manage multi-year academic curricula"
-      icon={<Scroll />}
+      icon={<ModuleIcons.curriculum />}
       createNewItemButton={
         <CurriculumFormDrawer
           courses={courses}

@@ -7,7 +7,7 @@ import { CoursesTable } from "./courses-table";
 import { DeleteCourseAlertDialog } from "./delete-course-alert-dialog";
 import { useCrudState } from "@/hooks/use-crud-state";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
-import { GraduationCap } from "lucide-react";
+import { ModuleIcons } from "@/config/module-icons";
 
 export default function CoursesManagementPage() {
   const {
@@ -37,7 +37,7 @@ export default function CoursesManagementPage() {
           setIsOpen={handleFormOpenChange}
         />
       }
-      icon={<GraduationCap />}
+      icon={<ModuleIcons.courses />}
     >
       <CoursesTable
         courses={courses}
