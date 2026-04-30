@@ -6,7 +6,7 @@ interface AddSubjectToGroupDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   group?: SubjectEquivalenceGroup | null;
-  onSubmit: (subjectIds: number[]) => Promise<void>;
+  onSubmit: (subjectCodes: string[]) => Promise<void>;
 }
 
 export function AddSubjectToGroupDialog({
@@ -15,11 +15,8 @@ export function AddSubjectToGroupDialog({
   group,
   onSubmit,
 }: AddSubjectToGroupDialogProps) {
-  const existingSubjectIds = useMemo(
-    () =>
-      group?.subjects
-        ?.map((s) => s.id)
-        .filter((id): id is number => id !== undefined) ?? [],
+  const existingSubjectCodes = useMemo(
+    () => group?.subjects?.map((s) => s.code).filter(Boolean) ?? [],
     [group],
   );
 
@@ -35,7 +32,7 @@ export function AddSubjectToGroupDialog({
           Select the subjects that are considered equivalent.
         </>
       }
-      excludeSubjectIds={existingSubjectIds}
+      excludeSubjectCodes={existingSubjectCodes}
       onSubmit={onSubmit}
     />
   );

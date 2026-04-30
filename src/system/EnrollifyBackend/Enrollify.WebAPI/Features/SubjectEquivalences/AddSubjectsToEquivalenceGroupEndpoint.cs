@@ -1,4 +1,3 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.SubjectEquivalences.Commands;
 using Enrollify.Application.Features.SubjectEquivalences.DTOs;
 using Enrollify.Core.Aggregates.SubjectAggregate;
@@ -9,7 +8,7 @@ namespace Enrollify.WebAPI.Features.SubjectEquivalences;
 public class AddSubjectsToEquivalenceGroupRequest
 {
     public int Id { get; set; }
-    public List<int> SubjectIds { get; set; } = new List<int>();
+    public List<string> SubjectCodes { get; set; } = new List<string>();
 }
 
 public class AddSubjectsToEquivalenceGroupRequestValidator : Validator<AddSubjectsToEquivalenceGroupRequest>
@@ -19,8 +18,8 @@ public class AddSubjectsToEquivalenceGroupRequestValidator : Validator<AddSubjec
         RuleFor(x => x.Id)
             .NotNull().WithMessage("Please provide the subject equivalence group id");
 
-        RuleFor(x => x.SubjectIds)
-            .NotEmpty().WithMessage("Please provide at least one subject id.");
+        RuleFor(x => x.SubjectCodes)
+            .NotEmpty().WithMessage("Please provide at least one subject.");
     }
 }
 
@@ -33,9 +32,9 @@ public class AddSubjectsToEquivalenceGroupEndpoint (IMediator mediator)
     public override async Task<OkOrNotFoundApiResult<SubjectEquivalenceGroupDto>>
         ExecuteAsync(AddSubjectsToEquivalenceGroupRequest request, CancellationToken ct)
     {
-        var subjectIds = request.SubjectIds.Select(id => SubjectId.From(id)).ToList();
+        var subjectCodes = request.SubjectCodes.Select(code => SubjectCode.From(code)).ToList();
         var result = await mediator.Send(new AddSubjectsToEquivalenceGroup
-            .Command(SubjectEquivalenceGroupId.From(request.Id), subjectIds), ct);
+            .Command(SubjectEquivalenceGroupId.From(request.Id), subjectCodes), ct);
         return result.ToUpdateResult(id => result.Value);
     }
 }

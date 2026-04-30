@@ -29,7 +29,7 @@ public static class RemoveSubjectFromEquivalenceGroup
             {
                 return Result.NotFound();
             }
-            var subject = await _subjectReadRepository.ListAsync(new ListSubjectsByCodesSpec(new List<SubjectCode> { command.subjectCode }), cancellationToken);
+            var subject = await _subjectReadRepository.ListAsync(new ListMinimumSubjectsByCodesSpec(new List<SubjectCode> { command.subjectCode }), cancellationToken);
             if (subject is null || !subject.Any())
             {
                 return Result.NotFound($"Subject with code {command.subjectCode} not found.");

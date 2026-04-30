@@ -30,9 +30,9 @@ interface AddSubjectsDialogProps {
   title?: string;
   /** Dialog description / subtitle */
   description?: React.ReactNode;
-  /** Subject IDs already held by the calling entity — these will be excluded from the list */
-  excludeSubjectIds?: number[];
-  onSubmit: (subjectIds: number[]) => Promise<void>;
+  /** Subject codes already held by the calling entity — these will be excluded from the list */
+  excludeSubjectCodes?: string[];
+  onSubmit: (subjectCodes: string[]) => Promise<void>;
 }
 
 export function AddSubjectsDialog({
@@ -40,11 +40,13 @@ export function AddSubjectsDialog({
   onOpenChange,
   title = "Add Subjects",
   description,
-  excludeSubjectIds = [],
+  excludeSubjectCodes = [],
   onSubmit,
 }: AddSubjectsDialogProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedSubjectIds, setSelectedSubjectIds] = useState<number[]>([]);
+  const [selectedSubjectCodes, setSelectedSubjectCodes] = useState<string[]>(
+    [],
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -54,7 +56,7 @@ export function AddSubjectsDialog({
   useEffect(() => {
     if (isOpen) {
       setSearchTerm("");
-      setSelectedSubjectIds([]);
+      setSelectedSubjectCodes([]);
       setPage(1);
     }
   }, [isOpen]);
@@ -65,8 +67,8 @@ export function AddSubjectsDialog({
   }, [debouncedSearchTerm]);
 
   const excludeSet = useMemo(
-    () => new Set(excludeSubjectIds),
-    [excludeSubjectIds],
+    () => new Set(excludeSubjectCodes),
+    [excludeSubjectCodes],
   );
 
   const { data: paginatedSubjects, isLoading } = useQuery(
@@ -79,24 +81,24 @@ export function AddSubjectsDialog({
 
   const filteredSubjects = useMemo(() => {
     return paginatedSubjects?.items?.filter(
-      (subject) => !(subject.id && excludeSet.has(subject.id)),
+      (subject) => !(subject.code && excludeSet.has(subject.code)),
     );
   }, [paginatedSubjects, excludeSet]);
 
-  const handleToggleSubject = (subjectId?: number) => {
-    if (!subjectId) return;
-    setSelectedSubjectIds((prev) =>
-      prev.includes(subjectId)
-        ? prev.filter((id) => id !== subjectId)
-        : [...prev, subjectId],
+  const handleToggleSubject = (subjectCode?: string) => {
+    if (!subjectCode) return;
+    setSelectedSubjectCodes((prev) =>
+      prev.includes(subjectCode)
+        ? prev.filter((code) => code !== subjectCode)
+        : [...prev, subjectCode],
     );
   };
 
   const handleSubmit = async () => {
-    if (selectedSubjectIds.length === 0) return;
+    if (selectedSubjectCodes.length === 0) return;
     setIsSubmitting(true);
     try {
-      await onSubmit(selectedSubjectIds);
+      await onSubmit(selectedSubjectCodes);
       onOpenChange(false);
     } finally {
       setIsSubmitting(false);
@@ -161,12 +163,8 @@ export function AddSubjectsDialog({
                     className="flex items-center gap-3 p-3 rounded-md hover:bg-muted cursor-pointer transition-colors"
                   >
                     <Checkbox
-                      checked={
-                        subject.id
-                          ? selectedSubjectIds.includes(subject.id)
-                          : false
-                      }
-                      onCheckedChange={() => handleToggleSubject(subject.id)}
+                      checked={selectedSubjectCodes.includes(subject.code)}
+                      onCheckedChange={() => handleToggleSubject(subject.code)}
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -217,10 +215,10 @@ export function AddSubjectsDialog({
             </div>
           )}
 
-          {selectedSubjectIds.length > 0 && (
+          {selectedSubjectCodes.length > 0 && (
             <p className="text-sm text-muted-foreground">
-              {selectedSubjectIds.length} subject
-              {selectedSubjectIds.length > 1 ? "s" : ""} selected
+              {selectedSubjectCodes.length} subject
+              {selectedSubjectCodes.length > 1 ? "s" : ""} selected
             </p>
           )}
         </div>
@@ -237,15 +235,16 @@ export function AddSubjectsDialog({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || selectedSubjectIds.length === 0}
+            disabled={isSubmitting || selectedSubjectCodes.length === 0}
             size="sm"
           >
             {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
-            Add {selectedSubjectIds.length > 0
-              ? selectedSubjectIds.length
+            Add{" "}
+            {selectedSubjectCodes.length > 0
+              ? selectedSubjectCodes.length
               : ""}{" "}
             Subject
-            {selectedSubjectIds.length > 1 ? "s" : ""}
+            {selectedSubjectCodes.length > 1 ? "s" : ""}
           </Button>
         </DialogFooter>
       </DialogContent>
