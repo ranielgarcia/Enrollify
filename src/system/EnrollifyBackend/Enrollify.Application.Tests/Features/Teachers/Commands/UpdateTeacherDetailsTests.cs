@@ -199,6 +199,122 @@ public class UpdateTeacherDetailsTests
     }
 
     [Fact]
+    public async Task Handle_MultipleActiveSubjects_SomeRemovedAndNewOnesAdded()
+    {
+        // Arrange: teacher has S1, S2, S3 active — new list keeps S3, removes S1+S2, adds S4+S5
+        var teacher = CreateTestTeacher(TeacherId.From(1));
+        AddActiveSubject(teacher, SubjectId.From(1));
+        AddActiveSubject(teacher, SubjectId.From(2));
+        AddActiveSubject(teacher, SubjectId.From(3));
+
+        _readRepositoryMock
+            .Setup(r => r.GetByIdAsync(It.IsAny<TeacherId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(teacher);
+
+        var code3 = SubjectCode.From("CS103");
+        var code4 = SubjectCode.From("CS104");
+        var code5 = SubjectCode.From("CS105");
+        SetupSubjectRepo([
+            new() { Id = SubjectId.From(3), Code = code3 },
+            new() { Id = SubjectId.From(4), Code = code4 },
+            new() { Id = SubjectId.From(5), Code = code5 }
+        ]);
+        SetupSuccessfulUpdate(TeacherId.From(1));
+
+        var command = new UpdateTeacherDetails.Command(
+            CreateUpdate(TeacherId.From(1), [code3, code4, code5]), Photo: null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert: S1 and S2 removed, S3 retained, S4 and S5 added
+        Assert.True(result.IsSuccess);
+        Assert.Equal(3, teacher.Subjects.Count);
+        Assert.DoesNotContain(teacher.Subjects, s => s.SubjectId == SubjectId.From(1));
+        Assert.DoesNotContain(teacher.Subjects, s => s.SubjectId == SubjectId.From(2));
+        Assert.Contains(teacher.Subjects, s => s.SubjectId == SubjectId.From(3));
+        Assert.Contains(teacher.Subjects, s => s.SubjectId == SubjectId.From(4));
+        Assert.Contains(teacher.Subjects, s => s.SubjectId == SubjectId.From(5));
+    }
+
+    [Fact]
+    public async Task Handle_AllActiveSubjectsReplaced_RemovesAllAndAddsNew()
+    {
+        // Arrange: teacher has S1, S2 active — new list has S3, S4 (full replacement)
+        var teacher = CreateTestTeacher(TeacherId.From(1));
+        AddActiveSubject(teacher, SubjectId.From(1));
+        AddActiveSubject(teacher, SubjectId.From(2));
+
+        _readRepositoryMock
+            .Setup(r => r.GetByIdAsync(It.IsAny<TeacherId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(teacher);
+
+        var code3 = SubjectCode.From("CS103");
+        var code4 = SubjectCode.From("CS104");
+        SetupSubjectRepo([
+            new() { Id = SubjectId.From(3), Code = code3 },
+            new() { Id = SubjectId.From(4), Code = code4 }
+        ]);
+        SetupSuccessfulUpdate(TeacherId.From(1));
+
+        var command = new UpdateTeacherDetails.Command(
+            CreateUpdate(TeacherId.From(1), [code3, code4]), Photo: null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert: S1 and S2 both removed, S3 and S4 both added
+        Assert.True(result.IsSuccess);
+        Assert.Equal(2, teacher.Subjects.Count);
+        Assert.DoesNotContain(teacher.Subjects, s => s.SubjectId == SubjectId.From(1));
+        Assert.DoesNotContain(teacher.Subjects, s => s.SubjectId == SubjectId.From(2));
+        Assert.Contains(teacher.Subjects, s => s.SubjectId == SubjectId.From(3));
+        Assert.Contains(teacher.Subjects, s => s.SubjectId == SubjectId.From(4));
+    }
+
+    /// <summary>
+    /// Verifies that simultaneous removal of an active subject and addition of a new subject
+    /// works correctly when an unrelated inactive subject is also present. The inactive subject
+    /// must be preserved (not removed), while the active removal and new addition both happen.
+    /// </summary>
+    [Fact]
+    public async Task Handle_ActiveRemovedAndNewAddedWhileInactiveSubjectPreserved()
+    {
+        // Arrange: teacher has S1 active, S2 active, S3 inactive
+        // New list = [S1, S4]: keep S1, remove S2, add S4, preserve S3 (inactive)
+        var teacher = CreateTestTeacher(TeacherId.From(1));
+        AddActiveSubject(teacher, SubjectId.From(1));
+        AddActiveSubject(teacher, SubjectId.From(2));
+        AddInactiveSubject(teacher, SubjectId.From(3));
+
+        _readRepositoryMock
+            .Setup(r => r.GetByIdAsync(It.IsAny<TeacherId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(teacher);
+
+        var code1 = SubjectCode.From("CS101");
+        var code4 = SubjectCode.From("CS104");
+        SetupSubjectRepo([
+            new() { Id = SubjectId.From(1), Code = code1 },
+            new() { Id = SubjectId.From(4), Code = code4 }
+        ]);
+        SetupSuccessfulUpdate(TeacherId.From(1));
+
+        var command = new UpdateTeacherDetails.Command(
+            CreateUpdate(TeacherId.From(1), [code1, code4]), Photo: null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert: S1 kept, S2 removed, S4 added, S3 (inactive) preserved
+        Assert.True(result.IsSuccess);
+        Assert.Equal(3, teacher.Subjects.Count); // S1(kept) + S3(inactive preserved) + S4(added)
+        Assert.Contains(teacher.Subjects, s => s.SubjectId == SubjectId.From(1));
+        Assert.DoesNotContain(teacher.Subjects, s => s.SubjectId == SubjectId.From(2));
+        Assert.Contains(teacher.Subjects, s => s.SubjectId == SubjectId.From(3));
+        Assert.Contains(teacher.Subjects, s => s.SubjectId == SubjectId.From(4));
+    }
+
+    [Fact]
     public async Task Handle_WithoutPhoto_DoesNotUploadPhoto()
     {
         // Arrange
