@@ -634,7 +634,7 @@ export interface components {
         };
         EnrollifyWebAPIFeaturesTeachersRegisterTeacherRequest: {
             firstName: string;
-            middleName: string;
+            middleName?: string | null;
             lastName: string;
             teacherIdentifier: string;
             /** Format: email */
@@ -650,10 +650,11 @@ export interface components {
             biography?: string | null;
             /** Format: binary */
             photo?: string | null;
+            subjectCodes: string[];
         };
         EnrollifyWebAPIFeaturesTeachersUpdateTeacherRequest: {
             firstName: string;
-            middleName: string;
+            middleName?: string | null;
             lastName: string;
             teacherIdentifier: string;
             /** Format: email */
@@ -669,6 +670,7 @@ export interface components {
             biography?: string | null;
             /** Format: binary */
             photo?: string | null;
+            subjectCodes: string[];
         };
         EnrollifyCoreAcademicSettings: {
             /** Format: int32 */
@@ -730,7 +732,7 @@ export interface components {
             preferRoomTypeId: number;
         };
         EnrollifyWebAPIFeaturesSubjectEquivalencesAddSubjectsToEquivalenceGroupRequest: {
-            subjectIds: number[];
+            subjectCodes: string[];
         };
         EnrollifyWebAPIFeaturesSubjectEquivalencesCreateNewSubjectEquivalenceGroupRequest: {
             name: string;
