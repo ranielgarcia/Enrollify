@@ -484,8 +484,6 @@ CREATE NONCLUSTERED INDEX IX_Teachers_DepartmentId
 ON Teachers(DepartmentId);
 GO
 
-
-
 CREATE TABLE TeacherSubjects
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
@@ -506,15 +504,10 @@ CREATE TABLE TeacherSubjects
 );
 GO;
 
+CREATE UNIQUE NONCLUSTERED INDEX UIdx_TeacherSubjects_IsActive
+ON TeacherSubjects(TeacherId, SubjectId)
+WHERE IsActive = 1;
 
--- TeacherSubjects indexes
-CREATE NONCLUSTERED INDEX IX_TeacherSubjects_TeacherId
-ON TeacherSubjects(TeacherId);
-GO
-
-CREATE NONCLUSTERED INDEX IX_TeacherSubjects_SubjectId
-ON TeacherSubjects(SubjectId);
-GO
 
 -- ************************************
 
