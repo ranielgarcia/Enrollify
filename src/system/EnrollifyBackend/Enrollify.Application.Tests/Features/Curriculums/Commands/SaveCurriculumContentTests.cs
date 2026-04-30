@@ -11,7 +11,7 @@ using Enrollify.Core.Aggregates.SubjectAggregate.Models;
 using Enrollify.SharedKernel;
 using Moq;
 
-namespace Enrollify.Application.Tests.Curriculums.Features;
+namespace Enrollify.Application.Tests.Features.Curriculums.Commands;
 
 public class SaveCurriculumContentTests
 {

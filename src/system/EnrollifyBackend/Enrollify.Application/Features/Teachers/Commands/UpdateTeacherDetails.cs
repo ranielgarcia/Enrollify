@@ -69,7 +69,7 @@ public static class UpdateTeacherDetails
             }
 
             var allSubjectIds = allSubjects.Select(s => s.Id).ToHashSet();
-            var existingSubjectIds = teacher.Subjects.Select(s => s.SubjectId).ToHashSet();
+            var existingSubjectIds = teacher.GetActiveSubjects().Select(s => s.SubjectId).ToHashSet();
 
             // Remove subjects that are no longer associated with the teacher
             var subjectsToRemove = existingSubjectIds.Where(sId => !allSubjectIds.Contains(sId)).ToList();
