@@ -66,5 +66,46 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
           .HasForeignKey(e => e.DeletedBy)
           .OnDelete(DeleteBehavior.NoAction);
 
+        // Configure TeacherSubjects as owned collection
+        builder.OwnsMany<TeacherSubject>(ts => ts.Subjects, ts =>
+        {
+            ts.ToTable("TeacherSubjects");
+
+            ts.WithOwner().HasForeignKey(e => e.TeacherId);
+
+            ts.HasKey(e => e.Id);
+            ts.Property(e => e.Id)
+                .UseIdentityColumn()
+                .IsRequired();
+
+            ts.Property(e => e.SubjectId).IsRequired();
+            ts.Property(e => e.TeacherId).IsRequired();
+
+            // Audit fields for TeacherSubjects
+            ts.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
+            ts.Property(a => a.CreatedBy).HasColumnName("CreatedBy");
+            ts.Property(a => a.UpdatedAt).HasColumnName("UpdatedAt");
+            ts.Property(a => a.UpdatedBy).HasColumnName("UpdatedBy");
+            ts.Property(a => a.DeletedAt).HasColumnName("DeletedAt");
+            ts.Property(a => a.DeletedBy).HasColumnName("DeletedBy");
+            ts.Property(a => a.IsActive).HasColumnName("IsActive");
+
+            // Foreign key relationships for audit fields
+            ts.HasOne(e => e.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedBy)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            ts.HasOne(e => e.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.UpdatedBy)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            ts.HasOne(e => e.DeletedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.DeletedBy)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
+
     }
 }

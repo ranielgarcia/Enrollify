@@ -1,5 +1,6 @@
 using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.ValueObjects.Storage;
 using Enrollify.SharedKernel;
@@ -8,6 +9,8 @@ namespace Enrollify.Core.Aggregates.TeacherAggregate;
 
 public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditable
 {
+    private readonly List<TeacherSubject> _subjects = new();
+
     private Teacher() { }
 
     public Teacher(
@@ -47,6 +50,7 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
     public string? Biography { get; private set; }
 
     public TeacherPhoto? Photo { get; private set; }
+    public IReadOnlyCollection<TeacherSubject> Subjects => _subjects.AsReadOnly();
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
@@ -162,4 +166,27 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
         Photo = new TeacherPhoto(fileName, contentType);
         return this;
     }
+
+
+    public Teacher AddSubject(SubjectId subjectId)
+    {
+        Guard.Against.Null(subjectId, message: "Subject ID is required.");
+
+        var teacherSubject = new TeacherSubject(Id, subjectId);
+        _subjects.Add(teacherSubject);
+        return this;
+    }
+
+    public Teacher RemoveSubject (SubjectId subjectId)
+    {
+        var teacherSubject = _subjects.FirstOrDefault(ts => ts.SubjectId == subjectId);
+        if (teacherSubject != null)
+        {
+            _subjects.Remove(teacherSubject);
+        }
+        return this;
+    }
+
+    public IEnumerable<TeacherSubject> GetActiveSubjects () { return _subjects.Where(s => s.IsActive); }
+
 }

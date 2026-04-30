@@ -5,21 +5,27 @@ import { DataTableColumnHeader } from "@/components/data-table/data-table-column
 import { DataTableAdvancedToolbar } from "@/components/data-table/data-table-advanced-toolbar";
 import { DataTableFilterList } from "@/components/data-table/data-table-filter-list";
 import { DataTableSortList } from "@/components/data-table/data-table-sort-list";
-import { Button } from "@/components/ui/button";
+import { Button as PrimitiveButton } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useDataTable } from "@/hooks/use-data-table";
 import { useTablePermissions } from "@/hooks/use-table-permissions";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Edit2 } from "lucide-react";
+import { BookOpen, Edit2 } from "lucide-react";
 import { useMemo } from "react";
 import { TeachersTableActionBar } from "./teachers-table-action-bar";
+import { DerivedButton } from "@/components/derived/button";
 
 interface TeachersTableProps {
   pagedTeachers: PagedResult<Teacher>;
   onEdit: (teacher: Teacher) => void;
+  onManageSubjects: (teacher: Teacher) => void;
 }
 
-export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
+export function TeachersTable({
+  pagedTeachers,
+  onEdit,
+  onManageSubjects,
+}: TeachersTableProps) {
   const { canUpdate } = useTablePermissions(
     "canUpdateTeacher",
     "canUpdateTeacher",
@@ -172,7 +178,7 @@ export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
           const item = info.row.original;
           return (
             <div className="flex gap-2">
-              <Button
+              <PrimitiveButton
                 variant="ghost"
                 size="sm"
                 onClick={() => onEdit(item)}
@@ -180,22 +186,23 @@ export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
                 disabled={!canUpdate}
               >
                 <Edit2 className="size-4" />
-              </Button>
-              <Button
+              </PrimitiveButton>
+              <DerivedButton
                 variant="ghost"
                 size="sm"
-                onClick={() => onEdit(item)}
-                className="hover:bg-blue-500/10 text-blue-600 hover:text-blue-700"
-                disabled={!canUpdate}
+                onClick={() => onManageSubjects(item)}
+                className="hover:bg-amber-500/10 text-amber-600 hover:text-amber-700"
+                tooltipSide="bottom"
+                tooltip="Manage subjects"
               >
-                <Edit2 className="size-4" />
-              </Button>
+                <BookOpen className="size-4" />
+              </DerivedButton>
             </div>
           );
         },
       }),
     ],
-    [canUpdate, onEdit],
+    [canUpdate, onEdit, onManageSubjects],
   );
 
   const { table, shallow, debounceMs, throttleMs } = useDataTable({

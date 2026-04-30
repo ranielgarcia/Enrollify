@@ -15,8 +15,19 @@ export default function TeachersManagementPage() {
   const [{ page, perPage, filters, sort, joinOperator }] =
     useQueryStates(searchParams);
 
-  const { isFormOpen, entityToEdit, handleEdit, handleFormOpenChange } =
-    useCrudState<Teacher>();
+  const {
+    isFormOpen,
+    entityToEdit: teacherToEdit,
+    handleEdit,
+    handleFormOpenChange,
+  } = useCrudState<Teacher>();
+
+  const {
+    isFormOpen: isManageSubjectsDialogOpen,
+    entityToEdit: teacherToManageSubjects,
+    handleEdit: handleTeacherEditSubjects,
+    handleFormOpenChange: handleTeacherDialogOpenChange,
+  } = useCrudState<Teacher>();
 
   const currentPage = page ? Number(page) : 1;
   const currentPageSize = perPage ? Number(perPage) : 10;
@@ -45,13 +56,17 @@ export default function TeachersManagementPage() {
         <TeacherFormDrawer
           departments={departments}
           onOpenChange={handleFormOpenChange}
-          teacherToUpdate={entityToEdit}
+          teacherToUpdate={teacherToEdit}
           isOpen={isFormOpen}
           setIsOpen={handleFormOpenChange}
         />
       }
     >
-      <TeachersTable pagedTeachers={pagedTeachers} onEdit={handleEdit} />
+      <TeachersTable
+        pagedTeachers={pagedTeachers}
+        onEdit={handleEdit}
+        onManageSubjects={(teacher) => console.log(teacher)}
+      />
     </ManagementPageLayout>
   );
 }

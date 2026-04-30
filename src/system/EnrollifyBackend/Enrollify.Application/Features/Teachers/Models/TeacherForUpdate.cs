@@ -1,4 +1,5 @@
 using Enrollify.Core.Aggregates.DepartmentAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 
 namespace Enrollify.Application.Features.Teachers.Models;
@@ -21,4 +22,6 @@ public class TeacherForUpdate
     public string? OfficeLocation { get; set; }
     public string? OfficeHours { get; set; }
     public string? Biography { get; set; }
+
+    public SubjectCode[] Subjects { get; set; } = [];
 }

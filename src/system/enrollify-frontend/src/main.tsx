@@ -32,6 +32,7 @@ import {
 import type { AxiosError } from "axios";
 import { parseApiError, type ProblemDetails } from "./lib/axios-utils";
 import { toast } from "sonner";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
@@ -187,10 +188,12 @@ function App() {
   );
 
   return (
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-      <RouterProvider router={router} context={routerContext} />
-      <ReactQueryDevtools initialIsOpen={false} />
-    </ThemeProvider>
+    <TooltipProvider>
+      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+        <RouterProvider router={router} context={routerContext} />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </ThemeProvider>
+    </TooltipProvider>
   );
 }
 

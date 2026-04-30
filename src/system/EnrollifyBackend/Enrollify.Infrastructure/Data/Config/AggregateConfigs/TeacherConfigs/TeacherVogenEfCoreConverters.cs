@@ -7,4 +7,5 @@ namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.TeacherConfigs;
 [EfCoreConverter<TeacherEmail>]
 [EfCoreConverter<TeacherPhoneNumber>]
 [EfCoreConverter<TeacherIdentifier>]
+[EfCoreConverter<TeacherSubjectId>]
 public partial class TeacherVogenEfCoreConverters;
