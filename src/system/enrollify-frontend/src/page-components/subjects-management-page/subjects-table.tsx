@@ -40,7 +40,9 @@ export function SubjectsTable({
         ),
         meta: { label: "Code", variant: "text" },
         enableColumnFilter: true,
-        cell: (info) => <span>{info.getValue()}</span>,
+        cell: (info) => (
+          <span className="font-mono text-xs">{info.getValue()}</span>
+        ),
       }),
       columnHelper.accessor("title", {
         id: "title",
@@ -51,7 +53,7 @@ export function SubjectsTable({
         enableColumnFilter: true,
         enableSorting: true,
         enableHiding: true,
-        cell: (info) => <span>{info.getValue()}</span>,
+        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
       }),
       columnHelper.accessor("description", {
         id: "description",
@@ -83,7 +85,7 @@ export function SubjectsTable({
         meta: { label: "Prefer Room Type", variant: "text" },
         enableSorting: true,
         enableHiding: true,
-        cell: (info) => <span>{info.getValue()}</span>,
+        cell: (info) => <span>{info.getValue() ?? "-"}</span>,
       }),
       columnHelper.accessor("createdAt", {
         header: ({ column }) => (

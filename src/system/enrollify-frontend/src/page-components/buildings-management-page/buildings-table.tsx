@@ -29,32 +29,39 @@ export function BuildingsTable({
   const columns = useMemo(
     () => [
       columnHelper.accessor("name", {
+        id: "name",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Name" />
         ),
-        meta: { label: "Name" },
-        cell: (info) => <span>{info.getValue()}</span>,
+        meta: { label: "Name", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
       }),
       columnHelper.accessor("description", {
+        id: "description",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Description" />
         ),
-        meta: { label: "Description" },
-        cell: (info) => <span>{info.getValue()}</span>,
+        meta: { label: "Description", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => <span>{info.getValue() ?? "-"}</span>,
       }),
       columnHelper.accessor("address", {
+        id: "address",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Address" />
         ),
-        meta: { label: "Address" },
-        cell: (info) => <span>{info.getValue()}</span>,
+        meta: { label: "Address", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => <span>{info.getValue() ?? "-"}</span>,
       }),
       columnHelper.accessor((row) => row.college.name, {
         id: "college",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="College" />
         ),
-        meta: { label: "College" },
+        meta: { label: "College", variant: "text" },
+        enableColumnFilter: true,
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor("createdAt", {

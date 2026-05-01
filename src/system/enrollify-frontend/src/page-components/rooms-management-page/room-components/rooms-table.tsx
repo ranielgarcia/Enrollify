@@ -25,17 +25,23 @@ export function RoomsTable({ rooms, onEdit, onDelete }: RoomsTableProps) {
   const columns = useMemo(
     () => [
       columnHelper.accessor("roomNumber", {
+        id: "roomNumber",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Room Number" />
         ),
-        meta: { label: "Room Number" },
-        cell: (info) => <span>{info.getValue()}</span>,
+        meta: { label: "Room Number", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => (
+          <span className="font-mono text-xs">{info.getValue()}</span>
+        ),
       }),
       columnHelper.accessor("capacity", {
+        id: "capacity",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Capacity" />
         ),
-        meta: { label: "Capacity" },
+        meta: { label: "Capacity", variant: "number" },
+        enableColumnFilter: true,
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor((row) => row.roomType.name, {
@@ -43,7 +49,8 @@ export function RoomsTable({ rooms, onEdit, onDelete }: RoomsTableProps) {
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Room Type" />
         ),
-        meta: { label: "Room Type" },
+        meta: { label: "Room Type", variant: "text" },
+        enableColumnFilter: true,
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor((row) => row.building.name, {
@@ -51,7 +58,8 @@ export function RoomsTable({ rooms, onEdit, onDelete }: RoomsTableProps) {
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Building" />
         ),
-        meta: { label: "Building" },
+        meta: { label: "Building", variant: "text" },
+        enableColumnFilter: true,
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor("createdAt", {

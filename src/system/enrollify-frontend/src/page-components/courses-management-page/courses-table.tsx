@@ -26,31 +26,41 @@ export function CoursesTable({ courses, onEdit, onDelete }: CoursesTableProps) {
   const columns = useMemo(
     () => [
       columnHelper.accessor("code", {
+        id: "code",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Code" />
         ),
-        meta: { label: "Code" },
-        cell: (info) => <span>{info.getValue()}</span>,
+        meta: { label: "Code", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => (
+          <span className="font-mono text-xs">{info.getValue()}</span>
+        ),
       }),
       columnHelper.accessor("name", {
+        id: "name",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Name" />
         ),
-        meta: { label: "Name" },
-        cell: (info) => <span>{info.getValue()}</span>,
+        meta: { label: "Name", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => <span className="font-medium">{info.getValue()}</span>,
       }),
       columnHelper.accessor("description", {
+        id: "description",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Description" />
         ),
-        meta: { label: "Description" },
+        meta: { label: "Description", variant: "text" },
+        enableColumnFilter: true,
         cell: (info) => <span>{truncateText(info.getValue(), 30)}</span>,
       }),
       columnHelper.accessor("durationYears", {
+        id: "durationYears",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Duration Years" />
         ),
-        meta: { label: "Duration Years" },
+        meta: { label: "Duration Years", variant: "number" },
+        enableColumnFilter: true,
         cell: (info) => <span>{info.getValue()}</span>,
       }),
       columnHelper.accessor((row) => row.college?.name, {
@@ -58,8 +68,9 @@ export function CoursesTable({ courses, onEdit, onDelete }: CoursesTableProps) {
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="College" />
         ),
-        meta: { label: "College" },
-        cell: (info) => <span>{info.getValue()}</span>,
+        meta: { label: "College", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => <span>{info.getValue() ?? "-"}</span>,
       }),
       columnHelper.accessor("createdAt", {
         header: ({ column }) => (
