@@ -138,7 +138,9 @@ export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
         cell: (info) => (
           <div className="flex w-full flex-wrap justify-center gap-2">
             {info.getValue()?.map((s) => (
-              <Badge variant="outline">{s.code}</Badge>
+              <Badge key={s.id} variant="outline">
+                {s.code}
+              </Badge>
             ))}
           </div>
         ),

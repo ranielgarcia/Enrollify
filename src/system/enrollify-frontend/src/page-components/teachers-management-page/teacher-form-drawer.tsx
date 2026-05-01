@@ -51,7 +51,7 @@ const teacherFormSchema = z.object({
   officeLocation: z.string().optional(),
   officeHours: z.string().optional(),
   biography: z.string().optional(),
-  subjectCodes: z.array(z.string()).optional(),
+  subjectCodes: z.array(z.string()).min(1, "At least one subject is required"),
 });
 type TeacherFormData = z.infer<typeof teacherFormSchema>;
 
@@ -139,11 +139,10 @@ export function TeacherFormDrawer({
       if (value.officeHours) formData.append("officeHours", value.officeHours);
       if (value.biography) formData.append("biography", value.biography);
       if (profilePictureFile) formData.append("photo", profilePictureFile);
-      if (value.subjectCodes && value.subjectCodes.length > 0) {
-        value.subjectCodes.forEach((code) =>
-          formData.append("subjectCodes", code),
-        );
-      }
+
+      value.subjectCodes.forEach((code) =>
+        formData.append("subjectCodes", code),
+      );
 
       if (meta.submitAction === "create") {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -483,11 +482,11 @@ export function TeacherFormDrawer({
                 <Separator />
 
                 <FormSection title="Manage Qualified Subjects">
-                  <div className="flex min-h-16 w-full flex-wrap items-center gap-2 rounded-md border bg-muted/40 p-3">
-                    <form.Field
-                      name="subjectCodes"
-                      children={(field) => (
-                        <>
+                  <form.Field
+                    name="subjectCodes"
+                    children={(field) => (
+                      <>
+                        <div className="flex min-h-16 w-full flex-wrap items-center gap-2 rounded-md border bg-muted/40 p-3">
                           {field.state.value && field.state.value.length > 0 ? (
                             field.state.value.map((s) => (
                               <Badge
@@ -498,15 +497,17 @@ export function TeacherFormDrawer({
                                 <span className="font-semibold">{s}</span>
                                 <button
                                   type="button"
-                                  onClick={() =>
+                                  onClick={() => {
                                     field.handleChange(
-                                      (field.state.value ?? []).filter(
+                                      field.state.value.filter(
                                         (code) => code !== s,
                                       ),
-                                    )
-                                  }
+                                    );
+                                    field.handleBlur();
+                                  }}
                                   className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
                                   title="Remove subject"
+                                  aria-label="Remove subject"
                                 >
                                   <X className="size-3" />
                                 </button>
@@ -517,10 +518,15 @@ export function TeacherFormDrawer({
                               Selected subjects will appear here.
                             </span>
                           )}
-                        </>
-                      )}
-                    />
-                  </div>
+                        </div>
+                        {field.state.meta.errors.length > 0 && (
+                          <p className="text-sm text-destructive">
+                            {field.state.meta.errors[0]?.message}
+                          </p>
+                        )}
+                      </>
+                    )}
+                  />
                   <div className="flex justify-end">
                     <Button
                       type="button"
@@ -551,13 +557,14 @@ export function TeacherFormDrawer({
         isOpen={isOpenManageSubjects}
         onOpenChange={(isOpen) => setIsOpenManageSubjects(isOpen)}
         teacherName={teacherDisplayName}
-        existingSubjectCodes={form.getFieldValue("subjectCodes") ?? []}
+        existingSubjectCodes={form.getFieldValue("subjectCodes")}
         onSubmit={async (subjectCodes) => {
-          const existingCodes = form.getFieldValue("subjectCodes") ?? [];
+          const existingCodes = form.getFieldValue("subjectCodes");
           const mergedCodes = Array.from(
             new Set([...existingCodes, ...subjectCodes]),
           );
           form.setFieldValue("subjectCodes", mergedCodes);
+          await form.validateField("subjectCodes", "blur");
         }}
       />
     </>

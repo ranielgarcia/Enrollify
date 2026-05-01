@@ -66,6 +66,12 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
           .HasForeignKey(e => e.DeletedBy)
           .OnDelete(DeleteBehavior.NoAction);
 
+        // EF Core can't add/remove items via a read-only collection,
+        // so you tell EF to use the backing field instead of the property
+        // This is mainly about materialization and change-tracking without requiring a public setter or a mutable collection property.
+        builder.Navigation(c => c.Subjects)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
         // Configure TeacherSubjects as owned collection
         builder.OwnsMany<TeacherSubject>(ts => ts.Subjects, ts =>
         {
