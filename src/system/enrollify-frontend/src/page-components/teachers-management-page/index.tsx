@@ -22,13 +22,6 @@ export default function TeachersManagementPage() {
     handleFormOpenChange,
   } = useCrudState<Teacher>();
 
-  // const {
-  //   isFormOpen: isManageSubjectsDialogOpen,
-  //   entityToEdit: teacherToManageSubjects,
-  //   handleEdit: handleTeacherEditSubjects,
-  //   handleFormOpenChange: handleTeacherDialogOpenChange,
-  // } = useCrudState<Teacher>();
-
   const currentPage = page ? Number(page) : 1;
   const currentPageSize = perPage ? Number(perPage) : 10;
 
@@ -63,11 +56,7 @@ export default function TeachersManagementPage() {
         />
       }
     >
-      <TeachersTable
-        pagedTeachers={pagedTeachers}
-        onEdit={handleEdit}
-        onManageSubjects={(teacher) => console.log(teacher)}
-      />
+      <TeachersTable pagedTeachers={pagedTeachers} onEdit={handleEdit} />
     </ManagementPageLayout>
   );
 }

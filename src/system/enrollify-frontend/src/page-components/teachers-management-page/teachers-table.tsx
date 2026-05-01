@@ -10,33 +10,30 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useDataTable } from "@/hooks/use-data-table";
 import { useTablePermissions } from "@/hooks/use-table-permissions";
 import { createColumnHelper } from "@tanstack/react-table";
-import { BookOpen, Edit2 } from "lucide-react";
+import { Edit2 } from "lucide-react";
 import { useMemo } from "react";
 import { TeachersTableActionBar } from "./teachers-table-action-bar";
-import { DerivedButton } from "@/components/derived/button";
+import { Badge } from "@/components/ui/badge";
 
 interface TeachersTableProps {
   pagedTeachers: PagedResult<Teacher>;
   onEdit: (teacher: Teacher) => void;
-  onManageSubjects: (teacher: Teacher) => void;
 }
 
-export function TeachersTable({
-  pagedTeachers,
-  onEdit,
-  onManageSubjects,
-}: TeachersTableProps) {
+const columnHelper = createColumnHelper<Teacher>();
+
+export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
   const { canUpdate } = useTablePermissions(
     "canUpdateTeacher",
     "canUpdateTeacher",
   );
-  const columnHelper = createColumnHelper<Teacher>();
 
   const columns = useMemo(
     () => [
       columnHelper.display({
         id: "avatar",
-        header: "",
+        header: "Profile",
+        size: 10,
         enableHiding: false,
         cell: (info) => {
           const teacher = info.row.original;
@@ -92,7 +89,11 @@ export function TeachersTable({
         ),
         meta: { label: "Email", variant: "text" },
         enableColumnFilter: true,
-        cell: (info) => <span>{info.getValue()}</span>,
+        cell: (info) => (
+          <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-xs">
+            {info.getValue()}
+          </code>
+        ),
       }),
       columnHelper.accessor("phoneNumber", {
         id: "phoneNumber",
@@ -127,6 +128,20 @@ export function TeachersTable({
         ),
         meta: { label: "Office" },
         cell: (info) => <span>{info.getValue() ?? "-"}</span>,
+      }),
+      columnHelper.accessor("subjects", {
+        id: "subjects",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Qualified Subjects" />
+        ),
+        meta: { label: "Subjects" },
+        cell: (info) => (
+          <div className="flex w-full flex-wrap justify-center gap-2">
+            {info.getValue()?.map((s) => (
+              <Badge variant="outline">{s.code}</Badge>
+            ))}
+          </div>
+        ),
       }),
       columnHelper.accessor("createdAt", {
         header: ({ column }) => (
@@ -173,6 +188,7 @@ export function TeachersTable({
       columnHelper.display({
         id: "actions",
         header: "Actions",
+        size: 10,
         enableHiding: false,
         cell: (info) => {
           const item = info.row.original;
@@ -187,22 +203,12 @@ export function TeachersTable({
               >
                 <Edit2 className="size-4" />
               </PrimitiveButton>
-              <DerivedButton
-                variant="ghost"
-                size="sm"
-                onClick={() => onManageSubjects(item)}
-                className="hover:bg-amber-500/10 text-amber-600 hover:text-amber-700"
-                tooltipSide="bottom"
-                tooltip="Manage subjects"
-              >
-                <BookOpen className="size-4" />
-              </DerivedButton>
             </div>
           );
         },
       }),
     ],
-    [canUpdate, onEdit, onManageSubjects],
+    [canUpdate, onEdit],
   );
 
   const { table, shallow, debounceMs, throttleMs } = useDataTable({
@@ -213,6 +219,8 @@ export function TeachersTable({
     debounceMs: 600,
     initialState: {
       columnVisibility: {
+        specialization: false,
+        officeLocation: false,
         createdAt: false,
         createdBy: false,
         updatedAt: false,

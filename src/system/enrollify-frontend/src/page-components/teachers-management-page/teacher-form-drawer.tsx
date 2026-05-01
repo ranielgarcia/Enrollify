@@ -482,52 +482,57 @@ export function TeacherFormDrawer({
 
                 <Separator />
 
-                <FormSection title="Manage Subjects">
-                  <form.Field
-                    name="subjectCodes"
-                    children={(field) => (
-                      <div className="flex min-h-16 w-full flex-wrap items-center gap-2 rounded-md border bg-muted/40 p-3">
-                        {field.state.value && field.state.value.length > 0 ? (
-                          field.state.value.map((s) => (
-                            <Badge
-                              key={s}
-                              variant="outline"
-                              className="text-sm py-1.5 px-3 flex items-center gap-2 group hover:bg-secondary/80"
-                            >
-                              <span className="font-semibold">{s}</span>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  field.handleChange(
-                                    (field.state.value ?? []).filter(
-                                      (code) => code !== s,
-                                    ),
-                                  )
-                                }
-                                className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
-                                title="Remove subject"
+                <FormSection title="Manage Qualified Subjects">
+                  <div className="flex min-h-16 w-full flex-wrap items-center gap-2 rounded-md border bg-muted/40 p-3">
+                    <form.Field
+                      name="subjectCodes"
+                      children={(field) => (
+                        <>
+                          {field.state.value && field.state.value.length > 0 ? (
+                            field.state.value.map((s) => (
+                              <Badge
+                                key={s}
+                                variant="outline"
+                                className="text-sm py-1 px-2 flex items-center gap-2 group hover:bg-secondary/80"
                               >
-                                <X className="size-3" />
-                              </button>
-                            </Badge>
-                          ))
-                        ) : (
-                          <span className="text-xs text-muted-foreground">
-                            Selected subjects will appear here.
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsOpenManageSubjects(true)}
-                  >
-                    <CopyPlus className="size-4" />
-                    Manage Subjects
-                  </Button>
+                                <span className="font-semibold">{s}</span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    field.handleChange(
+                                      (field.state.value ?? []).filter(
+                                        (code) => code !== s,
+                                      ),
+                                    )
+                                  }
+                                  className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
+                                  title="Remove subject"
+                                >
+                                  <X className="size-3" />
+                                </button>
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              Selected subjects will appear here.
+                            </span>
+                          )}
+                        </>
+                      )}
+                    />
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="sm"
+                      className="p-0 h-auto gap-1.5"
+                      onClick={() => setIsOpenManageSubjects(true)}
+                    >
+                      <CopyPlus className="size-4" />
+                      Manage Subjects
+                    </Button>
+                  </div>
                 </FormSection>
               </div>
 
