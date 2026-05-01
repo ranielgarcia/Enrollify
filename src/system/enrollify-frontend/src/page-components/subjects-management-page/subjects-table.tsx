@@ -168,6 +168,14 @@ export function SubjectsTable({
     pageCount: pagedSubjects?.totalPages ?? -1,
     manualPagination: true,
     debounceMs: 600,
+    initialState: {
+      columnVisibility: {
+        createdAt: false,
+        createdBy: false,
+        updatedAt: false,
+        updatedBy: false,
+      },
+    },
   });
 
   return (

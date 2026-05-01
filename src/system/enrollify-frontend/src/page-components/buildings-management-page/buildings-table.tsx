@@ -137,6 +137,14 @@ export function BuildingsTable({
   const { table } = useDataTable({
     data: buildings ?? [],
     columns,
+    initialState: {
+      columnVisibility: {
+        createdAt: false,
+        createdBy: false,
+        updatedAt: false,
+        updatedBy: false,
+      },
+    },
   });
 
   return (

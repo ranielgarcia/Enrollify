@@ -138,6 +138,14 @@ export function CollegesTable({
   const { table } = useDataTable({
     data: colleges ?? [],
     columns,
+    initialState: {
+      columnVisibility: {
+        createdAt: false,
+        createdBy: false,
+        updatedAt: false,
+        updatedBy: false,
+      },
+    },
   });
 
   return (
