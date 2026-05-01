@@ -30,7 +30,6 @@ public class SearchSubjectsPaginatedQueryHandler : IQueryHandler<SearchSubjectsP
             .Select(SubjectDto.FromEntity)
             .ToList();
 
-        var totalPages = (int)Math.Ceiling(totalCount / (double)request.pageSize);
-        return new PagedResult<SubjectDto>(items.AsReadOnly(), request.page, request.pageSize, totalCount, totalPages);
+        return new PagedResult<SubjectDto>(items.AsReadOnly(), request.page, request.pageSize, totalCount);
     }
 }

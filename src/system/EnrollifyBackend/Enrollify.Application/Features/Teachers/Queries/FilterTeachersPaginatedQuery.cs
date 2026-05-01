@@ -53,12 +53,10 @@ public class FilterTeachersPaginatedQueryHandler : IQueryHandler<FilterTeachersP
                     .ToList()))
             .ToList();
 
-        var totalPages = (int)Math.Ceiling(totalCount / (double)request.pageSize);
         return new PagedResult<TeacherDto>(
             items?.AsReadOnly() ?? Array.Empty<TeacherDto>().AsReadOnly(),
             request.page,
             request.pageSize,
-            totalCount,
-            totalPages);
+            totalCount);
     }
 }
