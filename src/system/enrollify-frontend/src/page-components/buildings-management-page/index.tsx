@@ -7,7 +7,7 @@ import { DeleteBuildingAlertDialog } from "./delete-building-alert-dialog";
 import { getAllCollegesOptions } from "@/api/collections/college-collection";
 import { useCrudState } from "@/hooks/use-crud-state";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
-import { BuildingIcon } from "lucide-react";
+import { ModuleIcons } from "@/config/module-icons";
 
 export default function BuildingPage() {
   const {
@@ -33,6 +33,7 @@ export default function BuildingPage() {
       isLoading={isLoadingBuildings}
       createNewItemButton={
         <BuildingFormDrawer
+          key={entityToEdit?.id ?? "new"}
           colleges={colleges}
           onOpenChange={handleFormOpenChange}
           buildingToUpdate={entityToEdit}
@@ -40,7 +41,7 @@ export default function BuildingPage() {
           setIsOpen={handleFormOpenChange}
         />
       }
-      icon={<BuildingIcon />}
+      icon={<ModuleIcons.buildings />}
     >
       <BuildingsTable
         buildings={buildings}

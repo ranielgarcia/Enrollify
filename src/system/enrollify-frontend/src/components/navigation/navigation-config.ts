@@ -1,21 +1,9 @@
-import {
-  Settings2,
-  DatabaseIcon,
-  Calendar1Icon,
-  SchoolIcon,
-  type LucideIcon,
-  Castle,
-  GraduationCap,
-  BuildingIcon,
-  DoorOpen,
-  BookOpen,
-  Scroll,
-  BookUser,
-} from "lucide-react";
+import { Settings2, DatabaseIcon, type LucideIcon } from "lucide-react";
 
 import { PolicyNames } from "@/infrastructure/authorization/models/PolicyNames";
 import type { PolicyName } from "@/infrastructure/authorization/models/PolicyNames";
 import type { FileRouteTypes } from "@/routeTree.gen";
+import { ModuleIcons } from "@/config/module-icons";
 
 export interface NavSubItemConfig {
   title: string;
@@ -44,25 +32,25 @@ export const navigationItems: NavMainItemConfig[] = [
         title: "Colleges",
         url: "/portal/master-data/colleges",
         viewAuthorizationPolicies: [PolicyNames.canViewColleges],
-        icon: SchoolIcon,
+        icon: ModuleIcons.colleges,
       },
       {
         title: "Departments",
         url: "/portal/master-data/departments",
         viewAuthorizationPolicies: [PolicyNames.canViewDepartments],
-        icon: Castle,
+        icon: ModuleIcons.departments,
       },
       {
         title: "Courses",
         url: "/portal/master-data/courses",
         viewAuthorizationPolicies: [PolicyNames.canViewCourses],
-        icon: GraduationCap,
+        icon: ModuleIcons.courses,
       },
       {
         title: "Buildings",
         url: "/portal/master-data/buildings",
         viewAuthorizationPolicies: [PolicyNames.canViewBuildings],
-        icon: BuildingIcon,
+        icon: ModuleIcons.buildings,
       },
       {
         title: "Rooms",
@@ -71,33 +59,33 @@ export const navigationItems: NavMainItemConfig[] = [
           PolicyNames.canViewRooms,
           PolicyNames.canViewRoomTypes,
         ],
-        icon: DoorOpen,
+        icon: ModuleIcons.rooms,
       },
       {
         title: "Subjects",
-        url: "/portal/master-data/subjects/{-$page}/{-$pageSize}",
+        url: "/portal/master-data/subjects",
         viewAuthorizationPolicies: [PolicyNames.canViewSubjects],
-        icon: BookOpen,
+        icon: ModuleIcons.subjects,
       },
     ],
   },
   {
     title: "Curriculum & Scheduling",
     url: "/portal/curriculum-and-scheduling",
-    icon: Calendar1Icon,
+    icon: ModuleIcons.curriculum,
     isActive: false,
     items: [
       {
         title: "Curriculum",
         url: "/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}",
         viewAuthorizationPolicies: [PolicyNames.canViewCurriculums],
-        icon: Scroll,
+        icon: ModuleIcons.curriculum,
       },
       {
         title: "Teachers",
         url: "/portal/curriculum-and-scheduling/teachers",
         viewAuthorizationPolicies: [PolicyNames.canViewTeachers],
-        icon: BookUser,
+        icon: ModuleIcons.teachers,
       },
     ],
   },

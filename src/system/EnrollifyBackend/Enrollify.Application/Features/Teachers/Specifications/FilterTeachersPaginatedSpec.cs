@@ -44,6 +44,7 @@ public class FilterTeachersPaginatedSpec : Specification<Teacher>
         // No EF Core dependency needed — only Ardalis.Specification.
         Query
             .AsNoTracking()
+            .Include(t => t.Subjects.Where(s => s.IsActive))
             .Include(r => r.CreatedByUser)
             .Include(r => r.UpdatedByUser)
             .Include(t => t.Department);

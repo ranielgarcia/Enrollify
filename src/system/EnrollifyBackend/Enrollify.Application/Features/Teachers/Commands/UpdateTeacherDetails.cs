@@ -1,6 +1,8 @@
 using Ardalis.Result;
+using Enrollify.Application.Features.Subjects.Specifications;
 using Enrollify.Application.Features.Teachers.Models;
 using Enrollify.Application.Features.Teachers.Storage;
+using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.SharedKernel;
 using Mediator;
@@ -18,21 +20,29 @@ public static class UpdateTeacherDetails
         private readonly ITeacherRepository _teacherRepository;
         private readonly ITeacherPhotoStorageService _teacherPhotoStorageService;
         private readonly IReadRepository<Teacher> _readRepository;
+        private readonly IReadRepository<Subject> _subjectReadRepository;
         private readonly ILogger<Handler> _logger;
 
         public Handler(ITeacherRepository teacherRepository,
             ITeacherPhotoStorageService teacherPhotoStorageService,
             IReadRepository<Teacher> readRepository,
+            IReadRepository<Subject> subjectReadRepository,
             ILogger<Handler> logger)
         {
             _teacherRepository = teacherRepository;
             _teacherPhotoStorageService = teacherPhotoStorageService;
             _readRepository = readRepository;
+            _subjectReadRepository = subjectReadRepository;
             _logger = logger;
         }
 
         public async ValueTask<Result<TeacherId>> Handle(Command command, CancellationToken cancellationToken)
         {
+            if (command.teacher.Subjects == null || !command.teacher.Subjects.Any())
+            {
+                return Result.Invalid(new ValidationError("At least one subject is required"));
+            }
+
             var teacher = await _readRepository.GetByIdAsync(command.teacher.Id, cancellationToken);
             if (teacher == null)
             {
@@ -55,18 +65,41 @@ public static class UpdateTeacherDetails
                 .UpdateOfficeHours(command.teacher.OfficeHours)
                 .UpdateBiography(command.teacher.Biography);
 
-            var result = await _teacherRepository.Update(teacher, cancellationToken);
+            var allSubjects = await _subjectReadRepository.ListAsync(new ListMinimumSubjectsByCodesSpec(command.teacher.Subjects.ToList()), cancellationToken);
+            var missingSubjectCodes = command.teacher.Subjects.Except(allSubjects.Select(s => s.Code)).ToList();
+            if (missingSubjectCodes.Count > 0)
+            {
+                return Result.Invalid(new ValidationError($"Subjects with codes {string.Join(", ", missingSubjectCodes)} not found"));
+            }
 
-            if (result.IsSuccess && command.Photo != null)
+            var allSubjectIds = allSubjects.Select(s => s.Id).ToHashSet();
+            var existingSubjectIds = teacher.GetActiveSubjects().Select(s => s.SubjectId).ToHashSet();
+
+            // Remove subjects that are no longer associated with the teacher
+            var subjectsToRemove = existingSubjectIds.Where(sId => !allSubjectIds.Contains(sId)).ToList();
+            foreach(var subjectId in subjectsToRemove)
+            {
+                teacher.RemoveSubject(subjectId);
+            }
+
+            // Add new subjects
+            var newSubjectsToAdd = allSubjects.Where(s => !existingSubjectIds.Contains(s.Id)).ToList();
+            foreach(var subject in newSubjectsToAdd)
+            {
+                teacher.AddSubject(subject.Id);
+            }
+
+
+            if (command.Photo != null)
             {
                 using var stream = new MemoryStream(command.Photo.Content);
                 var newFileName = await _teacherPhotoStorageService.UploadPhotoAsync(
                     teacher.TeacherIdentifier, command.Photo.FileName, stream, command.Photo.ContentType, cancellationToken: cancellationToken);
 
                 teacher.UpdatePhoto(newFileName, command.Photo.ContentType);
-
-                await _teacherRepository.Update(teacher, cancellationToken);
             }
+
+            var result = await _teacherRepository.Update(teacher, cancellationToken);
 
             return result;
         }

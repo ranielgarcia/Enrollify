@@ -1,3 +1,4 @@
+using Enrollify.Application.SharedDTOs;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 
 namespace Enrollify.Application.Features.SubjectEquivalences.DTOs;

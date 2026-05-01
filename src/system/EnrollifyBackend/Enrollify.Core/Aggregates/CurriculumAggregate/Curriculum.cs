@@ -1,4 +1,4 @@
-﻿using Ardalis.GuardClauses;
+using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.Aggregates.SubjectAggregate;
@@ -116,7 +116,7 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
         bool isElective,
         string? electiveGroupName)
     {
-        Guard.Against.Null(subjectId);
+        Guard.Against.Null(subjectId, message: "Subject ID is required");
 
         // Prevent duplicate subjects in the same curriculum
         if (_curriculumSubjects.Any(cs => cs.SubjectId == subjectId && cs.IsActive))

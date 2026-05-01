@@ -5,7 +5,6 @@ import { getAllRooms } from "@/api/collections/room-collection";
 import { getAllBuildingsOptions } from "@/api/collections/building-collection";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { useState } from "react";
-import { Bookmark, DoorOpen } from "lucide-react";
 import { useCrudState } from "@/hooks/use-crud-state";
 import type { RoomType } from "@/api/models/room-type";
 import { RoomTypeFormDrawer } from "./room-types-components/room-type-form-drawer";
@@ -15,6 +14,7 @@ import { DeleteRoomAlertDialog } from "./room-components/delete-room-alert-dialo
 import { RoomsTable } from "./room-components/rooms-table";
 import { RoomTypesTable } from "./room-types-components/room-types-table";
 import { DeleteRoomTypeAlertDialog } from "./room-types-components/delete-room-type-alert-dialog";
+import { ModuleIcons } from "@/config/module-icons";
 
 export default function RoomsPage() {
   const { data: rooms } = useSuspenseQuery(getAllRooms());
@@ -57,6 +57,7 @@ export default function RoomsPage() {
       createNewItemButton={
         activeTab === "room-types" ? (
           <RoomTypeFormDrawer
+            key={roomTypeToEdit?.id ?? "new"}
             onOpenChange={handleRoomTypeFormOpenChange}
             roomTypeToUpdate={roomTypeToEdit}
             isOpen={isRoomTypeFormOpen}
@@ -64,6 +65,7 @@ export default function RoomsPage() {
           />
         ) : (
           <RoomFormDrawer
+            key={roomToEdit?.id ?? "new"}
             roomTypes={roomTypes}
             buildings={buildings}
             onOpenChange={handleRoomFormOpenChange}
@@ -73,7 +75,7 @@ export default function RoomsPage() {
           />
         )
       }
-      icon={<DoorOpen />}
+      icon={<ModuleIcons.roomTypes />}
     >
       <Tabs
         value={activeTab}
@@ -82,11 +84,11 @@ export default function RoomsPage() {
       >
         <TabsList variant="line">
           <TabsTrigger value="rooms">
-            <DoorOpen className="size-4" />
+            <ModuleIcons.rooms className="size-4" />
             Rooms
           </TabsTrigger>
           <TabsTrigger value="room-types">
-            <Bookmark />
+            <ModuleIcons.roomTypes />
             Room Types
           </TabsTrigger>
         </TabsList>

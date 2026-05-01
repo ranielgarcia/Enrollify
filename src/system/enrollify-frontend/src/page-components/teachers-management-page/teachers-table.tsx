@@ -5,7 +5,7 @@ import { DataTableColumnHeader } from "@/components/data-table/data-table-column
 import { DataTableAdvancedToolbar } from "@/components/data-table/data-table-advanced-toolbar";
 import { DataTableFilterList } from "@/components/data-table/data-table-filter-list";
 import { DataTableSortList } from "@/components/data-table/data-table-sort-list";
-import { Button } from "@/components/ui/button";
+import { Button as PrimitiveButton } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useDataTable } from "@/hooks/use-data-table";
 import { useTablePermissions } from "@/hooks/use-table-permissions";
@@ -13,24 +13,27 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Edit2 } from "lucide-react";
 import { useMemo } from "react";
 import { TeachersTableActionBar } from "./teachers-table-action-bar";
+import { Badge } from "@/components/ui/badge";
 
 interface TeachersTableProps {
   pagedTeachers: PagedResult<Teacher>;
   onEdit: (teacher: Teacher) => void;
 }
 
+const columnHelper = createColumnHelper<Teacher>();
+
 export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
   const { canUpdate } = useTablePermissions(
     "canUpdateTeacher",
     "canUpdateTeacher",
   );
-  const columnHelper = createColumnHelper<Teacher>();
 
   const columns = useMemo(
     () => [
       columnHelper.display({
         id: "avatar",
-        header: "",
+        header: "Profile",
+        size: 10,
         enableHiding: false,
         cell: (info) => {
           const teacher = info.row.original;
@@ -86,7 +89,11 @@ export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
         ),
         meta: { label: "Email", variant: "text" },
         enableColumnFilter: true,
-        cell: (info) => <span>{info.getValue()}</span>,
+        cell: (info) => (
+          <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-xs">
+            {info.getValue()}
+          </code>
+        ),
       }),
       columnHelper.accessor("phoneNumber", {
         id: "phoneNumber",
@@ -121,6 +128,22 @@ export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
         ),
         meta: { label: "Office" },
         cell: (info) => <span>{info.getValue() ?? "-"}</span>,
+      }),
+      columnHelper.accessor("subjects", {
+        id: "subjects",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Qualified Subjects" />
+        ),
+        meta: { label: "Subjects" },
+        cell: (info) => (
+          <div className="flex w-full flex-wrap justify-center gap-2">
+            {info.getValue()?.map((s) => (
+              <Badge key={s.id} variant="outline">
+                {s.code}
+              </Badge>
+            ))}
+          </div>
+        ),
       }),
       columnHelper.accessor("createdAt", {
         header: ({ column }) => (
@@ -167,12 +190,13 @@ export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
       columnHelper.display({
         id: "actions",
         header: "Actions",
+        size: 10,
         enableHiding: false,
         cell: (info) => {
           const item = info.row.original;
           return (
             <div className="flex gap-2">
-              <Button
+              <PrimitiveButton
                 variant="ghost"
                 size="sm"
                 onClick={() => onEdit(item)}
@@ -180,7 +204,7 @@ export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
                 disabled={!canUpdate}
               >
                 <Edit2 className="size-4" />
-              </Button>
+              </PrimitiveButton>
             </div>
           );
         },
@@ -195,6 +219,16 @@ export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
     pageCount: pagedTeachers?.totalPages ?? -1,
     manualPagination: true,
     debounceMs: 600,
+    initialState: {
+      columnVisibility: {
+        specialization: false,
+        officeLocation: false,
+        createdAt: false,
+        createdBy: false,
+        updatedAt: false,
+        updatedBy: false,
+      },
+    },
   });
 
   return (
@@ -215,4 +249,3 @@ export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
     </DataTable>
   );
 }
-

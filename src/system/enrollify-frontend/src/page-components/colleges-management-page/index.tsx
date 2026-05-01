@@ -6,7 +6,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { getAllCollegesOptions } from "@/api/collections/college-collection";
 import { useCrudState } from "@/hooks/use-crud-state";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
-import { SchoolIcon } from "lucide-react";
+import { ModuleIcons } from "@/config/module-icons";
 
 export default function CollegesPage() {
   const {
@@ -30,13 +30,14 @@ export default function CollegesPage() {
       isLoading={isLoadingColleges}
       createNewItemButton={
         <CollegeFormDrawer
+          key={entityToEdit?.id ?? "new"}
           onOpenChange={handleFormOpenChange}
           collegeToUpdate={entityToEdit}
           isOpen={isFormOpen}
           setIsOpen={handleFormOpenChange}
         />
       }
-      icon={<SchoolIcon />}
+      icon={<ModuleIcons.colleges />}
     >
       <CollegesTable
         colleges={colleges}

@@ -57,8 +57,8 @@ export function EquivalenceGroupsTab({
     setIsAddSubjectDialogOpen(true);
   };
 
-  const handleAddSubjectsToGroup = async (subjectIds: number[]) => {
-    await addSubjectsToGroupAsync({ subjectIds });
+  const handleAddSubjectsToGroup = async (subjectCodes: string[]) => {
+    await addSubjectsToGroupAsync({ subjectCodes });
   };
 
   return (

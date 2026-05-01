@@ -11,7 +11,7 @@ namespace Enrollify.Application.Features.SubjectEquivalences.Commands;
 
 public static class AddSubjectsToEquivalenceGroup
 {
-    public sealed record Command(SubjectEquivalenceGroupId groupId, List<SubjectId> subjectIds) : ICommand<Result<SubjectEquivalenceGroupDto>>;
+    public sealed record Command(SubjectEquivalenceGroupId groupId, List<SubjectCode> subjectCodes) : ICommand<Result<SubjectEquivalenceGroupDto>>;
 
     public sealed class Handler : ICommandHandler<Command, Result<SubjectEquivalenceGroupDto>>
     {
@@ -32,20 +32,20 @@ public static class AddSubjectsToEquivalenceGroup
                 return Result.NotFound();
             }
 
-            var subjects = await _subjectReadRepository.ListAsync(new ListSubjectsByIdsSpec(command.subjectIds), cancellationToken);
+            var subjects = await _subjectReadRepository.ListAsync(new ListMinimumSubjectsByCodesSpec(command.subjectCodes), cancellationToken);
 
-            var missingSubjects = command.subjectIds.Except(subjects.Select(s => s.Id)).ToList();
+            var missingSubjects = command.subjectCodes.Except(subjects.Select(s => s.Code)).ToList();
             if (missingSubjects.Any())
             {
-                return Result.Invalid(new ValidationError($"Subjects with IDs {string.Join(", ", missingSubjects)} not found"));
+                return Result.Invalid(new ValidationError($"Subjects with codes {string.Join(", ", missingSubjects)} not found"));
             }
 
-            foreach (var id in command.subjectIds)
+            foreach (var code in command.subjectCodes)
             {
-                var subject = subjects.FirstOrDefault(s => s.Id == id);
+                var subject = subjects.FirstOrDefault(s => s.Code == code);
                 if (subject is null)
                 {
-                    return Result.NotFound($"Subject with ID {id} not found.");
+                    return Result.NotFound($"Subject with code {code} not found.");
                 }
                 groupToUpdate.AddSubject(subject.Id);
             }

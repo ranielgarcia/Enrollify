@@ -1,6 +1,7 @@
 using Enrollify.Application.Features.Teachers.Commands;
 using Enrollify.Application.Features.Teachers.Models;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.WebAPI.Utilities;
 using Enrollify.WebAPI.Validators;
@@ -41,6 +42,7 @@ public class RegisterTeacherRequest
     public string? OfficeHours { get; set; }
     public string? Biography { get; set; }
     public IFormFile? Photo { get; set; }
+    public string[] SubjectCodes { get; set; } = Array.Empty<string>();
 }
 
 public class RegisterTeacherRequestValidator : Validator<RegisterTeacherRequest>
@@ -80,6 +82,11 @@ public class RegisterTeacherRequestValidator : Validator<RegisterTeacherRequest>
                 return !errorOccurred;
             }).WithMessage("Photo must be a valid image file (PNG or JPEG, max 5 MB).")
             .When(x => x.Photo is not null);
+
+        RuleFor(x => x.SubjectCodes)
+            .NotEmpty().WithMessage("Please provide at least one subject code.")
+            .ForEach(code => code.NotEmpty().WithMessage("Subject code cannot be empty."))
+            .When(x => x.SubjectCodes.Any());
     }
 }
 
@@ -111,7 +118,7 @@ public class RegisterTeacherEndpoint : Endpoint<RegisterTeacherRequest, CreatedA
         }
 
         var result = await _mediator.Send(new RegisterNewTeacher.Command(
-            new TeacherForCreation
+            new TeacherForRegistration
             {
                 FirstName = request.FirstName,
                 MiddleName = request.MiddleName,
@@ -125,7 +132,8 @@ public class RegisterTeacherEndpoint : Endpoint<RegisterTeacherRequest, CreatedA
                 Specialization = request.Specialization,
                 OfficeLocation = request.OfficeLocation,
                 OfficeHours = request.OfficeHours,
-                Biography = request.Biography
+                Biography = request.Biography,
+                Subjects = request.SubjectCodes.Select(SubjectCode.From).ToArray()
             },
             photo), cancellationToken);
 

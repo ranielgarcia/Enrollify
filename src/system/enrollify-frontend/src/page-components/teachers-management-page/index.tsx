@@ -2,7 +2,6 @@ import { filterTeachersPaginatedOptions } from "@/api/collections/teacher-collec
 import { getAllDepartmentsOptions } from "@/api/collections/department-collection";
 import type { Teacher } from "@/api/models/teacher";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { BookUser } from "lucide-react";
 import { useQueryStates } from "nuqs";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { useCrudState } from "@/hooks/use-crud-state";
@@ -10,6 +9,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { TeacherFormDrawer } from "./teacher-form-drawer";
 import { TeachersTable } from "./teachers-table";
 import { searchParams } from "./searchParams";
+import { ModuleIcons } from "@/config/module-icons";
 
 export default function TeachersManagementPage() {
   const [{ page, perPage, filters, sort, joinOperator }] =
@@ -17,7 +17,7 @@ export default function TeachersManagementPage() {
 
   const {
     isFormOpen,
-    entityToEdit,
+    entityToEdit: teacherToEdit,
     handleEdit,
     handleFormOpenChange,
   } = useCrudState<Teacher>();
@@ -44,21 +44,19 @@ export default function TeachersManagementPage() {
     <ManagementPageLayout
       title="Teachers Management"
       description="Manage faculty members and their academic profiles"
-      icon={<BookUser />}
+      icon={<ModuleIcons.teachers />}
       createNewItemButton={
         <TeacherFormDrawer
+          key={teacherToEdit?.id ?? "new"}
           departments={departments}
           onOpenChange={handleFormOpenChange}
-          teacherToUpdate={entityToEdit}
+          teacherToUpdate={teacherToEdit}
           isOpen={isFormOpen}
           setIsOpen={handleFormOpenChange}
         />
       }
     >
-      <TeachersTable
-        pagedTeachers={pagedTeachers}
-        onEdit={handleEdit}
-      />
+      <TeachersTable pagedTeachers={pagedTeachers} onEdit={handleEdit} />
     </ManagementPageLayout>
   );
 }
