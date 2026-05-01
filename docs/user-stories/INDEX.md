@@ -20,8 +20,8 @@ Grouped by epic. Titles include US IDs.
 
 - [x] US-007 Subject Prerequisite Management — `07-medium-subject-prerequisites.md`
 - [x] US-008 Equivalent Subject Mapping — `08-medium-equivalent-subjects.md`
-- [ ] US-009 Teacher Management (CRUD) — `09-high-teacher-management.md`
-- [ ] US-010 Teacher Subject Assignments — `10-medium-teacher-subjects.md`
+- [x] US-009 Teacher Management (CRUD) — `09-high-teacher-management.md`
+- [x] US-010 Teacher Subject Assignments — `10-medium-teacher-subjects.md`
 - [ ] US-011 Semester Management (CRUD) — `11-high-semester-management.md`
 - [ ] US-012 Class Section Management (CRUD) — `12-high-class-section-management.md`
 - [ ] US-013 Subject Offering Management (per Section) — `13-high-subject-offering-management.md`

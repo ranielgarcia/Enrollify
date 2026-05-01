@@ -85,7 +85,8 @@ public class RegisterTeacherRequestValidator : Validator<RegisterTeacherRequest>
 
         RuleFor(x => x.SubjectCodes)
             .NotEmpty().WithMessage("Please provide at least one subject code.")
-            .ForEach(code => code.NotEmpty().WithMessage("Subject code cannot be empty."));
+            .ForEach(code => code.NotEmpty().WithMessage("Subject code cannot be empty."))
+            .When(x => x.SubjectCodes.Any());
     }
 }
 

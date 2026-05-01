@@ -179,7 +179,7 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
 
     public Teacher RemoveSubject (SubjectId subjectId)
     {
-        var teacherSubject = _subjects.FirstOrDefault(ts => ts.SubjectId == subjectId);
+        var teacherSubject = _subjects.FirstOrDefault(ts => ts.SubjectId == subjectId && ts.IsActive);
         if (teacherSubject != null)
         {
             _subjects.Remove(teacherSubject);

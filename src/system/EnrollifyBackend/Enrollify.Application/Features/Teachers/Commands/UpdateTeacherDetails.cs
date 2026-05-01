@@ -38,6 +38,11 @@ public static class UpdateTeacherDetails
 
         public async ValueTask<Result<TeacherId>> Handle(Command command, CancellationToken cancellationToken)
         {
+            if (command.teacher.Subjects == null || !command.teacher.Subjects.Any())
+            {
+                return Result.Invalid(new ValidationError("At least one subject is required"));
+            }
+
             var teacher = await _readRepository.GetByIdAsync(command.teacher.Id, cancellationToken);
             if (teacher == null)
             {
@@ -59,7 +64,6 @@ public static class UpdateTeacherDetails
                 .UpdateOfficeLocation(command.teacher.OfficeLocation)
                 .UpdateOfficeHours(command.teacher.OfficeHours)
                 .UpdateBiography(command.teacher.Biography);
-
 
             var allSubjects = await _subjectReadRepository.ListAsync(new ListMinimumSubjectsByCodesSpec(command.teacher.Subjects.ToList()), cancellationToken);
             var missingSubjectCodes = command.teacher.Subjects.Except(allSubjects.Select(s => s.Code)).ToList();

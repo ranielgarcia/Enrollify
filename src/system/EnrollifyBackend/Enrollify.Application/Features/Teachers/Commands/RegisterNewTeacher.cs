@@ -57,6 +57,10 @@ public static class RegisterNewTeacher
                 .UpdateOfficeHours(command.teacher.OfficeHours)
                 .UpdateBiography(command.teacher.Biography);
 
+            if (command.teacher.Subjects == null || !command.teacher.Subjects.Any())
+            {
+                return Result.Invalid(new ValidationError("At least one subject is required"));
+            }
 
             var allSubjects = await _subjectReadRepository.ListAsync(new ListMinimumSubjectsByCodesSpec(command.teacher.Subjects.ToList()), cancellationToken);
             var missingSubjectCodes = command.teacher.Subjects.Except(allSubjects.Select(s => s.Code)).ToList();
