@@ -57,6 +57,7 @@ export default function RoomsPage() {
       createNewItemButton={
         activeTab === "room-types" ? (
           <RoomTypeFormDrawer
+            key={roomTypeToEdit?.id ?? "new"}
             onOpenChange={handleRoomTypeFormOpenChange}
             roomTypeToUpdate={roomTypeToEdit}
             isOpen={isRoomTypeFormOpen}
@@ -64,6 +65,7 @@ export default function RoomsPage() {
           />
         ) : (
           <RoomFormDrawer
+            key={roomToEdit?.id ?? "new"}
             roomTypes={roomTypes}
             buildings={buildings}
             onOpenChange={handleRoomFormOpenChange}

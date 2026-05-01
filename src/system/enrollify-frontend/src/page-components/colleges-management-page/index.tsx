@@ -30,6 +30,7 @@ export default function CollegesPage() {
       isLoading={isLoadingColleges}
       createNewItemButton={
         <CollegeFormDrawer
+          key={entityToEdit?.id ?? "new"}
           onOpenChange={handleFormOpenChange}
           collegeToUpdate={entityToEdit}
           isOpen={isFormOpen}

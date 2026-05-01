@@ -42,6 +42,7 @@ function CurriculumContent() {
       icon={<ModuleIcons.curriculum />}
       createNewItemButton={
         <CurriculumFormDrawer
+          key={curriculum?.id ?? "new"}
           courses={courses}
           onOpenChange={handleFormOpenChange}
           curriculumToUpdate={curriculum}

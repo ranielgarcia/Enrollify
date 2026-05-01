@@ -22,12 +22,14 @@ export default function TeachersManagementPage() {
     handleFormOpenChange,
   } = useCrudState<Teacher>();
 
-  const {
-    isFormOpen: isManageSubjectsDialogOpen,
-    entityToEdit: teacherToManageSubjects,
-    handleEdit: handleTeacherEditSubjects,
-    handleFormOpenChange: handleTeacherDialogOpenChange,
-  } = useCrudState<Teacher>();
+  console.log(teacherToEdit);
+
+  // const {
+  //   isFormOpen: isManageSubjectsDialogOpen,
+  //   entityToEdit: teacherToManageSubjects,
+  //   handleEdit: handleTeacherEditSubjects,
+  //   handleFormOpenChange: handleTeacherDialogOpenChange,
+  // } = useCrudState<Teacher>();
 
   const currentPage = page ? Number(page) : 1;
   const currentPageSize = perPage ? Number(perPage) : 10;
@@ -54,6 +56,7 @@ export default function TeachersManagementPage() {
       icon={<ModuleIcons.teachers />}
       createNewItemButton={
         <TeacherFormDrawer
+          key={teacherToEdit?.id ?? "new"}
           departments={departments}
           onOpenChange={handleFormOpenChange}
           teacherToUpdate={teacherToEdit}

@@ -33,6 +33,7 @@ export default function BuildingPage() {
       isLoading={isLoadingBuildings}
       createNewItemButton={
         <BuildingFormDrawer
+          key={entityToEdit?.id ?? "new"}
           colleges={colleges}
           onOpenChange={handleFormOpenChange}
           buildingToUpdate={entityToEdit}

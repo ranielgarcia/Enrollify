@@ -30,6 +30,7 @@ export default function CoursesManagementPage() {
       description="Manage course resources"
       createNewItemButton={
         <CourseFormDrawer
+          key={entityToEdit?.id ?? "new"}
           colleges={colleges}
           onOpenChange={handleFormOpenChange}
           courseToUpdate={entityToEdit}

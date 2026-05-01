@@ -82,6 +82,7 @@ export default function SubjectsManagementPage() {
       createNewItemButton={
         activeTab === "subjects" ? (
           <SubjectFormDrawer
+            key={entityToEdit?.id ?? "new"}
             roomTypes={roomTypes}
             onOpenChange={handleFormOpenChange}
             subjectToUpdate={entityToEdit}

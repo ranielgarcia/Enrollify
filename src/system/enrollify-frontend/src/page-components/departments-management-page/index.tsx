@@ -30,6 +30,7 @@ export default function DepartmentPage() {
       description="Manage department resources"
       createNewItemButton={
         <DepartmentFormDrawer
+          key={entityToEdit?.id ?? "new"}
           colleges={colleges}
           onOpenChange={handleFormOpenChange}
           departmentToUpdate={entityToEdit}
