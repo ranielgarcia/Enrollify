@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { AuditInfoSchema } from "@/api/models/audit-info";
+import { SubjectSummarySchema } from "./subject";
 
 const TeacherDepartmentSchema = z.object({
   id: z.number().optional(),
@@ -23,6 +24,7 @@ export const TeacherSchema = z
     officeLocation: z.string().nullable().optional(),
     officeHours: z.string().nullable().optional(),
     biography: z.string().nullable().optional(),
+    subjects: z.array(SubjectSummarySchema).optional(),
   })
   .extend(AuditInfoSchema.shape);
 

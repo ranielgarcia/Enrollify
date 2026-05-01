@@ -22,8 +22,6 @@ export default function TeachersManagementPage() {
     handleFormOpenChange,
   } = useCrudState<Teacher>();
 
-  console.log(teacherToEdit);
-
   // const {
   //   isFormOpen: isManageSubjectsDialogOpen,
   //   entityToEdit: teacherToManageSubjects,

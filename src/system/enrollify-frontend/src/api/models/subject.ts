@@ -18,4 +18,12 @@ export const SubjectSchema = z
   })
   .extend(AuditInfoSchema.shape);
 
+// Summary schema for subjects
+export const SubjectSummarySchema = SubjectSchema.pick({
+  id: true,
+  code: true,
+  title: true,
+  units: true,
+});
+
 export type Subject = z.infer<typeof SubjectSchema>;

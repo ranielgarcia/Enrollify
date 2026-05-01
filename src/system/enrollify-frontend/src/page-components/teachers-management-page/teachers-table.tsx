@@ -211,6 +211,14 @@ export function TeachersTable({
     pageCount: pagedTeachers?.totalPages ?? -1,
     manualPagination: true,
     debounceMs: 600,
+    initialState: {
+      columnVisibility: {
+        createdAt: false,
+        createdBy: false,
+        updatedAt: false,
+        updatedBy: false,
+      },
+    },
   });
 
   return (

@@ -1,14 +1,6 @@
 import { z } from "zod";
 import { AuditInfoSchema } from "@/api/models/audit-info";
-import { SubjectSchema } from "@/api/models/subject";
-
-// Summary schema for subjects in equivalence context
-const SubjectSummarySchema = SubjectSchema.pick({
-  id: true,
-  code: true,
-  title: true,
-  units: true,
-});
+import { SubjectSummarySchema } from "@/api/models/subject";
 
 export type SubjectSummaryInSubjectEquivalenceGroup = z.infer<
   typeof SubjectSummarySchema

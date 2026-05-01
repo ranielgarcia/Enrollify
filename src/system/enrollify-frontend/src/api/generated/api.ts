@@ -550,6 +550,7 @@ export interface components {
             officeLocation?: string | null;
             officeHours?: string | null;
             biography?: string | null;
+            subjects?: components["schemas"]["EnrollifyApplicationSharedDTOsSubjectSummaryDto"][];
         };
         /** @description Value object wrapping String */
         EnrollifyCoreAggregatesTeacherAggregateTeacherIdentifier: string;
@@ -568,6 +569,19 @@ export interface components {
         };
         /** @description Value object wrapping String */
         EnrollifyCoreAggregatesDepartmentAggregateDepartmentCode: string;
+        EnrollifyApplicationSharedDTOsSubjectSummaryDto: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            code?: components["schemas"]["EnrollifyCoreAggregatesSubjectAggregateSubjectCode"];
+            title?: string;
+            /** Format: decimal */
+            units?: number;
+        };
+        /** @description Value object wrapping String */
+        EnrollifyCoreAggregatesSubjectAggregateSubjectCode: string;
         EnrollifyApplicationBaseDto: {
             /** Format: date-time */
             createdAt?: string;
@@ -710,8 +724,6 @@ export interface components {
             description?: string;
             preferRoomType?: components["schemas"]["EnrollifyApplicationSharedDTOsRoomTypeSummaryDto"] | null;
         };
-        /** @description Value object wrapping String */
-        EnrollifyCoreAggregatesSubjectAggregateSubjectCode: string;
         EnrollifyApplicationSharedDTOsRoomTypeSummaryDto: {
             /**
              * Format: int32
@@ -745,18 +757,7 @@ export interface components {
              */
             id?: number;
             name?: string;
-            subjects?: components["schemas"]["EnrollifyApplicationFeaturesSubjectEquivalencesDTOsSubjectSummaryDto"][];
-        };
-        EnrollifyApplicationFeaturesSubjectEquivalencesDTOsSubjectSummaryDto: {
-            /**
-             * Format: int32
-             * @description Value object wrapping Int32
-             */
-            id?: number;
-            code?: components["schemas"]["EnrollifyCoreAggregatesSubjectAggregateSubjectCode"];
-            title?: string;
-            /** Format: decimal */
-            units?: number;
+            subjects?: components["schemas"]["EnrollifyApplicationSharedDTOsSubjectSummaryDto"][];
         };
         EnrollifyWebAPIFeaturesSubjectEquivalencesRemoveSubjectFromEquivalenceGroupRequest: {
             subjectCode: string;
