@@ -24,7 +24,9 @@ public class TeacherDto : BaseDto
     public string? OfficeHours { get; set; }
     public string? Biography { get; set; }
 
-    public static TeacherDto FromEntity(Teacher teacher)
+    public SubjectSummaryDto[] Subjects { get; set; } = Array.Empty<SubjectSummaryDto>();
+
+    public static TeacherDto FromEntity(Teacher teacher, List<Subject> subjects)
     {
         return new TeacherDto
         {
@@ -47,7 +49,7 @@ public class TeacherDto : BaseDto
             UpdatedAt = teacher.UpdatedAt,
             UpdatedBy = teacher.UpdatedByUser != null ? BaseUserDto.FromUser(teacher.UpdatedByUser) : null,
             IsActive = teacher.IsActive,
+            Subjects = subjects.Select(SubjectSummaryDto.FromEntity).ToArray()
         };
     }
-
 }

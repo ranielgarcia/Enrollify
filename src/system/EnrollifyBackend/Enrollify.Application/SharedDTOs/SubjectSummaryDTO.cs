@@ -1,6 +1,6 @@
 using Enrollify.Core.Aggregates.SubjectAggregate;
 
-namespace Enrollify.Application.Features.SubjectEquivalences.DTOs;
+namespace Enrollify.Application.SharedDTOs;
 
 public class SubjectSummaryDto
 {
