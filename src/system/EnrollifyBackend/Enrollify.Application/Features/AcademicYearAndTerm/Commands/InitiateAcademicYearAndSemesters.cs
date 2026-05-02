@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.Models;
+using Enrollify.Core;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.DomainExceptions;
 using Mediator;
@@ -24,9 +25,17 @@ public static class InitiateAcademicYearAndSemesters
 
         public async ValueTask<Result<AcademicYearId>> Handle(Command command, CancellationToken cancellationToken)
         {
+            var expectedTermCount = new AcademicSettings().AcademicSystem;
+
+            if (command.academicTerms is null || command.academicTerms.Length == 0)
+                return Result<AcademicYearId>.Invalid(new ValidationError("At least one academic term must be provided."));
+
+            if (command.academicTerms.Length != expectedTermCount)
+                return Result<AcademicYearId>.Invalid(new ValidationError(
+                    $"The academic system requires exactly {expectedTermCount} term(s), but {command.academicTerms.Length} were provided."));
+
             try
             {
-
                 var academicYear = new AcademicYear(command.academicYearStartDate, command.academicYearEndDate);
 
                 foreach (var term in command.academicTerms)
@@ -36,6 +45,10 @@ public static class InitiateAcademicYearAndSemesters
 
                 var result = await _academicYearAndTermRepository.Create(academicYear, cancellationToken);
                 return result;
+            }
+            catch (InvalidAcademicYearRangeException ex)
+            {
+                return Result<AcademicYearId>.Invalid(new ValidationError(ex.Message));
             }
             catch (InvalidAcademicTermException ex)
             {

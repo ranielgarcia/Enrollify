@@ -22,8 +22,6 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
     {
         try
         {
-            var numberOfTerms = new AcademicSettings().AcademicSystem;
-
             var existingAcademicYear = await _dbContext.AcademicYears
                 .FirstOrDefaultAsync(ay =>
                     ay.StartDate.Value < academicYear.EndDate.Value
@@ -32,6 +30,9 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
 
             if (existingAcademicYear is not null)
             {
+                _logger.LogWarning(
+                    "Academic year creation conflict: proposed range {Start}-{End} overlaps with existing year {ExistingId}.",
+                    academicYear.StartDate.Value, academicYear.EndDate.Value, existingAcademicYear.Id);
                 return Result.Conflict("The specified academic year overlaps with an existing academic year. Please choose a different date range.");
             }
 
