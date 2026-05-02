@@ -22,20 +22,6 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
     {
         try
         {
-            var existingAcademicYear = await _dbContext.AcademicYears
-                .FirstOrDefaultAsync(ay =>
-                    ay.StartDate.Value < academicYear.EndDate.Value
-                    && ay.EndDate.Value > academicYear.StartDate.Value,
-                cancellationToken);
-
-            if (existingAcademicYear is not null)
-            {
-                _logger.LogWarning(
-                    "Academic year creation conflict: proposed range {Start}-{End} overlaps with existing year {ExistingId}.",
-                    academicYear.StartDate.Value, academicYear.EndDate.Value, existingAcademicYear.Id);
-                return Result.Conflict("The specified academic year overlaps with an existing academic year. Please choose a different date range.");
-            }
-
             await _dbContext.AcademicYears.AddAsync(academicYear, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -57,31 +43,10 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
     {
         try
         {
-            var existing = await _dbContext.AcademicYears
-                .FirstOrDefaultAsync(ay => ay.Id == academicYear.Id, cancellationToken);
-
-            if (existing is null)
-            {
-                return Result.NotFound("The specified academic year was not found.");
-            }
-
-            var overlaps = await _dbContext.AcademicYears
-                .AnyAsync(ay =>
-                    ay.Id != academicYear.Id
-                    && ay.StartDate.Value < academicYear.EndDate.Value
-                    && ay.EndDate.Value > academicYear.StartDate.Value,
-                cancellationToken);
-
-            if (overlaps)
-            {
-                return Result.Conflict("The specified academic year overlaps with an existing academic year. Please choose a different date range.");
-            }
-
-            existing.UpdateStartAndEndYear(academicYear.StartDate, academicYear.EndDate);
-
+            _dbContext.Update(academicYear);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            return Result.Success(existing.Id);
+            return Result.Success(academicYear.Id);
         }
         catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
         {
@@ -95,27 +60,17 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
         }
     }
 
-    public async Task<Result> Delete(AcademicYearId id, CancellationToken cancellationToken)
+    public async Task<Result> Delete(AcademicYear academicYear, CancellationToken cancellationToken)
     {
         try
         {
-            var existing = await _dbContext.AcademicYears
-                .FirstOrDefaultAsync(ay => ay.Id == id, cancellationToken);
-
-            if (existing is null)
-            {
-                return Result.NotFound("The specified academic year was not found.");
-            }
-
-            _dbContext.AcademicYears.Remove(existing);
-
+            _dbContext.AcademicYears.Remove(academicYear);
             await _dbContext.SaveChangesAsync(cancellationToken);
-
             return Result.Success();
         }
         catch (DbUpdateException ex)
         {
-            _logger.LogError(ex, "A database error occurred while deleting academic year {AcademicYearId}.", id);
+            _logger.LogError(ex, "A database error occurred while deleting academic year {AcademicYearId}.", academicYear.Id.Value);
             return Result.Error("An error occurred while deleting the academic year.");
         }
     }
@@ -133,4 +88,11 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
         return message?.Contains("CHK_AcademicYears_Valid") == true;
     }
 
+    public async Task<AcademicYear?> GetActiveAcademicYearAsync(CancellationToken cancellation)
+    {
+        var today = DateTime.UtcNow.Date;
+        return await _dbContext.AcademicYears
+            .Include(ay => ay.AcademicTerms)
+            .FirstOrDefaultAsync(ay => ay.StartDate.Value <= today && ay.EndDate.Value >= today, cancellation);
+    }
 }

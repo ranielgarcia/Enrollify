@@ -8,5 +8,7 @@ public interface IAcademicYearAndTermRepository
 {
     Task<Result<AcademicYearId>> Create(AcademicYear academicYear, CancellationToken cancellationToken);
     Task<Result<AcademicYearId>> Update(AcademicYear academicYear, CancellationToken cancellationToken);
-    Task<Result> Delete (AcademicYearId id, CancellationToken cancellationToken);
+    Task<Result> Delete (AcademicYear academicYear, CancellationToken cancellationToken);
+
+    Task<AcademicYear?> GetActiveAcademicYearAsync(CancellationToken cancellation);
 }

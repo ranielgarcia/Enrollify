@@ -1,13 +1,16 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.Models;
+using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Core;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.DomainExceptions;
+using Enrollify.SharedKernel;
 using Mediator;
+using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.AcademicYearAndTerm.Commands;
 
-public static class InitiateAcademicYearAndSemesters
+public static class InitiateAcademicYearAndTerms
 {
     public sealed record Command(
         AcademicYearStartDate academicYearStartDate,
@@ -17,14 +20,33 @@ public static class InitiateAcademicYearAndSemesters
     public sealed class Handler : ICommandHandler<Command, Result<AcademicYearId>>
     {
         private readonly IAcademicYearAndTermRepository _academicYearAndTermRepository;
+        private readonly IReadRepository<AcademicYear> _readRepository;
+        private readonly ILogger<Handler> _logger;
 
-        public Handler(IAcademicYearAndTermRepository academicYearAndTermRepository)
+        public Handler(
+            IAcademicYearAndTermRepository academicYearAndTermRepository,
+            IReadRepository<AcademicYear> readRepository,
+            ILogger<Handler> logger)
         {
             _academicYearAndTermRepository = academicYearAndTermRepository;
+            _readRepository = readRepository;
+            _logger = logger;
         }
 
         public async ValueTask<Result<AcademicYearId>> Handle(Command command, CancellationToken cancellationToken)
         {
+            var existingAcademicYear = await _readRepository.FirstOrDefaultAsync(
+                new GetOverlappingAcademicYearByDateRangeSpec(command.academicYearStartDate, command.academicYearEndDate),
+                cancellationToken);
+
+            if (existingAcademicYear is not null)
+            {
+                _logger.LogWarning(
+                    "Academic year creation conflict: proposed range {Start}-{End} overlaps with existing year {ExistingId}.",
+                    command.academicYearStartDate.Value, command.academicYearEndDate.Value, existingAcademicYear.Id);
+                return Result.Conflict("The specified academic year overlaps with an existing academic year. Please choose a different date range.");
+            }
+
             var expectedTermCount = new AcademicSettings().AcademicSystem;
 
             if (command.academicTerms is null || command.academicTerms.Length == 0)
