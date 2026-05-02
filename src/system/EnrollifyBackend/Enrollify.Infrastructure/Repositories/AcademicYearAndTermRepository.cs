@@ -80,7 +80,7 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
         var today = DateTime.UtcNow.Date;
         return await _dbContext.AcademicYears
             .Include(ay => ay.AcademicTerms)
-            .FirstOrDefaultAsync(ay => ay.StartDate.Value <= today && ay.EndDate.Value >= today, cancellation);
+            .FirstOrDefaultAsync(ay => (DateTime)ay.StartDate <= today && (DateTime)ay.EndDate >= today, cancellation);
     }
 
     private static bool IsUniqueConstraintViolation(DbUpdateException ex)

@@ -516,6 +516,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/academic-years/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesAcademicYearAndTermUpdateAcademicYearAndTermsEndpoint"];
+        post?: never;
+        delete: operations["EnrollifyWebAPIFeaturesAcademicYearAndTermDeleteAcademicYearAndTermsEndpoint"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic-years/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesAcademicYearAndTermGetActiveAcademicYearEndpoint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/academic-years": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["EnrollifyWebAPIFeaturesAcademicYearAndTermInitiateAcademicYearAndTermsEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -664,7 +712,7 @@ export interface components {
             biography?: string | null;
             /** Format: binary */
             photo?: string | null;
-            subjectCodes: string[];
+            subjectCodes?: string[];
         };
         EnrollifyWebAPIFeaturesTeachersUpdateTeacherRequest: {
             firstName: string;
@@ -684,7 +732,7 @@ export interface components {
             biography?: string | null;
             /** Format: binary */
             photo?: string | null;
-            subjectCodes: string[];
+            subjectCodes?: string[];
         };
         EnrollifyCoreAcademicSettings: {
             /** Format: int32 */
@@ -1102,6 +1150,86 @@ export interface components {
             address: string;
             /** Format: int32 */
             collegeId: number;
+        };
+        EnrollifyWebAPIFeaturesAcademicYearAndTermDeleteAcademicYearAndTermsRequest: Record<string, never>;
+        EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicYearDto: components["schemas"]["EnrollifyApplicationBaseDto"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            /**
+             * Format: date-time
+             * @description Value object wrapping DateTime
+             */
+            startDate?: string;
+            /**
+             * Format: date-time
+             * @description Value object wrapping DateTime
+             */
+            endDate?: string;
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            startYear?: number;
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            endYear?: number;
+            academicYearTitle?: string;
+            academicTerms?: components["schemas"]["EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicTermDto"][];
+        };
+        EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicTermDto: components["schemas"]["EnrollifyApplicationBaseDto"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            termNumber?: number;
+            termName?: string;
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            academicYearId?: number;
+            /**
+             * Format: date-time
+             * @description Value object wrapping DateTime
+             */
+            startDate?: string;
+            /**
+             * Format: date-time
+             * @description Value object wrapping DateTime
+             */
+            endDate?: string;
+        };
+        EnrollifyWebAPIFeaturesAcademicYearAndTermInitiateAcademicYearAndTermsRequest: {
+            /** Format: date-time */
+            startDate: string;
+            /** Format: date-time */
+            endDate: string;
+            terms: components["schemas"]["EnrollifyWebAPIFeaturesAcademicYearAndTermModelsAcademicTermRequest"][];
+        };
+        EnrollifyWebAPIFeaturesAcademicYearAndTermModelsAcademicTermRequest: {
+            /** Format: int32 */
+            termNumber?: number;
+            /** Format: date-time */
+            startDate?: string;
+            /** Format: date-time */
+            endDate?: string;
+        };
+        EnrollifyWebAPIFeaturesAcademicYearAndTermUpdateAcademicYearAndTermsRequest: {
+            /** Format: date-time */
+            startDate: string;
+            /** Format: date-time */
+            endDate: string;
+            terms: components["schemas"]["EnrollifyWebAPIFeaturesAcademicYearAndTermModelsAcademicTermRequest"][];
         };
     };
     responses: never;
@@ -2913,6 +3041,154 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesAcademicYearAndTermUpdateAcademicYearAndTermsEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesAcademicYearAndTermUpdateAcademicYearAndTermsRequest"];
+            };
+        };
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesAcademicYearAndTermDeleteAcademicYearAndTermsEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesAcademicYearAndTermGetActiveAcademicYearEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicYearDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesAcademicYearAndTermInitiateAcademicYearAndTermsEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesAcademicYearAndTermInitiateAcademicYearAndTermsRequest"];
+            };
+        };
         responses: {
             /** @description Bad Request */
             400: {
