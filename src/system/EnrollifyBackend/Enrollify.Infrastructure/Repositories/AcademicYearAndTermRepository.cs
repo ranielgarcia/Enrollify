@@ -75,6 +75,13 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
         }
     }
 
+    public async Task<AcademicYear?> GetActiveAcademicYearAsync(CancellationToken cancellation)
+    {
+        var today = DateTime.UtcNow.Date;
+        return await _dbContext.AcademicYears
+            .Include(ay => ay.AcademicTerms)
+            .FirstOrDefaultAsync(ay => ay.StartDate.Value <= today && ay.EndDate.Value >= today, cancellation);
+    }
 
     private static bool IsUniqueConstraintViolation(DbUpdateException ex)
     {
@@ -88,11 +95,4 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
         return message?.Contains("CHK_AcademicYears_Valid") == true;
     }
 
-    public async Task<AcademicYear?> GetActiveAcademicYearAsync(CancellationToken cancellation)
-    {
-        var today = DateTime.UtcNow.Date;
-        return await _dbContext.AcademicYears
-            .Include(ay => ay.AcademicTerms)
-            .FirstOrDefaultAsync(ay => ay.StartDate.Value <= today && ay.EndDate.Value >= today, cancellation);
-    }
 }

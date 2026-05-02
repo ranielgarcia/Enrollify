@@ -35,6 +35,15 @@ public static class InitiateAcademicYearAndTerms
 
         public async ValueTask<Result<AcademicYearId>> Handle(Command command, CancellationToken cancellationToken)
         {
+            var expectedTermCount = new AcademicSettings().AcademicSystem;
+
+            if (command.academicTerms is null || command.academicTerms.Length == 0)
+                return Result<AcademicYearId>.Invalid(new ValidationError("At least one academic term must be provided."));
+
+            if (command.academicTerms.Length != expectedTermCount)
+                return Result<AcademicYearId>.Invalid(new ValidationError(
+                    $"The academic system requires exactly {expectedTermCount} term(s), but {command.academicTerms.Length} were provided."));
+
             var existingAcademicYear = await _readRepository.FirstOrDefaultAsync(
                 new GetOverlappingAcademicYearByDateRangeSpec(command.academicYearStartDate, command.academicYearEndDate),
                 cancellationToken);
@@ -46,15 +55,6 @@ public static class InitiateAcademicYearAndTerms
                     command.academicYearStartDate.Value, command.academicYearEndDate.Value, existingAcademicYear.Id);
                 return Result.Conflict("The specified academic year overlaps with an existing academic year. Please choose a different date range.");
             }
-
-            var expectedTermCount = new AcademicSettings().AcademicSystem;
-
-            if (command.academicTerms is null || command.academicTerms.Length == 0)
-                return Result<AcademicYearId>.Invalid(new ValidationError("At least one academic term must be provided."));
-
-            if (command.academicTerms.Length != expectedTermCount)
-                return Result<AcademicYearId>.Invalid(new ValidationError(
-                    $"The academic system requires exactly {expectedTermCount} term(s), but {command.academicTerms.Length} were provided."));
 
             try
             {

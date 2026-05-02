@@ -9,7 +9,7 @@ public static class DeleteAcademicYearAndTerms
 {
     public sealed record Command(AcademicYearId id) : ICommand<Result>;
 
-    public sealed record Handler : ICommandHandler<Command, Result>
+    public sealed class Handler : ICommandHandler<Command, Result>
     {
         private readonly IAcademicYearAndTermRepository _repository;
         private readonly IReadRepository<AcademicYear> _readRepository;

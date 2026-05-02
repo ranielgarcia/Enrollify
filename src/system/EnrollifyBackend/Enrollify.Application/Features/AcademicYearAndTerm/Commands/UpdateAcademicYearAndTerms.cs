@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.Models;
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
@@ -36,15 +37,6 @@ public static class UpdateAcademicYearAndTerms
 
         public async ValueTask<Result<AcademicYearId>> Handle(Command command, CancellationToken cancellationToken)
         {
-            var overlappingAcademicYears = await _readRepository.ListAsync(
-                new GetOverlappingAcademicYearByDateRangeSpec(command.academicYearStartDate, command.academicYearEndDate, command.id),
-                cancellationToken);
-
-            if (overlappingAcademicYears.Count > 0)
-            {
-                return Result.Conflict("The specified academic year overlaps with an existing academic year. Please choose a different date range.");
-            }
-
             var expectedTermCount = new AcademicSettings().AcademicSystem;
 
             if (command.academicTerms is null || command.academicTerms.Length == 0)
@@ -56,20 +48,33 @@ public static class UpdateAcademicYearAndTerms
                     $"The academic system requires exactly {expectedTermCount} term(s), but {command.academicTerms.Length} were provided."));
             }
 
+            var overlappingAcademicYears = await _readRepository.ListAsync(
+                new GetOverlappingAcademicYearByDateRangeSpec(command.academicYearStartDate, command.academicYearEndDate, command.id),
+                cancellationToken);
+
+            if (overlappingAcademicYears.Count > 0)
+            {
+                _logger.LogWarning(
+                    "Academic year update conflict: proposed range {Start}-{End} for year {Id} overlaps with {Count} existing year(s).",
+                    command.academicYearStartDate.Value, command.academicYearEndDate.Value, command.id, overlappingAcademicYears.Count);
+                return Result.Conflict("The specified academic year overlaps with an existing academic year. Please choose a different date range.");
+            }
+
             try
             {
-                var existing = await _readRepository.GetByIdAsync(command.id, cancellationToken);
+                var existing = await _readRepository.FirstOrDefaultAsync(new GetAcademicYearByIdSpec(command.id), cancellationToken);
+
                 if (existing is null)
-                {
                     return Result.NotFound("The specified academic year was not found.");
-                }
 
                 existing.UpdateStartAndEndYear(command.academicYearStartDate, command.academicYearEndDate);
 
+                foreach (var term in existing.AcademicTerms.ToList())
+                    existing.RemoveTerm(term.Id);
+
                 foreach (var term in command.academicTerms)
-                {
                     existing.AddTerm(term.TermNumber, term.StartDate, term.EndDate);
-                }
+
 
                 var result = await _academicYearAndTermRepository.Update(existing, cancellationToken);
                 return result;
