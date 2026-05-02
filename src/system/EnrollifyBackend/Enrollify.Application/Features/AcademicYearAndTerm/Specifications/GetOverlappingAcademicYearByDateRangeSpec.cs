@@ -9,8 +9,8 @@ public class GetOverlappingAcademicYearByDateRangeSpec : Specification<AcademicY
     {
         Query
             .Where(ay =>
-                    ay.StartDate.Value < endDate.Value
-                    && ay.EndDate.Value > startDate.Value);
+                    (DateTime)ay.StartDate < (DateTime)endDate
+                    && (DateTime)ay.EndDate > (DateTime)startDate);
 
         if (excludeYearId.HasValue)
         {
