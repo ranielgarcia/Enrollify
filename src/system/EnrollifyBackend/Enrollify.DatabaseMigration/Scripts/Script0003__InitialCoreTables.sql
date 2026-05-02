@@ -510,7 +510,6 @@ WHERE IsActive = 1;
 
 
 -- ************************************
-
 CREATE TABLE AcademicYears
 (
     Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
@@ -528,16 +527,17 @@ CREATE TABLE AcademicYears
     CONSTRAINT FK_AcademicYears_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_AcademicYears_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_AcademicYears_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
-    CONSTRAINT CHK_AcademicYears_Valid CHECK (YEAR(EndDate) = YEAR(StartDate) + 1 AND YEAR(StartDate) >= 2000)
+    CONSTRAINT CHK_AcademicYears_Valid CHECK (YEAR(StartDate) >= 2000 && YEAR(EndDate) >= 2000)
 );
 GO;
 
 CREATE TABLE AcademicTerms
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-    TermNumber INT NOT NULL,				-- 1st, 2nd, 3rd term in the academic year
-	TermName VARCHAR(50) NOT NULL,
+    TermNumber INT NOT NULL, --1 as 1st, 2 as 2nd etc.
 	AcademicYearId INT NOT NULL,
+    StartDate DATE NOT NULL,
+    EndDate DATE NOT NULL,
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,

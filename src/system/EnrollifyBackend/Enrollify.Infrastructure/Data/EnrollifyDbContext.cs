@@ -1,3 +1,4 @@
+using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.BuildingAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
@@ -11,7 +12,6 @@ using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Infrastructure.Data.Config;
-using Enrollify.Infrastructure.Data.Config.AggregateConfigs.AcademicTermConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.AcademicYearConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.BuildingConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CollegeConfigs;
@@ -50,6 +50,8 @@ public class EnrollifyDbContext: DbContext
 
     public DbSet<Teacher> Teachers => Set<Teacher>();
 
+    public DbSet<AcademicYear> AcademicYears => Set<AcademicYear>();
+
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
 
@@ -86,7 +88,6 @@ public class EnrollifyDbContext: DbContext
         configurationBuilder.RegisterAllInTeacherVogenEfCoreConverters();
         configurationBuilder.RegisterAllInSharedValueObjectsVogenEfCoreConverters();
         configurationBuilder.RegisterAllInAcademicYearVogenEfCoreConverters();
-        configurationBuilder.RegisterAllInAcademicTermVogenEfCoreConverters();
 
     }
 }

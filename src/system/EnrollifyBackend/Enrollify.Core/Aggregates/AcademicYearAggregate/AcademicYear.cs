@@ -1,3 +1,4 @@
+using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.DomainExceptions;
 using Enrollify.Core.ValueObjects;
@@ -7,10 +8,18 @@ namespace Enrollify.Core.Aggregates.AcademicYearAggregate;
 
 public class AcademicYear : EntityBase<AcademicYear, AcademicYearId>, IAggregateRoot, IAuditable
 {
+    private readonly List<AcademicTerm> _academicTerms = new();
     private AcademicYear(){}
 
-    public AcademicStartDate StartDate { get; private set; }
-    public AcademicEndDate EndDate { get; private set; }
+    public AcademicYear(AcademicYearStartDate start, AcademicYearEndDate end)
+    {
+        if (end.Value.Year != start.Value.Year + 1) throw new InvalidAcademicYearRangeException();
+        StartDate = Guard.Against.Null(start);
+        EndDate = Guard.Against.Null(end);
+    }
+
+    public AcademicYearStartDate StartDate { get; private set; }
+    public AcademicYearEndDate EndDate { get; private set; }
 
 
     public Year StartYear => Year.From(StartDate.Value.Year);
@@ -18,6 +27,7 @@ public class AcademicYear : EntityBase<AcademicYear, AcademicYearId>, IAggregate
 
     public string AcademicYearTitle => $"AY {StartYear.Value}-{EndYear.Value}";
 
+    public IReadOnlyCollection<AcademicTerm> AcademicTerms => _academicTerms.AsReadOnly();
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
@@ -31,12 +41,76 @@ public class AcademicYear : EntityBase<AcademicYear, AcademicYearId>, IAggregate
     public bool IsActive { get; private set; }
 
 
-    public AcademicYear UpdateStartAndEndYear(AcademicStartDate start, AcademicEndDate end)
+    public AcademicYear UpdateStartAndEndYear(AcademicYearStartDate start, AcademicYearEndDate end)
     {
         if (end.Value.Year != start.Value.Year + 1) throw new InvalidAcademicYearRangeException();
         if (start == StartDate && end == EndDate) return this;
-        StartDate = start;
-        EndDate = end;
+        StartDate = Guard.Against.Null(start);
+        EndDate = Guard.Against.Null(end);
         return this;
     }
+
+    public AcademicYear AddTerm(AcademicTermNumber termNumber, AcademicTermStartDate startDate, AcademicTermEndDate endDate)
+    {
+        if (_academicTerms.Any(t => t.TermNumber == termNumber))
+        {
+            throw new InvalidAcademicTermException($"Term number {termNumber.Value} already exists in this academic year.");
+        }
+
+        if (startDate.Value < StartDate.Value || endDate.Value > EndDate.Value)
+        {
+            throw new InvalidAcademicTermException($"Term dates must fall within the academic year range ({AcademicYearTitle}).");
+        }
+
+        // validate if the new term overlaps with existing terms
+        foreach (var term in _academicTerms)
+        {
+            if (startDate.Value < term.EndDate.Value && endDate.Value > term.StartDate.Value)
+            {
+                throw new InvalidAcademicTermException($"The term dates overlap with existing term {term.TermNumber.Value}.");
+            }
+        }
+
+        var newTerm = new AcademicTerm(termNumber, Id, startDate, endDate);
+        _academicTerms.Add(newTerm);
+        return this;
+    }
+
+    public AcademicYear UpdateTerm(AcademicTermId termId, AcademicTermStartDate startDate, AcademicTermEndDate endDate)
+    {
+        var term = _academicTerms.FirstOrDefault(t => t.Id == termId);
+        if (term == null)
+        {
+            throw new InvalidAcademicTermException($"No term found with ID {termId.Value} in this academic year.");
+        }
+
+        if (startDate.Value < StartDate.Value || endDate.Value > EndDate.Value)
+        {
+            throw new InvalidAcademicTermException($"Term dates must fall within the academic year range ({AcademicYearTitle}).");
+        }
+
+        foreach (var other in _academicTerms.Where(t => t.Id != termId))
+        {
+            if (startDate.Value < other.EndDate.Value && endDate.Value > other.StartDate.Value)
+            {
+                throw new InvalidAcademicTermException($"The term dates overlap with existing term {other.TermNumber.Value}.");
+            }
+        }
+
+        term.UpdateTermDates(startDate, endDate);
+        return this;
+    }
+
+
+    public AcademicYear RemoveTerm(AcademicTermId termId)
+    {
+        var term = _academicTerms.FirstOrDefault(t => t.Id == termId);
+        if (term == null)
+        {
+            throw new InvalidAcademicTermException($"No term found with ID {termId.Value} in this academic year.");
+        }
+        _academicTerms.Remove(term);
+        return this;
+    }
+
 }

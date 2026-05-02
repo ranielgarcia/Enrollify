@@ -1,21 +1,32 @@
 using Ardalis.GuardClauses;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
-using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
+using Enrollify.Core.Extensions;
 
-namespace Enrollify.Core.Aggregates.AcademicTermAggregate;
+namespace Enrollify.Core.Aggregates.AcademicYearAggregate;
 
-public class AcademicTerm : EntityBase<AcademicTerm, AcademicTermId>, IAggregateRoot, IAuditable
+public class AcademicTerm : IAuditable
 {
     private AcademicTerm() { } // EF Core constructor
 
+    public AcademicTerm(AcademicTermNumber termNumber, AcademicYearId academicYearId, AcademicTermStartDate startDate, AcademicTermEndDate endDate)
+    {
+        TermNumber = Guard.Against.Null(termNumber);
+        AcademicYearId = Guard.Against.Null(academicYearId);
+        StartDate = Guard.Against.Null(startDate);
+        EndDate = Guard.Against.Null(endDate);
+    }
+
+    public AcademicTermId Id { get; set; }
 
     public AcademicTermNumber TermNumber { get; private set; }
 
-    public string TermName { get; private set; }
+    public string TermName => $"{TermNumber.Value.ToOrdinal()} term";
 
     public AcademicYearId AcademicYearId { get; private set; }
+
+    public AcademicTermStartDate StartDate { get; private set; }
+    public AcademicTermEndDate EndDate { get; private set; }
 
 
     public DateTimeOffset CreatedAt { get; private set; }
@@ -37,11 +48,14 @@ public class AcademicTerm : EntityBase<AcademicTerm, AcademicTermId>, IAggregate
         return this;
     }
 
-    public AcademicTerm UpdateTermName(string termName)
+    public AcademicTerm UpdateTermDates(AcademicTermStartDate startDate, AcademicTermEndDate endDate)
     {
-        if (termName == TermName) return this;
-        TermName = Guard.Against.NullOrWhiteSpace(termName);
+        if (startDate.Value >= endDate.Value)
+        {
+            throw new ArgumentException("Start date must be before end date.");
+        }
+        StartDate = startDate;
+        EndDate = endDate;
         return this;
     }
-
 }
