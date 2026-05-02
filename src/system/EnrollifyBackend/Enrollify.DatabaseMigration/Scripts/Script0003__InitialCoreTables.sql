@@ -527,7 +527,7 @@ CREATE TABLE AcademicYears
     CONSTRAINT FK_AcademicYears_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_AcademicYears_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_AcademicYears_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
-    CONSTRAINT CHK_AcademicYears_Valid CHECK (YEAR(StartDate) >= 2000 && YEAR(EndDate) >= 2000)
+    CONSTRAINT CHK_AcademicYears_Valid CHECK (YEAR(StartDate) >= 2000 AND YEAR(EndDate) >= 2000)
 );
 GO;
 
@@ -565,7 +565,7 @@ CREATE TABLE ClassSections
 	Name VARCHAR(50) NOT NULL,
 	YearLevel INT NOT NULL,
 	CourseId INT NOT NULL,
-	SemesterId INT NOT NULL,
+	AcademicTermId INT NOT NULL,
 	AdviserId INT NOT NULL,
 	StudentCapacity INT NOT NULL, -- Soft rule
 
@@ -577,7 +577,7 @@ CREATE TABLE ClassSections
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_ClassSections_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
-	CONSTRAINT FK_ClassSections_Semester FOREIGN KEY (SemesterId) REFERENCES Semesters(Id),
+	CONSTRAINT FK_ClassSections_AcademicTerm FOREIGN KEY (AcademicTermId) REFERENCES AcademicTerms(Id),
 	CONSTRAINT FK_ClassSections_Adviser FOREIGN KEY (AdviserId) REFERENCES Teachers(Id),
 	CONSTRAINT FK_ClassSections_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_ClassSections_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
@@ -593,8 +593,8 @@ CREATE NONCLUSTERED INDEX IX_ClassSections_CourseId
 ON ClassSections(CourseId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_ClassSections_SemesterId
-ON ClassSections(SemesterId);
+CREATE NONCLUSTERED INDEX IX_ClassSections_AcademicTermId
+ON ClassSections(AcademicTermId);
 GO
 
 CREATE NONCLUSTERED INDEX IX_ClassSections_AdviserId
@@ -804,7 +804,7 @@ INSERT INTO EnrollmentStatuses (Id, Code, Name, Description, DisplayOrder, Creat
 (1, 'PENDING', 'Pending', 'Awaiting approval', 1, @InitialUserId),
 (2, 'APPROVED', 'Approved', 'Ready for enrollment', 2, @InitialUserId),
 (3, 'ENROLLED', 'Enrolled', 'Currently enrolled in classes', 3, @InitialUserId),
-(4, 'COMPLETED', 'Completed', 'Semester completed', 4, @InitialUserId),
+(4, 'COMPLETED', 'Completed', 'Academic term completed', 4, @InitialUserId),
 (5, 'DROPPED', 'Dropped', 'Student dropped enrollment', 5, @InitialUserId),
 (6, 'FAILED', 'Failed', 'Did not meet requirements', 6, @InitialUserId),
 (7, 'CANCELLED', 'Cancelled', 'Enrollment cancelled by system', 7, @InitialUserId);
@@ -820,7 +820,7 @@ CREATE TABLE Enrollments
     StudentId INT NOT NULL,
     ClassSectionId INT NULL, -- optional, null for irregular students
     ClassSectionSubjectOfferingId INT NOT NULL,
-    SemesterId INT NOT NULL,
+    AcademicTermId INT NOT NULL,
     Status INT NOT NULL DEFAULT 1, -- References EnrollmentStatuses, default to PENDING
     CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
     CreatedBy INT NOT NULL,
@@ -832,7 +832,7 @@ CREATE TABLE Enrollments
     CONSTRAINT FK_Enrollments_Student FOREIGN KEY (StudentId) REFERENCES Students(Id),
     CONSTRAINT FK_Enrollments_ClassSection FOREIGN KEY (ClassSectionId) REFERENCES ClassSections(Id),
     CONSTRAINT FK_Enrollments_ClassSectionSubjectOffering FOREIGN KEY (ClassSectionSubjectOfferingId) REFERENCES ClassSectionSubjectOffering(Id),
-    CONSTRAINT FK_Enrollments_Semester FOREIGN KEY (SemesterId) REFERENCES Semesters(Id),
+    CONSTRAINT FK_Enrollments_AcademicTerm FOREIGN KEY (AcademicTermId) REFERENCES AcademicTerms(Id),
     CONSTRAINT FK_Enrollments_EnrollmentStatus FOREIGN KEY (Status) REFERENCES EnrollmentStatuses(Id),
     CONSTRAINT FK_Enrollments_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_Enrollments_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
@@ -854,8 +854,8 @@ CREATE NONCLUSTERED INDEX IX_Enrollments_ClassSectionSubjectOfferingId
 ON Enrollments(ClassSectionSubjectOfferingId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_Enrollments_SemesterId
-ON Enrollments(SemesterId);
+CREATE NONCLUSTERED INDEX IX_Enrollments_AcademicTermId
+ON Enrollments(AcademicTermId);
 GO
 
 CREATE NONCLUSTERED INDEX IX_Enrollments_Status
