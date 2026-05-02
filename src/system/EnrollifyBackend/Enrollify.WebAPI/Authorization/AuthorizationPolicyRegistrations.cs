@@ -1,3 +1,4 @@
+using Enrollify.WebAPI.Authorization.AcademicYearsAndTerms;
 using Enrollify.WebAPI.Authorization.Buildings;
 using Enrollify.WebAPI.Authorization.Colleges;
 using Enrollify.WebAPI.Authorization.Courses;
@@ -29,6 +30,7 @@ public static class AuthorizationPolicyRegistrations
         services.AddCurriculumAuthorizationPolicyHandlers();
         services.AddSubjectEquivalenceGroupAuthorizationPolicyHandlers();
         services.AddTeacherAuthorizationPolicyHandlers();
+        services.AddAcademicYearsAndTermsAuthorizationPolicyHandlers();
 
         services.AddAuthorization(options =>
         {
@@ -46,6 +48,7 @@ public static class AuthorizationPolicyRegistrations
             options.AddCurriculumAuthorizationPolicies();
             options.AddSubjectEquivalenceGroupAuthorizationPolicies();
             options.AddTeacherAuthorizationPolicies();
+            options.AddAcademicYearsAndTermsAuthorizationPolicies();
         });
 
         return services;
