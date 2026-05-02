@@ -511,13 +511,33 @@ WHERE IsActive = 1;
 
 -- ************************************
 
-CREATE TABLE Semesters
+CREATE TABLE AcademicYears
+(
+    Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    StartDate DATE NOT NULL,
+    EndDate DATE NOT NULL,
+
+    CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+    CreatedBy INT NOT NULL,
+    UpdatedAt DATETIMEOFFSET NULL,
+    UpdatedBy INT NULL,
+    DeletedAt DATETIMEOFFSET NULL,
+    DeletedBy INT NULL,
+    IsActive BIT NOT NULL DEFAULT 1,
+    CONSTRAINT UQ_AcademicYears_StartEnd UNIQUE (StartDate, EndDate),
+    CONSTRAINT FK_AcademicYears_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_AcademicYears_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_AcademicYears_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
+    CONSTRAINT CHK_AcademicYears_Valid CHECK (YEAR(EndDate) = YEAR(StartDate) + 1 AND YEAR(StartDate) >= 2000)
+);
+GO;
+
+CREATE TABLE AcademicTerms
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	Semester INT NOT NULL, -- 1 for 1st Semester, 2 for 2nd Semester
-	Name VARCHAR(50) NOT NULL,
-	Description VARCHAR(50) NOT NULL,
-	SchoolYear INT NOT NULL,
+    TermNumber INT NOT NULL,				-- 1st, 2nd, 3rd term in the academic year
+	TermName VARCHAR(50) NOT NULL,
+	AcademicYearId INT NOT NULL,
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -526,11 +546,11 @@ CREATE TABLE Semesters
 	DeletedAt DATETIMEOFFSET NULL,
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
-	CONSTRAINT FK_Semesters_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_Semesters_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_Semesters_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
-	CONSTRAINT CHK_Semesters_Semester_Valid CHECK (Semester IN (1, 2, 3)),
-	CONSTRAINT CHK_Semesters_SchoolYear_Valid CHECK (SchoolYear >= 2000)
+	CONSTRAINT FK_AcademicTerms_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_AcademicTerms_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_AcademicTerms_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_AcademicTerms_AcademicYear FOREIGN KEY (AcademicYearId) REFERENCES AcademicYears(Id),
+	CONSTRAINT CHK_AcademicTerms_TermNumber_Valid CHECK (TermNumber IN (1, 2, 3))
 );
 GO;
 
