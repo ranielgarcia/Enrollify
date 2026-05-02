@@ -10,6 +10,7 @@ using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.ValueObjects.Storage;
 using Enrollify.SharedKernel;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 
@@ -22,10 +23,11 @@ public class RegisterNewTeacherTests
     private readonly Mock<IReadRepository<Teacher>> _readRepositoryMock = new();
     private readonly Mock<IReadRepository<Subject>> _subjectReadRepositoryMock = new();
     private readonly RegisterNewTeacher.Handler _handler;
+    private readonly FakeLogger<RegisterNewTeacher.Handler> _logger;
 
     public RegisterNewTeacherTests()
     {
-        var logger = new FakeLogger<RegisterNewTeacher.Handler>(
+        _logger = new FakeLogger<RegisterNewTeacher.Handler>(
             FakeLogCollector.Create(new FakeLogCollectorOptions()));
 
         _handler = new RegisterNewTeacher.Handler(
@@ -33,26 +35,22 @@ public class RegisterNewTeacherTests
             _photoStorageMock.Object,
             _readRepositoryMock.Object,
             _subjectReadRepositoryMock.Object,
-            logger);
+            _logger);
     }
 
     [Fact]
-    public async Task Handle_NoSubjects_CreatesTeacherSuccessfully()
+    public async Task Handle_NoSubjects_ReturnsInvalidResult()
     {
         // Arrange
-        SetupSubjectRepo([]);
-        _teacherRepositoryMock
-            .Setup(r => r.Create(It.IsAny<Teacher>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success(TeacherId.From(1)));
-
         var command = new RegisterNewTeacher.Command(CreateRegistration([]), Photo: null);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        _teacherRepositoryMock.Verify(r => r.Create(It.IsAny<Teacher>(), It.IsAny<CancellationToken>()), Times.Once);
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.ToLower().Contains("subject"));
     }
 
     [Fact]
@@ -131,12 +129,13 @@ public class RegisterNewTeacherTests
     public async Task Handle_WithoutPhoto_DoesNotUploadPhoto()
     {
         // Arrange
-        SetupSubjectRepo([]);
+        var code1 = SubjectCode.From("CS101");
+        SetupSubjectRepo([new() { Id = SubjectId.From(1), Code = code1 }]);
         _teacherRepositoryMock
             .Setup(r => r.Create(It.IsAny<Teacher>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(TeacherId.From(1)));
 
-        var command = new RegisterNewTeacher.Command(CreateRegistration([]), Photo: null);
+        var command = new RegisterNewTeacher.Command(CreateRegistration([code1]), Photo: null);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -156,7 +155,8 @@ public class RegisterNewTeacherTests
         var teacherId = TeacherId.From(1);
         var reloadedTeacher = CreateTestTeacher(teacherId);
 
-        SetupSubjectRepo([]);
+        var code1 = SubjectCode.From("CS101");
+        SetupSubjectRepo([new() { Id = SubjectId.From(1), Code = code1 }]);
         _teacherRepositoryMock
             .Setup(r => r.Create(It.IsAny<Teacher>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(teacherId));
@@ -173,7 +173,7 @@ public class RegisterNewTeacherTests
             .ReturnsAsync(Result.Success(teacherId));
 
         var photo = new RegisterNewTeacher.TeacherPhoto([1, 2, 3], "image/jpeg", "photo.jpg");
-        var command = new RegisterNewTeacher.Command(CreateRegistration([]), Photo: photo);
+        var command = new RegisterNewTeacher.Command(CreateRegistration([code1]), Photo: photo);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -186,6 +186,121 @@ public class RegisterNewTeacherTests
                 It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once);
         _teacherRepositoryMock.Verify(r => r.Update(reloadedTeacher, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_NullSubjects_ReturnsInvalidResult()
+    {
+        // Arrange
+        var command = new RegisterNewTeacher.Command(
+            new TeacherForRegistration
+            {
+                FirstName = "John",
+                MiddleName = "M",
+                LastName = "Doe",
+                TeacherIdentifier = TeacherIdentifier.From("T001"),
+                Email = TeacherEmail.From("john@test.com"),
+                PhoneNumber = TeacherPhoneNumber.From("09123456789"),
+                DepartmentId = DepartmentId.From(1),
+                Subjects = null!
+            }, Photo: null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.ToLower().Contains("subject"));
+    }
+
+    [Fact]
+    public async Task Handle_NoSubjects_DoesNotCallCreateRepository()
+    {
+        // Arrange
+        var command = new RegisterNewTeacher.Command(CreateRegistration([]), Photo: null);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _teacherRepositoryMock.Verify(
+            r => r.Create(It.IsAny<Teacher>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_PhotoProvided_TeacherNotFoundAfterCreate_StillReturnsSuccess()
+    {
+        // Arrange
+        var code1 = SubjectCode.From("CS101");
+        SetupSubjectRepo([new() { Id = SubjectId.From(1), Code = code1 }]);
+        _teacherRepositoryMock
+            .Setup(r => r.Create(It.IsAny<Teacher>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(TeacherId.From(1)));
+        _readRepositoryMock
+            .Setup(r => r.GetByIdAsync(It.IsAny<TeacherId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Teacher?)null);
+
+        var photo = new RegisterNewTeacher.TeacherPhoto([1, 2, 3], "image/jpeg", "photo.jpg");
+        var command = new RegisterNewTeacher.Command(CreateRegistration([code1]), Photo: photo);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert: photo step is best-effort; the successful Create result is still returned
+        Assert.True(result.IsSuccess);
+    }
+
+    [Fact]
+    public async Task Handle_PhotoProvided_TeacherNotFoundAfterCreate_DoesNotUploadPhoto()
+    {
+        // Arrange
+        var code1 = SubjectCode.From("CS101");
+        SetupSubjectRepo([new() { Id = SubjectId.From(1), Code = code1 }]);
+        _teacherRepositoryMock
+            .Setup(r => r.Create(It.IsAny<Teacher>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(TeacherId.From(1)));
+        _readRepositoryMock
+            .Setup(r => r.GetByIdAsync(It.IsAny<TeacherId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Teacher?)null);
+
+        var photo = new RegisterNewTeacher.TeacherPhoto([1, 2, 3], "image/jpeg", "photo.jpg");
+        var command = new RegisterNewTeacher.Command(CreateRegistration([code1]), Photo: photo);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        _photoStorageMock.Verify(
+            s => s.UploadPhotoAsync(
+                It.IsAny<TeacherIdentifier>(), It.IsAny<string>(), It.IsAny<Stream>(),
+                It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_PhotoProvided_TeacherNotFoundAfterCreate_LogsError()
+    {
+        // Arrange
+        var code1 = SubjectCode.From("CS101");
+        SetupSubjectRepo([new() { Id = SubjectId.From(1), Code = code1 }]);
+        _teacherRepositoryMock
+            .Setup(r => r.Create(It.IsAny<Teacher>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(TeacherId.From(1)));
+        _readRepositoryMock
+            .Setup(r => r.GetByIdAsync(It.IsAny<TeacherId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Teacher?)null);
+
+        var photo = new RegisterNewTeacher.TeacherPhoto([1, 2, 3], "image/jpeg", "photo.jpg");
+        var command = new RegisterNewTeacher.Command(CreateRegistration([code1]), Photo: photo);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        var logs = _logger.Collector.GetSnapshot();
+        Assert.Contains(logs, l => l.Level == LogLevel.Error);
     }
 
     private void SetupSubjectRepo(List<MinimumSubjectProjection> projections)

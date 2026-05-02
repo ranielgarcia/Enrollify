@@ -44,7 +44,7 @@ public class UpdateTeacherDetailsTests
             .Setup(r => r.GetByIdAsync(It.IsAny<TeacherId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Teacher?)null);
 
-        var command = new UpdateTeacherDetails.Command(CreateUpdate(TeacherId.From(99), []), Photo: null);
+        var command = new UpdateTeacherDetails.Command(CreateUpdate(TeacherId.From(99), [SubjectCode.From("CS101")]), Photo: null);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -322,10 +322,11 @@ public class UpdateTeacherDetailsTests
         _readRepositoryMock
             .Setup(r => r.GetByIdAsync(It.IsAny<TeacherId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(teacher);
-        SetupSubjectRepo([]);
+        var code1 = SubjectCode.From("CS101");
+        SetupSubjectRepo([new() { Id = SubjectId.From(1), Code = code1 }]);
         SetupSuccessfulUpdate(TeacherId.From(1));
 
-        var command = new UpdateTeacherDetails.Command(CreateUpdate(TeacherId.From(1), []), Photo: null);
+        var command = new UpdateTeacherDetails.Command(CreateUpdate(TeacherId.From(1), [code1]), Photo: null);
 
         // Act
         await _handler.Handle(command, CancellationToken.None);
@@ -347,7 +348,8 @@ public class UpdateTeacherDetailsTests
         _readRepositoryMock
             .Setup(r => r.GetByIdAsync(It.IsAny<TeacherId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(teacher);
-        SetupSubjectRepo([]);
+        var code1 = SubjectCode.From("CS101");
+        SetupSubjectRepo([new() { Id = SubjectId.From(1), Code = code1 }]);
         SetupSuccessfulUpdate(teacherId);
         _photoStorageMock
             .Setup(s => s.UploadPhotoAsync(
@@ -356,7 +358,7 @@ public class UpdateTeacherDetailsTests
             .ReturnsAsync(FileName.From("abc_profile.jpg"));
 
         var photo = new UpdateTeacherDetails.TeacherPhoto([1, 2, 3], "image/jpeg", "photo.jpg");
-        var command = new UpdateTeacherDetails.Command(CreateUpdate(teacherId, []), Photo: photo);
+        var command = new UpdateTeacherDetails.Command(CreateUpdate(teacherId, [code1]), Photo: photo);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -368,6 +370,65 @@ public class UpdateTeacherDetailsTests
                 It.IsAny<TeacherIdentifier>(), It.IsAny<string>(), It.IsAny<Stream>(),
                 It.IsAny<string?>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_NullSubjects_ReturnsInvalidResult()
+    {
+        // Arrange
+        var command = new UpdateTeacherDetails.Command(
+            new TeacherForUpdate
+            {
+                Id = TeacherId.From(1),
+                FirstName = "John",
+                MiddleName = "M",
+                LastName = "Doe",
+                TeacherIdentifier = TeacherIdentifier.From("T001"),
+                Email = TeacherEmail.From("john@test.com"),
+                PhoneNumber = TeacherPhoneNumber.From("09123456789"),
+                DepartmentId = DepartmentId.From(1),
+                Subjects = null!
+            }, Photo: null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.ToLower().Contains("subject"));
+    }
+
+    [Fact]
+    public async Task Handle_NoSubjects_ReturnsInvalidResult()
+    {
+        // Arrange
+        var command = new UpdateTeacherDetails.Command(
+            CreateUpdate(TeacherId.From(1), []), Photo: null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.ToLower().Contains("subject"));
+    }
+
+    [Fact]
+    public async Task Handle_NoSubjects_DoesNotQueryTeacherRepository()
+    {
+        // Arrange
+        var command = new UpdateTeacherDetails.Command(
+            CreateUpdate(TeacherId.From(1), []), Photo: null);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert: subjects validation fires before the teacher lookup
+        _readRepositoryMock.Verify(
+            r => r.GetByIdAsync(It.IsAny<TeacherId>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     private void SetupSubjectRepo(List<MinimumSubjectProjection> projections)
