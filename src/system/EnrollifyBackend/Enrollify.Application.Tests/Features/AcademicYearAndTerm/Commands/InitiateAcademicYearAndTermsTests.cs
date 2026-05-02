@@ -2,6 +2,7 @@ using Ardalis.Result;
 using Ardalis.Specification;
 using Enrollify.Application.Features.AcademicYearAndTerm;
 using Enrollify.Application.Features.AcademicYearAndTerm.Commands;
+using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 using Enrollify.Application.Features.AcademicYearAndTerm.Models;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.SharedKernel;
@@ -226,20 +227,20 @@ public class InitiateAcademicYearAndTermsTests
     }
 
     [Fact]
-    public async Task Handle_ValidCommand_ReturnsSuccessWithAcademicYearId()
+    public async Task Handle_ValidCommand_ReturnsSuccessWithAcademicYearDto()
     {
         SetupNoOverlap();
-        var newId = AcademicYearId.From(42);
+        var academicYear = new AcademicYear(ValidStart, ValidEnd);
         _repositoryMock
             .Setup(r => r.Create(It.IsAny<AcademicYear>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success(newId));
+            .ReturnsAsync(Result.Success(academicYear));
 
         var command = new InitiateAcademicYearAndTerms.Command(ValidStart, ValidEnd, CreateValidTerms());
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(newId, result.Value);
+        Assert.IsType<AcademicYearDto>(result.Value);
     }
 
     [Fact]
@@ -248,7 +249,7 @@ public class InitiateAcademicYearAndTermsTests
         SetupNoOverlap();
         _repositoryMock
             .Setup(r => r.Create(It.IsAny<AcademicYear>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success(AcademicYearId.From(1)));
+            .ReturnsAsync(Result.Success(new AcademicYear(ValidStart, ValidEnd)));
 
         var command = new InitiateAcademicYearAndTerms.Command(ValidStart, ValidEnd, CreateValidTerms());
 
@@ -267,7 +268,7 @@ public class InitiateAcademicYearAndTermsTests
         _repositoryMock
             .Setup(r => r.Create(It.IsAny<AcademicYear>(), It.IsAny<CancellationToken>()))
             .Callback<AcademicYear, CancellationToken>((ay, _) => capturedYear = ay)
-            .ReturnsAsync(Result.Success(AcademicYearId.From(1)));
+            .ReturnsAsync(Result.Success(new AcademicYear(ValidStart, ValidEnd)));
 
         var command = new InitiateAcademicYearAndTerms.Command(ValidStart, ValidEnd, CreateValidTerms());
 
@@ -283,7 +284,7 @@ public class InitiateAcademicYearAndTermsTests
         SetupNoOverlap();
         _repositoryMock
             .Setup(r => r.Create(It.IsAny<AcademicYear>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success(AcademicYearId.From(1)));
+            .ReturnsAsync(Result.Success(new AcademicYear(ValidStart, ValidEnd)));
 
         var command = new InitiateAcademicYearAndTerms.Command(ValidStart, ValidEnd, CreateValidTerms());
 

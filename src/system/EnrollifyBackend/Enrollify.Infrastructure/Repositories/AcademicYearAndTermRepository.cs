@@ -18,14 +18,14 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
     }
 
 
-    public async Task<Result<AcademicYearId>> Create(AcademicYear academicYear, CancellationToken cancellationToken)
+    public async Task<Result<AcademicYear>> Create(AcademicYear academicYear, CancellationToken cancellationToken)
     {
         try
         {
-            await _dbContext.AcademicYears.AddAsync(academicYear, cancellationToken);
+            var newlyAddedAcademicYear = _dbContext.AcademicYears.Add(academicYear);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            return Result.Success(academicYear.Id);
+            return Result.Success(newlyAddedAcademicYear.Entity);
         }
         catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
         {
@@ -39,14 +39,14 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
         }
     }
 
-    public async Task<Result<AcademicYearId>> Update(AcademicYear academicYear, CancellationToken cancellationToken)
+    public async Task<Result<AcademicYear>> Update(AcademicYear academicYear, CancellationToken cancellationToken)
     {
         try
         {
             _dbContext.Update(academicYear);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            return Result.Success(academicYear.Id);
+            return Result.Success(academicYear);
         }
         catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
         {

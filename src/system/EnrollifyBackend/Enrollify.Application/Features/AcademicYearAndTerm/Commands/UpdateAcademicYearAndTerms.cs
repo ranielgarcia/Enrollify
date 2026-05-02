@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Ardalis.Result;
+using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 using Enrollify.Application.Features.AcademicYearAndTerm.Models;
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Core;
@@ -17,9 +18,9 @@ public static class UpdateAcademicYearAndTerms
         AcademicYearId id,
         AcademicYearStartDate academicYearStartDate,
         AcademicYearEndDate academicYearEndDate,
-        InitiateAcademicTerm[] academicTerms) : ICommand<Result<AcademicYearId>>;
+        InitiateAcademicTerm[] academicTerms) : ICommand<Result<AcademicYearDto>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<AcademicYearId>>
+    public sealed class Handler : ICommandHandler<Command, Result<AcademicYearDto>>
     {
         private readonly IAcademicYearAndTermRepository _academicYearAndTermRepository;
         private readonly IReadRepository<AcademicYear> _readRepository;
@@ -35,16 +36,16 @@ public static class UpdateAcademicYearAndTerms
             _logger = logger;
         }
 
-        public async ValueTask<Result<AcademicYearId>> Handle(Command command, CancellationToken cancellationToken)
+        public async ValueTask<Result<AcademicYearDto>> Handle(Command command, CancellationToken cancellationToken)
         {
             var expectedTermCount = new AcademicSettings().AcademicSystem;
 
             if (command.academicTerms is null || command.academicTerms.Length == 0)
-                return Result<AcademicYearId>.Invalid(new ValidationError("At least one academic term must be provided."));
+                return Result<AcademicYearDto>.Invalid(new ValidationError("At least one academic term must be provided."));
 
             if (command.academicTerms.Length != expectedTermCount)
             {
-                return Result<AcademicYearId>.Invalid(new ValidationError(
+                return Result<AcademicYearDto>.Invalid(new ValidationError(
                     $"The academic system requires exactly {expectedTermCount} term(s), but {command.academicTerms.Length} were provided."));
             }
 
@@ -75,17 +76,16 @@ public static class UpdateAcademicYearAndTerms
                 foreach (var term in command.academicTerms)
                     existing.AddTerm(term.TermNumber, term.StartDate, term.EndDate);
 
-
                 var result = await _academicYearAndTermRepository.Update(existing, cancellationToken);
-                return result;
+                return AcademicYearDto.FromEntity(result.Value);
             }
             catch (InvalidAcademicYearRangeException ex)
             {
-                return Result<AcademicYearId>.Invalid(new ValidationError(ex.Message));
+                return Result<AcademicYearDto>.Invalid(new ValidationError(ex.Message));
             }
             catch (InvalidAcademicTermException ex)
             {
-                return Result<AcademicYearId>.Invalid(new ValidationError(ex.Message));
+                return Result<AcademicYearDto>.Invalid(new ValidationError(ex.Message));
             }
         }
     }
