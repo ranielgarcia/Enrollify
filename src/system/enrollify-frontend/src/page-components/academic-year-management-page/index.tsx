@@ -1,5 +1,6 @@
 import {
   getActiveAcademicYearOptions,
+  getPreviousAcademicYearsOptions,
 } from "@/api/collections/academic-year-collection";
 import type { AcademicYear } from "@/api/models/academic-year";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
@@ -30,6 +31,10 @@ export default function AcademicYearManagementPage() {
   const { data: activeYear, isLoading } = useQuery(
     getActiveAcademicYearOptions(),
   );
+
+  const { data: previousYears } = useQuery(getPreviousAcademicYearsOptions());
+
+  console.log(previousYears);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -87,10 +92,7 @@ export default function AcademicYearManagementPage() {
         </TabsList>
 
         {/* Tab 1 — Active Academic Year */}
-        <TabsContent
-          value="active"
-          className="flex min-h-0 flex-col space-y-4"
-        >
+        <TabsContent value="active" className="flex min-h-0 flex-col space-y-4">
           <ActiveAcademicYearTab
             activeYear={activeYear ?? null}
             onEdit={handleEditActiveYear}
@@ -98,10 +100,7 @@ export default function AcademicYearManagementPage() {
         </TabsContent>
 
         {/* Tab 2 — Create / Edit Form */}
-        <TabsContent
-          value="create"
-          className="flex min-h-0 flex-col space-y-4"
-        >
+        <TabsContent value="create" className="flex min-h-0 flex-col space-y-4">
           <CreateAcademicYearForm
             key={entityToEdit?.id ?? "new"}
             yearToEdit={entityToEdit}
@@ -116,7 +115,7 @@ export default function AcademicYearManagementPage() {
           className="flex min-h-0 flex-col space-y-4"
         >
           <PreviousAcademicYearsTab
-            previousYears={[]}
+            previousYears={previousYears ?? []}
             onEdit={handleEditYear}
             onDelete={handleDelete}
           />

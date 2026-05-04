@@ -1,6 +1,4 @@
-import createAppQueryOptions, {
-  createAppSuspenseQueryOptions,
-} from "@/hooks/create-query-options";
+import createAppQueryOptions from "@/hooks/create-query-options";
 import createMutationOptions from "@/hooks/create-mutation-options";
 import {
   AcademicYearSchema,
@@ -11,6 +9,7 @@ import { toast } from "sonner";
 const queryKeys = {
   base: () => ["academic-years"],
   active: () => [...queryKeys.base(), "active"],
+  previous: () => [...queryKeys.base(), "previous"],
   create: () => [...queryKeys.base(), "create"],
   update: (id: number) => [...queryKeys.base(), "update", id],
   delete: (id: number) => [...queryKeys.base(), "delete", id],
@@ -33,10 +32,10 @@ export const getPreviousAcademicYearsOptions = () =>
   createAppQueryOptions({
     path: "/api/academic-years/previous",
     options: {
-      queryKey: queryKeys.active(),
+      queryKey: queryKeys.previous(),
       staleTime: 1000 * 60 * 5,
       select: (data): AcademicYear[] => {
-        if (!data || (typeof data === "string" && data === "")) return [];
+        console.log(data);
         return data.map((ay) => AcademicYearSchema.parse(ay));
       },
     },

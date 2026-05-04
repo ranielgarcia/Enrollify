@@ -5,7 +5,7 @@ namespace Enrollify.Core.Aggregates.AcademicYearAggregate;
 [ValueObject<int>]
 public readonly partial struct Year
 {
-    public const int MinimumYear = 2020;
+    public const int MinimumYear = 2000;
     private static Validation Validate(int year)
     {
         if (year < MinimumYear)

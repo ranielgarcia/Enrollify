@@ -9,7 +9,7 @@ public class ListPreviousAcademicYearsSpec : Specification<AcademicYear>
     {
         var today = DateTime.UtcNow.Date;
         Query.Include(ay => ay.AcademicTerms.Where(at => at.IsActive))
-             .Where(ay => ay.EndDate.Value < today)
-             .OrderByDescending(ay => ay.StartDate.Value);
+             .Where(ay => (DateTime)ay.EndDate < today)
+             .OrderByDescending(ay => (DateTime)ay.StartDate);
     }
 }
