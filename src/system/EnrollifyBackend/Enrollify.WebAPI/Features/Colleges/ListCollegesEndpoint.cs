@@ -15,9 +15,9 @@ public class ListCollegesEndpoint : EndpointWithoutRequest<List<CollegeDto>>
         _mediator = mediator;
     }
 
-    public override async Task HandleAsync(CancellationToken c)
+    public override async Task HandleAsync(CancellationToken ct)
     {
-        var result = await _mediator.Send(new ListCollegesQuery(), c);
+        var result = await _mediator.Send(new ListCollegesQuery(), ct);
         await Send.OkAsync(result.Value);
     }
 }

@@ -70,11 +70,8 @@ public static class UpdateAcademicYearAndTerms
 
                 existing.UpdateStartAndEndYear(command.academicYearStartDate, command.academicYearEndDate);
 
-                foreach (var term in existing.AcademicTerms.ToList())
-                    existing.RemoveTerm(term.Id);
-
                 foreach (var term in command.academicTerms)
-                    existing.AddTerm(term.TermNumber, term.StartDate, term.EndDate);
+                    existing.UpdateTerm(term.TermNumber, term.StartDate, term.EndDate);
 
                 var result = await _academicYearAndTermRepository.Update(existing, cancellationToken);
                 return AcademicYearDto.FromEntity(result.Value);

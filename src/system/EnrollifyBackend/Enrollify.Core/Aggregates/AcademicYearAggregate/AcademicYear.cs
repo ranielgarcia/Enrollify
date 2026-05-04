@@ -76,12 +76,12 @@ public class AcademicYear : EntityBase<AcademicYear, AcademicYearId>, IAggregate
         return this;
     }
 
-    public AcademicYear UpdateTerm(AcademicTermId termId, AcademicTermStartDate startDate, AcademicTermEndDate endDate)
+    public AcademicYear UpdateTerm(AcademicTermNumber termNumber, AcademicTermStartDate startDate, AcademicTermEndDate endDate)
     {
-        var term = _academicTerms.FirstOrDefault(t => t.Id == termId);
+        var term = _academicTerms.FirstOrDefault(t => t.TermNumber == termNumber);
         if (term == null)
         {
-            throw new InvalidAcademicTermException($"No term found with ID {termId.Value} in this academic year.");
+            throw new InvalidAcademicTermException($"No term found with number {termNumber.Value} in this academic year.");
         }
 
         if (startDate.Value < StartDate.Value || endDate.Value > EndDate.Value)
@@ -89,7 +89,7 @@ public class AcademicYear : EntityBase<AcademicYear, AcademicYearId>, IAggregate
             throw new InvalidAcademicTermException($"Term dates must fall within the academic year range ({AcademicYearTitle}).");
         }
 
-        foreach (var other in _academicTerms.Where(t => t.Id != termId))
+        foreach (var other in _academicTerms.Where(t => t.TermNumber != termNumber))
         {
             if (startDate.Value < other.EndDate.Value && endDate.Value > other.StartDate.Value)
             {
@@ -102,15 +102,14 @@ public class AcademicYear : EntityBase<AcademicYear, AcademicYearId>, IAggregate
     }
 
 
-    public AcademicYear RemoveTerm(AcademicTermId termId)
-    {
-        var term = _academicTerms.FirstOrDefault(t => t.Id == termId);
-        if (term == null)
-        {
-            throw new InvalidAcademicTermException($"No term found with ID {termId.Value} in this academic year.");
-        }
-        _academicTerms.Remove(term);
-        return this;
-    }
-
+    //public AcademicYear RemoveTerm(AcademicTermNumber termNumber)
+    //{
+    //    var term = _academicTerms.FirstOrDefault(t => t.TermNumber == termNumber);
+    //    if (term == null)
+    //    {
+    //        throw new InvalidAcademicTermException($"No term found with number {termNumber.Value} in this academic year.");
+    //    }
+    //    _academicTerms.Remove(term);
+    //    return this;
+    //}
 }

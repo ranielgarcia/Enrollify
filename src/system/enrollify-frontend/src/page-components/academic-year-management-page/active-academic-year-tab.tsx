@@ -1,28 +1,25 @@
 import type { AcademicYear } from "@/api/models/academic-year";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { CalendarDays, Edit2, Clock } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { formatDate } from "@/lib/date-utils";
 
 interface ActiveAcademicYearTabProps {
   activeYear: AcademicYear | null;
   onEdit: () => void;
 }
 
-function formatDate(dateStr?: string | null): string {
-  if (!dateStr) return "—";
-  try {
-    return format(parseISO(dateStr), "MMMM d, yyyy");
-  } catch {
-    return dateStr;
-  }
+function DateField({ label, value }: { label: string; value?: string | null }) {
+  return (
+    <div className="space-y-1">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        {label}
+      </p>
+      <p className="text-sm font-medium">{formatDate(value)}</p>
+    </div>
+  );
 }
 
 export function ActiveAcademicYearTab({
@@ -46,9 +43,12 @@ export function ActiveAcademicYearTab({
     );
   }
 
+  const sortedTerms = activeYear.academicTerms
+    ?.slice()
+    .sort((a, b) => (a.termNumber ?? 0) - (b.termNumber ?? 0));
+
   return (
     <div className="space-y-6 max-w-3xl">
-      {/* Academic Year Header Card */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
@@ -79,71 +79,43 @@ export function ActiveAcademicYearTab({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Start Date
-              </p>
-              <p className="text-sm font-medium">
-                {formatDate(activeYear.startDate)}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                End Date
-              </p>
-              <p className="text-sm font-medium">
-                {formatDate(activeYear.endDate)}
-              </p>
-            </div>
+            <DateField label="Start Date" value={activeYear.startDate} />
+            <DateField label="End Date" value={activeYear.endDate} />
           </div>
         </CardContent>
       </Card>
 
-      {/* Academic Terms */}
-      {activeYear.academicTerms && activeYear.academicTerms.length > 0 && (
+      {sortedTerms && sortedTerms.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
             <Clock className="size-4" />
             Academic Terms
           </h3>
           <div className="grid gap-3">
-            {activeYear.academicTerms
-              .slice()
-              .sort((a, b) => (a.termNumber ?? 0) - (b.termNumber ?? 0))
-              .map((term, idx) => (
-                <Card
-                  key={term.id ?? idx}
-                  className="border-l-4 border-l-primary/30"
-                >
-                  <CardContent className="pt-4 pb-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge variant="secondary" className="text-xs font-mono">
-                        Term {term.termNumber}
-                      </Badge>
-                      {term.termName && (
-                        <span className="text-sm font-medium">
-                          {term.termName}
-                        </span>
-                      )}
-                    </div>
-                    <Separator className="mb-3" />
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                          Start Date
-                        </p>
-                        <p className="text-sm">{formatDate(term.startDate)}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                          End Date
-                        </p>
-                        <p className="text-sm">{formatDate(term.endDate)}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            {sortedTerms.map((term, idx) => (
+              <Card
+                key={term.id ?? idx}
+                className="border-l-4 border-l-primary/30"
+              >
+                <CardContent className="pt-1 pb-1">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge variant="secondary" className="text-xs font-mono">
+                      Term {term.termNumber}
+                    </Badge>
+                    {term.termName && (
+                      <span className="text-sm font-medium">
+                        {term.termName}
+                      </span>
+                    )}
+                  </div>
+                  <Separator className="mb-3" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <DateField label="Start Date" value={term.startDate} />
+                    <DateField label="End Date" value={term.endDate} />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       )}

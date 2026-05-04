@@ -29,22 +29,35 @@ export const getActiveAcademicYearOptions = () =>
     },
   });
 
-export const getActiveAcademicYearSuspenseOptions = () =>
-  createAppSuspenseQueryOptions({
-    path: "/api/academic-years/active",
+export const getPreviousAcademicYearsOptions = () =>
+  createAppQueryOptions({
+    path: "/api/academic-years/previous",
     options: {
       queryKey: queryKeys.active(),
       staleTime: 1000 * 60 * 5,
-      select: (data): AcademicYear | null => {
-        if (!data || (typeof data === "string" && data === "")) return null;
-        try {
-          return AcademicYearSchema.parse(data);
-        } catch {
-          return null;
-        }
+      select: (data): AcademicYear[] => {
+        if (!data || (typeof data === "string" && data === "")) return [];
+        return data.map((ay) => AcademicYearSchema.parse(ay));
       },
     },
   });
+
+// export const getActiveAcademicYearSuspenseOptions = () =>
+//   createAppSuspenseQueryOptions({
+//     path: "/api/academic-years/active",
+//     options: {
+//       queryKey: queryKeys.active(),
+//       staleTime: 1000 * 60 * 5,
+//       select: (data): AcademicYear | null => {
+//         if (!data || (typeof data === "string" && data === "")) return null;
+//         try {
+//           return AcademicYearSchema.parse(data);
+//         } catch {
+//           return null;
+//         }
+//       },
+//     },
+//   });
 
 export const createAcademicYearOptions = () =>
   createMutationOptions({

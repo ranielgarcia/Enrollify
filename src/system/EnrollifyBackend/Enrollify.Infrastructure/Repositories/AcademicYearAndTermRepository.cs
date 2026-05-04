@@ -79,7 +79,7 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
     {
         var today = DateTime.UtcNow.Date;
         return await _dbContext.AcademicYears
-            .Include(ay => ay.AcademicTerms)
+            .Include(ay => ay.AcademicTerms.Where(at => at.IsActive))
             .FirstOrDefaultAsync(ay => (DateTime)ay.StartDate <= today && (DateTime)ay.EndDate >= today, cancellation);
     }
 
