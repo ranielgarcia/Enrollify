@@ -12,7 +12,6 @@ import { CalendarDays, CalendarPlus, History } from "lucide-react";
 import { useState } from "react";
 import { ActiveAcademicYearTab } from "./active-academic-year-tab";
 import { CreateAcademicYearForm } from "./create-academic-year-form";
-import { DeleteAcademicYearAlertDialog } from "./delete-academic-year-alert-dialog";
 import { PreviousAcademicYearsTab } from "./previous-academic-years-tab";
 
 export default function AcademicYearManagementPage() {
@@ -20,13 +19,7 @@ export default function AcademicYearManagementPage() {
     () => sessionStorage.getItem("academic-year-tab") ?? "active",
   );
 
-  const {
-    entityToEdit,
-    entityToDelete,
-    handleEdit,
-    handleDelete,
-    handleDeleteDialogOpenChange,
-  } = useCrudState<AcademicYear>();
+  const { entityToEdit, handleEdit } = useCrudState<AcademicYear>();
 
   const { data: activeYear, isLoading } = useQuery(
     getActiveAcademicYearOptions(),
@@ -47,12 +40,6 @@ export default function AcademicYearManagementPage() {
     handleTabChange("create");
   };
 
-  /** Called from Previous Years table edit action */
-  const handleEditYear = (year: AcademicYear) => {
-    handleEdit(year);
-    handleTabChange("create");
-  };
-
   /** Called after successful form submission */
   const handleFormSuccess = () => {
     handleTabChange("active");
@@ -61,6 +48,7 @@ export default function AcademicYearManagementPage() {
   /** Cancel editing — clear state and go to active tab */
   const handleFormCancel = () => {
     handleTabChange("active");
+    handleEdit(undefined);
   };
 
   return (
@@ -114,19 +102,9 @@ export default function AcademicYearManagementPage() {
           value="previous"
           className="flex min-h-0 flex-col space-y-4"
         >
-          <PreviousAcademicYearsTab
-            previousYears={previousYears ?? []}
-            onEdit={handleEditYear}
-            onDelete={handleDelete}
-          />
+          <PreviousAcademicYearsTab previousYears={previousYears ?? []} />
         </TabsContent>
       </Tabs>
-
-      <DeleteAcademicYearAlertDialog
-        isOpen={!!entityToDelete}
-        onOpenChange={handleDeleteDialogOpenChange}
-        yearToDelete={entityToDelete}
-      />
     </ManagementPageLayout>
   );
 }

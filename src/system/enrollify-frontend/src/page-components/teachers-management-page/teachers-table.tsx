@@ -14,6 +14,7 @@ import { Edit2 } from "lucide-react";
 import { useMemo } from "react";
 import { TeachersTableActionBar } from "./teachers-table-action-bar";
 import { Badge } from "@/components/ui/badge";
+import { DataTableColumnActionsHeader } from "@/components/data-table/data-table-column-action-header";
 
 interface TeachersTableProps {
   pagedTeachers: PagedResult<Teacher>;
@@ -189,7 +190,7 @@ export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
       ),
       columnHelper.display({
         id: "actions",
-        header: "Actions",
+        header: () => <DataTableColumnActionsHeader label="Actions" />,
         size: 10,
         enableHiding: false,
         cell: (info) => {

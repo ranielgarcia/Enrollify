@@ -9,6 +9,7 @@ import type { College } from "@/api/models/college";
 import { useMemo } from "react";
 import { truncateText } from "@/lib/text-utils";
 import { useTablePermissions } from "@/hooks/use-table-permissions";
+import { DataTableColumnActionsHeader } from "@/components/data-table/data-table-column-action-header";
 
 interface CollegesTableProps {
   colleges?: College[];
@@ -112,7 +113,7 @@ export function CollegesTable({
       ),
       columnHelper.display({
         id: "actions",
-        header: "Actions",
+        header: () => <DataTableColumnActionsHeader label="Actions" />,
         enableHiding: false,
         cell: (info) => {
           const item = info.row.original;

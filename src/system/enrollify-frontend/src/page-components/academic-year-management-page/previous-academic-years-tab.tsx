@@ -1,51 +1,51 @@
 import type { AcademicYear } from "@/api/models/academic-year";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { CalendarDays, Edit2, Trash2 } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { CalendarDays, ArrowRight } from "lucide-react";
+import { formatDate } from "@/lib/date-utils";
+import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 
 interface PreviousAcademicYearsTabProps {
   previousYears: AcademicYear[];
-  onEdit: (year: AcademicYear) => void;
-  onDelete: (year: AcademicYear) => void;
 }
 
-function formatDate(dateStr?: string | null): string {
-  if (!dateStr) return "—";
-  try {
-    return format(parseISO(dateStr), "MMM d, yyyy");
-  } catch {
-    return dateStr;
-  }
-}
-
-/** Derives max term count across all years to build dynamic columns */
-function getMaxTermCount(years: AcademicYear[]): number {
-  return Math.max(0, ...years.map((y) => y.academicTerms?.length ?? 0));
+function DateRange({
+  start,
+  end,
+  size = "md",
+}: {
+  start?: string | null;
+  end?: string | null;
+  size?: "sm" | "md";
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-2 text-muted-foreground",
+        size === "sm" ? "text-xs" : "text-sm",
+      )}
+    >
+      <span className="font-medium text-foreground">{formatDate(start)}</span>
+      <ArrowRight className={cn(size === "sm" ? "size-3" : "size-3.5")} />
+      <span className="font-medium text-foreground">{formatDate(end)}</span>
+    </div>
+  );
 }
 
 export function PreviousAcademicYearsTab({
   previousYears,
-  onEdit,
-  onDelete,
 }: PreviousAcademicYearsTabProps) {
   if (previousYears.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-          <CalendarDays className="h-8 w-8 text-muted-foreground" />
+      <div className="flex flex-col items-center justify-center py-24 gap-5 text-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/60 border border-dashed">
+          <CalendarDays className="h-9 w-9 text-muted-foreground/60" />
         </div>
-        <div>
-          <h3 className="text-lg font-semibold">No Previous Academic Years</h3>
-          <p className="text-sm text-muted-foreground mt-1">
+        <div className="space-y-1.5">
+          <h3 className="text-base font-semibold tracking-tight">
+            No Previous Academic Years
+          </h3>
+          <p className="text-sm text-muted-foreground max-w-xs">
             Previous academic years will appear here once they become inactive.
           </p>
         </div>
@@ -53,131 +53,81 @@ export function PreviousAcademicYearsTab({
     );
   }
 
-  const maxTerms = getMaxTermCount(previousYears);
-  const termIndices = Array.from({ length: maxTerms }, (_, i) => i);
-
   return (
-    <div className="rounded-md border overflow-x-auto">
-      <Table>
-        <TableHeader>
-          {/* Top header row */}
-          <TableRow>
-            <TableHead rowSpan={2} className="border-r align-middle min-w-[160px]">
-              Academic Year
-            </TableHead>
-            <TableHead rowSpan={2} className="border-r align-middle min-w-[130px]">
-              Start Date
-            </TableHead>
-            <TableHead rowSpan={2} className="border-r align-middle min-w-[130px]">
-              End Date
-            </TableHead>
-            {termIndices.map((i) => (
-              <TableHead
-                key={i}
-                colSpan={3}
-                className="text-center border-r border-l"
-              >
-                Term {i + 1}
-              </TableHead>
-            ))}
-            <TableHead rowSpan={2} className="align-middle text-right min-w-[100px]">
-              Actions
-            </TableHead>
-          </TableRow>
-          {/* Second header row — term sub-columns */}
-          {maxTerms > 0 && (
-            <TableRow>
-              {termIndices.map((i) => (
-                <>
-                  <TableHead key={`${i}-name`} className="text-xs min-w-[80px]">
-                    Name
-                  </TableHead>
-                  <TableHead key={`${i}-start`} className="text-xs min-w-[110px]">
-                    Start
-                  </TableHead>
-                  <TableHead key={`${i}-end`} className="text-xs border-r min-w-[110px]">
-                    End
-                  </TableHead>
-                </>
-              ))}
-            </TableRow>
-          )}
-        </TableHeader>
-        <TableBody>
-          {previousYears.map((year) => {
-            const sortedTerms = (year.academicTerms ?? [])
-              .slice()
-              .sort((a, b) => (a.termNumber ?? 0) - (b.termNumber ?? 0));
+    <div className="space-y-5 max-w-2xl">
+      {previousYears.map((year) => {
+        const sortedTerms = (year.academicTerms ?? [])
+          .slice()
+          .sort((a, b) => (a.termNumber ?? 0) - (b.termNumber ?? 0));
 
-            return (
-              <TableRow key={year.id}>
-                {/* Academic Year Name */}
-                <TableCell className="border-r font-medium">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="font-mono text-xs">
-                      {year.academicYearTitle ??
-                        `AY ${year.startYear}–${year.endYear}`}
-                    </Badge>
+        const title =
+          year.academicYearTitle ?? `AY ${year.startYear}–${year.endYear}`;
+
+        return (
+          <>
+            <div key={year.id} className="space-y-3">
+              {/* Hero Card — inactive style */}
+              <div className="relative overflow-hidden rounded-xl border bg-linear-to-br from-muted/30 via-background to-background p-6 shadow-sm">
+                <div className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-muted/40 blur-2xl" />
+
+                <div className="relative flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-muted/60 ring-1 ring-border">
+                      <CalendarDays className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="text-xl font-bold tracking-tight">
+                          {title}
+                        </h2>
+                        <Badge className="text-[11px] px-2 py-0.5 font-semibold bg-muted text-muted-foreground border hover:bg-muted">
+                          ● Inactive
+                        </Badge>
+                      </div>
+                      <DateRange start={year.startDate} end={year.endDate} />
+                    </div>
                   </div>
-                </TableCell>
+                </div>
+              </div>
 
-                {/* Actual Start Date */}
-                <TableCell className="border-r text-sm">
-                  {formatDate(year.startDate)}
-                </TableCell>
+              {/* Terms */}
+              {sortedTerms.length > 0 && (
+                <div className="space-y-3 pl-4">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground px-0.5">
+                    Academic Terms
+                  </p>
 
-                {/* Actual End Date */}
-                <TableCell className="border-r text-sm">
-                  {formatDate(year.endDate)}
-                </TableCell>
-
-                {/* Term columns */}
-                {termIndices.map((i) => {
-                  const term = sortedTerms[i];
-                  return (
-                    <>
-                      <TableCell key={`${year.id}-${i}-name`} className="text-sm">
-                        {term?.termName ?? "—"}
-                      </TableCell>
-                      <TableCell key={`${year.id}-${i}-start`} className="text-sm">
-                        {formatDate(term?.startDate)}
-                      </TableCell>
-                      <TableCell
-                        key={`${year.id}-${i}-end`}
-                        className="text-sm border-r"
+                  <div className="grid gap-2">
+                    {sortedTerms.map((term, idx) => (
+                      <div
+                        key={term.id ?? idx}
+                        className="group flex items-center justify-between rounded-lg border bg-card px-4 py-3 transition-colors hover:bg-accent/40"
                       >
-                        {formatDate(term?.endDate)}
-                      </TableCell>
-                    </>
-                  );
-                })}
-
-                {/* Actions */}
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onEdit(year)}
-                      className="hover:bg-blue-500/10 text-blue-600 hover:text-blue-700"
-                    >
-                      <Edit2 className="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDelete(year)}
-                      className="hover:bg-destructive/10 text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-bold text-primary">
+                            {term.termNumber}
+                          </span>
+                          <div className="space-y-0.5">
+                            <p className="text-sm font-medium leading-none">
+                              {term.termName ?? `Term ${term.termNumber}`}
+                            </p>
+                            <DateRange
+                              start={term.startDate}
+                              end={term.endDate}
+                              size="sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                </div>
+              )}
+            </div>
+            <Separator />
+          </>
+        );
+      })}
     </div>
   );
 }

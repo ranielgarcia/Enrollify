@@ -1,5 +1,6 @@
 import type { Curriculum } from "@/api/models/curriculum";
 import { DataTable } from "@/components/data-table/data-table";
+import { DataTableColumnActionsHeader } from "@/components/data-table/data-table-column-action-header";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { Button } from "@/components/ui/button";
@@ -129,7 +130,7 @@ export function CurriculumsTable({
       ),
       columnHelper.display({
         id: "actions",
-        header: "Actions",
+        header: () => <DataTableColumnActionsHeader label="Actions" />,
         enableHiding: false,
         cell: (info) => {
           const item = info.row.original;
