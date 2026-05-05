@@ -1,15 +1,16 @@
 using Ardalis.Result;
-using Enrollify.Application.Features.AcademicYearAndTerm;
 using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 using Enrollify.Application.Features.AcademicYearAndTerm.Queries;
+using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
+using Enrollify.SharedKernel;
 using Moq;
 
 namespace Enrollify.Application.Tests.Features.AcademicYearAndTerm.Queries;
 
 public class GetActiveAcademicYearQueryTests
 {
-    private readonly Mock<IAcademicYearAndTermRepository> _repositoryMock = new();
+    private readonly Mock<IReadRepository<AcademicYear>> _readRepositoryMock = new();
     private readonly GetActiveAcademicYearQueryHandler _handler;
 
     private static readonly AcademicYearStartDate ValidStart =
@@ -19,14 +20,14 @@ public class GetActiveAcademicYearQueryTests
 
     public GetActiveAcademicYearQueryTests()
     {
-        _handler = new GetActiveAcademicYearQueryHandler(_repositoryMock.Object);
+        _handler = new GetActiveAcademicYearQueryHandler(_readRepositoryMock.Object);
     }
 
     [Fact]
     public async Task Handle_NoActiveAcademicYear_ReturnsNotFoundResult()
     {
-        _repositoryMock
-            .Setup(r => r.GetActiveAcademicYearAsync(It.IsAny<CancellationToken>()))
+        _readRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<GetActiveAcademicYearSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((AcademicYear?)null);
 
         var result = await _handler.Handle(new GetActiveAcademicYearQuery(), CancellationToken.None);
@@ -38,8 +39,8 @@ public class GetActiveAcademicYearQueryTests
     [Fact]
     public async Task Handle_ActiveAcademicYearExists_ReturnsSuccessResult()
     {
-        _repositoryMock
-            .Setup(r => r.GetActiveAcademicYearAsync(It.IsAny<CancellationToken>()))
+        _readRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<GetActiveAcademicYearSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new AcademicYear(ValidStart, ValidEnd));
 
         var result = await _handler.Handle(new GetActiveAcademicYearQuery(), CancellationToken.None);
@@ -51,8 +52,8 @@ public class GetActiveAcademicYearQueryTests
     [Fact]
     public async Task Handle_ActiveAcademicYearExists_ReturnsMappedDtoWithCorrectDates()
     {
-        _repositoryMock
-            .Setup(r => r.GetActiveAcademicYearAsync(It.IsAny<CancellationToken>()))
+        _readRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<GetActiveAcademicYearSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new AcademicYear(ValidStart, ValidEnd));
 
         var result = await _handler.Handle(new GetActiveAcademicYearQuery(), CancellationToken.None);
@@ -64,8 +65,8 @@ public class GetActiveAcademicYearQueryTests
     [Fact]
     public async Task Handle_ActiveAcademicYearExists_ReturnsMappedDtoWithCorrectYears()
     {
-        _repositoryMock
-            .Setup(r => r.GetActiveAcademicYearAsync(It.IsAny<CancellationToken>()))
+        _readRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<GetActiveAcademicYearSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new AcademicYear(ValidStart, ValidEnd));
 
         var result = await _handler.Handle(new GetActiveAcademicYearQuery(), CancellationToken.None);
@@ -77,8 +78,8 @@ public class GetActiveAcademicYearQueryTests
     [Fact]
     public async Task Handle_ActiveAcademicYearExists_ReturnsMappedDtoWithCorrectTitle()
     {
-        _repositoryMock
-            .Setup(r => r.GetActiveAcademicYearAsync(It.IsAny<CancellationToken>()))
+        _readRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<GetActiveAcademicYearSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new AcademicYear(ValidStart, ValidEnd));
 
         var result = await _handler.Handle(new GetActiveAcademicYearQuery(), CancellationToken.None);
@@ -89,8 +90,8 @@ public class GetActiveAcademicYearQueryTests
     [Fact]
     public async Task Handle_ActiveAcademicYearWithNoTerms_ReturnsDtoWithEmptyTermsArray()
     {
-        _repositoryMock
-            .Setup(r => r.GetActiveAcademicYearAsync(It.IsAny<CancellationToken>()))
+        _readRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<GetActiveAcademicYearSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new AcademicYear(ValidStart, ValidEnd));
 
         var result = await _handler.Handle(new GetActiveAcademicYearQuery(), CancellationToken.None);
@@ -115,8 +116,8 @@ public class GetActiveAcademicYearQueryTests
             AcademicTermStartDate.From(new DateTime(2025, 2, 1)),
             AcademicTermEndDate.From(new DateTime(2025, 5, 31)));
 
-        _repositoryMock
-            .Setup(r => r.GetActiveAcademicYearAsync(It.IsAny<CancellationToken>()))
+        _readRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<GetActiveAcademicYearSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(year);
 
         var result = await _handler.Handle(new GetActiveAcademicYearQuery(), CancellationToken.None);
@@ -141,8 +142,8 @@ public class GetActiveAcademicYearQueryTests
             AcademicTermStartDate.From(new DateTime(2025, 2, 1)),
             AcademicTermEndDate.From(new DateTime(2025, 5, 31)));
 
-        _repositoryMock
-            .Setup(r => r.GetActiveAcademicYearAsync(It.IsAny<CancellationToken>()))
+        _readRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<GetActiveAcademicYearSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(year);
 
         var result = await _handler.Handle(new GetActiveAcademicYearQuery(), CancellationToken.None);
@@ -156,8 +157,8 @@ public class GetActiveAcademicYearQueryTests
     [Fact]
     public async Task Handle_ActiveAcademicYearExists_ReturnsAcademicYearDtoType()
     {
-        _repositoryMock
-            .Setup(r => r.GetActiveAcademicYearAsync(It.IsAny<CancellationToken>()))
+        _readRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<GetActiveAcademicYearSpec>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new AcademicYear(ValidStart, ValidEnd));
 
         var result = await _handler.Handle(new GetActiveAcademicYearQuery(), CancellationToken.None);

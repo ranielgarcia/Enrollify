@@ -60,6 +60,21 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
         }
     }
 
+    public async Task<Result> Delete(AcademicYear academicYear, CancellationToken cancellationToken)
+    {
+        try
+        {
+            _dbContext.AcademicYears.Remove(academicYear);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            return Result.Success();
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "A database error occurred while deleting academic year {AcademicYearId}.", academicYear.Id.Value);
+            return Result.Error("An error occurred while deleting the academic year.");
+        }
+    }
+
     private static bool IsUniqueConstraintViolation(DbUpdateException ex)
     {
         var message = ex.InnerException?.Message;

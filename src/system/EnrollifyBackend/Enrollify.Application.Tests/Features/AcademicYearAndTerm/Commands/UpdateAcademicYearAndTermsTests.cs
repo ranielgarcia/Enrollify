@@ -157,7 +157,7 @@ public class UpdateAcademicYearAndTermsTests
         // End year 2026 is two years after start 2024 (must be exactly one year apart)
         var invalidEnd = AcademicYearEndDate.From(new DateTime(2026, 5, 31));
         SetupNoOverlap();
-        SetupExistingYear(new AcademicYear(ValidStart, ValidEnd));
+        SetupExistingYear(CreateYearWithTerms());
 
         var command = new UpdateAcademicYearAndTerms.Command(ValidId, ValidStart, invalidEnd, CreateValidTerms());
 
@@ -171,7 +171,7 @@ public class UpdateAcademicYearAndTermsTests
     public async Task Handle_TermStartDateBeforeYearStart_ReturnsInvalidResult()
     {
         SetupNoOverlap();
-        SetupExistingYear(new AcademicYear(ValidStart, ValidEnd));
+        SetupExistingYear(CreateYearWithTerms());
 
         var terms = new[]
         {
@@ -192,7 +192,7 @@ public class UpdateAcademicYearAndTermsTests
     public async Task Handle_DuplicateTermNumbers_ReturnsInvalidResult()
     {
         SetupNoOverlap();
-        SetupExistingYear(new AcademicYear(ValidStart, ValidEnd));
+        SetupExistingYear(CreateYearWithTerms());
 
         // Two terms share the same term number
         var terms = new[]
@@ -214,7 +214,7 @@ public class UpdateAcademicYearAndTermsTests
     public async Task Handle_OverlappingTermDates_ReturnsInvalidResult()
     {
         SetupNoOverlap();
-        SetupExistingYear(new AcademicYear(ValidStart, ValidEnd));
+        SetupExistingYear(CreateYearWithTerms());
 
         // Term 1 ends 2024-10-31, Term 2 starts 2024-10-01 — they overlap
         var terms = new[]
@@ -236,7 +236,7 @@ public class UpdateAcademicYearAndTermsTests
     public async Task Handle_ValidCommand_ReturnsSuccessWithAcademicYearDto()
     {
         SetupNoOverlap();
-        SetupExistingYear(new AcademicYear(ValidStart, ValidEnd));
+        SetupExistingYear(CreateYearWithTerms());
         _repositoryMock
             .Setup(r => r.Update(It.IsAny<AcademicYear>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(new AcademicYear(ValidStart, ValidEnd)));
@@ -253,7 +253,7 @@ public class UpdateAcademicYearAndTermsTests
     public async Task Handle_ValidCommand_CallsUpdateOnRepositoryOnce()
     {
         SetupNoOverlap();
-        SetupExistingYear(new AcademicYear(ValidStart, ValidEnd));
+        SetupExistingYear(CreateYearWithTerms());
         _repositoryMock
             .Setup(r => r.Update(It.IsAny<AcademicYear>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(new AcademicYear(ValidStart, ValidEnd)));
@@ -271,7 +271,7 @@ public class UpdateAcademicYearAndTermsTests
     public async Task Handle_ValidCommand_ReplacesAllTermsWithNewOnes()
     {
         SetupNoOverlap();
-        SetupExistingYear(new AcademicYear(ValidStart, ValidEnd));
+        SetupExistingYear(CreateYearWithTerms());
         AcademicYear? capturedYear = null;
         _repositoryMock
             .Setup(r => r.Update(It.IsAny<AcademicYear>(), It.IsAny<CancellationToken>()))
@@ -290,7 +290,7 @@ public class UpdateAcademicYearAndTermsTests
     public async Task Handle_ValidCommand_DoesNotCallCreateRepository()
     {
         SetupNoOverlap();
-        SetupExistingYear(new AcademicYear(ValidStart, ValidEnd));
+        SetupExistingYear(CreateYearWithTerms());
         _repositoryMock
             .Setup(r => r.Update(It.IsAny<AcademicYear>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(new AcademicYear(ValidStart, ValidEnd)));
@@ -317,6 +317,24 @@ public class UpdateAcademicYearAndTermsTests
                 It.IsAny<ISpecification<AcademicYear>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(year);
+
+    private static AcademicYear CreateYearWithTerms()
+    {
+        var year = new AcademicYear(ValidStart, ValidEnd);
+        year.AddTerm(
+            AcademicTermNumber.From(1),
+            AcademicTermStartDate.From(new DateTime(2024, 6, 1)),
+            AcademicTermEndDate.From(new DateTime(2024, 9, 30)));
+        year.AddTerm(
+            AcademicTermNumber.From(2),
+            AcademicTermStartDate.From(new DateTime(2024, 10, 1)),
+            AcademicTermEndDate.From(new DateTime(2025, 1, 31)));
+        year.AddTerm(
+            AcademicTermNumber.From(3),
+            AcademicTermStartDate.From(new DateTime(2025, 2, 1)),
+            AcademicTermEndDate.From(new DateTime(2025, 5, 31)));
+        return year;
+    }
 
     private static InitiateAcademicTerm CreateTerm(int termNumber, DateTime start, DateTime end) =>
         new(AcademicTermNumber.From(termNumber),
