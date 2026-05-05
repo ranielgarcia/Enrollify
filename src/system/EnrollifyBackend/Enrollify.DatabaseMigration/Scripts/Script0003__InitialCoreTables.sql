@@ -1,4 +1,4 @@
-﻿CREATE TABLE RoomTypes
+CREATE TABLE RoomTypes
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	Name VARCHAR(50) NOT NULL,
@@ -558,11 +558,11 @@ GO;
 
 -- ************************************
 
---  "BSCS-2A", "ENG101-A"
+
 CREATE TABLE ClassSections
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	Name VARCHAR(50) NOT NULL,
+	Name VARCHAR(50) NOT NULL, --  "BSCS-1A", "BSCS-2A"
 	YearLevel INT NOT NULL,
 	CourseId INT NOT NULL,
 	AcademicTermId INT NOT NULL,

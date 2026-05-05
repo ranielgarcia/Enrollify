@@ -4,6 +4,7 @@ import { CalendarDays, ArrowRight } from "lucide-react";
 import { formatDate } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { Fragment } from "react/jsx-runtime";
 
 interface PreviousAcademicYearsTabProps {
   previousYears: AcademicYear[];
@@ -64,8 +65,8 @@ export function PreviousAcademicYearsTab({
           year.academicYearTitle ?? `AY ${year.startYear}–${year.endYear}`;
 
         return (
-          <>
-            <div key={year.id} className="space-y-3">
+          <Fragment key={year.id}>
+            <div className="space-y-3">
               {/* Hero Card — inactive style */}
               <div className="relative overflow-hidden rounded-xl border bg-linear-to-br from-muted/30 via-background to-background p-6 shadow-sm">
                 <div className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-muted/40 blur-2xl" />
@@ -125,7 +126,7 @@ export function PreviousAcademicYearsTab({
               )}
             </div>
             <Separator />
-          </>
+          </Fragment>
         );
       })}
     </div>
