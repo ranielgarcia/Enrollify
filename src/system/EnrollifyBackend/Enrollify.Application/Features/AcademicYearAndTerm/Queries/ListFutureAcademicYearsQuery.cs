@@ -7,19 +7,21 @@ using Mediator;
 
 namespace Enrollify.Application.Features.AcademicYearAndTerm.Queries;
 
-public class ListPreviousAcademicYearsQuery : IQuery<Result<List<AcademicYearDto>>>{}
+public class ListFutureAcademicYearsQuery : IQuery<Result<List<AcademicYearDto>>> { }
 
-public sealed class ListPreviousAcademicYearsQueryHandler : IQueryHandler<ListPreviousAcademicYearsQuery, Result<List<AcademicYearDto>>>
+public sealed class ListFutureAcademicYearsQueryHandler : IQueryHandler<ListFutureAcademicYearsQuery, Result<List<AcademicYearDto>>>
 {
     private readonly IReadRepository<AcademicYear> _repository;
 
-    public ListPreviousAcademicYearsQueryHandler(IReadRepository<AcademicYear> repository)
+    public ListFutureAcademicYearsQueryHandler(IReadRepository<AcademicYear> repository)
     {
         _repository = repository;
     }
-    public async ValueTask<Result<List<AcademicYearDto>>> Handle(ListPreviousAcademicYearsQuery query, CancellationToken cancellationToken)
+
+    public async ValueTask<Result<List<AcademicYearDto>>> Handle(ListFutureAcademicYearsQuery query, CancellationToken cancellationToken)
     {
-        var spec = new ListPreviousAcademicYearsSpec(numberOfPreviousYears: 5);
+        var today = DateTime.UtcNow.Date;
+        var spec = new ListFutureAcademicYearsSpec(today);
         var previousAcademicYears = await _repository.ListAsync(spec, cancellationToken);
         if (previousAcademicYears is null || previousAcademicYears.Count == 0)
         {

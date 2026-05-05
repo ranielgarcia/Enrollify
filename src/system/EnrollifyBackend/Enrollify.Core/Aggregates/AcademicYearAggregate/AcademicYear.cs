@@ -93,23 +93,11 @@ public class AcademicYear : EntityBase<AcademicYear, AcademicYearId>, IAggregate
         {
             if (startDate.Value < other.EndDate.Value && endDate.Value > other.StartDate.Value)
             {
-                throw new InvalidAcademicTermException($"The term dates overlap with existing term {other.TermNumber.Value}.");
+                throw new InvalidAcademicTermException($"The term dates overlap with previous/existing term {other.TermNumber.Value}.");
             }
         }
 
         term.UpdateTermDates(startDate, endDate);
         return this;
     }
-
-
-    //public AcademicYear RemoveTerm(AcademicTermNumber termNumber)
-    //{
-    //    var term = _academicTerms.FirstOrDefault(t => t.TermNumber == termNumber);
-    //    if (term == null)
-    //    {
-    //        throw new InvalidAcademicTermException($"No term found with number {termNumber.Value} in this academic year.");
-    //    }
-    //    _academicTerms.Remove(term);
-    //    return this;
-    //}
 }
