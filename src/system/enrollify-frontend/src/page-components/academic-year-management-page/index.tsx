@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ModuleIcons } from "@/config/module-icons";
 import { useCrudState } from "@/hooks/use-crud-state";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { CalendarDays, CalendarPlus, History } from "lucide-react";
+import { CalendarDays, CalendarPlus, FolderClock, History } from "lucide-react";
 import { useState } from "react";
 import { ActiveAcademicYearTab } from "./active-academic-year-tab";
 import { CreateAcademicYearForm } from "./create-academic-year-form";
@@ -99,7 +99,7 @@ export default function AcademicYearManagementPage() {
             {entityToEdit ? "Edit Academic Year" : TAB_LABELS.create}
           </TabsTrigger>
           <TabsTrigger value="future" className="gap-2">
-            <History className="size-4" />
+            <FolderClock className="size-4" />
             {TAB_LABELS.future}
           </TabsTrigger>
           <TabsTrigger value="previous" className="gap-2">
