@@ -13,6 +13,7 @@ import { useMutation } from "@tanstack/react-query";
 import { CalendarRange, Loader2 } from "lucide-react";
 import z from "zod";
 import { useSystemSettingsContext } from "@/infrastructure/system-settings/system-settings-context";
+import { formatNumberToOrdinal } from "@/lib/format";
 
 // ---------- Zod schemas ----------
 
@@ -22,11 +23,64 @@ const termFormSchema = z.object({
   endDate: z.string().min(1, "End date is required"),
 });
 
-const academicYearFormSchema = z.object({
-  startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().min(1, "End date is required"),
-  terms: z.array(termFormSchema).min(1, "At least one term is required"),
-});
+const academicYearFormSchema = z
+  .object({
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().min(1, "End date is required"),
+    terms: z.array(termFormSchema).min(1, "At least one term is required"),
+  })
+  .superRefine((data, ctx) => {
+    const ayStart = new Date(data.startDate);
+    const ayEnd = new Date(data.endDate);
+
+    // Rule 1: AY end must be after AY start
+    if (ayEnd <= ayStart) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Academic year end date must be after start date",
+        path: ["endDate"],
+      });
+    }
+
+    const sortedTerms = [...data.terms].sort(
+      (a, b) => a.termNumber - b.termNumber,
+    );
+
+    sortedTerms.forEach((term, i) => {
+      const tStart = new Date(term.startDate);
+      const tEnd = new Date(term.endDate);
+
+      // Rule 2: Term end after term start
+      if (tEnd <= tStart) {
+        ctx.addIssue({
+          code: "custom",
+          message: `${formatNumberToOrdinal(term.termNumber)} term end date must be after start date`,
+          path: ["terms", i, "endDate"],
+        });
+      }
+
+      // Rule 3: Term dates within academic year range
+      if (tStart < ayStart || tEnd > ayEnd) {
+        ctx.addIssue({
+          code: "custom",
+          message: `${formatNumberToOrdinal(term.termNumber)} term dates must fall within the academic year`,
+          path: ["terms", i, "startDate"],
+        });
+      }
+
+      // Rule 4: No overlap with previous term
+      if (i > 0) {
+        const prevEnd = new Date(sortedTerms[i - 1].endDate);
+        if (tStart < prevEnd) {
+          ctx.addIssue({
+            code: "custom",
+            message: `${formatNumberToOrdinal(term.termNumber)} term must start after Term ${sortedTerms[i - 1].termNumber} ends`,
+            path: ["terms", i, "startDate"],
+          });
+        }
+      }
+    });
+  });
 
 type AcademicYearFormData = z.infer<typeof academicYearFormSchema>;
 
@@ -190,7 +244,7 @@ export function CreateAcademicYearForm({
                         {termIndex + 1}
                       </span>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        Term {termIndex + 1}
+                        {formatNumberToOrdinal(termIndex + 1)} term
                       </p>
                     </div>
                     <div className="grid grid-cols-2 gap-3">

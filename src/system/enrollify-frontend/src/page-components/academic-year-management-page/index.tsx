@@ -1,5 +1,6 @@
 import {
   getActiveAcademicYearOptions,
+  getFutureAcademicYearsOptions,
   getPreviousAcademicYearsOptions,
 } from "@/api/collections/academic-year-collection";
 import type { AcademicYear } from "@/api/models/academic-year";
@@ -7,31 +8,53 @@ import { ManagementPageLayout } from "@/components/page-layouts/management-page-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ModuleIcons } from "@/config/module-icons";
 import { useCrudState } from "@/hooks/use-crud-state";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { CalendarDays, CalendarPlus, History } from "lucide-react";
 import { useState } from "react";
 import { ActiveAcademicYearTab } from "./active-academic-year-tab";
 import { CreateAcademicYearForm } from "./create-academic-year-form";
 import { PreviousAcademicYearsTab } from "./previous-academic-years-tab";
+import { DeleteAcademicYearAlertDialog } from "./delete-academic-year-alert-dialog";
+import { FutureAcademicYearsTab } from "./future-academic-years-tab";
+
+const TAB_LABELS = {
+  active: "Active Academic Year",
+  create: "New Academic Year",
+  future: "Future Academic Years",
+  previous: "Previous Academic Years",
+} as const;
 
 export default function AcademicYearManagementPage() {
   const [activeTab, setActiveTab] = useState(
     () => sessionStorage.getItem("academic-year-tab") ?? "active",
   );
 
-  const { entityToEdit, handleEdit } = useCrudState<AcademicYear>();
+  const {
+    entityToEdit,
+    entityToDelete,
+    handleEdit,
+    handleDelete,
+    handleDeleteDialogOpenChange,
+  } = useCrudState<AcademicYear>();
 
-  const { data: activeYear, isLoading } = useQuery(
+  const { data: activeYear, isLoading: isLoadingActiveYear } = useSuspenseQuery(
     getActiveAcademicYearOptions(),
   );
 
-  const { data: previousYears } = useQuery(getPreviousAcademicYearsOptions());
+  const { data: previousYears, isLoading: isLoadingPreviousYears } =
+    useSuspenseQuery(getPreviousAcademicYearsOptions());
 
-  console.log(previousYears);
+  const { data: futureYears, isLoading: isLoadingFutureYears } =
+    useSuspenseQuery(getFutureAcademicYearsOptions());
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    sessionStorage.setItem("academic-year-tab", value);
+    // Don't persist "create" — edit context doesn't survive refresh
+    if (value !== "create") {
+      sessionStorage.setItem("academic-year-tab", value);
+    } else {
+      sessionStorage.removeItem("academic-year-tab");
+    }
   };
 
   /** Called from the Active tab "Edit" button — pre-fills the create form */
@@ -56,7 +79,9 @@ export default function AcademicYearManagementPage() {
       title="Academic Year Management"
       description="Manage academic years and their terms (semesters)"
       icon={<ModuleIcons.academicYear className="size-9 text-primary" />}
-      isLoading={isLoading}
+      isLoading={
+        isLoadingActiveYear || isLoadingPreviousYears || isLoadingFutureYears
+      }
       createNewItemButton={null}
     >
       <Tabs
@@ -67,15 +92,19 @@ export default function AcademicYearManagementPage() {
         <TabsList variant="line">
           <TabsTrigger value="active" className="gap-2">
             <CalendarDays className="size-4" />
-            Active Academic Year
+            {TAB_LABELS.active}
           </TabsTrigger>
           <TabsTrigger value="create" className="gap-2">
             <CalendarPlus className="size-4" />
-            {entityToEdit ? "Edit Academic Year" : "Create Form"}
+            {entityToEdit ? "Edit Academic Year" : TAB_LABELS.create}
+          </TabsTrigger>
+          <TabsTrigger value="future" className="gap-2">
+            <History className="size-4" />
+            {TAB_LABELS.future}
           </TabsTrigger>
           <TabsTrigger value="previous" className="gap-2">
             <History className="size-4" />
-            Previous Academic Years
+            {TAB_LABELS.previous}
           </TabsTrigger>
         </TabsList>
 
@@ -84,6 +113,7 @@ export default function AcademicYearManagementPage() {
           <ActiveAcademicYearTab
             activeYear={activeYear ?? null}
             onEdit={handleEditActiveYear}
+            createTabLabel={TAB_LABELS.create}
           />
         </TabsContent>
 
@@ -97,7 +127,15 @@ export default function AcademicYearManagementPage() {
           />
         </TabsContent>
 
-        {/* Tab 3 — Previous Academic Years */}
+        {/* Tab 3 — Future Academic Years */}
+        <TabsContent value="future" className="flex min-h-0 flex-col space-y-4">
+          <FutureAcademicYearsTab
+            futureYears={futureYears ?? []}
+            onDelete={handleDelete}
+          />
+        </TabsContent>
+
+        {/* Tab 4 — Previous Academic Years */}
         <TabsContent
           value="previous"
           className="flex min-h-0 flex-col space-y-4"
@@ -105,6 +143,12 @@ export default function AcademicYearManagementPage() {
           <PreviousAcademicYearsTab previousYears={previousYears ?? []} />
         </TabsContent>
       </Tabs>
+
+      <DeleteAcademicYearAlertDialog
+        isOpen={!!entityToDelete}
+        onOpenChange={handleDeleteDialogOpenChange}
+        yearToDelete={entityToDelete}
+      />
     </ManagementPageLayout>
   );
 }

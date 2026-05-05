@@ -21,10 +21,7 @@ public sealed class ListPreviousAcademicYearsQueryHandler : IQueryHandler<ListPr
     {
         var spec = new ListPreviousAcademicYearsSpec(numberOfPreviousYears: 5);
         var previousAcademicYears = await _repository.ListAsync(spec, cancellationToken);
-        if (previousAcademicYears is null || previousAcademicYears.Count == 0)
-        {
-            return Result.NotFound("No previous academic years found.");
-        }
+
         var previousAcademicYearDtos = previousAcademicYears.Select(AcademicYearDto.FromEntity).ToList();
         return Result.Success(previousAcademicYearDtos);
     }

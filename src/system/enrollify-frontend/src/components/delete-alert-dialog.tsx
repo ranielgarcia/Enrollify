@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { OverlayLoader } from "@/components/app-loading-overlay";
 import { useMutation } from "@tanstack/react-query";
-import type React from "react";
 import type { ReactNode } from "react";
 
 interface ValidationQuery {
@@ -30,7 +29,8 @@ type DeleteAlertDialogBaseProps<T> = {
 };
 
 type MutationDeleteProps<T> = DeleteAlertDialogBaseProps<T> & {
-  deleteMutationOptions: Parameters<typeof useMutation>[0];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  deleteMutationOptions: Record<string, any>;
   onConfirmDelete?: never;
 };
 

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 const queryKeys = {
   base: () => ["academic-years"],
   active: () => [...queryKeys.base(), "active"],
+  future: () => [...queryKeys.base(), "future"],
   previous: () => [...queryKeys.base(), "previous"],
   create: () => [...queryKeys.base(), "create"],
   update: (id: number) => [...queryKeys.base(), "update", id],
@@ -28,6 +29,18 @@ export const getActiveAcademicYearOptions = () =>
     },
   });
 
+export const getFutureAcademicYearsOptions = () =>
+  createAppQueryOptions({
+    path: "/api/academic-years/future",
+    options: {
+      queryKey: queryKeys.future(),
+      staleTime: 1000 * 60 * 5,
+      select: (data): AcademicYear[] => {
+        return data.map((ay) => AcademicYearSchema.parse(ay));
+      },
+    },
+  });
+
 export const getPreviousAcademicYearsOptions = () =>
   createAppQueryOptions({
     path: "/api/academic-years/previous",
@@ -35,7 +48,6 @@ export const getPreviousAcademicYearsOptions = () =>
       queryKey: queryKeys.previous(),
       staleTime: 1000 * 60 * 5,
       select: (data): AcademicYear[] => {
-        console.log(data);
         return data.map((ay) => AcademicYearSchema.parse(ay));
       },
     },

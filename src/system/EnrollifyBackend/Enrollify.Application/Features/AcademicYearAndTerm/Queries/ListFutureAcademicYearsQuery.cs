@@ -23,10 +23,6 @@ public sealed class ListFutureAcademicYearsQueryHandler : IQueryHandler<ListFutu
         var today = DateTime.UtcNow.Date;
         var spec = new ListFutureAcademicYearsSpec(today);
         var previousAcademicYears = await _repository.ListAsync(spec, cancellationToken);
-        if (previousAcademicYears is null || previousAcademicYears.Count == 0)
-        {
-            return Result.NotFound("No previous academic years found.");
-        }
         var previousAcademicYearDtos = previousAcademicYears.Select(AcademicYearDto.FromEntity).ToList();
         return Result.Success(previousAcademicYearDtos);
     }

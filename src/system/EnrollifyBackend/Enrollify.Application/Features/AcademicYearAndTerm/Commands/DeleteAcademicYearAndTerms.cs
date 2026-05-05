@@ -5,7 +5,6 @@ using Mediator;
 
 namespace Enrollify.Application.Features.AcademicYearAndTerm.Commands;
 
-
 public static class DeleteAcademicYearAndTerms
 {
     public sealed record Command(AcademicYearId id) : ICommand<Result>;
@@ -26,6 +25,12 @@ public static class DeleteAcademicYearAndTerms
             if (existing is null)
             {
                 return Result.NotFound("The specified academic year was not found.");
+            }
+
+            var today = DateTime.UtcNow.Date;
+            if (existing.EndDate.Value < today)
+            {
+                return Result.Invalid(new ValidationError("Deleting past academic year is not allowed."));
             }
 
             var result = await _repository.Delete(existing, cancellationToken);

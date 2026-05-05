@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 interface ActiveAcademicYearTabProps {
   activeYear: AcademicYear | null;
   onEdit: () => void;
+  createTabLabel: string;
 }
 
 function DateRange({
@@ -36,6 +37,7 @@ function DateRange({
 export function ActiveAcademicYearTab({
   activeYear,
   onEdit,
+  createTabLabel,
 }: ActiveAcademicYearTabProps) {
   if (!activeYear) {
     return (
@@ -49,7 +51,9 @@ export function ActiveAcademicYearTab({
           </h3>
           <p className="text-sm text-muted-foreground max-w-xs">
             There is no active academic year at the moment. Use the{" "}
-            <strong className="text-foreground font-medium">Create Form</strong>{" "}
+            <strong className="text-foreground font-medium">
+              {createTabLabel}
+            </strong>{" "}
             tab to initiate one.
           </p>
         </div>
