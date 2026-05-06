@@ -13,6 +13,7 @@ import { SubjectsTableActionBar } from "./subjects-table-action-bar";
 import { DataTableSortList } from "@/components/data-table/data-table-sort-list";
 import { DataTableAdvancedToolbar } from "@/components/data-table/data-table-advanced-toolbar";
 import { DataTableFilterList } from "@/components/data-table/data-table-filter-list";
+import { DataTableColumnActionsHeader } from "@/components/data-table/data-table-column-action-header";
 
 interface SubjectsTableProps {
   pagedSubjects: PagedResult<Subject>;
@@ -131,7 +132,7 @@ export function SubjectsTable({
       ),
       columnHelper.display({
         id: "actions",
-        header: "Actions",
+        header: () => <DataTableColumnActionsHeader label="Actions" />,
         enableHiding: false,
         cell: (info) => {
           const item = info.row.original;

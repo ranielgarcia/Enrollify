@@ -2,6 +2,7 @@ using Ardalis.SmartEnum;
 using Ardalis.SmartEnum.Dapper;
 using Azure.Storage.Blobs;
 using Dapper;
+using Enrollify.Application.Features.AcademicYearAndTerm;
 using Enrollify.Application.Features.Buildings;
 using Enrollify.Application.Features.Colleges;
 using Enrollify.Application.Features.Courses;
@@ -88,6 +89,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ISubjectEquivalenceGroupRepository, SubjectEquivalenceGroupRepository>();
         services.AddScoped<ITeacherRepository, TeacherRepository>();
         services.AddScoped<ITeacherPhotoStorageService, TeacherPhotoStorageService>();
+        services.AddScoped<IAcademicYearAndTermRepository, AcademicYearAndTermRepository>();
 
 
         logger.LogInformation("{Project} services registered", "Infrastructure");

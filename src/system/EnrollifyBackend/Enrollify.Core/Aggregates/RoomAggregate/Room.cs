@@ -1,6 +1,5 @@
-﻿using Ardalis.GuardClauses;
+using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.BuildingAggregate;
-using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate.Events;
 using Enrollify.Core.Aggregates.RoomAggregate.Models;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;

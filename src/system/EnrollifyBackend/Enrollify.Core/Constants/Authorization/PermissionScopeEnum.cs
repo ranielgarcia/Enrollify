@@ -20,6 +20,7 @@ public sealed class PermissionScopeEnum : SmartEnum<PermissionScopeEnum>
     public static readonly PermissionScopeEnum Curriculums = new PermissionScopeEnum("Curriculums", 10);
     public static readonly PermissionScopeEnum SubjectEquivalenceGroups = new PermissionScopeEnum("SubjectEquivalenceGroups", 11);
     public static readonly PermissionScopeEnum Teachers = new PermissionScopeEnum("Teachers", 12);
+    public static readonly PermissionScopeEnum AcademicYearsAndTerms = new PermissionScopeEnum("AcademicYearsAndTerms", 13);
 
     private PermissionScopeEnum(string name, int value) : base(name, value) { }
 }

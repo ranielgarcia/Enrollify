@@ -16,16 +16,13 @@ public class DefaultBlobRepository<TSettings, TEntity>
     where TSettings : IStorageSettings
     where TEntity : class
 {
-    private readonly ILogger<DefaultBlobRepository<TSettings, TEntity>> _logger;
     private readonly IBlobContainerProvider<TSettings, TEntity> _containerProvider;
     private readonly BlobOptions _blobOptions;
 
     public DefaultBlobRepository(
-        ILogger<DefaultBlobRepository<TSettings, TEntity>> logger,
         IBlobContainerProvider<TSettings, TEntity> containerProvider,
         IBlobOptionsProvider<TSettings> optionsProvider)
     {
-        _logger = logger;
         _containerProvider = containerProvider;
         _blobOptions = optionsProvider.GetBlobOptions<TEntity>();
     }

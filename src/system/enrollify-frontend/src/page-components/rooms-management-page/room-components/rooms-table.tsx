@@ -8,6 +8,7 @@ import { Edit2, Trash2 } from "lucide-react";
 import type { Room } from "@/api/models/room";
 import { useMemo } from "react";
 import { useTablePermissions } from "@/hooks/use-table-permissions";
+import { DataTableColumnActionsHeader } from "@/components/data-table/data-table-column-action-header";
 
 interface RoomsTableProps {
   rooms?: Room[];
@@ -106,7 +107,7 @@ export function RoomsTable({ rooms, onEdit, onDelete }: RoomsTableProps) {
       ),
       columnHelper.display({
         id: "actions",
-        header: "Actions",
+        header: () => <DataTableColumnActionsHeader label="Actions" />,
         enableHiding: false,
         cell: (info) => {
           const item = info.row.original;

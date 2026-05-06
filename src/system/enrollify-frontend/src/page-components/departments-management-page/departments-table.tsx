@@ -8,6 +8,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Edit2, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { useTablePermissions } from "@/hooks/use-table-permissions";
+import { DataTableColumnActionsHeader } from "@/components/data-table/data-table-column-action-header";
 
 interface DepartmentsTableProps {
   departments?: Department[];
@@ -119,7 +120,7 @@ export function DepartmentsTable({
       ),
       columnHelper.display({
         id: "actions",
-        header: "Actions",
+        header: () => <DataTableColumnActionsHeader label="Actions" />,
         enableHiding: false,
         cell: (info) => {
           const item = info.row.original;
