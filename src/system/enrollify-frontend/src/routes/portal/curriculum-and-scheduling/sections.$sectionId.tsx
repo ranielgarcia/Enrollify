@@ -8,7 +8,7 @@ const sectionParamsSchema = z.object({
 });
 
 export const Route = createFileRoute(
-  "/portal/curriculum-and-scheduling/sections/$sectionId" as any,
+  "/portal/curriculum-and-scheduling/sections/$sectionId",
 )({
   params: {
     parse: (params) => sectionParamsSchema.parse(params),
@@ -18,8 +18,7 @@ export const Route = createFileRoute(
   loader: (): RouteLoaderData => ({
     crumb: `Section Detail`,
   }),
-  beforeLoad: async ({ context }: { context: any }): Promise<void> => {
-    const { authorization } = context;
+  beforeLoad: async ({ context: { authorization } }): Promise<void> => {
     if (!authorization?.isReady) {
       return;
     }
@@ -34,7 +33,7 @@ export const Route = createFileRoute(
 });
 
 function SectionDetailRoute() {
-  const params = Route.useParams() as any;
+  const params = Route.useParams();
   const sectionId = params.sectionId ?? "";
   return <SectionDetailPage sectionId={parseInt(sectionId, 10)} />;
 }
