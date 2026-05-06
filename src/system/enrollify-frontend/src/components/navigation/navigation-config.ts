@@ -93,6 +93,12 @@ export const navigationItems: NavMainItemConfig[] = [
         viewAuthorizationPolicies: [PolicyNames.canViewAcademicYearsAndTerms],
         icon: ModuleIcons.academicYear,
       },
+      {
+        title: "Class Sections",
+        url: "/portal/curriculum-and-scheduling/sections" as any,
+        viewAuthorizationPolicies: [PolicyNames.canViewClassSections],
+        icon: ModuleIcons.sections,
+      },
     ],
   },
   {

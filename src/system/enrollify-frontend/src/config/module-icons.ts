@@ -10,6 +10,8 @@ import {
   BookUser,
   Bookmark,
   CalendarDays,
+  CalendarClock,
+  LayoutGrid,
 } from "lucide-react";
 
 export const ModuleIcons = {
@@ -23,4 +25,6 @@ export const ModuleIcons = {
   curriculum: Scroll,
   teachers: BookUser,
   academicYear: CalendarDays,
+  sections: CalendarClock,
+  offerings: LayoutGrid,
 } as const satisfies Record<string, LucideIcon>;
