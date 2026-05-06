@@ -1,6 +1,5 @@
 using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 using Enrollify.Application.Features.AcademicYearAndTerm.Queries;
-using Enrollify.WebAPI.Features.Colleges;
 
 namespace Enrollify.WebAPI.Features.AcademicYearAndTerm;
 

@@ -50,7 +50,7 @@ export function FutureAcademicYearsTab({
             No Future Academic Years
           </h3>
           <p className="text-sm text-muted-foreground max-w-xs">
-            Future academic years will appear here once they added.
+            Future academic years will appear here once they have been added.
           </p>
         </div>
       </div>

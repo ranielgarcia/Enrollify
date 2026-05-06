@@ -20,7 +20,7 @@ public sealed class GetActiveAcademicYearQueryHandler : IQueryHandler<GetActiveA
 
     public async ValueTask<Result<AcademicYearDto>> Handle(GetActiveAcademicYearQuery query, CancellationToken cancellationToken)
     {
-        var activeAcademicYear = await _readRepository.FirstOrDefaultAsync(new GetActiveAcademicYearSpec());
+        var activeAcademicYear = await _readRepository.FirstOrDefaultAsync(new GetActiveAcademicYearSpec(), cancellationToken);
         if (activeAcademicYear is null)
         {
             return Result.NotFound("No active academic year found.");

@@ -39,10 +39,10 @@ public static class InitiateAcademicYearAndTerms
             var expectedTermCount = new AcademicSettings().AcademicSystem;
 
             if (command.academicTerms is null || command.academicTerms.Length == 0)
-                return Result<AcademicYearDto>.Invalid(new ValidationError("At least one academic term must be provided."));
+                return Result.Invalid(new ValidationError("At least one academic term must be provided."));
 
             if (command.academicTerms.Length != expectedTermCount)
-                return Result<AcademicYearDto>.Invalid(new ValidationError(
+                return Result.Invalid(new ValidationError(
                     $"The academic system requires exactly {expectedTermCount} term(s), but {command.academicTerms.Length} were provided."));
 
             var existingAcademicYear = await _readRepository.FirstOrDefaultAsync(
@@ -68,7 +68,7 @@ public static class InitiateAcademicYearAndTerms
 
                 var result = await _academicYearAndTermRepository.Create(academicYear, cancellationToken);
 
-                return AcademicYearDto.FromEntity(result.Value);
+                return result.Map(AcademicYearDto.FromEntity);
             }
             catch (InvalidAcademicYearRangeException ex)
             {

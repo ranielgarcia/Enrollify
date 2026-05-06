@@ -1,7 +1,8 @@
 using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.UserAggregate;
-using Enrollify.SharedKernel;
+using Enrollify.Core.DomainExceptions;
 using Enrollify.Core.Extensions;
+using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.Aggregates.AcademicYearAggregate;
 
@@ -52,7 +53,7 @@ public class AcademicTerm : IAuditable
     {
         if (startDate.Value >= endDate.Value)
         {
-            throw new ArgumentException("Start date must be before end date.");
+            throw new InvalidAcademicTermException("Start date must be before end date.");
         }
         StartDate = startDate;
         EndDate = endDate;

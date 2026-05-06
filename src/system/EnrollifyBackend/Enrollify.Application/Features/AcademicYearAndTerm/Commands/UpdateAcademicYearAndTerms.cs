@@ -74,7 +74,7 @@ public static class UpdateAcademicYearAndTerms
                     existing.UpdateTerm(term.TermNumber, term.StartDate, term.EndDate);
 
                 var result = await _academicYearAndTermRepository.Update(existing, cancellationToken);
-                return AcademicYearDto.FromEntity(result.Value);
+                return Result.Success(AcademicYearDto.FromEntity(result.Value));
             }
             catch (InvalidAcademicYearRangeException ex)
             {

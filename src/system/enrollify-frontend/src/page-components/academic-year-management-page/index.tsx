@@ -35,16 +35,17 @@ export default function AcademicYearManagementPage() {
     handleEdit,
     handleDelete,
     handleDeleteDialogOpenChange,
+    handleFormOpenChange,
   } = useCrudState<AcademicYear>();
 
-  const { data: activeYear, isLoading: isLoadingActiveYear } = useSuspenseQuery(
+  const { data: activeYear, isPending: isLoadingActiveYear } = useSuspenseQuery(
     getActiveAcademicYearOptions(),
   );
 
-  const { data: previousYears, isLoading: isLoadingPreviousYears } =
+  const { data: previousYears, isPending: isLoadingPreviousYears } =
     useSuspenseQuery(getPreviousAcademicYearsOptions());
 
-  const { data: futureYears, isLoading: isLoadingFutureYears } =
+  const { data: futureYears, isPending: isLoadingFutureYears } =
     useSuspenseQuery(getFutureAcademicYearsOptions());
 
   const handleTabChange = (value: string) => {
@@ -71,7 +72,7 @@ export default function AcademicYearManagementPage() {
   /** Cancel editing — clear state and go to active tab */
   const handleFormCancel = () => {
     handleTabChange("active");
-    handleEdit(undefined);
+    handleFormOpenChange(false);
   };
 
   return (

@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { OverlayLoader } from "@/components/app-loading-overlay";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, type UseMutationOptions } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
 interface ValidationQuery {
@@ -28,22 +28,35 @@ type DeleteAlertDialogBaseProps<T> = {
   customDialogDescription?: ReactNode;
 };
 
-type MutationDeleteProps<T> = DeleteAlertDialogBaseProps<T> & {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  deleteMutationOptions: Record<string, any>;
-  onConfirmDelete?: never;
-};
+type MutationDeleteProps<T, TData, TError, TVariables> =
+  DeleteAlertDialogBaseProps<T> & {
+    deleteMutationOptions: UseMutationOptions<
+      TData,
+      TError,
+      TVariables,
+      unknown
+    >;
+    onConfirmDelete?: never;
+  };
 
 type CallbackDeleteProps<T> = DeleteAlertDialogBaseProps<T> & {
   deleteMutationOptions?: never;
   onConfirmDelete: (entity: T) => void;
 };
 
-export type DeleteAlertDialogProps<T> =
-  | MutationDeleteProps<T>
-  | CallbackDeleteProps<T>;
+export type DeleteAlertDialogProps<
+  T,
+  TData = unknown,
+  TError = unknown,
+  TVariables = unknown,
+> = MutationDeleteProps<T, TData, TError, TVariables> | CallbackDeleteProps<T>;
 
-export function DeleteAlertDialog<T>({
+export function DeleteAlertDialog<
+  T,
+  TData = unknown,
+  TError = unknown,
+  TVariables = unknown,
+>({
   entityToDelete,
   isOpen,
   onOpenChange,
@@ -54,9 +67,12 @@ export function DeleteAlertDialog<T>({
   validationQuery,
   validationMessage,
   customDialogDescription,
-}: DeleteAlertDialogProps<T>) {
+}: DeleteAlertDialogProps<T, TData, TError, TVariables>) {
+  const fallback = {
+    mutationFn: async () => undefined,
+  } as unknown as UseMutationOptions<TData, TError, TVariables, unknown>;
   const { mutateAsync, isPending: isMutating } = useMutation(
-    deleteMutationOptions ?? { mutationFn: async () => {} },
+    deleteMutationOptions ?? fallback,
   );
 
   const isDeletingInProgress = deleteMutationOptions ? isMutating : false;
