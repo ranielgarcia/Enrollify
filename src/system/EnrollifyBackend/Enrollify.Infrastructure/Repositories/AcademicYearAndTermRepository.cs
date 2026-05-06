@@ -30,7 +30,7 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
         catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
         {
             _logger.LogError(ex, "A unique constraint violation occurred while creating an academic year.");
-            return Result.Conflict("The specified academic year overlaps with an existing academic year. Please choose a different date range.");
+            return Result.Conflict("An academic year with the same start date and end date already exists. Please use a different date range.");
         }
         catch (DbUpdateException ex) when (IsCheckAcademicYearInvalidConstraintViolation(ex))
         {
@@ -51,7 +51,7 @@ public class AcademicYearAndTermRepository : IAcademicYearAndTermRepository
         catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
         {
             _logger.LogError(ex, "A unique constraint violation occurred while updating an academic year.");
-            return Result.Conflict("The specified academic year overlaps with an existing academic year. Please choose a different date range.");
+            return Result.Conflict("An academic year with the same start date and end date already exists. Please use a different date range.");
         }
         catch (DbUpdateException ex) when (IsCheckAcademicYearInvalidConstraintViolation(ex))
         {
