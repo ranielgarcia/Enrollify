@@ -110,16 +110,3 @@ export const updateTeacherOptions = (id: number) =>
       },
     },
   });
-
-export const getAllTeachersOptions = () =>
-  createQueryOptions({
-    path: "/api/teachers",
-    options: {
-      queryKey: [...queryKeys.base(), "all"],
-      staleTime: 1000 * 60 * 5,
-      select: (teachers): Teacher[] => {
-        if (!teachers) return [];
-        return (teachers as unknown[]).map((t) => TeacherSchema.parse(t));
-      },
-    },
-  });

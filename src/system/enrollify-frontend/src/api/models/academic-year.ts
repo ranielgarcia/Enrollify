@@ -2,7 +2,7 @@ import { z } from "zod";
 import { AuditInfoSchema } from "@/api/models/audit-info";
 
 export const AcademicTermSchema = z.object({
-  id: z.number().optional(),
+  id: z.number(),
   termNumber: z.number().optional(),
   termName: z.string().optional(),
   academicYearId: z.number().optional(),
@@ -12,7 +12,7 @@ export const AcademicTermSchema = z.object({
 
 export const AcademicYearSchema = z
   .object({
-    id: z.number().optional(),
+    id: z.number(),
     startDate: z.string().nullish(),
     endDate: z.string().nullish(),
     startYear: z.number().optional(),

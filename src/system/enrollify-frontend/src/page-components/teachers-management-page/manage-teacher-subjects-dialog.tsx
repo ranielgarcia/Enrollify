@@ -1,4 +1,4 @@
-import { AddSubjectsDialog } from "@/components/shared/add-subjects-dialog";
+import { SearchSubjectsDialog } from "@/components/shared/search-subjects-dialog";
 
 interface ManageTeacherSubjectsDialogProps {
   teacherName?: string;
@@ -21,7 +21,7 @@ export function ManageTeacherSubjectsDialog({
     : "Manage Teacher Subjects";
 
   return (
-    <AddSubjectsDialog
+    <SearchSubjectsDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       title={title}

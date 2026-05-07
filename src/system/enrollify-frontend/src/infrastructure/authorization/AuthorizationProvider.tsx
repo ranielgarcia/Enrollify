@@ -22,6 +22,7 @@ import { registerCurriculumPolicies } from "./policies/curriculum-policies";
 import { registerSubjectEquivalenceGroupPolicies } from "./policies/subject-equivalence-group-policies";
 import { registerTeacherPolicies } from "./policies/teacher-policies";
 import { registerAcademicYearAndTermsPolicies } from "./policies/academic-year-and-terms-policies";
+import { registerClassSectionPolicies } from "./policies/class-section-policies";
 
 export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
   children,
@@ -52,6 +53,7 @@ export const AuthorizationProvider: React.FC<PropsWithChildren> = ({
     registerSubjectEquivalenceGroupPolicies(policyRegistry);
     registerTeacherPolicies(policyRegistry);
     registerAcademicYearAndTermsPolicies(policyRegistry);
+    registerClassSectionPolicies(policyRegistry);
 
     const handlers: IAuthorizationHandler[] = [
       new RoleHandler(),

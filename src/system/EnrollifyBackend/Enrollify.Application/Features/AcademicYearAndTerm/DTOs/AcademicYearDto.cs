@@ -12,7 +12,7 @@ public class AcademicYearDto : BaseDto
     public Year StartYear { get; private set; }
     public Year EndYear { get; private set; }
 
-    public string AcademicYearTitle { get; private set; }
+    public string AcademicYearTitle { get; private set; } = string.Empty;
 
     public AcademicTermDto[] AcademicTerms { get; private set; } = Array.Empty<AcademicTermDto>();
 

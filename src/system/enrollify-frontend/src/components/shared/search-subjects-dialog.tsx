@@ -35,7 +35,7 @@ interface AddSubjectsDialogProps {
   onSubmit: (subjectCodes: string[]) => Promise<void>;
 }
 
-export function AddSubjectsDialog({
+export function SearchSubjectsDialog({
   isOpen,
   onOpenChange,
   title = "Add Subjects",

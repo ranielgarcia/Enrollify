@@ -1,6 +1,6 @@
 import type { SubjectEquivalenceGroup } from "@/api/models/subject-equivalence";
 import { useMemo } from "react";
-import { AddSubjectsDialog } from "@/components/shared/add-subjects-dialog";
+import { SearchSubjectsDialog } from "@/components/shared/search-subjects-dialog";
 
 interface AddSubjectToGroupDialogProps {
   isOpen: boolean;
@@ -21,7 +21,7 @@ export function AddSubjectToGroupDialog({
   );
 
   return (
-    <AddSubjectsDialog
+    <SearchSubjectsDialog
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       title="Add Subjects to Group"

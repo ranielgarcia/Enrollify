@@ -1,7 +1,6 @@
 import { filterSectionsPaginatedOptions } from "@/api/collections/section-collection";
 import { getAllCoursesOptions } from "@/api/collections/course-collection";
-import { getAllTeachersOptions } from "@/api/collections/teacher-collection";
-import { getAllAcademicTermsOptions } from "@/api/collections/academic-term-collection";
+import { filterTeachersPaginatedOptions } from "@/api/collections/teacher-collection";
 import type { ClassSection } from "@/api/models/class-section";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { ModuleIcons } from "@/config/module-icons";
@@ -45,8 +44,12 @@ export default function SectionsManagementPage() {
   );
 
   const { data: courses } = useSuspenseQuery(getAllCoursesOptions());
-  const { data: teachers } = useSuspenseQuery(getAllTeachersOptions());
-  const { data: academicTerms } = useSuspenseQuery(getAllAcademicTermsOptions());
+  const { data: teachers } = useSuspenseQuery(
+    filterTeachersPaginatedOptions(1, 10, [], [], "and"),
+  );
+  // const { data: academicTerms } = useSuspenseQuery(
+  //   getAllAcademicTermsOptions(),
+  // );
 
   return (
     <ManagementPageLayout
@@ -57,8 +60,8 @@ export default function SectionsManagementPage() {
         <SectionFormDrawer
           key={sectionToEdit?.id ?? "new"}
           courses={courses ?? []}
-          teachers={teachers ?? []}
-          academicTerms={academicTerms ?? []}
+          teachers={teachers?.items ?? []}
+          academicTerms={[]}
           onOpenChange={handleFormOpenChange}
           sectionToUpdate={sectionToEdit}
           isOpen={isFormOpen}
