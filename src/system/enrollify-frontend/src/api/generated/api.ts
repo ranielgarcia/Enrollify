@@ -516,7 +516,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/academic-years/{id}": {
+    "/api/academic-year-and-term/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -532,14 +532,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/academic-years/active": {
+    "/api/academic-year-and-term/timeline-window": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["EnrollifyWebAPIFeaturesAcademicYearAndTermGetActiveAcademicYearEndpoint"];
+        get: operations["EnrollifyWebAPIFeaturesAcademicYearAndTermGetAcademicYearTimelineWindowEndpoint"];
         put?: never;
         post?: never;
         delete?: never;
@@ -548,7 +548,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/academic-years": {
+    "/api/academic-year-and-term": {
         parameters: {
             query?: never;
             header?: never;
@@ -558,38 +558,6 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["EnrollifyWebAPIFeaturesAcademicYearAndTermInitiateAcademicYearAndTermsEndpoint"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/academic-years/future": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["EnrollifyWebAPIFeaturesAcademicYearAndTermListFutureAcademicYearsEndpoint"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/academic-years/previous": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["EnrollifyWebAPIFeaturesAcademicYearAndTermListPreviousAcademicYearsEndpoint"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1184,6 +1152,11 @@ export interface components {
             collegeId: number;
         };
         EnrollifyWebAPIFeaturesAcademicYearAndTermDeleteAcademicYearAndTermsRequest: Record<string, never>;
+        EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicYearTimelineDto: {
+            previous?: components["schemas"]["EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicYearDto"][];
+            current?: components["schemas"]["EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicYearDto"] | null;
+            future?: components["schemas"]["EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicYearDto"][];
+        };
         EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicYearDto: components["schemas"]["EnrollifyApplicationBaseDto"] & {
             /**
              * Format: int32
@@ -1241,6 +1214,7 @@ export interface components {
              */
             endDate?: string;
         };
+        EnrollifyWebAPIFeaturesAcademicYearAndTermGetAcademicYearTimelineWindowRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesAcademicYearAndTermInitiateAcademicYearAndTermsRequest: {
             /** Format: date-time */
             startDate: string;
@@ -3175,9 +3149,14 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesAcademicYearAndTermGetActiveAcademicYearEndpoint: {
+    EnrollifyWebAPIFeaturesAcademicYearAndTermGetAcademicYearTimelineWindowEndpoint: {
         parameters: {
-            query?: never;
+            query: {
+                IncludePastYears: boolean;
+                NumberOfPastYears: number;
+                IncludeFutureYears: boolean;
+                NumberOfFutureYears: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3190,7 +3169,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicYearDto"];
+                    "application/json": components["schemas"]["EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicYearTimelineDto"];
                 };
             };
             /** @description Unauthorized */
@@ -3229,74 +3208,6 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    EnrollifyWebAPIFeaturesAcademicYearAndTermListFutureAcademicYearsEndpoint: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Success */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicYearDto"][];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    EnrollifyWebAPIFeaturesAcademicYearAndTermListPreviousAcademicYearsEndpoint: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Success */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicYearDto"][];
                 };
             };
             /** @description Unauthorized */

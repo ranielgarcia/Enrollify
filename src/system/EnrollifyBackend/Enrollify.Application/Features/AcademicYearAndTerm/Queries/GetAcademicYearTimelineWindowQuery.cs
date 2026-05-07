@@ -7,7 +7,7 @@ using Mediator;
 
 namespace Enrollify.Application.Features.AcademicYearAndTerm.Queries;
 
-public class GetAcademicYearTimelineWindowQuery : IQuery<Result<AcademicYearContextDto>>
+public class GetAcademicYearTimelineWindowQuery : IQuery<Result<AcademicYearTimelineDto>>
 {
     public bool IncludePastYears { get; set; }
     public int NumberOfPastYears { get; set; }
@@ -16,13 +16,13 @@ public class GetAcademicYearTimelineWindowQuery : IQuery<Result<AcademicYearCont
 }
 
 public sealed class GetAcademicYearTimelineWindowQueryHandler(IReadRepository<AcademicYear> repository)
-    : IQueryHandler<GetAcademicYearTimelineWindowQuery, Result<AcademicYearContextDto>>
+    : IQueryHandler<GetAcademicYearTimelineWindowQuery, Result<AcademicYearTimelineDto>>
 {
-    public async ValueTask<Result<AcademicYearContextDto>> Handle(
+    public async ValueTask<Result<AcademicYearTimelineDto>> Handle(
         GetAcademicYearTimelineWindowQuery query, CancellationToken cancellationToken)
     {
         var today = DateTime.UtcNow.Date;
-        var toReturn = new AcademicYearContextDto();
+        var toReturn = new AcademicYearTimelineDto();
 
         if (query.IncludePastYears)
         {

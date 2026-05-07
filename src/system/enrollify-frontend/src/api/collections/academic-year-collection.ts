@@ -1,8 +1,8 @@
 import createAppQueryOptions from "@/hooks/create-query-options";
 import createMutationOptions from "@/hooks/create-mutation-options";
 import {
-  AcademicYearSchema,
-  type AcademicYear,
+  AcademicYearTimelineSchema,
+  type AcademicYearTimeline,
 } from "@/api/models/academic-year";
 import { toast } from "sonner";
 
@@ -16,64 +16,41 @@ const queryKeys = {
   delete: (id: number) => [...queryKeys.base(), "delete", id],
 };
 
-export const getActiveAcademicYearOptions = () =>
+interface getAcademicYearTimeLineWindowProps {
+  IncludeFutureYears: boolean;
+  IncludePastYears: boolean;
+  NumberOfFutureYears: number;
+  NumberOfPastYears: number;
+}
+
+export const getAcademicYearTimeLineWindowOptions = ({
+  IncludeFutureYears,
+  IncludePastYears,
+  NumberOfFutureYears,
+  NumberOfPastYears,
+}: getAcademicYearTimeLineWindowProps) =>
   createAppQueryOptions({
-    path: "/api/academic-years/active",
+    path: "/api/academic-year-and-term/timeline-window",
+    params: {
+      IncludeFutureYears,
+      IncludePastYears,
+      NumberOfFutureYears,
+      NumberOfPastYears,
+    },
     options: {
       queryKey: queryKeys.active(),
       staleTime: 1000 * 60 * 5,
-      select: (data): AcademicYear | null => {
+      select: (data): AcademicYearTimeline | null => {
         if (!data || (typeof data === "string" && data === "")) return null;
-        return AcademicYearSchema.parse(data);
+        return AcademicYearTimelineSchema.parse(data);
       },
     },
   });
-
-export const getFutureAcademicYearsOptions = () =>
-  createAppQueryOptions({
-    path: "/api/academic-years/future",
-    options: {
-      queryKey: queryKeys.future(),
-      staleTime: 1000 * 60 * 5,
-      select: (data): AcademicYear[] => {
-        return data.map((ay) => AcademicYearSchema.parse(ay));
-      },
-    },
-  });
-
-export const getPreviousAcademicYearsOptions = () =>
-  createAppQueryOptions({
-    path: "/api/academic-years/previous",
-    options: {
-      queryKey: queryKeys.previous(),
-      staleTime: 1000 * 60 * 5,
-      select: (data): AcademicYear[] => {
-        return data.map((ay) => AcademicYearSchema.parse(ay));
-      },
-    },
-  });
-
-// export const getActiveAcademicYearSuspenseOptions = () =>
-//   createAppSuspenseQueryOptions({
-//     path: "/api/academic-years/active",
-//     options: {
-//       queryKey: queryKeys.active(),
-//       staleTime: 1000 * 60 * 5,
-//       select: (data): AcademicYear | null => {
-//         if (!data || (typeof data === "string" && data === "")) return null;
-//         try {
-//           return AcademicYearSchema.parse(data);
-//         } catch {
-//           return null;
-//         }
-//       },
-//     },
-//   });
 
 export const createAcademicYearOptions = () =>
   createMutationOptions({
     httpVerb: "post",
-    path: "/api/academic-years",
+    path: "/api/academic-year-and-term",
     mutationKey: queryKeys.create(),
     options: {
       meta: { invalidateQueries: [queryKeys.base()] },
@@ -84,7 +61,7 @@ export const createAcademicYearOptions = () =>
 export const updateAcademicYearOptions = (id: number) =>
   createMutationOptions({
     httpVerb: "put",
-    path: "/api/academic-years/{id}",
+    path: "/api/academic-year-and-term/{id}",
     pathParams: { id },
     mutationKey: queryKeys.update(id),
     options: {
@@ -96,7 +73,7 @@ export const updateAcademicYearOptions = (id: number) =>
 export const deleteAcademicYearOptions = (id: number) =>
   createMutationOptions({
     httpVerb: "delete",
-    path: "/api/academic-years/{id}",
+    path: "/api/academic-year-and-term/{id}",
     pathParams: { id },
     mutationKey: queryKeys.delete(id),
     options: {

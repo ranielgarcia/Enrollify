@@ -22,5 +22,12 @@ export const AcademicYearSchema = z
   })
   .extend(AuditInfoSchema.shape);
 
+export const AcademicYearTimelineSchema = z.object({
+  previous: z.array(AcademicYearSchema).optional(),
+  current: AcademicYearSchema.nullable().optional(),
+  future: z.array(AcademicYearSchema).optional(),
+});
+
 export type AcademicYear = z.infer<typeof AcademicYearSchema>;
 export type AcademicTerm = z.infer<typeof AcademicTermSchema>;
+export type AcademicYearTimeline = z.infer<typeof AcademicYearTimelineSchema>;

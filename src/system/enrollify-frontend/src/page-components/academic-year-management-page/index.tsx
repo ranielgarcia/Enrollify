@@ -1,8 +1,4 @@
-import {
-  getActiveAcademicYearOptions,
-  getFutureAcademicYearsOptions,
-  getPreviousAcademicYearsOptions,
-} from "@/api/collections/academic-year-collection";
+import { getAcademicYearTimeLineWindowOptions } from "@/api/collections/academic-year-collection";
 import type { AcademicYear } from "@/api/models/academic-year";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -38,15 +34,15 @@ export default function AcademicYearManagementPage() {
     handleFormOpenChange,
   } = useCrudState<AcademicYear>();
 
-  const { data: activeYear, isPending: isLoadingActiveYear } = useSuspenseQuery(
-    getActiveAcademicYearOptions(),
-  );
-
-  const { data: previousYears, isPending: isLoadingPreviousYears } =
-    useSuspenseQuery(getPreviousAcademicYearsOptions());
-
-  const { data: futureYears, isPending: isLoadingFutureYears } =
-    useSuspenseQuery(getFutureAcademicYearsOptions());
+  const { data: academicYearTimeline, isPending: isLoadingAcademicYears } =
+    useSuspenseQuery(
+      getAcademicYearTimeLineWindowOptions({
+        IncludeFutureYears: true,
+        IncludePastYears: true,
+        NumberOfFutureYears: 2,
+        NumberOfPastYears: 5,
+      }),
+    );
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -60,7 +56,8 @@ export default function AcademicYearManagementPage() {
 
   /** Called from the Active tab "Edit" button — pre-fills the create form */
   const handleEditActiveYear = () => {
-    if (activeYear) handleEdit(activeYear);
+    if (academicYearTimeline?.current)
+      handleEdit(academicYearTimeline?.current);
     handleTabChange("create");
   };
 
@@ -80,9 +77,7 @@ export default function AcademicYearManagementPage() {
       title="Academic Year Management"
       description="Manage academic years and their terms (semesters)"
       icon={<ModuleIcons.academicYear className="size-9 text-primary" />}
-      isLoading={
-        isLoadingActiveYear || isLoadingPreviousYears || isLoadingFutureYears
-      }
+      isLoading={isLoadingAcademicYears}
       createNewItemButton={null}
     >
       <Tabs
@@ -112,7 +107,7 @@ export default function AcademicYearManagementPage() {
         {/* Tab 1 — Active Academic Year */}
         <TabsContent value="active" className="flex min-h-0 flex-col space-y-4">
           <ActiveAcademicYearTab
-            activeYear={activeYear ?? null}
+            activeYear={academicYearTimeline?.current ?? null}
             onEdit={handleEditActiveYear}
             createTabLabel={TAB_LABELS.create}
           />
@@ -131,7 +126,7 @@ export default function AcademicYearManagementPage() {
         {/* Tab 3 — Future Academic Years */}
         <TabsContent value="future" className="flex min-h-0 flex-col space-y-4">
           <FutureAcademicYearsTab
-            futureYears={futureYears ?? []}
+            futureYears={academicYearTimeline?.future ?? []}
             onDelete={handleDelete}
           />
         </TabsContent>
@@ -141,7 +136,9 @@ export default function AcademicYearManagementPage() {
           value="previous"
           className="flex min-h-0 flex-col space-y-4"
         >
-          <PreviousAcademicYearsTab previousYears={previousYears ?? []} />
+          <PreviousAcademicYearsTab
+            previousYears={academicYearTimeline?.previous ?? []}
+          />
         </TabsContent>
       </Tabs>
 
