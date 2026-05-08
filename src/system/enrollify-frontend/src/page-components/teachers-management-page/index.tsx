@@ -15,6 +15,7 @@ export default function TeachersManagementPage() {
   const [{ page, perPage, filters, sort, joinOperator }] =
     useQueryStates(searchParams);
 
+  console.log(filters);
   const {
     isFormOpen,
     entityToEdit: teacherToEdit,

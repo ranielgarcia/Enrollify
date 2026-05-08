@@ -3,11 +3,11 @@ import { AuditInfoSchema } from "@/api/models/audit-info";
 
 export const AcademicTermSchema = z.object({
   id: z.number(),
-  termNumber: z.number().optional(),
-  termName: z.string().optional(),
-  academicYearId: z.number().optional(),
-  startDate: z.string().nullish(),
-  endDate: z.string().nullish(),
+  termNumber: z.number(),
+  termName: z.string(),
+  academicYearId: z.number(),
+  startDate: z.string(),
+  endDate: z.string(),
 });
 
 export const AcademicYearSchema = z
@@ -15,9 +15,10 @@ export const AcademicYearSchema = z
     id: z.number(),
     startDate: z.string().nullish(),
     endDate: z.string().nullish(),
-    startYear: z.number().optional(),
-    endYear: z.number().optional(),
-    academicYearTitle: z.string().optional(),
+    startYear: z.number(),
+    endYear: z.number(),
+    academicYearTitle: z.string(),
+    academicYearSlug: z.string(),
     academicTerms: z.array(AcademicTermSchema).optional(),
   })
   .extend(AuditInfoSchema.shape);

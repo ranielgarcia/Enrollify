@@ -6,28 +6,30 @@ import {
 } from "@/api/models/academic-year";
 import { toast } from "sonner";
 
+interface getAcademicYearTimeLineWindowProps {
+  IncludeFutureYears?: boolean;
+  IncludePastYears?: boolean;
+  NumberOfFutureYears?: number;
+  NumberOfPastYears?: number;
+}
+
 const queryKeys = {
   base: () => ["academic-years"],
-  active: () => [...queryKeys.base(), "active"],
-  future: () => [...queryKeys.base(), "future"],
-  previous: () => [...queryKeys.base(), "previous"],
+  timelineWindow: (props: getAcademicYearTimeLineWindowProps) => [
+    ...queryKeys.base(),
+    "timeline-window",
+    props,
+  ],
   create: () => [...queryKeys.base(), "create"],
   update: (id: number) => [...queryKeys.base(), "update", id],
   delete: (id: number) => [...queryKeys.base(), "delete", id],
 };
 
-interface getAcademicYearTimeLineWindowProps {
-  IncludeFutureYears: boolean;
-  IncludePastYears: boolean;
-  NumberOfFutureYears: number;
-  NumberOfPastYears: number;
-}
-
 export const getAcademicYearTimeLineWindowOptions = ({
-  IncludeFutureYears,
-  IncludePastYears,
-  NumberOfFutureYears,
-  NumberOfPastYears,
+  IncludeFutureYears = false,
+  IncludePastYears = false,
+  NumberOfFutureYears = 0,
+  NumberOfPastYears = 0,
 }: getAcademicYearTimeLineWindowProps) =>
   createAppQueryOptions({
     path: "/api/academic-year-and-term/timeline-window",
@@ -38,7 +40,12 @@ export const getAcademicYearTimeLineWindowOptions = ({
       NumberOfPastYears,
     },
     options: {
-      queryKey: queryKeys.active(),
+      queryKey: queryKeys.timelineWindow({
+        IncludeFutureYears,
+        IncludePastYears,
+        NumberOfFutureYears,
+        NumberOfPastYears,
+      }),
       staleTime: 1000 * 60 * 5,
       select: (data): AcademicYearTimeline | null => {
         if (!data || (typeof data === "string" && data === "")) return null;

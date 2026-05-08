@@ -1184,6 +1184,7 @@ export interface components {
              */
             endYear?: number;
             academicYearTitle?: string;
+            academicYearSlug?: string;
             academicTerms?: components["schemas"]["EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicTermDto"][];
         };
         EnrollifyApplicationFeaturesAcademicYearAndTermDTOsAcademicTermDto: components["schemas"]["EnrollifyApplicationBaseDto"] & {

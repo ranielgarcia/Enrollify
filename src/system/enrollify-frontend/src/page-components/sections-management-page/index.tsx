@@ -47,9 +47,59 @@ export default function SectionsManagementPage() {
   const { data: teachers } = useSuspenseQuery(
     filterTeachersPaginatedOptions(1, 10, [], [], "and"),
   );
-  // const { data: academicTerms } = useSuspenseQuery(
-  //   getAllAcademicTermsOptions(),
+
+  // const { data: academicYearTimeline } = useSuspenseQuery(
+  //   getAcademicYearTimeLineWindowOptions({
+  //     IncludeFutureYears: true,
+  //     IncludePastYears: true,
+  //     NumberOfFutureYears: 2,
+  //     NumberOfPastYears: 5,
+  //   }),
   // );
+
+  // const futureAcademicYearsOptions: SearchableSelectOption[] =
+  //   academicYearTimeline?.future?.map((year) => ({
+  //     value: year.id.toString(),
+  //     label: year.academicYearTitle ?? "<invalid academic year title...>",
+  //   })) ?? [];
+  // const previousAcademicYearsOptions: SearchableSelectOption[] =
+  //   academicYearTimeline?.previous?.map((year) => ({
+  //     value: year.id.toString(),
+  //     label: year.academicYearTitle ?? "<invalid academic year title...>",
+  //   })) ?? [];
+  // const currentAcademicYearOption: SearchableSelectOption | null =
+  //   academicYearTimeline?.current
+  //     ? {
+  //         value: academicYearTimeline.current.id.toString(),
+  //         label: `${academicYearTimeline.current.academicYearTitle ?? "<invalid academic year title...>"} (active)`,
+  //       }
+  //     : null;
+
+  // const academicYearOptions = [
+  //   ...futureAcademicYearsOptions,
+  //   ...previousAcademicYearsOptions,
+  // ];
+  // if (currentAcademicYearOption) {
+  //   academicYearOptions.push(currentAcademicYearOption);
+  // }
+
+  {
+    /* <SearchableSelect
+            options={academicYearOptions}
+            value={field.state.value?.toString() ?? ""}
+            onValueChange={(val) => {
+              const parsed = Number(val);
+              field.handleChange(Number.isNaN(parsed) ? val : parsed);
+              onValueChange?.(val);
+            }}
+            name={field.name}
+            placeholder={placeholder}
+            searchPlaceholder={searchPlaceholder}
+            emptyMessage={emptyMessage}
+            disabled={disabled}
+            aria-describedby={describedBy}
+          /> */
+  }
 
   return (
     <ManagementPageLayout
