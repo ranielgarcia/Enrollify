@@ -19,6 +19,7 @@ public class AcademicYearConfiguration : IEntityTypeConfiguration<AcademicYear>
         builder.Ignore(e => e.StartYear);
         builder.Ignore(e => e.EndYear);
         builder.Ignore(e => e.AcademicYearTitle);
+        builder.Ignore(e => e.AcademicYearSlug);
 
         // Audit fields
         builder.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
