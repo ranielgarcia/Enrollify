@@ -110,7 +110,7 @@ export function BuildingFormDrawer({
           size="sm"
         >
           <Plus className="size-4" />
-          Add Building
+          New Building
         </Button>
       </DrawerTrigger>
       <DrawerContent>

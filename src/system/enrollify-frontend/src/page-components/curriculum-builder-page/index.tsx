@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { BookOpen, OctagonAlert } from "lucide-react";
 
 import { useNavigate, useParams } from "@tanstack/react-router";
@@ -18,18 +17,21 @@ import { getAllCoursesOptions } from "@/api/collections/course-collection";
 import { CurriculumFormDrawer } from "./curriculum-form-drawer";
 import { ModuleIcons } from "@/config/module-icons";
 
-function CurriculumContent() {
+export default function CurriculumPage() {
   const navigate = useNavigate();
   const { curriculumId } = useParams({ strict: false });
 
   const { isFormOpen, handleEdit, handleFormOpenChange } =
     useCrudState<CurriculumWithSubjects>();
 
+  // TODO: Refactor to avoid fetching all curriculums when curriculumId is present. This is currently needed to determine whether to show the "not found" state,
+  // but can be optimized by having a separate query that just checks for existence of the curriculum with the given ID.
+  // https://github.com/ranielgarcia/Enrollify/issues/83
   const { data: curriculum, isPending: isLoadingCurriculum } = useQuery(
     getCurriculumQueryOption(obfuscator.decode(curriculumId ?? "").at(0)),
   );
 
-  const { data: curriculums } = useQuery(
+  const { data: curriculums } = useSuspenseQuery(
     getAllCurriculumsOptions(curriculumId === undefined),
   );
 
@@ -111,13 +113,5 @@ function CurriculumContent() {
         </div>
       )}
     </ManagementPageLayout>
-  );
-}
-
-export default function CurriculumPage() {
-  return (
-    <Suspense fallback={null}>
-      <CurriculumContent />
-    </Suspense>
   );
 }

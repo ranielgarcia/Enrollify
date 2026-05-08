@@ -12,7 +12,8 @@ public class AcademicYearDto : BaseDto
     public Year StartYear { get; private set; }
     public Year EndYear { get; private set; }
 
-    public string AcademicYearTitle { get; private set; }
+    public string AcademicYearTitle { get; private set; } = string.Empty;
+    public string AcademicYearSlug { get; private set; } = string.Empty;
 
     public AcademicTermDto[] AcademicTerms { get; private set; } = Array.Empty<AcademicTermDto>();
 
@@ -26,6 +27,7 @@ public class AcademicYearDto : BaseDto
             StartYear = entity.StartYear,
             EndYear = entity.EndYear,
             AcademicYearTitle = entity.AcademicYearTitle,
+            AcademicYearSlug = entity.AcademicYearSlug,
             AcademicTerms = entity.AcademicTerms.Select(AcademicTermDto.FromEntity).ToArray(),
             CreatedAt = entity.CreatedAt,
             CreatedBy = BaseUserDto.FromUser(entity.CreatedByUser),

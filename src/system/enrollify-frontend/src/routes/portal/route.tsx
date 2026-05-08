@@ -16,7 +16,6 @@ import {
 import { Toaster } from "@/components/ui/sonner";
 import { AuthenticationProvider } from "@/infrastructure/authentication/authentication-provider";
 import { AuthorizationProvider } from "@/infrastructure/authorization/AuthorizationProvider";
-import { SystemSettingsProvider } from "@/infrastructure/system-settings/system-settings-provider";
 import type { RouteLoaderData } from "@/types/route.types";
 import { Separator } from "@radix-ui/react-separator";
 import {
@@ -27,9 +26,17 @@ import {
   useMatches,
 } from "@tanstack/react-router";
 import React, { Suspense } from "react";
+import { getAcademicYearTimeLineWindowOptions } from "@/api/collections/academic-year-collection";
+import { getAcademicCoreSettingsQueryOptions } from "@/api/collections/academic-settings-collection";
+import { EnrollmentContextProvider } from "@/contexts/enrollment-context/enrollment-context-provider";
+import z from "zod";
+import { EnrollmentContextDialog } from "@/components/enrollment-context/enrollment-context-dialog";
 
 export const Route = createFileRoute("/portal")({
-  beforeLoad: async ({ context: { msal }, location }) => {
+  validateSearch: z.object({
+    academicYear: z.string().optional(),
+  }),
+  beforeLoad: async ({ context: { msal, queryClient }, location }) => {
     const activeAccount = msal?.instance.getActiveAccount();
     if (!activeAccount) {
       throw redirect({
@@ -38,7 +45,19 @@ export const Route = createFileRoute("/portal")({
           redirect: location.href,
         },
       });
-    } else if (location.pathname === "/portal") {
+    }
+    // Prefetch essential data for the portal to ensure a smoother user experience after login
+    await queryClient.prefetchQuery(
+      getAcademicYearTimeLineWindowOptions({
+        IncludeFutureYears: true,
+        IncludePastYears: true,
+        NumberOfFutureYears: 2,
+        NumberOfPastYears: 2,
+      }),
+    );
+    await queryClient.prefetchQuery(getAcademicCoreSettingsQueryOptions());
+
+    if (location.pathname === "/portal") {
       throw redirect({
         to: "/portal/home",
       });
@@ -71,12 +90,12 @@ function RouteComponent() {
   return (
     <AuthenticationProvider>
       <AuthorizationProvider>
-        <SystemSettingsProvider>
+        <EnrollmentContextProvider>
           <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
               <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 bg-sidebar">
-                <div className="flex items-center gap-2 px-4">
+                <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
                   <SidebarTrigger className="-ml-1" />
                   <Separator
                     orientation="vertical"
@@ -107,6 +126,9 @@ function RouteComponent() {
                       ))}
                     </BreadcrumbList>
                   </Breadcrumb>
+                  <div className="ml-auto flex items-center gap-2">
+                    <EnrollmentContextDialog />
+                  </div>
                 </div>
               </header>
               <Suspense
@@ -124,7 +146,7 @@ function RouteComponent() {
               <Toaster position="bottom-right" />
             </SidebarInset>
           </SidebarProvider>
-        </SystemSettingsProvider>
+        </EnrollmentContextProvider>
       </AuthorizationProvider>
     </AuthenticationProvider>
   );

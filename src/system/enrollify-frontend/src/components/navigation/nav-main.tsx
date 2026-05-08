@@ -27,6 +27,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import type { PolicyName } from "@/infrastructure/authorization/models/PolicyNames";
 import { useAuthorization } from "@/infrastructure/authorization/components/useAuthorization";
+import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 interface SubItemProps {
   title: string;
@@ -58,6 +59,7 @@ function NavSubItem({
 }) {
   const { checkPolicy } = useAuthorization();
   const [canView, setCanView] = useState<boolean | null>(null);
+  const { selectedAcademicYearSlug } = useEnrollmentContext();
 
   useEffect(() => {
     let isMounted = true;
@@ -97,7 +99,11 @@ function NavSubItem({
             : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
         )}
       >
-        <Link to={subItem.url} params={subItem.params}>
+        <Link
+          to={subItem.url}
+          params={subItem.params}
+          search={{ academicYear: selectedAcademicYearSlug }}
+        >
           {subItem.icon && (
             <subItem.icon
               className={cn(

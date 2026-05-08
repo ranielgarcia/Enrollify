@@ -79,4 +79,11 @@ public class PolicyName
     public const string HasDeleteAcademicYearAndTermPermission = "HasDeleteAcademicYearAndTermPermission";
     public const string HasViewAcademicYearAndTermPermission = "HasViewAcademicYearAndTermPermission";
 
+
+    // Class Sections
+    public const string HasCreateClassSectionPermission = "HasCreateClassSectionPermission";
+    public const string HasUpdateClassSectionPermission = "HasUpdateClassSectionPermission";
+    public const string HasDeleteClassSectionPermission = "HasDeleteClassSectionPermission";
+    public const string HasViewClassSectionsPermission = "HasViewClassSectionsPermission";
+
 }

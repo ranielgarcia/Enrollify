@@ -26,6 +26,7 @@ public class AcademicYear : EntityBase<AcademicYear, AcademicYearId>, IAggregate
     public Year EndYear => Year.From(EndDate.Value.Year);
 
     public string AcademicYearTitle => $"AY {StartYear.Value}-{EndYear.Value}";
+    public string AcademicYearSlug => $"{StartYear.Value}-{EndYear.Value}";
 
     public IReadOnlyCollection<AcademicTerm> AcademicTerms => _academicTerms.AsReadOnly();
 
