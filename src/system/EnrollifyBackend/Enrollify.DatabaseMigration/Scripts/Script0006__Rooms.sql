@@ -1,0 +1,34 @@
+CREATE TABLE Rooms
+(
+	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	RoomNumber VARCHAR(50) NOT NULL,
+	Capacity INT NOT NULL,
+	RoomTypeId INT NOT NULL,
+	BuildingId INT NOT NULL,
+
+	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+	CreatedBy INT NOT NULL,
+	UpdatedAt DATETIMEOFFSET NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIMEOFFSET NULL,
+	DeletedBy INT NULL,
+	IsActive BIT NOT NULL DEFAULT 1,
+	CONSTRAINT FK_Rooms_RoomType FOREIGN KEY (RoomTypeId) REFERENCES RoomTypes(Id),
+	CONSTRAINT FK_Rooms_Building FOREIGN KEY (BuildingId) REFERENCES Buildings(Id),
+	CONSTRAINT FK_Rooms_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Rooms_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_Rooms_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
+	CONSTRAINT CHK_Rooms_Capacity_Positive CHECK (Capacity > 0)
+);
+GO;
+
+-- Rooms indexes
+CREATE NONCLUSTERED INDEX IX_Rooms_RoomTypeId
+ON Rooms(RoomTypeId);
+GO
+
+
+CREATE UNIQUE NONCLUSTERED INDEX UIdx_Rooms_RoomNumber_Building_IsActive
+ON Rooms(RoomNumber, BuildingId)
+WHERE IsActive = 1;
+GO
