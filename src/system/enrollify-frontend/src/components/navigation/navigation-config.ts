@@ -1,27 +1,10 @@
-import { Settings2, DatabaseIcon, type LucideIcon } from "lucide-react";
+import { DatabaseIcon } from "lucide-react";
 
 import { PolicyNames } from "@/infrastructure/authorization/models/PolicyNames";
-import type { PolicyName } from "@/infrastructure/authorization/models/PolicyNames";
-import type { FileRouteTypes } from "@/routeTree.gen";
 import { ModuleIcons } from "@/config/module-icons";
+import type { NavMainItemProp } from "./nav-main";
 
-export interface NavSubItemConfig {
-  title: string;
-  url: FileRouteTypes["to"] & {};
-  params?: Record<string, string>;
-  viewAuthorizationPolicies: PolicyName[];
-  icon?: LucideIcon;
-}
-
-export interface NavMainItemConfig {
-  title: string;
-  url: FileRouteTypes["to"] & {};
-  icon: LucideIcon;
-  isActive?: boolean;
-  items: NavSubItemConfig[];
-}
-
-export const navigationItems: NavMainItemConfig[] = [
+export const navigationItems: NavMainItemProp[] = [
   {
     title: "Master Data",
     url: "/portal/master-data",
@@ -95,36 +78,9 @@ export const navigationItems: NavMainItemConfig[] = [
       },
       {
         title: "Class Sections",
-        url: "/portal/curriculum-and-scheduling/sections" as any,
+        url: "/portal/curriculum-and-scheduling/sections",
         viewAuthorizationPolicies: [PolicyNames.canViewClassSections],
         icon: ModuleIcons.sections,
-      },
-    ],
-  },
-  {
-    title: "Settings",
-    url: "/",
-    icon: Settings2,
-    items: [
-      {
-        title: "General",
-        url: "/",
-        viewAuthorizationPolicies: [],
-      },
-      {
-        title: "Team",
-        url: "#",
-        viewAuthorizationPolicies: [],
-      },
-      {
-        title: "Billing",
-        url: "#",
-        viewAuthorizationPolicies: [],
-      },
-      {
-        title: "Limits",
-        url: "#",
-        viewAuthorizationPolicies: [],
       },
     ],
   },

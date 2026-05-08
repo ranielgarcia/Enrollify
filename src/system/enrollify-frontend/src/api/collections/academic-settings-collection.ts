@@ -19,8 +19,8 @@ export const getAcademicSettingsQueryOptions = () =>
       queryKey: queryKeys.AcademicSettings(),
       // staleTime: 10 minutes - how long before data is considered stale
       staleTime: 1000 * 60 * 10,
-      // gcTime: 24 hours - how long to keep unused data in cache memory
-      gcTime: 1000 * 60 * 60 * 24,
+      // gcTime: 1 hours - how long to keep unused data in cache memory
+      gcTime: 1000 * 60 * 60,
       select: (settings): AcademicSettings => {
         return AcademicSettingsSchema.parse(settings);
       },

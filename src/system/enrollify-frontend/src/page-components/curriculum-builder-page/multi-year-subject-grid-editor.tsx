@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { useSystemSettingsContext } from "@/infrastructure/system-settings/system-settings-context";
+import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { Check, Cloud, CloudOff, Loader2, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -122,8 +122,8 @@ const SESSION_STORAGE_KEY = "curr-multi-year-subj-grid-editor-auto-save";
 export default function MultiYearSubjectGridEditor({
   curriculum,
 }: MultiYearSubjectGridEditorProps) {
-  const systemSettings = useSystemSettingsContext();
-  const numberOfSemesters = systemSettings.academicSettings.academicSystem;
+  const { academicSettings } = useEnrollmentContext();
+  const numberOfSemesters = academicSettings.academicSystem;
 
   const [isDirty, setIsDirty] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");

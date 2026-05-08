@@ -1,14 +1,15 @@
 import React, { useEffect } from "react";
 import {
+  defaultEnrollmentContextValue,
   EnrollmentContext,
   type EnrollmentContextValue,
 } from "./enrollment-context";
 import { getAcademicSettingsQueryOptions } from "@/api/collections/academic-settings-collection";
 import { useQuery } from "@tanstack/react-query";
-import { defaultSystemSettingsContext } from "@/infrastructure/system-settings/system-settings-context";
 import { useMsal } from "@azure/msal-react";
 import { getAcademicYearTimeLineWindowOptions } from "@/api/collections/academic-year-collection";
 import { useQueryState } from "nuqs";
+import { ACADEMIC_YEAR_QUERY_KEY } from "@/constants/global-query-strings";
 
 export const EnrollmentContextProvider = ({
   children,
@@ -20,7 +21,7 @@ export const EnrollmentContextProvider = ({
 
   const [selectedAcademicYearSlug, setSelectedAcademicYearSlug] = useQueryState<
     string | null
-  >("academicYear", {
+  >(ACADEMIC_YEAR_QUERY_KEY, {
     parse: (value) => {
       return value;
     },
@@ -83,7 +84,7 @@ export const EnrollmentContextProvider = ({
   const contextValue = React.useMemo<EnrollmentContextValue>(
     () => ({
       academicSettings:
-        academicSettings ?? defaultSystemSettingsContext.academicSettings,
+        academicSettings ?? defaultEnrollmentContextValue.academicSettings,
       activeAcademicYear: academicYearTimelineWindow?.current ?? null,
       academicYears,
       selectedAcademicYearSlug: selectedAcademicYearSlug,

@@ -46,7 +46,10 @@ export const getAcademicYearTimeLineWindowOptions = ({
         NumberOfFutureYears,
         NumberOfPastYears,
       }),
-      staleTime: 1000 * 60 * 5,
+      meta: { persist: true },
+      staleTime: 1000 * 60 * 5, // 5 mins
+      // gcTime: 1 hours - how long to keep unused data in cache memory
+      gcTime: 1000 * 60 * 60,
       select: (data): AcademicYearTimeline | null => {
         if (!data || (typeof data === "string" && data === "")) return null;
         return AcademicYearTimelineSchema.parse(data);

@@ -12,8 +12,8 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { CalendarRange, Loader2 } from "lucide-react";
 import z from "zod";
-import { useSystemSettingsContext } from "@/infrastructure/system-settings/system-settings-context";
 import { formatNumberToOrdinal } from "@/lib/format";
+import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 // ---------- Zod schemas ----------
 
@@ -99,8 +99,8 @@ export function CreateAcademicYearForm({
   onSuccess,
   onCancel,
 }: CreateAcademicYearFormProps) {
-  const systemSettings = useSystemSettingsContext();
-  const numberOfSemesters = systemSettings.academicSettings.academicSystem;
+  const { academicSettings } = useEnrollmentContext();
+  const numberOfSemesters = academicSettings.academicSystem;
 
   const isUpdating = !!yearToEdit;
 

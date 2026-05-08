@@ -16,7 +16,6 @@ import {
 import { Toaster } from "@/components/ui/sonner";
 import { AuthenticationProvider } from "@/infrastructure/authentication/authentication-provider";
 import { AuthorizationProvider } from "@/infrastructure/authorization/AuthorizationProvider";
-import { SystemSettingsProvider } from "@/infrastructure/system-settings/system-settings-provider";
 import type { RouteLoaderData } from "@/types/route.types";
 import { Separator } from "@radix-ui/react-separator";
 import {
@@ -30,8 +29,13 @@ import React, { Suspense } from "react";
 import { getAcademicYearTimeLineWindowOptions } from "@/api/collections/academic-year-collection";
 import { Button } from "@/components/ui/button";
 import { getAcademicSettingsQueryOptions } from "@/api/collections/academic-settings-collection";
+import { EnrollmentContextProvider } from "@/contexts/enrollment-context/enrollment-context-provider";
+import z from "zod";
 
 export const Route = createFileRoute("/portal")({
+  validateSearch: z.object({
+    academicYear: z.string().optional(),
+  }),
   beforeLoad: async ({ context: { msal, queryClient }, location }) => {
     const activeAccount = msal?.instance.getActiveAccount();
     if (!activeAccount) {
@@ -86,7 +90,7 @@ function RouteComponent() {
   return (
     <AuthenticationProvider>
       <AuthorizationProvider>
-        <SystemSettingsProvider>
+        <EnrollmentContextProvider>
           <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
@@ -156,7 +160,7 @@ function RouteComponent() {
               <Toaster position="bottom-right" />
             </SidebarInset>
           </SidebarProvider>
-        </SystemSettingsProvider>
+        </EnrollmentContextProvider>
       </AuthorizationProvider>
     </AuthenticationProvider>
   );
