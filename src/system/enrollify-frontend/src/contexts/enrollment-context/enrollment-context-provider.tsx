@@ -49,10 +49,10 @@ export const EnrollmentContextProvider = ({
 
   const academicYears = React.useMemo(() => {
     return [
+      ...(academicYearTimelineWindow?.future ?? []),
       ...(academicYearTimelineWindow?.current
         ? [academicYearTimelineWindow.current]
         : []),
-      ...(academicYearTimelineWindow?.future ?? []),
       ...(academicYearTimelineWindow?.previous ?? []),
     ];
   }, [academicYearTimelineWindow]);

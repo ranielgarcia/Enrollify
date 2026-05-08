@@ -1,15 +1,13 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -19,12 +17,19 @@ import {
 } from "@/components/ui/select";
 import { ACADEMIC_TERM_SYSTEMS } from "@/constants/academic-systems";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
-import { Edit2Icon } from "lucide-react";
+import {
+  CalendarClock,
+  CalendarDays,
+  CalendarRange,
+  Edit2Icon,
+} from "lucide-react";
 import React from "react";
 
 export function EnrollmentContextDialog() {
   const {
     academicYears,
+    activeAcademicYear,
+    selectedAcademicYear,
     selectedAcademicYearSlug,
     academicCoreSettings: { academicTermSystem },
     setSelectedAcademicYearSlug,
@@ -51,45 +56,121 @@ export function EnrollmentContextDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="link">
-          Manage Context <Edit2Icon />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-sm">
+      <Button variant="link" size="sm" onClick={() => setOpen(true)}>
+        {selectedAcademicYear?.academicYearTitle ?? "Not selected"}{" "}
+        <Edit2Icon className="size-3.5" />
+      </Button>
+
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Enrollment Context</DialogTitle>
-          <DialogDescription>
-            Select the academic year you want to work in. The term system is
-            determined by your institution&apos;s settings.
-          </DialogDescription>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
+              <CalendarDays className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <DialogTitle className="text-base">
+                Enrollment Context
+              </DialogTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Set the academic year for your current working session.
+              </p>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          {/* Term System (read-only) */}
-          <div className="grid gap-1.5">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wide">
-              Term System
-            </Label>
-            <p className="text-sm font-medium">{termSystemName}</p>
+        <div className="space-y-5 py-1">
+          {/* Current context hero card */}
+          <div className="relative overflow-hidden rounded-xl border bg-linear-to-br from-primary/5 via-background to-background p-4 shadow-sm">
+            <div className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-primary/8 blur-2xl" />
+            <div className="relative space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Current Context
+              </p>
+
+              {/* Academic year row */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
+                    <CalendarDays className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold leading-none">
+                      {selectedAcademicYear?.academicYearTitle ??
+                        "Not selected"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Academic Year
+                    </p>
+                  </div>
+                </div>
+                {selectedAcademicYear &&
+                activeAcademicYear &&
+                selectedAcademicYear?.id === activeAcademicYear?.id ? (
+                  <Badge className="text-[11px] px-2 py-0.5 font-semibold bg-emerald-500/15 text-emerald-600 border border-emerald-500/25 hover:bg-emerald-500/15">
+                    ● Active
+                  </Badge>
+                ) : (
+                  <Badge className="text-[11px] px-2 py-0.5 font-semibold bg-muted text-muted-foreground border hover:bg-muted">
+                    ● Inactive
+                  </Badge>
+                )}
+              </div>
+
+              {/* Term system row */}
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
+                  <CalendarClock className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold leading-none">
+                    {termSystemName}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Term System
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Academic Year Select */}
-          <div className="grid gap-1.5">
-            <Label htmlFor="academic-year-select">Academic Year</Label>
+          {/* Dashed divider */}
+          <div className="relative pb-2">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-dashed" />
+            </div>
+          </div>
+
+          {/* Change academic year form section */}
+          <section className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
+                <CalendarRange className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold leading-none">
+                  Change Academic Year
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Select the year you want to work in
+                </p>
+              </div>
+            </div>
+
             <Select value={localSlug} onValueChange={setLocalSlug}>
-              <SelectTrigger id="academic-year-select">
-                <SelectValue placeholder="Select an academic year" />
+              <SelectTrigger>
+                <SelectValue placeholder="Select an academic year…" />
               </SelectTrigger>
               <SelectContent>
                 {academicYears.map((ay) => (
                   <SelectItem key={ay.id} value={ay.academicYearSlug}>
-                    {ay.academicYearTitle}
+                    {activeAcademicYear && activeAcademicYear.id === ay.id
+                      ? `${ay.academicYearTitle} (Active)`
+                      : ay.academicYearTitle}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </section>
         </div>
 
         <DialogFooter>
