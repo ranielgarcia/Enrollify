@@ -1,4 +1,4 @@
-﻿namespace Enrollify.WebAPI.Features.SystemSettings;
+namespace Enrollify.WebAPI.Features.SystemSettings;
 
 public class SystemSettingsGroup : Group
 {

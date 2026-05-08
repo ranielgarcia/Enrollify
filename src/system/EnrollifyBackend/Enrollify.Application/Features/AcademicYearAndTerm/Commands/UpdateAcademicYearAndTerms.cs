@@ -38,7 +38,7 @@ public static class UpdateAcademicYearAndTerms
 
         public async ValueTask<Result<AcademicYearDto>> Handle(Command command, CancellationToken cancellationToken)
         {
-            var expectedTermCount = new AcademicSettings().AcademicSystem;
+            var expectedTermCount = new AcademicCoreSettings().AcademicTermSystem;
 
             if (command.academicTerms is null || command.academicTerms.Length == 0)
                 return Result<AcademicYearDto>.Invalid(new ValidationError("At least one academic term must be provided."));

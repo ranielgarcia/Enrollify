@@ -63,7 +63,7 @@ public class UpdateAcademicYearAndTermsTests
     [Fact]
     public async Task Handle_TermCountLessThanRequired_ReturnsInvalidResult()
     {
-        // AcademicSystem is Trimester (3); providing only 2 terms
+        // AcademicTermSystem is Trimester (3); providing only 2 terms
         var command = new UpdateAcademicYearAndTerms.Command(ValidId, ValidStart, ValidEnd,
         [
             CreateTerm(1, new DateTime(2024, 6, 1), new DateTime(2024, 9, 30)),
@@ -81,7 +81,7 @@ public class UpdateAcademicYearAndTermsTests
     [Fact]
     public async Task Handle_TermCountMoreThanRequired_ReturnsInvalidResult()
     {
-        // AcademicSystem is Trimester (3); providing 4 terms
+        // AcademicTermSystem is Trimester (3); providing 4 terms
         var command = new UpdateAcademicYearAndTerms.Command(ValidId, ValidStart, ValidEnd,
         [
             CreateTerm(1, new DateTime(2024, 6, 1), new DateTime(2024, 9, 30)),

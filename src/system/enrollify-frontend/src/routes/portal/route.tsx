@@ -27,10 +27,10 @@ import {
 } from "@tanstack/react-router";
 import React, { Suspense } from "react";
 import { getAcademicYearTimeLineWindowOptions } from "@/api/collections/academic-year-collection";
-import { Button } from "@/components/ui/button";
-import { getAcademicSettingsQueryOptions } from "@/api/collections/academic-settings-collection";
+import { getAcademicCoreSettingsQueryOptions } from "@/api/collections/academic-settings-collection";
 import { EnrollmentContextProvider } from "@/contexts/enrollment-context/enrollment-context-provider";
 import z from "zod";
+import { EnrollmentContextDialog } from "@/components/enrollment-context/enrollment-context-dialog";
 
 export const Route = createFileRoute("/portal")({
   validateSearch: z.object({
@@ -55,7 +55,7 @@ export const Route = createFileRoute("/portal")({
         NumberOfPastYears: 2,
       }),
     );
-    await queryClient.prefetchQuery(getAcademicSettingsQueryOptions());
+    await queryClient.prefetchQuery(getAcademicCoreSettingsQueryOptions());
 
     if (location.pathname === "/portal") {
       throw redirect({
@@ -127,21 +127,7 @@ function RouteComponent() {
                     </BreadcrumbList>
                   </Breadcrumb>
                   <div className="ml-auto flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      asChild
-                      size="sm"
-                      className="hidden sm:flex"
-                    >
-                      <a
-                        href="https://github.com/shadcn-ui/ui/tree/main/apps/v4/app/(examples)/dashboard"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                        className="dark:text-foreground"
-                      >
-                        GitHub
-                      </a>
-                    </Button>
+                    <EnrollmentContextDialog />
                   </div>
                 </div>
               </header>

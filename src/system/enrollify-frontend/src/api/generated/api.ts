@@ -68,7 +68,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/system-settings/academic-settings": {
+    "/api/system-settings/academic-core-settings": {
         parameters: {
             query?: never;
             header?: never;
@@ -734,9 +734,9 @@ export interface components {
             photo?: string | null;
             subjectCodes?: string[];
         };
-        EnrollifyCoreAcademicSettings: {
+        EnrollifyCoreAcademicCoreSettings: {
             /** Format: int32 */
-            academicSystem?: number;
+            academicTermSystem?: number;
         };
         EnrollifyWebAPIFeaturesSubjectsCreateSubjectRequest: {
             code: string;
@@ -1415,7 +1415,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EnrollifyCoreAcademicSettings"];
+                    "application/json": components["schemas"]["EnrollifyCoreAcademicCoreSettings"];
                 };
             };
             /** @description Unauthorized */

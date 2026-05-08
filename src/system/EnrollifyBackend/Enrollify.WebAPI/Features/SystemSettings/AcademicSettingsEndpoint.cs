@@ -1,14 +1,14 @@
-﻿using Enrollify.Core;
+using Enrollify.Core;
 
 namespace Enrollify.WebAPI.Features.SystemSettings;
 
-[HttpGet("academic-settings")]
+[HttpGet("academic-core-settings")]
 [Group<SystemSettingsGroup>]
 [Authorize(Policy = PolicyName.HasAnyValidRoleAndPermission)]
-public class AcademicSettingsEndpoint() : EndpointWithoutRequest<Core.AcademicSettings>
+public class AcademicSettingsEndpoint() : EndpointWithoutRequest<Core.AcademicCoreSettings>
 {
     public override async Task HandleAsync(CancellationToken cancellationToken)
     {
-        await Send.OkAsync(new AcademicSettings());
+        await Send.OkAsync(new AcademicCoreSettings());
     }
 }

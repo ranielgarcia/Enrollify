@@ -1,8 +1,8 @@
-﻿using Enrollify.Core.Constants;
+using Enrollify.Core.Constants;
 
 namespace Enrollify.Core;
 
-public class AcademicSettings
+public class AcademicCoreSettings
 {
     /// <summary>
     /// The academic system must be hard-coded and should not be modified after initial configuration.
@@ -10,5 +10,5 @@ public class AcademicSettings
     /// academic records, schedules, and enrollment data. This property defines the institutional
     /// calendar structure (e.g., Trimester, Semester, Quarter) that affects all academic operations.
     /// </summary>
-    public int AcademicSystem { get; private set; } = AcademicSystems.Trimester;
+    public int AcademicTermSystem { get; private set; } = AcademicTermSystems.Trimester;
 }

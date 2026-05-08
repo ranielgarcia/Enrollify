@@ -122,8 +122,8 @@ const SESSION_STORAGE_KEY = "curr-multi-year-subj-grid-editor-auto-save";
 export default function MultiYearSubjectGridEditor({
   curriculum,
 }: MultiYearSubjectGridEditorProps) {
-  const { academicSettings } = useEnrollmentContext();
-  const numberOfSemesters = academicSettings.academicSystem;
+  const { academicCoreSettings } = useEnrollmentContext();
+  const numberOfSemesters = academicCoreSettings.academicTermSystem;
 
   const [isDirty, setIsDirty] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
