@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ACADEMIC_TERM_SYSTEMS } from "@/constants/academic-systems";
+import { ACADEMIC_TERM_SYSTEMS } from "@/constants/academic-term-systems";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 import {
   CalendarClock,
