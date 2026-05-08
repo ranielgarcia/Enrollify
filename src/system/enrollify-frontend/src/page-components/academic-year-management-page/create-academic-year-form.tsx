@@ -99,8 +99,8 @@ export function CreateAcademicYearForm({
   onSuccess,
   onCancel,
 }: CreateAcademicYearFormProps) {
-  const { academicSettings } = useEnrollmentContext();
-  const numberOfSemesters = academicSettings.academicSystem;
+  const { academicCoreSettings } = useEnrollmentContext();
+  const numberOfSemesters = academicCoreSettings.academicTermSystem;
 
   const isUpdating = !!yearToEdit;
 

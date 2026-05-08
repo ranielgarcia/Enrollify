@@ -7,7 +7,7 @@ public static class ClassSectionsAuthorizationPolicyRegistration
         services.AddScoped<IAuthorizationHandler, HasCreateClassSectionPermissionHandler>();
         services.AddScoped<IAuthorizationHandler, HasUpdateClassSectionPermissionHandler>();
         services.AddScoped<IAuthorizationHandler, HasDeleteClassSectionPermissionHandler>();
-        services.AddScoped<IAuthorizationHandler, HasViewClassSectionPermissionHandler>();
+        services.AddScoped<IAuthorizationHandler, HasViewClassSectionsPermissionHandler>();
 
         return services;
     }
@@ -20,7 +20,7 @@ public static class ClassSectionsAuthorizationPolicyRegistration
             policyBuilder.AddRequirements(new HasUpdateClassSectionPermission()));
         options.AddPolicy(PolicyName.HasDeleteClassSectionPermission, policyBuilder =>
             policyBuilder.AddRequirements(new HasDeleteClassSectionPermission()));
-        options.AddPolicy(PolicyName.HasViewClassSectionPermission, policyBuilder =>
+        options.AddPolicy(PolicyName.HasViewClassSectionsPermission, policyBuilder =>
             policyBuilder.AddRequirements(new HasViewClassSectionsPermission()));
     }
 }

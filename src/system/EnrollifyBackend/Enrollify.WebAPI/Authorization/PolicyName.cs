@@ -84,6 +84,6 @@ public class PolicyName
     public const string HasCreateClassSectionPermission = "HasCreateClassSectionPermission";
     public const string HasUpdateClassSectionPermission = "HasUpdateClassSectionPermission";
     public const string HasDeleteClassSectionPermission = "HasDeleteClassSectionPermission";
-    public const string HasViewClassSectionPermission = "HasViewClassSectionPermission";
+    public const string HasViewClassSectionsPermission = "HasViewClassSectionsPermission";
 
 }

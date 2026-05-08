@@ -6,13 +6,13 @@ namespace Enrollify.WebAPI.Features.AcademicYearAndTerm;
 public class GetAcademicYearTimelineWindowRequest
 {
     [QueryParam]
-    public bool IncludePastYears { get; set; } = true;
+    public bool? IncludePastYears { get; set; }
     [QueryParam]
-    public int NumberOfPastYears { get; set; } = 2;
+    public int? NumberOfPastYears { get; set; }
     [QueryParam]
-    public bool IncludeFutureYears { get; set; } = true;
+    public bool? IncludeFutureYears { get; set; }
     [QueryParam]
-    public int NumberOfFutureYears { get; set; } = 2;
+    public int? NumberOfFutureYears { get; set; }
 }
 
 [HttpGet("timeline-window")]
@@ -31,10 +31,10 @@ public class GetAcademicYearTimelineWindowEndpoint : Endpoint<GetAcademicYearTim
     {
         var result = await _mediator.Send(new GetAcademicYearTimelineWindowQuery
         {
-            IncludePastYears = request.IncludePastYears,
-            NumberOfPastYears = request.NumberOfPastYears,
-            IncludeFutureYears = request.IncludeFutureYears,
-            NumberOfFutureYears = request.NumberOfFutureYears
+            IncludePastYears = request.IncludePastYears ?? false,
+            NumberOfPastYears = request.NumberOfPastYears ?? 2,
+            IncludeFutureYears = request.IncludeFutureYears ?? false,
+            NumberOfFutureYears = request.NumberOfFutureYears ?? 2
         }, ct);
         await Send.OkAsync(result.Value);
     }

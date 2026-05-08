@@ -6,7 +6,7 @@ export interface EnrollmentContextValue {
   academicCoreSettings: AcademicCoreSettings;
   activeAcademicYear: AcademicYear | null;
   academicYears: AcademicYear[];
-  selectedAcademicYearSlug: string | null;
+  selectedAcademicYearSlug?: string;
   selectedAcademicYear: AcademicYear | null;
   setSelectedAcademicYearSlug: (slug: string | null) => void;
 }
@@ -17,7 +17,7 @@ export const defaultEnrollmentContextValue: EnrollmentContextValue = {
   },
   activeAcademicYear: null,
   academicYears: [],
-  selectedAcademicYearSlug: null,
+  selectedAcademicYearSlug: undefined,
   selectedAcademicYear: null,
   setSelectedAcademicYearSlug: () => {},
 };

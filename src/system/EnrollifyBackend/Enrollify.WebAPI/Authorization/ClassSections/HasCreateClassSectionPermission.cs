@@ -1,4 +1,3 @@
-using System;
 using Enrollify.Core.Authentication;
 using Enrollify.Core.Constants.Authorization;
 

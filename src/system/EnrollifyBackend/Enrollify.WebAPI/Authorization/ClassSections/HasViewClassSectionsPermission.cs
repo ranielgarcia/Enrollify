@@ -5,9 +5,9 @@ namespace Enrollify.WebAPI.Authorization.ClassSections;
 
 public class HasViewClassSectionsPermission : IAuthorizationRequirement;
 
-public class HasViewClassSectionPermissionHandler : UserAuthorizationHandler<HasViewClassSectionsPermission>
+public class HasViewClassSectionsPermissionHandler : UserAuthorizationHandler<HasViewClassSectionsPermission>
 {
-    public HasViewClassSectionPermissionHandler(IMediator mediator) : base(mediator) { }
+    public HasViewClassSectionsPermissionHandler(IMediator mediator) : base(mediator) { }
     protected override Task CheckRequirement(UserContext user, AuthorizationHandlerContext context, HasViewClassSectionsPermission requirement)
     {
         if (user.HasPermissionToTheScope(PermissionScopeEnum.ClassSections, PermissionEnum.View))

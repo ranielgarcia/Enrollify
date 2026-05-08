@@ -3152,11 +3152,11 @@ export interface operations {
     };
     EnrollifyWebAPIFeaturesAcademicYearAndTermGetAcademicYearTimelineWindowEndpoint: {
         parameters: {
-            query: {
-                IncludePastYears: boolean;
-                NumberOfPastYears: number;
-                IncludeFutureYears: boolean;
-                NumberOfFutureYears: number;
+            query?: {
+                IncludePastYears?: boolean | null;
+                NumberOfPastYears?: number | null;
+                IncludeFutureYears?: boolean | null;
+                NumberOfFutureYears?: number | null;
             };
             header?: never;
             path?: never;
