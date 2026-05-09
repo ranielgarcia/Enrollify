@@ -1,4 +1,4 @@
-import { filterSectionsPaginatedOptions } from "@/api/collections/section-collection";
+import { filterSectionsPaginatedOptions } from "@/api/collections/class-section-collection";
 import { getAllCoursesOptions } from "@/api/collections/course-collection";
 import { filterTeachersPaginatedOptions } from "@/api/collections/teacher-collection";
 import type { ClassSection } from "@/api/models/class-section";
