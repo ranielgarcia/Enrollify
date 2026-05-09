@@ -51,9 +51,9 @@ public class AcademicYear : EntityBase<AcademicYear, AcademicYearId>, IAggregate
         return this;
     }
 
-    public AcademicYear AddTerm(AcademicTermNumber termNumber, AcademicTermStartDate startDate, AcademicTermEndDate endDate)
+    public AcademicYear AddTerm(TermNumber termNumber, AcademicTermStartDate startDate, AcademicTermEndDate endDate)
     {
-        if (_academicTerms.Any(t => t.TermNumber == termNumber))
+        if (_academicTerms.Any((Func<AcademicTerm, bool>)(t => t.TermNumber == termNumber)))
         {
             throw new InvalidAcademicTermException($"Term number {termNumber.Value} already exists in this academic year.");
         }
@@ -77,9 +77,9 @@ public class AcademicYear : EntityBase<AcademicYear, AcademicYearId>, IAggregate
         return this;
     }
 
-    public AcademicYear UpdateTerm(AcademicTermNumber termNumber, AcademicTermStartDate startDate, AcademicTermEndDate endDate)
+    public AcademicYear UpdateTerm(TermNumber termNumber, AcademicTermStartDate startDate, AcademicTermEndDate endDate)
     {
-        var term = _academicTerms.FirstOrDefault(t => t.TermNumber == termNumber);
+        var term = _academicTerms.FirstOrDefault((Func<AcademicTerm, bool>)(t => t.TermNumber == termNumber));
         if (term == null)
         {
             throw new InvalidAcademicTermException($"No term found with number {termNumber.Value} in this academic year.");
@@ -90,7 +90,7 @@ public class AcademicYear : EntityBase<AcademicYear, AcademicYearId>, IAggregate
             throw new InvalidAcademicTermException($"Term dates must fall within the academic year range ({AcademicYearTitle}).");
         }
 
-        foreach (var other in _academicTerms.Where(t => t.TermNumber != termNumber))
+        foreach (var other in _academicTerms.Where((Func<AcademicTerm, bool>)(t => t.TermNumber != termNumber)))
         {
             if (startDate.Value < other.EndDate.Value && endDate.Value > other.StartDate.Value)
             {

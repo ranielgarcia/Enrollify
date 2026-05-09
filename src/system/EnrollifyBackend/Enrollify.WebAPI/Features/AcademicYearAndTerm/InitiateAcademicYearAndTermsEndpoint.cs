@@ -2,6 +2,7 @@ using Enrollify.Application.Features.AcademicYearAndTerm.Commands;
 using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 using Enrollify.Application.Features.AcademicYearAndTerm.Models;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
+using Enrollify.Core.ValueObjects;
 using Enrollify.WebAPI.Features.AcademicYearAndTerm.Models;
 
 namespace Enrollify.WebAPI.Features.AcademicYearAndTerm;
@@ -30,8 +31,8 @@ public class InitiateAcademicYearAndTermsRequestValidator : Validator<InitiateAc
         RuleForEach(x => x.Terms).ChildRules(term =>
         {
             term.RuleFor(t => t.TermNumber)
-                .InclusiveBetween(1, AcademicTermNumber.MaxTermNumber)
-                .WithMessage($"Term number must be between 1 and {AcademicTermNumber.MaxTermNumber}.");
+                .InclusiveBetween(1, TermNumber.MaxTermNumber)
+                .WithMessage($"Term number must be between 1 and {TermNumber.MaxTermNumber}.");
 
             term.RuleFor(t => t.StartDate)
                 .NotEmpty().WithMessage("Please provide a start date for the term.");
@@ -64,7 +65,7 @@ public class InitiateAcademicYearAndTermsEndpoint
             AcademicYearEndDate.From(request.EndDate),
             request.Terms
                 .Select(t => new InitiateAcademicTerm(
-                    AcademicTermNumber.From(t.TermNumber),
+                    TermNumber.From(t.TermNumber),
                     AcademicTermStartDate.From(t.StartDate),
                     AcademicTermEndDate.From(t.EndDate)))
                 .ToArray()),

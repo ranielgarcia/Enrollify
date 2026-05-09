@@ -4,6 +4,7 @@ using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.Constants;
+using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.Aggregates.CurriculumAggregate;
@@ -112,7 +113,7 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
     public CurriculumSubject? AddSubject(
         SubjectId subjectId,
         int yearLevel,
-        int semester,
+        int term,
         bool isElective,
         string? electiveGroupName)
     {
@@ -123,13 +124,13 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
             return null;
 
         yearLevel = Guard.Against.OutOfRange(yearLevel, nameof(yearLevel), 1, 6);
-        semester = Guard.Against.OutOfRange(semester, nameof(semester), 1, 3);
+        term = Guard.Against.OutOfRange(term, nameof(term), 1, 3);
 
         var curriculumSubject = new CurriculumSubject(
             Id,
             subjectId,
-            yearLevel,
-            semester,
+            YearLevel.From(yearLevel),
+            TermNumber.From(term),
             isElective,
             electiveGroupName);
 

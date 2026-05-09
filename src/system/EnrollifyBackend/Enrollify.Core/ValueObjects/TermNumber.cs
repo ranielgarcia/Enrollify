@@ -1,9 +1,9 @@
 using Vogen;
 
-namespace Enrollify.Core.Aggregates.AcademicYearAggregate;
+namespace Enrollify.Core.ValueObjects;
 
 [ValueObject<int>]
-public readonly partial struct AcademicTermNumber
+public readonly partial struct TermNumber
 {
     public const int MaxTermNumber = 3;
     private static Validation Validate(int termNumber)

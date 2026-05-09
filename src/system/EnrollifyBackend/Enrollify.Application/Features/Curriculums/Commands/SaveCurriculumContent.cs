@@ -4,6 +4,7 @@ using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Application.Features.Subjects.Specifications;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
+using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Mediator;
 using Semester = int;
@@ -195,8 +196,8 @@ public class SaveCurriculumContent
                         if (curriculumSubject != null)
                         {
                             // Update existing subject's year/semester if changed
-                            curriculumSubject.UpdateYearLevel(year.Key);
-                            curriculumSubject.UpdateTermNumber(semester.Key);
+                            curriculumSubject.UpdateYearLevel(YearLevel.From(year.Key));
+                            curriculumSubject.UpdateTermNumber(TermNumber.From(semester.Key));
                             curriculumSubjectsLookup[subjectInCurriculum.Code] = curriculumSubject;
                         }
                         else

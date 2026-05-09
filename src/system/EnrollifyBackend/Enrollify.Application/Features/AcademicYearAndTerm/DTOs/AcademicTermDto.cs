@@ -1,11 +1,12 @@
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
+using Enrollify.Core.ValueObjects;
 
 namespace Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 
 public class AcademicTermDto : BaseDto
 {
     public AcademicTermId Id { get; private set; }
-    public AcademicTermNumber TermNumber { get; private set; }
+    public TermNumber TermNumber { get; private set; }
     public string TermName { get; private set; }
     public AcademicYearId AcademicYearId { get; private set; }
     public AcademicTermStartDate StartDate { get; private set; }

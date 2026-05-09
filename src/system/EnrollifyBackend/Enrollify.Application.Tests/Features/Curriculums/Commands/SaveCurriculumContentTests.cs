@@ -8,6 +8,7 @@ using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate.Models;
+using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Moq;
 
@@ -205,8 +206,8 @@ public class SaveCurriculumContentTests
         Assert.True(result.IsSuccess);
         var curriculumSubject = curriculum.GetCurriculumSubject(subjectId);
         Assert.NotNull(curriculumSubject);
-        Assert.Equal(2, curriculumSubject.YearLevel);
-        Assert.Equal(2, curriculumSubject.TermNumber);
+        Assert.Equal(YearLevel.From(2), curriculumSubject.YearLevel);
+        Assert.Equal(TermNumber.From(2), curriculumSubject.TermNumber);
     }
 
     [Fact]

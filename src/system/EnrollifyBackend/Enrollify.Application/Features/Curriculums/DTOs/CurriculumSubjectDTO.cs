@@ -1,6 +1,6 @@
-using Enrollify.Application.Features.Subjects.DTOs;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
+using Enrollify.Core.ValueObjects;
 
 namespace Enrollify.Application.Features.Curriculums.DTOs;
 
@@ -12,12 +12,12 @@ public class CurriculumSubjectDto
     /// <summary>
     /// Which year this subject is typically taken (1-6)
     /// </summary>
-    public int YearLevel { get; set; }
+    public YearLevel YearLevel { get; set; }
 
     /// <summary>
     /// Which semester (1 = First, 2 = Second, 3 = Summer)
     /// </summary>
-    public int TermNumber { get; set; }
+    public TermNumber TermNumber { get; set; }
 
     /// <summary>
     /// Whether this is an elective slot

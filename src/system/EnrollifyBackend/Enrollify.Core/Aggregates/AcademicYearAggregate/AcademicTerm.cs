@@ -2,6 +2,7 @@ using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.DomainExceptions;
 using Enrollify.Core.Extensions;
+using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.Aggregates.AcademicYearAggregate;
@@ -10,7 +11,7 @@ public class AcademicTerm : IAuditable
 {
     private AcademicTerm() { } // EF Core constructor
 
-    public AcademicTerm(AcademicTermNumber termNumber, AcademicYearId academicYearId, AcademicTermStartDate startDate, AcademicTermEndDate endDate)
+    public AcademicTerm(TermNumber termNumber, AcademicYearId academicYearId, AcademicTermStartDate startDate, AcademicTermEndDate endDate)
     {
         TermNumber = Guard.Against.Null(termNumber);
         AcademicYearId = Guard.Against.Null(academicYearId);
@@ -20,7 +21,7 @@ public class AcademicTerm : IAuditable
 
     public AcademicTermId Id { get; set; }
 
-    public AcademicTermNumber TermNumber { get; private set; }
+    public TermNumber TermNumber { get; private set; }
 
     public string TermName => $"{TermNumber.Value.ToOrdinal()} term";
 
@@ -42,7 +43,7 @@ public class AcademicTerm : IAuditable
     public bool IsActive { get; private set; }
 
 
-    public AcademicTerm UpdateTermNumber (AcademicTermNumber termNumber)
+    public AcademicTerm UpdateTermNumber (TermNumber termNumber)
     {
         if (termNumber == TermNumber) return this;
         TermNumber = termNumber;
