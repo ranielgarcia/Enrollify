@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Enrollify.DatabaseMigration.Seeds;
 
-internal class Seed0008__SystemBuiltInRoomTypes : IScript
+internal class Seed0007__SystemBuiltInRoomTypes : IScript
 {
     public string ProvideScript(Func<IDbCommand> dbCommandFactory)
     {

@@ -2,6 +2,7 @@ using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Application.Features.ClassSections.Extensions;
 using Enrollify.Application.Features.ClassSections.Specifications;
+using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
@@ -92,10 +93,10 @@ public static class CreateClassSection
             return lastExistingClassSectionCode.GetNextSectionCode();
         }
 
-        private async Task<Curriculum> GetCurriculum(CourseId courseId, YearLevel yearLevel, CancellationToken ct)
+        private async Task<Curriculum> GetCurriculum(CourseId courseId, YearLevel yearLevel, TermNumber termNumber, CancellationToken ct)
         {
             var curriculum = await _curriculumReadRepository
-                .FirstOrDefaultAsync(new GetCurriculumByCourseIdAndYearLevelSpec(courseId, yearLevel), ct);
+                .FirstOrDefaultAsync(new GetLatestActiveCurriculumWithSubjectsByCourseYearLevelAndTerm(courseId, yearLevel, termNumber), ct);
             if (curriculum == null)
             {
                 _logger.LogWarning("Curriculum for course with an id of {CourseId} and year level of {YearLevel} does not exists.", courseId, yearLevel);

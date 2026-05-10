@@ -10,7 +10,7 @@ public sealed class BuiltInSubjectsEnum : SmartEnum<BuiltInSubjectsEnum>
     public string Description { get; }
 
     public static readonly BuiltInSubjectsEnum ElectivePlaceholder =
-        new BuiltInSubjectsEnum("Elective Placeholder", "ELEC-GEN", 0, "Placeholder subject used to reserve a curriculum slot for elective course selection.", 1);
+        new BuiltInSubjectsEnum("Elective Placeholder - Do not delete", "ELEC-GEN", 1, "Placeholder subject used to reserve a curriculum slot for elective course selection.", 1);
 
     private BuiltInSubjectsEnum(string title, string code, decimal? units, string description, int id) : base(title, id) 
     {

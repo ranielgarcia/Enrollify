@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Enrollify.DatabaseMigration.Seeds;
 
-internal class Seed0007__SystemBuiltInSubjects : IScript
+internal class Seed0008__SystemBuiltInSubjects : IScript
 {
     public string ProvideScript(Func<IDbCommand> dbCommandFactory)
     {
@@ -15,9 +15,8 @@ internal class Seed0007__SystemBuiltInSubjects : IScript
         // Get system user ID
         scriptBuilder.Append("DECLARE @InitialUserId INT = (SELECT Id FROM Users WHERE Email='system@enrollify.local');");
 
-        // Get room type ID for "Lecture Room"
         var getRoomTypeCommand = dbCommandFactory();
-        getRoomTypeCommand.CommandText = "SELECT Id FROM RoomTypes WHERE Name='Lecture Room'";
+        getRoomTypeCommand.CommandText = "SELECT Id FROM RoomTypes WHERE Name='Placeholder Room Type - Do not delete'";
         var roomTypeId = (int)getRoomTypeCommand.ExecuteScalar();
 
         scriptBuilder.Append(@"MERGE [Subjects] AS [Target]

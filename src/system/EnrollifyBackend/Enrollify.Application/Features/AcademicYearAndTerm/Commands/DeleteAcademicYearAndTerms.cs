@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.SharedKernel;
 using Mediator;
@@ -21,7 +22,7 @@ public static class DeleteAcademicYearAndTerms
         }
         public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
         {
-            var existing = await _readRepository.GetByIdAsync(command.id, cancellationToken);
+            var existing = await _readRepository.FirstOrDefaultAsync(new GetAcademicYearByIdSpec(command.id), cancellationToken);
             if (existing is null)
             {
                 return Result.NotFound("The specified academic year was not found.");
@@ -32,6 +33,11 @@ public static class DeleteAcademicYearAndTerms
             {
                 return Result.Invalid(new ValidationError("Deleting past academic year is not allowed."));
             }
+
+            // TODO: Prevent deletion of academic year if
+            // - it has associated terms or other related entities.
+            // - its terms have associated enrollments or other related entities like class section
+            // GetClassSectionsByAcademicTermIdsSpec
 
             var result = await _repository.Delete(existing, cancellationToken);
             return result;
