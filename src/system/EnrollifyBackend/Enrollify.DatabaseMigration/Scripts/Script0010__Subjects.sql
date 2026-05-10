@@ -7,6 +7,7 @@ CREATE TABLE Subjects
 	Code VARCHAR(20) NOT NULL,
 	Title VARCHAR(100) NOT NULL,
 	Units DECIMAL(3,1) NOT NULL,
+    -- Default Subject'' units, but can be overridden at the curriculum level or at class section subject offering if needed
 	Description VARCHAR(255) NULL,
 	PreferRoomTypeId INT NOT NULL,
 	-- Note: CourseId removed - subjects are now course-agnostic

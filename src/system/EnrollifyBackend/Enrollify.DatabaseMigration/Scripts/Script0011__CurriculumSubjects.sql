@@ -5,6 +5,7 @@ CREATE TABLE CurriculumSubjects
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	CurriculumId INT NOT NULL,
 	SubjectId INT NOT NULL,
+    SubjectUnitsOverride DECIMAL(3,1) NULL, -- Optional override for subject units at the curriculum level, must provide if the subject''s default units is 0 or null
 	YearLevel INT NOT NULL,                -- Which year this subject is typically taken (1-6)
 	TermNumber INT NOT NULL,				-- 1st, 2nd, 3rd term in the academic year
 	IsElective BIT NOT NULL DEFAULT 0,     -- Whether this is an elective slot
@@ -90,4 +91,3 @@ GO
 CREATE UNIQUE NONCLUSTERED INDEX UIdx_CurriculumSubjectPrereqs_IsActive
 ON CurriculumSubjectPrerequisites(CurriculumSubjectId, PrerequisiteCurriculumSubjectId)
 WHERE IsActive = 1;
-

@@ -1,12 +1,13 @@
 using Ardalis.Specification;
+using Enrollify.Application.Features.Curriculums.DTOs;
 using Enrollify.Application.SharedDTOs;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 
-namespace Enrollify.Application.Features.Curriculums.DTOs;
+namespace Enrollify.Application.Features.Curriculums.Specifications;
 
-public class CurriculumToCurriculumDetailDto : Specification<Curriculum, CurriculumDetailDto>
+public class CurriculumToCurriculumDetailDtoProjectionSpec : Specification<Curriculum, CurriculumDetailDto>
 {
-    public CurriculumToCurriculumDetailDto()
+    public CurriculumToCurriculumDetailDtoProjectionSpec()
     {
         Query
         .AsNoTracking()

@@ -1,10 +1,10 @@
-﻿using DbUp.Engine;
+using DbUp.Engine;
 using System.Data;
 using System.Text;
 
 namespace Enrollify.DatabaseMigration.Seeds;
 
-public class Seed0006_StudentStatuses : IScript
+public class Seed0006__StudentStatuses : IScript
 {
     public string ProvideScript(Func<IDbCommand> dbCommandFactory)
     {

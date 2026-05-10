@@ -25,18 +25,18 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
 
     public string Name { get; private set; } = null!;
     public YearLevel YearLevel { get; private set; }
-    public CourseId CourseId { get; private set; }
 
+    public CourseId CourseId { get; private set; }
     public Course? Course { get; private set; }
 
     public AcademicTermId AcademicTermId { get; private set; }
-    public AcademicTerm AcademicTerm { get; private set; }
+    public AcademicTerm? AcademicTerm { get; private set; }
 
     public TeacherId AdviserId { get; private set; }
-
-    public Teacher Adviser { get; private set; }
+    public Teacher? Adviser { get; private set; }
 
     public int StudentCapacity { get; private set; }
+    public SectionCode SectionCode { get; private set; }
 
 
     public DateTimeOffset CreatedAt { get; private set; }

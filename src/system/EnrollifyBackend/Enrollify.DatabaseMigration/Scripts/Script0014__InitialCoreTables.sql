@@ -1,11 +1,12 @@
 CREATE TABLE ClassSections
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
-	Name VARCHAR(50) NOT NULL, --  "BSCS-1A", "BSCS-2A"
+	Name VARCHAR(50) NOT NULL, -- Use course code, e.g. "BSCS", "BSCS"
 	YearLevel INT NOT NULL,
 	CourseId INT NOT NULL,
 	AcademicTermId INT NOT NULL,
 	AdviserId INT NOT NULL,
+    SectionCode CHAR(1) NOT NULL, -- "A", "B", "C"
 	StudentCapacity INT NOT NULL, -- Soft rule
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
@@ -49,12 +50,12 @@ CREATE TABLE ClassSectionSubjectOffering
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	SubjectId INT NOT NULL, -- Belongs to a Subject
-	TeacherId INT NOT NULL, -- Assigned to a Teacher,
+    SubjectUnitsOverride DECIMAL(3,1) NULL, -- Optional override for subject units at this level, for scenarios that require less or more units than the default subject units or curriculum-level override, e.g. a 3-unit subject offered as a 1.5-unit elective
+	TeacherId INT NULL, -- Assigned to a Teacher,
 	ClassSectionId INT NOT NULL, -- Belongs to a ClassSection
-	RoomId INT NOT NULL,
-	-- DayPattern VARCHAR(10) NULL,      -- 'MW', 'TTh', 'MWF', 'MTWTHF',
-	DaysPerWeek INT NULL,              -- 2, 3, 5, etc.
-	HoursPerDay DECIMAL(3,1) NULL,     -- 1.5, 2.0, 3.0, etc.
+	RoomId INT NULL,
+	DaysPerWeek INT NOT NULL,              -- 2, 3, 5, etc.
+	HoursPerDay DECIMAL(3,1) NOT NULL,     -- 1.5, 2.0, 3.0, etc.
 	MaxNumberOfStudents INT NULL, -- Optional, soft rule, this to allow us to override the room student capacity
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
