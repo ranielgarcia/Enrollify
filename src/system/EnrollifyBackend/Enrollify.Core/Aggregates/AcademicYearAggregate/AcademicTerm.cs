@@ -3,7 +3,6 @@ using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.DomainExceptions;
 using Enrollify.Core.Extensions;
 using Enrollify.Core.ValueObjects;
-using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.Aggregates.AcademicYearAggregate;
 
