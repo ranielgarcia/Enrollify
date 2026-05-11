@@ -9,7 +9,7 @@ export const navigationItems: NavMainItemProp[] = [
     title: "Master Data",
     url: "/portal/master-data",
     icon: DatabaseIcon,
-    isActive: true,
+    isActive: false,
     items: [
       {
         title: "Colleges",
