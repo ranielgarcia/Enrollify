@@ -2,7 +2,7 @@ using Enrollify.Application.Features.Curriculums.Commands;
 using Enrollify.Application.Features.Curriculums.DTOs;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
-using Semester = int;
+using Term = int;
 using Year = int;
 
 namespace Enrollify.WebAPI.Features.Curriculums;
@@ -16,7 +16,7 @@ public class SubjectInCurriculum
 public class CurriculumContentRequest
 {
     public int CurriculumId { get; set; }
-    public Dictionary<Year, Dictionary<Semester, SubjectInCurriculum[]>> Grid { get; set; } = new Dictionary<Year, Dictionary<Semester, SubjectInCurriculum[]>>();
+    public Dictionary<Year, Dictionary<Term, SubjectInCurriculum[]>> Grid { get; set; } = new Dictionary<Year, Dictionary<Term, SubjectInCurriculum[]>>();
 }
 
 
@@ -29,21 +29,21 @@ public class SaveCurriculumContentEndpoint (IMediator mediator)
     public override async Task<OkOrNotFoundApiResult<CurriculumDto>>
         ExecuteAsync(CurriculumContentRequest request, CancellationToken ct)
     {
-        var subjectsGrid = new Dictionary<Year, Dictionary<Semester, SaveCurriculumContent.SubjectInCurriculum[]>>();
+        var subjectsGrid = new Dictionary<Year, Dictionary<Term, SaveCurriculumContent.SubjectInCurriculum[]>>();
 
-        foreach (var (year, semesters) in request.Grid)
+        foreach (var (year, terms) in request.Grid)
         {
-            var semesterDict = new Dictionary<Semester, SaveCurriculumContent.SubjectInCurriculum[]>();
-            foreach (var (semester, subjects) in semesters)
+            var termDict = new Dictionary<Term, SaveCurriculumContent.SubjectInCurriculum[]>();
+            foreach (var (term, subjects) in terms)
             {
                 var subjectArray = subjects.Select(s => new SaveCurriculumContent.SubjectInCurriculum
                 {
                     Code = SubjectCode.From(s.Code),
                     Prerequisites = s.Prerequisites.Select(p => SubjectCode.From(p)).ToArray()
                 }).ToArray();
-                semesterDict[semester] = subjectArray;
+                termDict[term] = subjectArray;
             }
-            subjectsGrid[year] = semesterDict;
+            subjectsGrid[year] = termDict;
         }
 
         var result = await mediator.Send(new SaveCurriculumContent

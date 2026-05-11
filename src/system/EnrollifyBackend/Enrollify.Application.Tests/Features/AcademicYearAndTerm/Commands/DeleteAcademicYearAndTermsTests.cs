@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using Ardalis.Specification;
 using Enrollify.Application.Features.AcademicYearAndTerm;
 using Enrollify.Application.Features.AcademicYearAndTerm.Commands;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
@@ -61,7 +62,7 @@ public class DeleteAcademicYearAndTermsTests
     {
         var existingYear = new AcademicYear(ValidStart, ValidEnd);
         _readRepositoryMock
-            .Setup(r => r.GetByIdAsync(It.IsAny<AcademicYearId>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingYear);
         _repositoryMock
             .Setup(r => r.Delete(existingYear, It.IsAny<CancellationToken>()))
@@ -79,7 +80,7 @@ public class DeleteAcademicYearAndTermsTests
     {
         var existingYear = new AcademicYear(ValidStart, ValidEnd);
         _readRepositoryMock
-            .Setup(r => r.GetByIdAsync(It.IsAny<AcademicYearId>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingYear);
         _repositoryMock
             .Setup(r => r.Delete(existingYear, It.IsAny<CancellationToken>()))
@@ -98,7 +99,7 @@ public class DeleteAcademicYearAndTermsTests
         var existingYear = new AcademicYear(ValidStart, ValidEnd);
         var errorResult = Result.Error("Database failure");
         _readRepositoryMock
-            .Setup(r => r.GetByIdAsync(It.IsAny<AcademicYearId>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingYear);
         _repositoryMock
             .Setup(r => r.Delete(existingYear, It.IsAny<CancellationToken>()))
@@ -119,7 +120,7 @@ public class DeleteAcademicYearAndTermsTests
         var pastEnd = AcademicYearEndDate.From(DateTime.UtcNow.AddYears(-1));
         var pastYear = new AcademicYear(pastStart, pastEnd);
         _readRepositoryMock
-            .Setup(r => r.GetByIdAsync(It.IsAny<AcademicYearId>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(pastYear);
 
         var command = new DeleteAcademicYearAndTerms.Command(AcademicYearId.From(1));
@@ -158,7 +159,7 @@ public class DeleteAcademicYearAndTermsTests
         var endDate = AcademicYearEndDate.From(yesterday);
         var expiredYear = new AcademicYear(startDate, endDate);
         _readRepositoryMock
-            .Setup(r => r.GetByIdAsync(It.IsAny<AcademicYearId>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expiredYear);
 
         var command = new DeleteAcademicYearAndTerms.Command(AcademicYearId.From(1));
@@ -177,7 +178,7 @@ public class DeleteAcademicYearAndTermsTests
         var endDate = AcademicYearEndDate.From(today);
         var currentYear = new AcademicYear(startDate, endDate);
         _readRepositoryMock
-            .Setup(r => r.GetByIdAsync(It.IsAny<AcademicYearId>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(currentYear);
         _repositoryMock
             .Setup(r => r.Delete(currentYear, It.IsAny<CancellationToken>()))
@@ -201,7 +202,7 @@ public class DeleteAcademicYearAndTermsTests
         var endDate = AcademicYearEndDate.From(tomorrow);
         var futureYear = new AcademicYear(startDate, endDate);
         _readRepositoryMock
-            .Setup(r => r.GetByIdAsync(It.IsAny<AcademicYearId>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(futureYear);
         _repositoryMock
             .Setup(r => r.Delete(futureYear, It.IsAny<CancellationToken>()))

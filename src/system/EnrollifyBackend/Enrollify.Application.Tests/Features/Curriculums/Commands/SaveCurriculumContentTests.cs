@@ -671,7 +671,7 @@ public class SaveCurriculumContentTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("must be from an earlier semester"));
+        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("must be from an earlier term"));
     }
 
     [Fact]
@@ -721,7 +721,7 @@ public class SaveCurriculumContentTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("must be from an earlier semester"));
+        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("must be from an earlier term"));
     }
 
     [Fact]
