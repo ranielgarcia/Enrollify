@@ -1015,6 +1015,8 @@ export interface components {
              */
             termNumber?: number;
             isElective?: boolean;
+            /** Format: decimal */
+            unitsOverride?: number | null;
             electiveGroupName?: string | null;
             subject?: components["schemas"]["EnrollifyApplicationSharedDTOsSubjectSummaryDto"] | null;
             prerequisites?: components["schemas"]["EnrollifyApplicationFeaturesCurriculumsDTOsCurriculumSubjectPrerequisiteDto"][];
