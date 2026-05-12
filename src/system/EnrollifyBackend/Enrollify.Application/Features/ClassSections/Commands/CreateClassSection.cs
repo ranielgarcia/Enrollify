@@ -5,6 +5,7 @@ using Enrollify.Application.Features.ClassSections.Specifications;
 using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
@@ -31,6 +32,7 @@ public static class CreateClassSection
         private readonly IReadRepository<Teacher> _teacherReadRepository;
         private readonly IReadRepository<ClassSection> _classSectionReadRepository;
         private readonly IReadRepository<Curriculum> _curriculumReadRepository;
+        private readonly IClassSectionRepository _classSectionRepository;
         private readonly ILogger<Handler> _logger;
 
         public Handler(
@@ -39,6 +41,7 @@ public static class CreateClassSection
             IReadRepository<Teacher> teacherReadRepository,
             IReadRepository<ClassSection> classSectionReadRepository,
             IReadRepository<Curriculum> curriculumReadRepository,
+            IClassSectionRepository classSectionRepository,
             ILogger<Handler> logger)
         {
             _courseReadRepository = courseReadRepository;
@@ -46,27 +49,33 @@ public static class CreateClassSection
             _teacherReadRepository = teacherReadRepository;
             _classSectionReadRepository = classSectionReadRepository;
             _curriculumReadRepository = curriculumReadRepository;
+            _classSectionRepository = classSectionRepository;
             _logger = logger;
         }
         public async ValueTask<Result<ClassSectionId>> Handle(Command command, CancellationToken cancellationToken)
         {
             var course = await _courseReadRepository.GetByIdAsync(command.courseId, cancellationToken);
-            var academicYear = await _academicYearReadRepository
-                .FirstOrDefaultAsync(new GetAcademicYearByAcademicTermIdSpec(command.academicTermId), cancellationToken);
-            var adviser = await _teacherReadRepository.GetByIdAsync(command.adviserId, cancellationToken);
-
             if (course == null)
             {
                 _logger.LogWarning("Course with an id of {CourseId} does not exists.", command.courseId);
                 return Result.Invalid(new ValidationError($"Course not found."));
             }
 
+            var academicYear = await _academicYearReadRepository
+                .FirstOrDefaultAsync(new GetAcademicYearByAcademicTermIdSpec(command.academicTermId), cancellationToken);
             if (academicYear == null)
             {
                 _logger.LogWarning("Academic year with an academic term id of {AcademicTermId} does not exists.", command.academicTermId);
                 return Result.Invalid(new ValidationError($"Academic term not found."));
             }
+            var academicTerm = academicYear.AcademicTerms.FirstOrDefault(at => at.Id == command.academicTermId);
+            if (academicTerm == null)
+            {
+                _logger.LogWarning("Academic term with an id of {AcademicTermId} does not exists in the academic year with an id of {AcademicYearId}.", command.academicTermId, academicYear.Id);
+                return Result.Invalid(new ValidationError($"Academic term not found in the specified academic year."));
+            }
 
+            var adviser = await _teacherReadRepository.GetByIdAsync(command.adviserId, cancellationToken);
             if (adviser == null)
             {
 
@@ -76,10 +85,23 @@ public static class CreateClassSection
 
             var classSectionCode = await GetSectionCode(command, cancellationToken);
 
+            var currentCurriculum = await GetCurriculum(command.courseId, command.yearLevel, academicTerm.TermNumber, cancellationToken);
 
 
+            var newClassSection = new ClassSection(new ClassSectionForCreation
+            {
+                Name = $"{course.Name}-{command.yearLevel}{classSectionCode}",
+                YearLevel = command.yearLevel,
+                CourseId = command.courseId,
+                AcademicTermId = command.academicTermId,
+                AdviserId = command.adviserId,
+                StudentCapacity = command.studentCapacity,
+                SectionCode = classSectionCode,
+            });
 
-            return Result.Success();
+            var result = await _classSectionRepository.Create(newClassSection, cancellationToken);
+
+            return result;
         }
 
 
@@ -92,6 +114,7 @@ public static class CreateClassSection
 
             return lastExistingClassSectionCode.GetNextSectionCode();
         }
+
 
         private async Task<Curriculum> GetCurriculum(CourseId courseId, YearLevel yearLevel, TermNumber termNumber, CancellationToken ct)
         {

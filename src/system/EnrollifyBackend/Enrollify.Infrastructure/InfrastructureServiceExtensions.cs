@@ -4,6 +4,7 @@ using Azure.Storage.Blobs;
 using Dapper;
 using Enrollify.Application.Features.AcademicYearAndTerm;
 using Enrollify.Application.Features.Buildings;
+using Enrollify.Application.Features.ClassSections;
 using Enrollify.Application.Features.Colleges;
 using Enrollify.Application.Features.Courses;
 using Enrollify.Application.Features.Curriculums;
@@ -90,7 +91,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ITeacherRepository, TeacherRepository>();
         services.AddScoped<ITeacherPhotoStorageService, TeacherPhotoStorageService>();
         services.AddScoped<IAcademicYearAndTermRepository, AcademicYearAndTermRepository>();
-
+        services.AddScoped<IClassSectionRepository, ClassSectionRepository>();
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 

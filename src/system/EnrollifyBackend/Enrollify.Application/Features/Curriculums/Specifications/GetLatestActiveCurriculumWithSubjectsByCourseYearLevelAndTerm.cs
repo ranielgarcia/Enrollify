@@ -9,7 +9,7 @@ namespace Enrollify.Application.Features.Curriculums.Specifications;
 
 public class GetLatestActiveCurriculumWithSubjectsByCourseYearLevelAndTerm : Specification<Curriculum>
 {
-    // We can how multiple active curriculums for a course, but we only want the latest one based on the effective year.
+    // We can have multiple active curriculums for a course, but we only want the latest one based on the effective year.
     // This is to ensure that if there are multiple active curriculums for a course, we always get the most recent one.
     public GetLatestActiveCurriculumWithSubjectsByCourseYearLevelAndTerm(CourseId course, YearLevel yearLevel, TermNumber termNumber)
     {

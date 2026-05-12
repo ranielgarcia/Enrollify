@@ -21,6 +21,7 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
         AcademicTermId = Guard.Against.Null(sectionForCreation.AcademicTermId, nameof(sectionForCreation.AcademicTermId));
         AdviserId = Guard.Against.Null(sectionForCreation.AdviserId, nameof(sectionForCreation.AdviserId));
         StudentCapacity = Guard.Against.NegativeOrZero(sectionForCreation.StudentCapacity, nameof(sectionForCreation.StudentCapacity));
+        SectionCode = Guard.Against.Null(sectionForCreation.SectionCode, nameof(sectionForCreation.SectionCode));
     }
 
     public string Name { get; private set; } = null!;
