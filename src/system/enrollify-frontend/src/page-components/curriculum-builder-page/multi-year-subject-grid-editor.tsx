@@ -19,6 +19,7 @@ interface SubjectInCurriculum {
   code: string;
   title: string;
   units: number;
+  unitsOverride: number | null;
   prerequisites: string[];
 }
 
@@ -101,6 +102,7 @@ const populateGridFromCurriculum = (
       code: subject.code,
       title: subject.title,
       units: subject.units,
+      unitsOverride: curriculumSubject.unitsOverride ?? null,
       prerequisites: prerequisiteCodes,
     };
 
@@ -188,9 +190,7 @@ export default function MultiYearSubjectGridEditor({
         const { year, term, subject } = removal;
         if (newGrid[year] && newGrid[year][term]) {
           // Check if subject doesn't already exist (avoid duplicates)
-          const exists = newGrid[year][term].some(
-            (s) => s.id === subject.id,
-          );
+          const exists = newGrid[year][term].some((s) => s.id === subject.id);
           if (!exists) {
             newGrid = {
               ...newGrid,
@@ -301,19 +301,13 @@ export default function MultiYearSubjectGridEditor({
     });
   };
 
-  const addSubjectToGrid = (
-    year: number,
-    term: number,
-    subjectId: number,
-  ) => {
+  const addSubjectToGrid = (year: number, term: number, subjectId: number) => {
     const subject = availableSubjects.find((s) => s.id === subjectId);
     if (!subject) return;
 
     updateGridWithDirty((prev) => {
       // Check if subject already exists in this year/term
-      const subjectExists = prev[year][term].some(
-        (s) => s.id === subjectId,
-      );
+      const subjectExists = prev[year][term].some((s) => s.id === subjectId);
 
       if (subjectExists) return prev;
 
@@ -323,7 +317,12 @@ export default function MultiYearSubjectGridEditor({
           ...prev[year],
           [term]: [
             ...prev[year][term],
-            { ...subject, subjectId: subject.id, prerequisites: [] },
+            {
+              ...subject,
+              subjectId: subject.id,
+              unitsOverride: null,
+              prerequisites: [],
+            },
           ],
         },
       };
@@ -332,9 +331,7 @@ export default function MultiYearSubjectGridEditor({
 
   const removeSubject = (year: number, term: number, subjectId: number) => {
     // Track the subject being removed for potential rollback
-    const subjectToRemove = grid[year]?.[term]?.find(
-      (s) => s.id === subjectId,
-    );
+    const subjectToRemove = grid[year]?.[term]?.find((s) => s.id === subjectId);
     if (subjectToRemove) {
       pendingRemovedSubjectsRef.current.push({
         year,
@@ -409,6 +406,24 @@ export default function MultiYearSubjectGridEditor({
     });
   };
 
+  const setUnitsOverride = (
+    year: number,
+    term: number,
+    subjectId: number,
+    value: number | null,
+  ) => {
+    updateGridWithDirty((prev) => {
+      const subjects = [...prev[year][term]];
+      const idx = subjects.findIndex((s) => s.id === subjectId);
+      if (idx === -1) return prev;
+      subjects[idx] = { ...subjects[idx], unitsOverride: value };
+      return {
+        ...prev,
+        [year]: { ...prev[year], [term]: subjects },
+      };
+    });
+  };
+
   const removePrerequisite = (
     year: number,
     term: number,
@@ -475,9 +490,7 @@ export default function MultiYearSubjectGridEditor({
     subjectCode: string,
   ) => {
     // Find the current subject to get its existing prerequisites
-    const currentSubject = grid[year][term].find(
-      (s) => s.code === subjectCode,
-    );
+    const currentSubject = grid[year][term].find((s) => s.code === subjectCode);
     const existingPrerequisites = new Set(currentSubject?.prerequisites ?? []);
 
     return Object.entries(grid).flatMap(([yearKey, yearData]) =>
@@ -606,7 +619,7 @@ export default function MultiYearSubjectGridEditor({
                           className="font-normal text-[10px] uppercase"
                         >
                           {grid[year][term].reduce(
-                            (acc, s) => acc + s.units,
+                            (acc, s) => acc + (s.unitsOverride ?? s.units),
                             0,
                           )}{" "}
                           Units Total
@@ -626,8 +639,30 @@ export default function MultiYearSubjectGridEditor({
                                   {subject.code}
                                 </span>
                                 <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded-full font-medium">
-                                  {subject.units} Units
+                                  {subject.unitsOverride ?? subject.units} Units
+                                  {subject.unitsOverride !== null && (
+                                    <span className="ml-1 line-through text-muted-foreground">
+                                      {subject.units}
+                                    </span>
+                                  )}
                                 </span>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  step={0.5}
+                                  placeholder={`Override (${subject.units})`}
+                                  value={subject.unitsOverride ?? ""}
+                                  onChange={(e) => {
+                                    const raw = e.target.value;
+                                    setUnitsOverride(
+                                      year,
+                                      term,
+                                      subject.id,
+                                      raw === "" ? null : Number(raw),
+                                    );
+                                  }}
+                                  className="w-20 text-[10px] h-5 px-1.5 rounded border border-dashed border-muted-foreground/40 bg-transparent focus:outline-none focus:border-accent placeholder:text-muted-foreground/50"
+                                />
                               </div>
                               <p className="text-sm font-semibold truncate leading-tight">
                                 {subject.title}

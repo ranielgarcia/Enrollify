@@ -199,6 +199,7 @@ public class SaveCurriculumContent
                             // Update existing subject's year/term if changed
                             curriculumSubject.UpdateYearLevel(YearLevel.From(year.Key));
                             curriculumSubject.UpdateTermNumber(TermNumber.From(term.Key));
+                            curriculumSubject.UpdateSubjectUnitsOverride(subjectInCurriculum.UnitsOverride);
                             curriculumSubjectsLookup[subjectInCurriculum.Code] = curriculumSubject;
                         }
                         else

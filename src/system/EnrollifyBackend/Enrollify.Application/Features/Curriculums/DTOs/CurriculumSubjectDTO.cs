@@ -25,6 +25,8 @@ public class CurriculumSubjectDto
     /// </summary>
     public bool IsElective { get; set; }
 
+    public decimal? SubjectUnitsOverride { get; set; }
+
     /// <summary>
     /// Group name for electives (e.g., 'Major Elective', 'Free Elective')
     /// </summary>

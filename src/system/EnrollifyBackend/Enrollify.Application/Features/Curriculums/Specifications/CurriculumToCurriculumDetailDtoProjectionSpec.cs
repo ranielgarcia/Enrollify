@@ -33,6 +33,7 @@ public class CurriculumToCurriculumDetailDtoProjectionSpec : Specification<Curri
                     SubjectId = cs.SubjectId,
                     YearLevel = cs.YearLevel,
                     TermNumber = cs.TermNumber,
+                    SubjectUnitsOverride = cs.SubjectUnitsOverride,
                     IsElective = cs.IsElective,
                     ElectiveGroupName = cs.ElectiveGroupName,
                     Subject = cs.Subject != null ? new SubjectSummaryDto

@@ -1037,4 +1037,472 @@ public class SaveCurriculumContentTests
         var property = typeof(T).GetProperty(propertyName);
         property?.SetValue(entity, value);
     }
+
+    private static void SimulateDatabaseIdAssignment(Curriculum curriculum, int startingId = 100)
+    {
+        // Find curriculum subjects that don't have IDs set yet (newly added ones)
+        var curriculumSubjects = curriculum.CurriculumSubjects.Where(cs =>
+        {
+            var idType = cs.Id.GetType();
+            var valueField = idType.GetField("_value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (valueField == null) return false;
+            var value = valueField.GetValue(cs.Id);
+            return value != null && Convert.ToInt32(value) == 0;
+        }).ToList();
+        
+        var idCounter = startingId;
+        foreach (var cs in curriculumSubjects)
+        {
+            SetEntityProperty(cs, "Id", CurriculumSubjectId.From(idCounter++));
+            SetEntityProperty(cs, "IsActive", true);
+        }
+    }
+
+    #region UnitsOverride Tests
+
+    [Fact(DisplayName = "Adding new subject with UnitsOverride sets the override value")]
+    public async Task Handle_AddNewSubjectWithUnitsOverride_SetsOverrideValue()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+        var unitsOverride = 4.5m;
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = subjectCode, 
+                    UnitsOverride = unitsOverride 
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Mock UpdateCurriculum to simulate database setting IDs
+        var callCount = 0;
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId))
+            .Callback<Curriculum, CancellationToken>((c, ct) =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    SimulateDatabaseIdAssignment(c);
+                }
+            });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subject.Id);
+        Assert.NotNull(curriculumSubject);
+        Assert.Equal(unitsOverride, curriculumSubject.SubjectUnitsOverride);
+    }
+
+    [Fact(DisplayName = "Adding new subject without UnitsOverride keeps it null")]
+    public async Task Handle_AddNewSubjectWithoutUnitsOverride_KeepsItNull()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = subjectCode, 
+                    UnitsOverride = null 
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Mock UpdateCurriculum to simulate database setting IDs
+        var callCount = 0; _curriculumRepositoryMock .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>())) .ReturnsAsync(Result.Success(curriculumId)) .Callback<Curriculum, CancellationToken>((c, ct) => { callCount++; if (callCount == 1) { SimulateDatabaseIdAssignment(c); } });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subject.Id);
+        Assert.NotNull(curriculumSubject);
+        Assert.Null(curriculumSubject.SubjectUnitsOverride);
+    }
+
+    [Fact(DisplayName = "Multiple subjects can have different UnitsOverride values")]
+    public async Task Handle_MultipleSubjectsWithDifferentUnitsOverride_SetsEachCorrectly()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+
+        var subject1 = CreateTestSubject(SubjectId.From(1), SubjectCode.From("CS101"));
+        var subject2 = CreateTestSubject(SubjectId.From(2), SubjectCode.From("CS102"));
+        var subject3 = CreateTestSubject(SubjectId.From(3), SubjectCode.From("MATH101"));
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [
+                    new SaveCurriculumContent.SubjectInCurriculum 
+                    { 
+                        Code = SubjectCode.From("CS101"), 
+                        UnitsOverride = 2.0m 
+                    },
+                    new SaveCurriculumContent.SubjectInCurriculum 
+                    { 
+                        Code = SubjectCode.From("MATH101"), 
+                        UnitsOverride = null 
+                    }
+                ],
+                [2] = [
+                    new SaveCurriculumContent.SubjectInCurriculum 
+                    { 
+                        Code = SubjectCode.From("CS102"), 
+                        UnitsOverride = 4.5m 
+                    }
+                ]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject1, subject2, subject3]);
+
+        // Mock UpdateCurriculum to simulate database setting IDs
+        var callCount = 0; _curriculumRepositoryMock .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>())) .ReturnsAsync(Result.Success(curriculumId)) .Callback<Curriculum, CancellationToken>((c, ct) => { callCount++; if (callCount == 1) { SimulateDatabaseIdAssignment(c); } });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        
+        var curriculumSubject1 = curriculum.GetCurriculumSubject(subject1.Id);
+        Assert.NotNull(curriculumSubject1);
+        Assert.Equal(2.0m, curriculumSubject1.SubjectUnitsOverride);
+
+        var curriculumSubject2 = curriculum.GetCurriculumSubject(subject2.Id);
+        Assert.NotNull(curriculumSubject2);
+        Assert.Equal(4.5m, curriculumSubject2.SubjectUnitsOverride);
+
+        var curriculumSubject3 = curriculum.GetCurriculumSubject(subject3.Id);
+        Assert.NotNull(curriculumSubject3);
+        Assert.Null(curriculumSubject3.SubjectUnitsOverride);
+    }
+
+    [Fact(DisplayName = "Updating existing subject preserves its UnitsOverride value")]
+    public async Task Handle_UpdateExistingSubject_PreservesUnitsOverride()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectId = SubjectId.From(1);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(subjectId, subjectCode);
+        var originalUnitsOverride = 3.5m;
+
+        // Add subject with UnitsOverride at year 1, semester 1
+        AddSubjectToCurriculum(curriculum, subjectId, yearLevel: 1, semester: 1, CurriculumSubjectId.From(100), subjectUnitsOverride: originalUnitsOverride);
+
+        // Move to year 2, semester 2 (note: we're NOT providing UnitsOverride in the command)
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [2] = [new SaveCurriculumContent.SubjectInCurriculum { Code = subjectCode }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subjectId);
+        Assert.NotNull(curriculumSubject);
+        Assert.Equal(YearLevel.From(2), curriculumSubject.YearLevel);
+        Assert.Equal(TermNumber.From(2), curriculumSubject.TermNumber);
+        // The UnitsOverride should be updated to null since the command didn't specify one
+        Assert.Null(curriculumSubject.SubjectUnitsOverride);
+    }
+
+    [Fact(DisplayName = "Updating existing subject can change UnitsOverride value")]
+    public async Task Handle_UpdateExistingSubjectWithNewUnitsOverride_UpdatesValue()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectId = SubjectId.From(1);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(subjectId, subjectCode);
+        var originalUnitsOverride = 3.0m;
+        var newUnitsOverride = 4.5m;
+
+        // Add subject with UnitsOverride at year 1, semester 1
+        AddSubjectToCurriculum(curriculum, subjectId, yearLevel: 1, semester: 1, CurriculumSubjectId.From(100), subjectUnitsOverride: originalUnitsOverride);
+
+        // Update with new UnitsOverride
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [2] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = subjectCode,
+                    UnitsOverride = newUnitsOverride
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subjectId);
+        Assert.NotNull(curriculumSubject);
+        Assert.Equal(YearLevel.From(2), curriculumSubject.YearLevel);
+        Assert.Equal(TermNumber.From(2), curriculumSubject.TermNumber);
+        Assert.Equal(newUnitsOverride, curriculumSubject.SubjectUnitsOverride);
+    }
+
+    [Fact(DisplayName = "Updating existing subject can clear UnitsOverride by setting to null")]
+    public async Task Handle_UpdateExistingSubjectClearUnitsOverride_SetsToNull()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectId = SubjectId.From(1);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(subjectId, subjectCode);
+        var originalUnitsOverride = 3.5m;
+
+        // Add subject with UnitsOverride at year 1, semester 1
+        AddSubjectToCurriculum(curriculum, subjectId, yearLevel: 1, semester: 1, CurriculumSubjectId.From(100), subjectUnitsOverride: originalUnitsOverride);
+
+        // Explicitly clear UnitsOverride by setting to null
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = subjectCode,
+                    UnitsOverride = null
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subjectId);
+        Assert.NotNull(curriculumSubject);
+        Assert.Null(curriculumSubject.SubjectUnitsOverride);
+    }
+
+    [Fact(DisplayName = "Adding subject with zero UnitsOverride is allowed")]
+    public async Task Handle_AddSubjectWithZeroUnitsOverride_AllowsZeroValue()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+        var zeroUnitsOverride = 0m;
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = subjectCode, 
+                    UnitsOverride = zeroUnitsOverride 
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Mock UpdateCurriculum to simulate database setting IDs
+        var callCount = 0; _curriculumRepositoryMock .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>())) .ReturnsAsync(Result.Success(curriculumId)) .Callback<Curriculum, CancellationToken>((c, ct) => { callCount++; if (callCount == 1) { SimulateDatabaseIdAssignment(c); } });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subject.Id);
+        Assert.NotNull(curriculumSubject);
+        Assert.Equal(zeroUnitsOverride, curriculumSubject.SubjectUnitsOverride);
+    }
+
+    [Fact(DisplayName = "Subject with UnitsOverride can be used as prerequisite")]
+    public async Task Handle_SubjectWithUnitsOverrideAsPrerequisite_WorksCorrectly()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+
+        var subject1 = CreateTestSubject(SubjectId.From(1), SubjectCode.From("CS101"));
+        var subject2 = CreateTestSubject(SubjectId.From(2), SubjectCode.From("CS201"));
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = SubjectCode.From("CS101"), 
+                    UnitsOverride = 2.5m,
+                    Prerequisites = []
+                }]
+            },
+            [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = SubjectCode.From("CS201"), 
+                    UnitsOverride = 3.0m,
+                    Prerequisites = [SubjectCode.From("CS101")]
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject1, subject2]);
+
+        // Mock UpdateCurriculum to simulate database setting IDs
+        var callCount = 0;
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId))
+            .Callback<Curriculum, CancellationToken>((c, ct) =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    SimulateDatabaseIdAssignment(c);
+                }
+            });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert - verify the command succeeds and UnitsOverride values are set correctly
+        Assert.True(result.IsSuccess);
+        
+        var curriculumSubject1 = curriculum.GetCurriculumSubject(subject1.Id);
+        Assert.NotNull(curriculumSubject1);
+        Assert.Equal(2.5m, curriculumSubject1.SubjectUnitsOverride);
+
+        var curriculumSubject2 = curriculum.GetCurriculumSubject(subject2.Id);
+        Assert.NotNull(curriculumSubject2);
+        Assert.Equal(3.0m, curriculumSubject2.SubjectUnitsOverride);
+        
+        // Verify the command was called twice (once for subjects, once for prerequisites)
+        _curriculumRepositoryMock.Verify(r => r.UpdateCurriculum(curriculum, It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    #endregion
 }
+

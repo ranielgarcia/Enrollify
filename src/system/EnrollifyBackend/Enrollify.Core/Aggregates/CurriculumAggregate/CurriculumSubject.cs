@@ -95,6 +95,13 @@ public class CurriculumSubject : IAuditable
         return this;
     }
 
+    public CurriculumSubject UpdateSubjectUnitsOverride(decimal? subjectUnitsOverride)
+    {
+        if (SubjectUnitsOverride == subjectUnitsOverride) return this;
+        SubjectUnitsOverride = subjectUnitsOverride;
+        return this;
+    }
+
     public CurriculumSubject AddPrerequisite(
         CurriculumSubjectId prerequisiteCurriculumSubjectId,
         decimal? minimumGrade,

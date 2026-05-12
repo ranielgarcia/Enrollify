@@ -46,6 +46,7 @@ const curriculumSubjectSchema = z.object({
   termNumber: z.number(),
   isElective: z.boolean(),
   electiveGroupName: z.string().nullable(),
+  unitsOverride: z.number().nullable(),
   subject: subjectSummarySchema,
   prerequisites: z.array(subjectPrerequisiteSchema),
 });

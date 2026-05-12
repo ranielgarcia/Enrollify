@@ -75,7 +75,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["EnrollifyWebAPIFeaturesSystemSettingsAcademicSettingsEndpoint"];
+        get: operations["EnrollifyWebAPIFeaturesSystemSettingsAcademicCoreSettingsEndpoint"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1004,25 +1004,20 @@ export interface components {
              * @description Value object wrapping Int32
              */
             subjectId?: number;
-            /** Format: int32 */
-            yearLevel?: number;
-            /** Format: int32 */
-            termNumber?: number;
-            isElective?: boolean;
-            electiveGroupName?: string | null;
-            subject?: components["schemas"]["EnrollifyApplicationFeaturesCurriculumsDTOsSubjectSummaryDto"] | null;
-            prerequisites?: components["schemas"]["EnrollifyApplicationFeaturesCurriculumsDTOsCurriculumSubjectPrerequisiteDto"][];
-        };
-        EnrollifyApplicationFeaturesCurriculumsDTOsSubjectSummaryDto: {
             /**
              * Format: int32
              * @description Value object wrapping Int32
              */
-            id?: number;
-            code?: components["schemas"]["EnrollifyCoreAggregatesSubjectAggregateSubjectCode"];
-            title?: string;
-            /** Format: decimal */
-            units?: number;
+            yearLevel?: number;
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            termNumber?: number;
+            isElective?: boolean;
+            electiveGroupName?: string | null;
+            subject?: components["schemas"]["EnrollifyApplicationSharedDTOsSubjectSummaryDto"] | null;
+            prerequisites?: components["schemas"]["EnrollifyApplicationFeaturesCurriculumsDTOsCurriculumSubjectPrerequisiteDto"][];
         };
         EnrollifyApplicationFeaturesCurriculumsDTOsCurriculumSubjectPrerequisiteDto: {
             /**
@@ -1057,6 +1052,8 @@ export interface components {
         };
         EnrollifyWebAPIFeaturesCurriculumsSubjectInCurriculum: {
             code?: string;
+            /** Format: decimal */
+            unitsOverride?: number | null;
             prerequisites?: string[];
         };
         EnrollifyWebAPIFeaturesCurriculumsUpdateCurriculumRequest: {
@@ -1400,7 +1397,7 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesSystemSettingsAcademicSettingsEndpoint: {
+    EnrollifyWebAPIFeaturesSystemSettingsAcademicCoreSettingsEndpoint: {
         parameters: {
             query?: never;
             header?: never;
