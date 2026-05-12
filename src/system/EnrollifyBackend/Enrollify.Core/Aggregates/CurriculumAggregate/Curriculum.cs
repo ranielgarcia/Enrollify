@@ -115,7 +115,8 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
         int yearLevel,
         int term,
         bool isElective,
-        string? electiveGroupName)
+        string? electiveGroupName,
+        decimal? subjectUnitsOverride)
     {
         Guard.Against.Null(subjectId, message: "Subject ID is required");
 
@@ -132,7 +133,8 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
             YearLevel.From(yearLevel),
             TermNumber.From(term),
             isElective,
-            electiveGroupName);
+            electiveGroupName,
+            subjectUnitsOverride);
 
         _curriculumSubjects.Add(curriculumSubject);
         return curriculumSubject;

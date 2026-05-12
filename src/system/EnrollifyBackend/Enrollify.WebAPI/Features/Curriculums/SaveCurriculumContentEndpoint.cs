@@ -10,6 +10,7 @@ namespace Enrollify.WebAPI.Features.Curriculums;
 public class SubjectInCurriculum
 {
     public string Code { get; set; } = null!;
+    public decimal? UnitsOverride { get; set; }
     public string[] Prerequisites { get; set; } = [];
 }
 
@@ -39,6 +40,7 @@ public class SaveCurriculumContentEndpoint (IMediator mediator)
                 var subjectArray = subjects.Select(s => new SaveCurriculumContent.SubjectInCurriculum
                 {
                     Code = SubjectCode.From(s.Code),
+                    UnitsOverride = s.UnitsOverride,
                     Prerequisites = s.Prerequisites.Select(p => SubjectCode.From(p)).ToArray()
                 }).ToArray();
                 termDict[term] = subjectArray;

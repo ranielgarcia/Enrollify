@@ -17,6 +17,7 @@ public class SaveCurriculumContent
     public class SubjectInCurriculum
     {
         public SubjectCode Code { get; set; }
+        public decimal? UnitsOverride { get; set; }
         public SubjectCode[] Prerequisites { get; set; } = [];
     }
 
@@ -203,7 +204,7 @@ public class SaveCurriculumContent
                         else
                         {
                             // Add new subject
-                            curriculumSubject = curriculum.AddSubject(subject.Id, year.Key, term.Key, isElective: false, electiveGroupName: null);
+                            curriculumSubject = curriculum.AddSubject(subject.Id, year.Key, term.Key, isElective: false, electiveGroupName: null, subjectInCurriculum.UnitsOverride);
                             if (curriculumSubject != null)
                             {
                                 curriculumSubjectsLookup[subjectInCurriculum.Code] = curriculumSubject;

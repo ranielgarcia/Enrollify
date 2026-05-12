@@ -96,6 +96,9 @@ public class CurriculumConfiguration : IEntityTypeConfiguration<Curriculum>
             cs.Property(e => e.IsElective)
                 .IsRequired();
 
+            cs.Property(e => e.SubjectUnitsOverride)
+                .IsRequired();
+
             cs.Property(e => e.ElectiveGroupName)
                 .HasMaxLength(50);
 

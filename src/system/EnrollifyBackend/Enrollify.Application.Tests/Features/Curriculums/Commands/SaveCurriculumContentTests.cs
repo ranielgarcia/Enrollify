@@ -1017,12 +1017,13 @@ public class SaveCurriculumContentTests
     /// </summary>
     private static CurriculumSubject AddSubjectToCurriculum(
         Curriculum curriculum, 
-        SubjectId subjectId, 
+        SubjectId subjectId,
         int yearLevel, 
         int semester,
-        CurriculumSubjectId curriculumSubjectId)
+        CurriculumSubjectId curriculumSubjectId,
+        decimal? subjectUnitsOverride = null)
     {
-        var curriculumSubject = curriculum.AddSubject(subjectId, yearLevel, semester, isElective: false, electiveGroupName: null);
+        var curriculumSubject = curriculum.AddSubject(subjectId, yearLevel, semester, isElective: false, electiveGroupName: null, subjectUnitsOverride: subjectUnitsOverride);
         if (curriculumSubject != null)
         {
             SetEntityProperty(curriculumSubject, "Id", curriculumSubjectId);

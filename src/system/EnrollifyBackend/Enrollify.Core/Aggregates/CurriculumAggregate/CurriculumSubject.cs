@@ -21,7 +21,8 @@ public class CurriculumSubject : IAuditable
         YearLevel yearLevel,
         TermNumber termNumber,
         bool isElective,
-        string? electiveGroupName)
+        string? electiveGroupName,
+        decimal? subjectUnitsOverride)
     {
         CurriculumId = curriculumId;
         SubjectId = subjectId;
@@ -29,6 +30,7 @@ public class CurriculumSubject : IAuditable
         TermNumber = Guard.Against.Null(termNumber, nameof(termNumber));
         IsElective = isElective;
         ElectiveGroupName = electiveGroupName;
+        SubjectUnitsOverride = subjectUnitsOverride;
     }
 
     public CurriculumSubjectId Id { get; private set; }
@@ -49,6 +51,8 @@ public class CurriculumSubject : IAuditable
     /// Whether this is an elective slot
     /// </summary>
     public bool IsElective { get; private set; }
+
+    public decimal? SubjectUnitsOverride { get; private set; }
 
     /// <summary>
     /// Group name for electives (e.g., 'Major Elective', 'Free Elective')
