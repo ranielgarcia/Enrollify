@@ -52,8 +52,8 @@ CREATE TABLE ClassSectionSubjectOffering
 	TeacherId INT NULL, -- Assigned to a Teacher,
 	ClassSectionId INT NOT NULL, -- Belongs to a ClassSection
 	RoomId INT NULL,
-	DaysPerWeek INT NOT NULL,              -- 2, 3, 5, etc.
-	HoursPerDay DECIMAL(3,1) NOT NULL,     -- 1.5, 2.0, 3.0, etc.
+	DaysPerWeek INT NOT NULL DEFAULT 1,              -- 2, 3, 5, etc.
+	HoursPerDay DECIMAL(3,1) NOT NULL DEFAULT 1,     -- 1.5, 2.0, 3.0, etc.
 	MaxNumberOfStudents INT NULL, -- Optional, soft rule, this to allow us to override the room student capacity
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),

@@ -20,20 +20,20 @@ public class ClassSectionSubjectOfferingConfiguration : IEntityTypeConfiguration
             .HasColumnType("decimal(3,1)");
 
         builder.Property(e => e.TeacherId)
-            .IsRequired();
+            .IsRequired(false);
 
         builder.Property(e => e.ClassSectionId)
             .IsRequired();
 
         builder.Property(e => e.RoomId)
-            .IsRequired();
+            .IsRequired(false);
 
         builder.Property(e => e.DaysPerWeek)
-            .IsRequired();
+            .IsRequired().HasDefaultValue(1);
 
         builder.Property(e => e.HoursPerDay)
             .HasColumnType("decimal(3,1)")
-            .IsRequired();
+            .IsRequired().HasDefaultValue(1);
 
         builder.Property(e => e.MaxNumberOfStudents);
 

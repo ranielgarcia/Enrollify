@@ -18,16 +18,16 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
     public ClassSectionSubjectOffering(
         SubjectId subjectId,
         decimal? subjectUnitsOverride,
-        TeacherId teacherId,
+        TeacherId? teacherId,
         ClassSectionId classSectionId,
         RoomId roomId,
-        int daysPerWeek,
-        double hoursPerDay,
-        int? maxNumberOfStudents)
+        int daysPerWeek = 1, // default 1 day per week
+        double hoursPerDay = 1, // default 1 hour per day
+        int? maxNumberOfStudents = null)
     {
         SubjectId = Guard.Against.Null(subjectId, nameof(subjectId));
         SubjectUnitsOverride = subjectUnitsOverride;
-        TeacherId = Guard.Against.Null(teacherId, nameof(teacherId));
+        TeacherId = teacherId;
         ClassSectionId = Guard.Against.Null(classSectionId, nameof(classSectionId));
         RoomId = Guard.Against.Null(roomId, nameof(roomId));
         DaysPerWeek = Guard.Against.NegativeOrZero(daysPerWeek, nameof(daysPerWeek));
@@ -40,7 +40,7 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
 
     public decimal? SubjectUnitsOverride { get; private set; }
 
-    public TeacherId TeacherId { get; private set; }
+    public TeacherId? TeacherId { get; private set; }
     public Teacher? Teacher { get; private set; }
 
     public ClassSectionId ClassSectionId { get; private set; }

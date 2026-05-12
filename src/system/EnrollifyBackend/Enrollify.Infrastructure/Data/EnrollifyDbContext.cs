@@ -1,6 +1,7 @@
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.BuildingAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
@@ -55,6 +56,7 @@ public class EnrollifyDbContext: DbContext
 
     public DbSet<AcademicYear> AcademicYears => Set<AcademicYear>();
     public DbSet<ClassSection> ClassSections => Set<ClassSection>();
+    public DbSet<ClassSectionSubjectOffering> ClassSectionSubjectOfferings => Set<ClassSectionSubjectOffering>();
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
