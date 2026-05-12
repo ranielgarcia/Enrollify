@@ -7,7 +7,6 @@ CREATE TABLE ClassSections
 	AcademicTermId INT NOT NULL,
 	AdviserId INT NOT NULL,
     SectionCode CHAR(1) NOT NULL, -- "A", "B", "C"
-	StudentCapacity INT NOT NULL, -- Soft rule
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -22,8 +21,7 @@ CREATE TABLE ClassSections
 	CONSTRAINT FK_ClassSections_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_ClassSections_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_ClassSections_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
-	CONSTRAINT CHK_ClassSections_YearLevel_Valid CHECK (YearLevel BETWEEN 1 AND 6),
-	CONSTRAINT CHK_ClassSections_StudentCapacity_Positive CHECK (StudentCapacity > 0)
+	CONSTRAINT CHK_ClassSections_YearLevel_Valid CHECK (YearLevel BETWEEN 1 AND 6)
 );
 GO;
 
@@ -101,10 +99,17 @@ CREATE TABLE ClassSchedules
     DayOfWeek CHAR(3) NOT NULL,
     StartTime TIME NOT NULL,
     EndTime TIME NOT NULL,
-    CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
-    UpdatedAt DATETIMEOFFSET NULL,
-    IsActive BIT NOT NULL DEFAULT 1,
 
+	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+	CreatedBy INT NOT NULL,
+	UpdatedAt DATETIMEOFFSET NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIMEOFFSET NULL,
+	DeletedBy INT NULL,
+	IsActive BIT NOT NULL DEFAULT 1,
+    CONSTRAINT FK_ClassSchedules_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_ClassSchedules_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+	CONSTRAINT FK_ClassSchedules_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
     CONSTRAINT FK_ClassSchedules_Offering
         FOREIGN KEY (ClassSectionSubjectOfferingId)
         REFERENCES ClassSectionSubjectOffering(Id),
@@ -117,9 +122,9 @@ CREATE TABLE ClassSchedules
 
     -- Prevent duplicate schedules for same offering
     CONSTRAINT UQ_ClassSchedules_Offering_Day
-        UNIQUE (ClassSectionSubjectOfferingId, DayOfWeek)
+        UNIQUE (ClassSectionSubjectOfferingId, DayOfWeek),
 );
-
+GO;
 -- **Example Data:**
 
 -- **ClassSectionSubjectOffering:**

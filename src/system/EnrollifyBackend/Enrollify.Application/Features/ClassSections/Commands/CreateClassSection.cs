@@ -22,8 +22,7 @@ public static class CreateClassSection
         YearLevel yearLevel,
         CourseId courseId,
         AcademicTermId academicTermId,
-        TeacherId adviserId,
-        int studentCapacity) : ICommand<Result<ClassSectionId>>;
+        TeacherId adviserId) : ICommand<Result<ClassSectionId>>;
 
     public sealed class Handler : ICommandHandler<Command, Result<ClassSectionId>>
     {
@@ -90,12 +89,11 @@ public static class CreateClassSection
 
             var newClassSection = new ClassSection(new ClassSectionForCreation
             {
-                Name = $"{course.Name}-{command.yearLevel}{classSectionCode}",
+                Name = $"{course.Code.Value}-{command.yearLevel}{classSectionCode}",
                 YearLevel = command.yearLevel,
                 CourseId = command.courseId,
                 AcademicTermId = command.academicTermId,
                 AdviserId = command.adviserId,
-                StudentCapacity = command.studentCapacity,
                 SectionCode = classSectionCode,
             });
 
@@ -110,7 +108,7 @@ public static class CreateClassSection
 
             var existingClassSections = await _classSectionReadRepository.ListAsync(
                 new GetExistingClassSectionsByCourseYearLevelAndTerm(command.yearLevel, command.courseId, command.academicTermId), ct);
-            var lastExistingClassSectionCode = existingClassSections?.OrderBy(cs => cs.SectionCode).FirstOrDefault()?.SectionCode;
+            var lastExistingClassSectionCode = existingClassSections?.OrderByDescending(cs => cs.SectionCode).FirstOrDefault()?.SectionCode;
 
             return lastExistingClassSectionCode.GetNextSectionCode();
         }

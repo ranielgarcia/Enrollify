@@ -12,6 +12,5 @@ public class ClassSectionForCreation
     public CourseId CourseId { get; set; }
     public AcademicTermId AcademicTermId { get; set; }
     public TeacherId AdviserId { get; set; }
-    public int StudentCapacity { get; set; }
     public SectionCode SectionCode { get; set; }
 }

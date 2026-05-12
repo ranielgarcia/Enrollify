@@ -13,11 +13,8 @@ public class ClassSectionConfiguration : IEntityTypeConfiguration<ClassSection>
           .UseIdentityColumn()
           .IsRequired();
 
-
         builder.Property(e => e.Name).IsRequired();
         builder.Property(e => e.YearLevel).IsRequired();
-        builder.Property(e => e.StudentCapacity).IsRequired();
-
 
         builder.HasOne(e => e.Course)
             .WithMany()
@@ -33,7 +30,6 @@ public class ClassSectionConfiguration : IEntityTypeConfiguration<ClassSection>
             .WithMany()
             .HasForeignKey(e => e.AdviserId)
             .OnDelete(DeleteBehavior.NoAction);
-
 
         // Audit fields
         builder.Property(a => a.CreatedAt).HasColumnName("CreatedAt");

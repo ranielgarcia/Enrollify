@@ -30,10 +30,10 @@ public class ClassSectionRepository : IClassSectionRepository
             _logger.LogError(ex, "Invalid year level {YearLevel}, it must be between 1 and 6", newClassSection.YearLevel);
             return Result.Conflict($"The year level '{newClassSection.YearLevel}' is invalid. It must be between 1 and 6.");
         }
-        catch (DbUpdateException ex) when (IsInvalidStudentCapacity(ex))
+        catch (Exception ex)
         {
-            _logger.LogError(ex, "Invalid student capacity {StudentCapacity}, it must be positive", newClassSection.StudentCapacity);
-            return Result.Conflict($"The student capacity '{newClassSection.StudentCapacity}' is invalid. It must be positive.");
+            _logger.LogError(ex, "Error creating new class section {@ClassSection}", newClassSection);
+            return Result.Error("Unable to create the new class section due to internal error");
         }
     }
 
@@ -76,10 +76,10 @@ public class ClassSectionRepository : IClassSectionRepository
             _logger.LogError(ex, "Invalid year level {YearLevel}, it must be between 1 and 6", updatedClassSection.YearLevel.Value);
             return Result.Conflict($"The year level '{updatedClassSection.YearLevel}' is invalid. It must be between 1 and 6.");
         }
-        catch (DbUpdateException ex) when (IsInvalidStudentCapacity(ex))
+        catch (Exception ex)
         {
-            _logger.LogError(ex, "Invalid student capacity {StudentCapacity}, it must be positive", updatedClassSection.StudentCapacity);
-            return Result.Conflict($"The student capacity '{updatedClassSection.StudentCapacity}' is invalid. It must be positive.");
+            _logger.LogError(ex, "Error updating class section with ID: {ClassSectionId}", updatedClassSection.Id.Value);
+            return Result.Error($"Unable to update the class section with ID {updatedClassSection.Id.Value} due to internal error");
         }
     }
 
@@ -94,11 +94,5 @@ public class ClassSectionRepository : IClassSectionRepository
     {
         var message = ex.InnerException?.Message;
         return message?.Contains("CHK_ClassSections_YearLevel_Valid") == true;
-    }
-
-    private bool IsInvalidStudentCapacity(DbUpdateException ex)
-    {
-        var message = ex.InnerException?.Message;
-        return message?.Contains("CHK_ClassSections_StudentCapacity_Positive") == true;
     }
 }

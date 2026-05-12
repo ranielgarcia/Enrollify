@@ -20,7 +20,6 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
         CourseId = Guard.Against.Null(sectionForCreation.CourseId, nameof(sectionForCreation.CourseId));
         AcademicTermId = Guard.Against.Null(sectionForCreation.AcademicTermId, nameof(sectionForCreation.AcademicTermId));
         AdviserId = Guard.Against.Null(sectionForCreation.AdviserId, nameof(sectionForCreation.AdviserId));
-        StudentCapacity = Guard.Against.NegativeOrZero(sectionForCreation.StudentCapacity, nameof(sectionForCreation.StudentCapacity));
         SectionCode = Guard.Against.Null(sectionForCreation.SectionCode, nameof(sectionForCreation.SectionCode));
     }
 
@@ -36,7 +35,6 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
     public TeacherId AdviserId { get; private set; }
     public Teacher? Adviser { get; private set; }
 
-    public int StudentCapacity { get; private set; }
     public SectionCode SectionCode { get; private set; }
 
 
@@ -84,13 +82,6 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
     {
         if (newAdviserId == AdviserId) return this;
         AdviserId = Guard.Against.Null(newAdviserId, nameof(newAdviserId));
-        return this;
-    }
-
-    public ClassSection UpdateStudentCapacity(int newStudentCapacity)
-    {
-        if (newStudentCapacity == StudentCapacity) return this;
-        StudentCapacity = Guard.Against.NegativeOrZero(newStudentCapacity, nameof(newStudentCapacity));
         return this;
     }
 }
