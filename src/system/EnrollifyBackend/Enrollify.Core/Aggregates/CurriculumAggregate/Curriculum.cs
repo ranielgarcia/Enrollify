@@ -160,7 +160,7 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
         return _curriculumSubjects.FirstOrDefault(cs => cs.Id == curriculumSubjectId && cs.IsActive);
     }
 
-    public IEnumerable<CurriculumSubject> GetSubjectsByYearAndSemester(int yearLevel, int termNumber)
+    public IEnumerable<CurriculumSubject> GetSubjectsByYearAndTerm(YearLevel yearLevel, TermNumber termNumber)
     {
         return _curriculumSubjects.Where(cs =>
             cs.YearLevel == yearLevel &&

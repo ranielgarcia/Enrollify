@@ -78,6 +78,8 @@ public static class InfrastructureServiceExtensions
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>))
                .AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
 
+        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+
         services.AddScoped<IListRolesQueryService, ListRolesQueryService>();
         services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
         services.AddScoped<ICollegeRepository, CollegeRepository>();

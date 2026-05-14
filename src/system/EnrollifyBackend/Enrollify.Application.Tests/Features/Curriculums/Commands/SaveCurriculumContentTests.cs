@@ -19,6 +19,8 @@ public class SaveCurriculumContentTests
     private readonly Mock<IReadRepository<Curriculum>> _curriculumReadRepositoryMock;
     private readonly Mock<IReadRepository<Subject>> _subjectReadRepositoryMock;
     private readonly Mock<ICurriculumRepository> _curriculumRepositoryMock;
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<ITransactionScope> _transactionScopeMock;
     private readonly SaveCurriculumContent.Handler _handler;
 
     public SaveCurriculumContentTests()
@@ -26,11 +28,19 @@ public class SaveCurriculumContentTests
         _curriculumReadRepositoryMock = new Mock<IReadRepository<Curriculum>>();
         _subjectReadRepositoryMock = new Mock<IReadRepository<Subject>>();
         _curriculumRepositoryMock = new Mock<ICurriculumRepository>();
+        _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _transactionScopeMock = new Mock<ITransactionScope>();
+
+        // Setup UnitOfWork to return transaction scope
+        _unitOfWorkMock
+            .Setup(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_transactionScopeMock.Object);
 
         _handler = new SaveCurriculumContent.Handler(
             _curriculumReadRepositoryMock.Object,
             _subjectReadRepositoryMock.Object,
-            _curriculumRepositoryMock.Object);
+            _curriculumRepositoryMock.Object,
+            _unitOfWorkMock.Object);
     }
 
     [Fact]
