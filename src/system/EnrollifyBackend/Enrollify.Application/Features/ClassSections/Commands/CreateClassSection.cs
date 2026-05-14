@@ -2,7 +2,7 @@ using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Application.Features.ClassSections.Extensions;
 using Enrollify.Application.Features.ClassSections.Specifications;
-using Enrollify.Application.Features.ClassSections.Validators;
+using Enrollify.Application.Features.ClassSectionSubjectOfferings.Commands;
 using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
@@ -35,6 +35,8 @@ public static class CreateClassSection
         private readonly IReadRepository<Curriculum> _curriculumReadRepository;
         private readonly IClassSectionRepository _classSectionRepository;
         private readonly IValidator<Command> _validator;
+        private readonly IMediator _mediator;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<Handler> _logger;
 
         public Handler(
@@ -44,6 +46,8 @@ public static class CreateClassSection
             IReadRepository<Curriculum> curriculumReadRepository,
             IClassSectionRepository classSectionRepository,
             IValidator<Command> validator,
+            IMediator mediator,
+            IUnitOfWork unitOfWork,
             ILogger<Handler> logger)
         {
             _courseReadRepository = courseReadRepository;
@@ -52,11 +56,13 @@ public static class CreateClassSection
             _curriculumReadRepository = curriculumReadRepository;
             _classSectionRepository = classSectionRepository;
             _validator = validator;
+            _mediator = mediator;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
+
         public async ValueTask<Result<ClassSectionId>> Handle(Command command, CancellationToken cancellationToken)
         {
-            // Validate the command
             var validationResult = await _validator.ValidateAsync(command, cancellationToken);
             if (!validationResult.IsValid)
             {
@@ -89,25 +95,51 @@ public static class CreateClassSection
 
             var curriculum = curriculumResult.Value;
 
-            // Create the class section
-            var newClassSection = new ClassSection(new ClassSectionForCreation
+            // Begin transaction to ensure all database operations succeed or fail together
+            await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
+            try
             {
-                Name = $"{course!.Code.Value}-{command.yearLevel}{sectionCode}",
-                YearLevel = command.yearLevel,
-                CourseId = command.courseId,
-                AcademicTermId = command.academicTermId,
-                AdviserId = command.adviserId,
-                SectionCode = sectionCode,
-            });
+                // Create the class section
+                var newClassSection = new ClassSection(new ClassSectionForCreation
+                {
+                    Name = $"{course!.Code.Value}-{command.yearLevel}{sectionCode}",
+                    YearLevel = command.yearLevel,
+                    CourseId = command.courseId,
+                    AcademicTermId = command.academicTermId,
+                    AdviserId = command.adviserId,
+                    SectionCode = sectionCode,
+                });
+                var createNewClassSectionResult = await _classSectionRepository.Create(newClassSection, cancellationToken);
+                if (!createNewClassSectionResult.IsSuccess)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Result.Error("Unable to create new class section");
+                }
 
-            // TODO: Create ClassSectionSubjectOfferings based on curriculum
-            // This will be added in the next phase when implementing subject offerings
-            // TODO: Add StudentCapacity to ClassSection model and ClassSectionForCreation
+                var latestActiveCurriculum = await GetCurriculum(course.Id, command.yearLevel, academicTerm.TermNumber, cancellationToken);
+                if (!latestActiveCurriculum.IsSuccess)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Result.Invalid(new ValidationError($"Unable to find the latest active curriculum for course {course.Name}"));
+                }
 
-            // Persist within a transaction (for future multi-entity creation)
-            var result = await _classSectionRepository.Create(newClassSection, cancellationToken);
+                var curriculumSubjectsForYearLevelAndTerm = latestActiveCurriculum.Value.GetSubjectsByYearAndTerm(command.yearLevel, academicTerm.TermNumber);
 
-            return result;
+                foreach (var curSubject in curriculumSubjectsForYearLevelAndTerm)
+                {
+                    await _mediator.Send(new CreateClassSectionSubjectOffering.Command(createNewClassSectionResult.Value, curSubject.SubjectId), cancellationToken);
+                }
+
+                await transaction.CommitAsync(cancellationToken);
+            }
+            catch
+            {
+                // Transaction will be rolled back automatically on dispose if not committed
+                throw;
+            }
+
+            return Result.Success();
         }
 
 

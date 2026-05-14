@@ -28,7 +28,7 @@ public class ClassSectionRepository : IClassSectionRepository
         catch (DbUpdateException ex) when (IsInvalidYearLevel(ex))
         {
             _logger.LogError(ex, "Invalid year level {YearLevel}, it must be between 1 and 6", newClassSection.YearLevel);
-            return Result.Conflict($"The year level '{newClassSection.YearLevel}' is invalid. It must be between 1 and 6.");
+            return Result.Conflict($"The year level '{newClassSection.YearLevel.Value.ToString()}' is invalid. It must be between 1 and 6.");
         }
         catch (Exception ex)
         {
@@ -45,7 +45,7 @@ public class ClassSectionRepository : IClassSectionRepository
 
             if (classSection == null)
             {
-                return Result.NotFound($"Class Section with an ID of {classSectionId.Value} was not found.");
+                return Result.NotFound($"Class Section with an ID of {classSectionId.Value.ToString()} was not found.");
             }
             _dbContext.ClassSections.Remove(classSection);
             await _dbContext.SaveChangesAsync(cancellationToken);
@@ -53,13 +53,13 @@ public class ClassSectionRepository : IClassSectionRepository
         }
         catch (DbUpdateException ex) when (IsForeignKeyConstraintException(ex))
         {
-            _logger.LogWarning(ex, "Cannot delete class section with ID: {ClassSectionId} due to foreign key constraint", classSectionId.Value);
+            _logger.LogWarning(ex, "Cannot delete class section with ID: {ClassSectionId} due to foreign key constraint", classSectionId.Value.ToString());
             return Result.Conflict("Cannot delete this class section because it is currently in use by one or more entities. Please remove all references before deleting.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting class section with ID: {ClassSectionId}", classSectionId.Value);
-            return Result.Error($"Unable to delete the class section with ID {classSectionId.Value} due to internal error");
+            _logger.LogError(ex, "Error deleting class section with ID: {ClassSectionId}", classSectionId.Value.ToString());
+            return Result.Error($"Unable to delete the class section with ID {classSectionId.Value.ToString()} due to internal error");
         }
     }
 
@@ -73,13 +73,13 @@ public class ClassSectionRepository : IClassSectionRepository
         }
         catch (DbUpdateException ex) when (IsInvalidYearLevel(ex))
         {
-            _logger.LogError(ex, "Invalid year level {YearLevel}, it must be between 1 and 6", updatedClassSection.YearLevel.Value);
-            return Result.Conflict($"The year level '{updatedClassSection.YearLevel}' is invalid. It must be between 1 and 6.");
+            _logger.LogError(ex, "Invalid year level {YearLevel}, it must be between 1 and 6", updatedClassSection.YearLevel.Value.ToString());
+            return Result.Conflict($"The year level '{updatedClassSection.YearLevel.Value.ToString()}' is invalid. It must be between 1 and 6.");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating class section with ID: {ClassSectionId}", updatedClassSection.Id.Value);
-            return Result.Error($"Unable to update the class section with ID {updatedClassSection.Id.Value} due to internal error");
+            return Result.Error($"Unable to update the class section with ID {updatedClassSection.Id.Value.ToString()} due to internal error");
         }
     }
 
