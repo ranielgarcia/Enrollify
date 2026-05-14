@@ -15,7 +15,6 @@ public class GetLatestActiveCurriculumWithSubjectsByCourseYearLevelAndTerm : Spe
     {
         Query
             .Include(c => c.CurriculumSubjects.Where(cs => cs.IsActive && cs.YearLevel == yearLevel && cs.TermNumber == termNumber))
-            .ThenInclude(cs => cs.Subject)
             .Where(c => c.CourseId == course && c.IsActive && c.StatusId == CurriculumStatusEnum.Active)
             .OrderByDescending(c => c.EffectiveYear)
             .Take(1);

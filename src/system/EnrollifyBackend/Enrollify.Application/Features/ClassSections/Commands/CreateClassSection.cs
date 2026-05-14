@@ -97,7 +97,7 @@ public static class CreateClassSection
 
             // Get subjects that should be offered for this class section
             var curriculumSubjects = curriculum.GetSubjectsByYearAndTerm(command.yearLevel, academicTerm.TermNumber);
-            if (curriculumSubjects.Count() == 0)
+            if (!curriculumSubjects.Any())
             {
                 _logger.LogWarning("No curriculum subjects found for course with an id of {CourseId}, year level of {YearLevel}, and term number of {TermNumber}.", command.courseId, command.yearLevel, academicTerm.TermNumber);
                 return Result.Error("No curriculum subjects found for the specified course, year level, and term.");
@@ -139,7 +139,7 @@ public static class CreateClassSection
                             classSectionId,
                             curriculumSubject.SubjectId,
                             string.Join(", ", offeringResult.Errors));
-                        return Result.Error($"Unable to create subject offering for {curriculumSubject.Subject?.Title ?? "a subject"}.");
+                        return Result.Error("Unable to create one or more subject offerings.");
                     }
                 }
 
@@ -149,7 +149,6 @@ public static class CreateClassSection
                     "Successfully created class section {ClassSectionId} with {SubjectCount} subject offerings",
                     classSectionId,
                     curriculumSubjects.Count());
-
 
                 return Result.Success(createResult.Value);
             }
