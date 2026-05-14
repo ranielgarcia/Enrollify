@@ -82,18 +82,26 @@ public static class CreateClassSection
             var sectionCode = await GetSectionCode(command, cancellationToken);
 
             // Get curriculum for this class section
-            var curriculumResult = await GetCurriculum(
+            var latestActiveCurriculum = await GetCurriculum(
                 command.courseId,
                 command.yearLevel,
                 academicTerm.TermNumber,
                 cancellationToken);
 
-            if (!curriculumResult.IsSuccess)
+            if (!latestActiveCurriculum.IsSuccess)
             {
-                return Result.Invalid(curriculumResult.ValidationErrors);
+                return Result.Invalid(latestActiveCurriculum.ValidationErrors);
             }
 
-            var curriculum = curriculumResult.Value;
+            var curriculum = latestActiveCurriculum.Value;
+
+            // Get subjects that should be offered for this class section
+            var curriculumSubjects = curriculum.GetSubjectsByYearAndTerm(command.yearLevel, academicTerm.TermNumber);
+            if (curriculumSubjects.Count() == 0)
+            {
+                _logger.LogWarning("No curriculum subjects found for course with an id of {CourseId}, year level of {YearLevel}, and term number of {TermNumber}.", command.courseId, command.yearLevel, academicTerm.TermNumber);
+                return Result.Error("No curriculum subjects found for the specified course, year level, and term.");
+            }
 
             // Begin transaction to ensure all database operations succeed or fail together
             await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -110,38 +118,48 @@ public static class CreateClassSection
                     AdviserId = command.adviserId,
                     SectionCode = sectionCode,
                 });
-                var createNewClassSectionResult = await _classSectionRepository.Create(newClassSection, cancellationToken);
-                if (!createNewClassSectionResult.IsSuccess)
+                var createResult = await _classSectionRepository.Create(newClassSection, cancellationToken);
+                if (!createResult.IsSuccess)
                 {
-                    await transaction.RollbackAsync(cancellationToken);
-                    return Result.Error("Unable to create new class section");
+                    _logger.LogError("Failed to create class section: {Errors}", string.Join(", ", createResult.Errors));
+                    return Result.Error("Unable to create the class section.");
                 }
 
-                var latestActiveCurriculum = await GetCurriculum(course.Id, command.yearLevel, academicTerm.TermNumber, cancellationToken);
-                if (!latestActiveCurriculum.IsSuccess)
-                {
-                    await transaction.RollbackAsync(cancellationToken);
-                    return Result.Invalid(new ValidationError($"Unable to find the latest active curriculum for course {course.Name}"));
-                }
+                var classSectionId = createResult.Value;
 
-                var curriculumSubjectsForYearLevelAndTerm = latestActiveCurriculum.Value.GetSubjectsByYearAndTerm(command.yearLevel, academicTerm.TermNumber);
-
-                foreach (var curSubject in curriculumSubjectsForYearLevelAndTerm)
+                foreach (var curriculumSubject in curriculumSubjects)
                 {
-                    await _mediator.Send(new CreateClassSectionSubjectOffering.Command(createNewClassSectionResult.Value, curSubject.SubjectId), cancellationToken);
+                    var offeringResult = await _mediator.Send(
+                        new CreateClassSectionSubjectOffering.Command(classSectionId, curriculumSubject.SubjectId),
+                        cancellationToken);
+                    if (!offeringResult.IsSuccess)
+                    {
+                        _logger.LogError(
+                            "Failed to create subject offering for ClassSection {ClassSectionId}, Subject {SubjectId}: {Errors}",
+                            classSectionId,
+                            curriculumSubject.SubjectId,
+                            string.Join(", ", offeringResult.Errors));
+                        return Result.Error($"Unable to create subject offering for {curriculumSubject.Subject?.Title ?? "a subject"}.");
+                    }
                 }
 
                 await transaction.CommitAsync(cancellationToken);
+
+                _logger.LogInformation(
+                    "Successfully created class section {ClassSectionId} with {SubjectCount} subject offerings",
+                    classSectionId,
+                    curriculumSubjects.Count());
+
+
+                return Result.Success(createResult.Value);
             }
-            catch
+            catch (Exception ex)
             {
-                // Transaction will be rolled back automatically on dispose if not committed
-                throw;
+                _logger.LogError(ex, "Error creating class section and subject offerings");
+                // Transaction will rollback automatically on dispose
+                return Result.Error("An unexpected error occurred while creating the class section.");
             }
-
-            return Result.Success();
         }
-
 
         private async Task<SectionCode> GetSectionCode(Command command, CancellationToken ct)
         {
@@ -152,7 +170,6 @@ public static class CreateClassSection
 
             return lastExistingClassSectionCode.GetNextSectionCode();
         }
-
 
         private async Task<Result<Curriculum>> GetCurriculum(CourseId courseId, YearLevel yearLevel, TermNumber termNumber, CancellationToken ct)
         {
