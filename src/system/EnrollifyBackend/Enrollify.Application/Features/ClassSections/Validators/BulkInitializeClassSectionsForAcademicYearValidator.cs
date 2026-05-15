@@ -1,5 +1,6 @@
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Application.Features.ClassSections.Commands;
+using Enrollify.Application.Features.Courses.Specifications;
 using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
@@ -29,65 +30,78 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
             .WithMessage("At least one payload entry is required.");
 
         RuleForEach(x => x.requestPayload)
-            .SetValidator(new PayloadValidator(_courseRepository, _academicYearRepository, _curriculumRepository));
+            .ChildRules(payload =>
+            {
+                payload.RuleFor(x => x.numberOfSections)
+                    .GreaterThan(0)
+                    .WithMessage("Number of sections must be greater than zero.");
+            });
+
+        RuleFor(x => x.requestPayload)
+            .MustAsync(ValidateEntitiesExistAsync)
+            .WithMessage("One or more entries reference entities that do not exist.")
+            .When(x => x.requestPayload is { Count: > 0 });
     }
 
-    private class PayloadValidator : AbstractValidator<BulkInitializeClassSectionsForAcademicYear.Payload>
+    private async Task<bool> ValidateEntitiesExistAsync(
+        BulkInitializeClassSectionsForAcademicYear.Command command,
+        List<BulkInitializeClassSectionsForAcademicYear.Payload> payloads,
+        ValidationContext<BulkInitializeClassSectionsForAcademicYear.Command> context,
+        CancellationToken cancellationToken)
     {
-        private readonly IReadRepository<Course> _courseRepository;
-        private readonly IReadRepository<AcademicYear> _academicYearRepository;
-        private readonly IReadRepository<Curriculum> _curriculumRepository;
+        var courseIds = payloads.Select(p => p.courseId).Distinct().ToList();
+        var academicYearIds = payloads.Select(p => p.academicYearId).Distinct().ToList();
+        var curriculumIds = payloads
+            .Select(p => p.curriculumId)
+            .Where(id => id != CurriculumId.From(0))
+            .Distinct()
+            .ToList();
 
-        public PayloadValidator(
-            IReadRepository<Course> courseRepository,
-            IReadRepository<AcademicYear> academicYearRepository,
-            IReadRepository<Curriculum> curriculumRepository)
+        var existingCoursesTask = _courseRepository.ListAsync(new BulkGetMinimumCoursesByIdsSpec(courseIds), cancellationToken);
+        var existingAcademicYearsTask = _academicYearRepository.ListAsync(new BulkGetAcademicYearsByIdsSpec(academicYearIds), cancellationToken);
+        var existingCurriculaTask = curriculumIds.Count > 0
+            ? _curriculumRepository.ListAsync(new BulkGetCurriculumsByIdsSpec(curriculumIds), cancellationToken)
+            : Task.FromResult<List<Curriculum>>([]);
+
+        await Task.WhenAll(existingCoursesTask, existingAcademicYearsTask, existingCurriculaTask);
+
+        var existingCourseIds = existingCoursesTask.Result.Select(c => c.Id).ToHashSet();
+        var existingAcademicYearIds = existingAcademicYearsTask.Result.Select(ay => ay.Id).ToHashSet();
+        var existingCurriculaById = existingCurriculaTask.Result.ToDictionary(c => c.Id);
+
+        var isValid = true;
+
+        for (var i = 0; i < payloads.Count; i++)
         {
-            _courseRepository = courseRepository;
-            _academicYearRepository = academicYearRepository;
-            _curriculumRepository = curriculumRepository;
+            var payload = payloads[i];
 
-            RuleFor(x => x.courseId)
-                .MustAsync(CourseExists)
-                .WithMessage("The specified course does not exist.");
+            if (!existingCourseIds.Contains(payload.courseId))
+            {
+                context.AddFailure($"requestPayload[{i}].courseId", $"Course with ID '{payload.courseId}' does not exist.");
+                isValid = false;
+            }
 
-            RuleFor(x => x.academicYearId)
-                .MustAsync(AcademicYearExists)
-                .WithMessage("The specified academic year does not exist.");
+            if (!existingAcademicYearIds.Contains(payload.academicYearId))
+            {
+                context.AddFailure($"requestPayload[{i}].academicYearId", $"Academic year with ID '{payload.academicYearId}' does not exist.");
+                isValid = false;
+            }
 
-            RuleFor(x => x)
-                .MustAsync(CurriculumBelongsToCourse)
-                .WithMessage("The specified curriculum does not exist or does not belong to the specified course.")
-                .When(x => x.curriculumId != CurriculumId.From(0));
+            if (payload.curriculumId == CurriculumId.From(0))
+                continue;
 
-            RuleFor(x => x.numberOfSections)
-                .GreaterThan(0)
-                .WithMessage("Number of sections must be greater than zero.");
+            if (!existingCurriculaById.TryGetValue(payload.curriculumId, out var curriculum))
+            {
+                context.AddFailure($"requestPayload[{i}].curriculumId", $"Curriculum with ID '{payload.curriculumId}' does not exist.");
+                isValid = false;
+            }
+            else if (curriculum.CourseId != payload.courseId)
+            {
+                context.AddFailure($"requestPayload[{i}].curriculumId", $"Curriculum with ID '{payload.curriculumId}' does not belong to course with ID '{payload.courseId}'.");
+                isValid = false;
+            }
         }
 
-        private async Task<bool> CourseExists(CourseId courseId, CancellationToken cancellationToken)
-        {
-            var course = await _courseRepository.GetByIdAsync(courseId, cancellationToken);
-            return course != null;
-        }
-
-        private async Task<bool> AcademicYearExists(AcademicYearId academicYearId, CancellationToken cancellationToken)
-        {
-            var academicYear = await _academicYearRepository
-                .FirstOrDefaultAsync(new GetAcademicYearByIdSpec(academicYearId), cancellationToken);
-            return academicYear != null;
-        }
-
-        private async Task<bool> CurriculumBelongsToCourse(
-            BulkInitializeClassSectionsForAcademicYear.Payload payload,
-            CancellationToken cancellationToken)
-        {
-            var curriculum = await _curriculumRepository
-                .FirstOrDefaultAsync(new GetCurriculumByIdSpec(payload.curriculumId), cancellationToken);
-
-            if (curriculum == null) return false;
-
-            return curriculum.CourseId == payload.courseId;
-        }
+        return isValid;
     }
 }
