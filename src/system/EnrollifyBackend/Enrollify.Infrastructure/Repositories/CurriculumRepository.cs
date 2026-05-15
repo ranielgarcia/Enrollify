@@ -1,6 +1,7 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.Curriculums;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
+using Enrollify.Core.Models.Views;
 using Enrollify.Infrastructure.Data;
 
 namespace Enrollify.Infrastructure.Repositories;
@@ -38,6 +39,12 @@ internal class CurriculumRepository : ICurriculumRepository
                 identifier: "EffectiveYear",
                 errorMessage: $"The effective year '{newCurriculum.EffectiveYear}' is invalid. Please enter a year greater than or equal to 2000."));
         }
+    }
+
+    public async Task<Result<List<LatestActiveCurriculumPerCourseView>>> GetAllLatestActiveCurriculumPerCourse()
+    {
+        var result = await _dbContext.LatestActiveCurriculumPerCourse.ToListAsync();
+        return Result.Success(result);
     }
 
     public async Task<Result<CurriculumId>> UpdateCurriculum(Curriculum newCurriculum, CancellationToken cancellationToken)

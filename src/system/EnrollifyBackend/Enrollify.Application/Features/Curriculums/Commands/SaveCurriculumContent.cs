@@ -44,7 +44,7 @@ public class SaveCurriculumContent
 
         public async ValueTask<Result<CurriculumDto>> Handle(Command command, CancellationToken cancellationToken)
         {
-            var spec = new GetCurriculumWithSubjectsByIdSpec(command.CurriculumId);
+            var spec = new GetCurriculumsWithSubjectsByIdsSpec([command.CurriculumId]);
             var curriculum = await _readRepository.FirstOrDefaultAsync(spec, cancellationToken);
 
             if (curriculum == null)
