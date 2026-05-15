@@ -11,6 +11,6 @@ public class ClassSectionForCreation
     public YearLevel YearLevel { get; set; }
     public CourseId CourseId { get; set; }
     public AcademicTermId AcademicTermId { get; set; }
-    public TeacherId AdviserId { get; set; }
+    public TeacherId? AdviserId { get; set; }
     public SectionCode SectionCode { get; set; }
 }

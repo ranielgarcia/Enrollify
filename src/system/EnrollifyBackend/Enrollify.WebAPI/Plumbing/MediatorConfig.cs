@@ -1,7 +1,10 @@
+using Enrollify.Application.Behaviors;
+using Enrollify.Application.Features.ClassSections.Validators;
 using Enrollify.Application.Features.Users.Queries;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Infrastructure;
 using Enrollify.SharedKernel;
+using FluentValidation;
 
 namespace Enrollify.WebAPI.Plumbing;
 
@@ -29,7 +32,8 @@ public static class MediatorConfig
             // Register pipeline behaviors here (order matters)
             options.PipelineBehaviors =
             [
-              typeof(LoggingBehavior<,>)
+              typeof(LoggingBehavior<,>),
+              typeof(ValidationBehavior<,>)
             ];
 
             // If you have stream behaviors:
@@ -39,6 +43,9 @@ public static class MediatorConfig
         // Alternative: register behaviors via DI yourself (useful if not doing AOT):
         // services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
         // services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
+
+        // Register all FluentValidation validators from the Application assembly
+        services.AddValidatorsFromAssemblyContaining<CreateClassSectionValidator>();
 
         return services;
     }

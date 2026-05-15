@@ -12,7 +12,6 @@ using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
-using FluentValidation;
 using Mediator;
 using Microsoft.Extensions.Logging;
 
@@ -34,7 +33,6 @@ public static class CreateClassSection
         private readonly IReadRepository<ClassSection> _classSectionReadRepository;
         private readonly IReadRepository<Curriculum> _curriculumReadRepository;
         private readonly IClassSectionRepository _classSectionRepository;
-        private readonly IValidator<Command> _validator;
         private readonly IMediator _mediator;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<Handler> _logger;
@@ -45,7 +43,6 @@ public static class CreateClassSection
             IReadRepository<ClassSection> classSectionReadRepository,
             IReadRepository<Curriculum> curriculumReadRepository,
             IClassSectionRepository classSectionRepository,
-            IValidator<Command> validator,
             IMediator mediator,
             IUnitOfWork unitOfWork,
             ILogger<Handler> logger)
@@ -55,7 +52,6 @@ public static class CreateClassSection
             _classSectionReadRepository = classSectionReadRepository;
             _curriculumReadRepository = curriculumReadRepository;
             _classSectionRepository = classSectionRepository;
-            _validator = validator;
             _mediator = mediator;
             _unitOfWork = unitOfWork;
             _logger = logger;
@@ -63,15 +59,6 @@ public static class CreateClassSection
 
         public async ValueTask<Result<ClassSectionId>> Handle(Command command, CancellationToken cancellationToken)
         {
-            var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                var errors = validationResult.Errors
-                    .Select(e => new ValidationError(e.ErrorMessage))
-                    .ToArray();
-                return Result.Invalid(errors);
-            }
-
             // Get validated entities (we know they exist because of validation)
             var course = await _courseReadRepository.GetByIdAsync(command.courseId, cancellationToken);
             var academicYear = await _academicYearReadRepository
@@ -88,7 +75,7 @@ public static class CreateClassSection
                 academicTerm.TermNumber,
                 cancellationToken);
 
-            if (!latestActiveCurriculum.IsSuccess)
+            if (!latestActiveCurriculum.IsSuccess || latestActiveCurriculum.Value == null)
             {
                 return Result.Invalid(latestActiveCurriculum.ValidationErrors);
             }

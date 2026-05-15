@@ -29,6 +29,7 @@ public class ClassSectionConfiguration : IEntityTypeConfiguration<ClassSection>
         builder.HasOne(e => e.Adviser)
             .WithMany()
             .HasForeignKey(e => e.AdviserId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.NoAction);
 
         // Audit fields

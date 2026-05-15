@@ -5,7 +5,7 @@ CREATE TABLE ClassSections
 	YearLevel INT NOT NULL,
 	CourseId INT NOT NULL,
 	AcademicTermId INT NOT NULL,
-	AdviserId INT NOT NULL,
+	AdviserId INT NOT,
     SectionCode CHAR(1) NOT NULL, -- "A", "B", "C"
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),

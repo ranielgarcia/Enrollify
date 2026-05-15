@@ -16,8 +16,6 @@ using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
-using FluentValidation;
-using FluentValidation.Results;
 using Mediator;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -32,7 +30,6 @@ public class CreateClassSectionTests
     private readonly Mock<IReadRepository<ClassSection>> _classSectionReadRepositoryMock = new();
     private readonly Mock<IReadRepository<Curriculum>> _curriculumReadRepositoryMock = new();
     private readonly Mock<IClassSectionRepository> _classSectionRepositoryMock = new();
-    private readonly Mock<IValidator<CreateClassSection.Command>> _validatorMock = new();
     private readonly Mock<IMediator> _mediatorMock = new();
     private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
     private readonly Mock<ITransactionScope> _transactionMock = new();
@@ -50,7 +47,6 @@ public class CreateClassSectionTests
             _classSectionReadRepositoryMock.Object,
             _curriculumReadRepositoryMock.Object,
             _classSectionRepositoryMock.Object,
-            _validatorMock.Object,
             _mediatorMock.Object,
             _unitOfWorkMock.Object,
             _logger);
@@ -61,132 +57,6 @@ public class CreateClassSectionTests
             .ReturnsAsync(_transactionMock.Object);
     }
 
-    #region Validation Scenarios
-
-    [Fact(DisplayName = "Invalid command - validation fails (courseId doesn't exist)")]
-    public async Task Handle_CourseIdDoesNotExist_ReturnsInvalidResult()
-    {
-        // Arrange
-        var command = CreateCommand();
-        var validationResult = new ValidationResult(
-            new[] { new ValidationFailure("courseId", "The specified course does not exist.") });
-
-        _validatorMock
-            .Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(validationResult);
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("course"));
-    }
-
-    [Fact(DisplayName = "Invalid command - validation fails (academicTermId doesn't exist)")]
-    public async Task Handle_AcademicTermIdDoesNotExist_ReturnsInvalidResult()
-    {
-        // Arrange
-        var command = CreateCommand();
-        var validationResult = new ValidationResult(
-            new[] { new ValidationFailure("academicTermId", "The specified academic term does not exist.") });
-
-        _validatorMock
-            .Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(validationResult);
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("academic term"));
-    }
-
-    [Fact(DisplayName = "Invalid command - validation fails (adviserId doesn't exist)")]
-    public async Task Handle_AdviserIdDoesNotExist_ReturnsInvalidResult()
-    {
-        // Arrange
-        var command = CreateCommand();
-        var validationResult = new ValidationResult(
-            new[] { new ValidationFailure("adviserId", "The specified adviser does not exist.") });
-
-        _validatorMock
-            .Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(validationResult);
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("adviser"));
-    }
-
-    [Fact(DisplayName = "Invalid command - validation fails (studentCapacity <= 0)")]
-    public async Task Handle_StudentCapacityLessThanOrEqualToZero_ReturnsInvalidResult()
-    {
-        // Arrange
-        var command = CreateCommand(studentCapacity: 0);
-        var validationResult = new ValidationResult(
-            new[] { new ValidationFailure("studentCapacity", "Student capacity must be greater than zero.") });
-
-        _validatorMock
-            .Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(validationResult);
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("capacity"));
-    }
-
-    [Fact(DisplayName = "Invalid command - validation fails (class section name already exists)")]
-    public async Task Handle_ClassSectionNameAlreadyExists_ReturnsInvalidResult()
-    {
-        // Arrange
-        var command = CreateCommand();
-        var validationResult = new ValidationResult(
-            new[] { new ValidationFailure("", "A class section with the same name already exists for this academic term.") });
-
-        _validatorMock
-            .Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(validationResult);
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("already exists"));
-    }
-
-    [Fact(DisplayName = "Valid command - all validation passes")]
-    public async Task Handle_ValidCommand_PassesValidation()
-    {
-        // Arrange
-        var command = CreateCommand();
-        SetupSuccessfulValidation(command);
-        SetupSuccessfulCurriculumRetrieval(command);
-        SetupSuccessfulClassSectionCreation();
-        SetupSuccessfulSubjectOfferingCreation();
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsSuccess);
-    }
-
-    #endregion
-
     #region Curriculum Scenarios
 
     [Fact(DisplayName = "No active curriculum found for course, year level, and term")]
@@ -194,7 +64,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
 
         _curriculumReadRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(
@@ -216,7 +86,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
 
         var curriculum = CreateCurriculum(command, hasSubjects: false);
         _curriculumReadRepositoryMock
@@ -239,7 +109,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulClassSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
@@ -265,7 +135,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
         SetupSuccessfulCurriculumRetrieval(command);
 
         _classSectionRepositoryMock
@@ -286,7 +156,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulClassSectionCreation();
 
@@ -310,7 +180,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulClassSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
@@ -328,36 +198,12 @@ public class CreateClassSectionTests
         Assert.Contains(result.Errors, e => e.Contains("unexpected error"));
     }
 
-    [Fact(DisplayName = "Validation error does not begin transaction")]
-    public async Task Handle_ValidationError_DoesNotBeginTransaction()
-    {
-        // Arrange
-        var command = CreateCommand();
-        var validationResult = new ValidationResult(
-            new[] { new ValidationFailure("courseId", "The specified course does not exist.") });
-
-        _validatorMock
-            .Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(validationResult);
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        // Validation errors happen before transaction starts, so transaction should never be created
-        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
-        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
-        _transactionMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
-    }
-
     [Fact(DisplayName = "No curriculum found does not begin transaction")]
     public async Task Handle_NoCurriculumFound_DoesNotBeginTransaction()
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
 
         // No curriculum found
         _curriculumReadRepositoryMock
@@ -384,7 +230,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
 
         // Curriculum found but no subjects
         var curriculum = CreateCurriculum(command, hasSubjects: false);
@@ -412,7 +258,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
         SetupSuccessfulCurriculumRetrieval(command);
 
         // Class section creation fails
@@ -438,7 +284,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulClassSectionCreation();
 
@@ -467,7 +313,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulClassSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
@@ -487,7 +333,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
         SetupSuccessfulCurriculumRetrieval(command);
 
         // Simulate an unexpected exception during class section creation
@@ -517,7 +363,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulSubjectOfferingCreation();
 
@@ -548,7 +394,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulSubjectOfferingCreation();
 
@@ -580,7 +426,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
 
         var curriculum = CreateCurriculum(command, hasSubjects: true, subjectCount: 3);
         _curriculumReadRepositoryMock
@@ -609,7 +455,7 @@ public class CreateClassSectionTests
     {
         // Arrange
         var command = CreateCommand();
-        SetupSuccessfulValidation(command);
+        SetupHandlerPrerequisites(command);
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulClassSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
@@ -642,14 +488,10 @@ public class CreateClassSectionTests
             studentCapacity);
     }
 
-    private void SetupSuccessfulValidation(CreateClassSection.Command command)
+    private void SetupHandlerPrerequisites(CreateClassSection.Command command)
     {
         var course = CreateCourse(command.courseId);
         var academicYear = CreateAcademicYear(command.academicTermId);
-
-        _validatorMock
-            .Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ValidationResult());
 
         _courseReadRepositoryMock
             .Setup(r => r.GetByIdAsync(command.courseId, It.IsAny<CancellationToken>()))

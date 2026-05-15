@@ -19,7 +19,7 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
         YearLevel = Guard.Against.Null(sectionForCreation.YearLevel, nameof(sectionForCreation.YearLevel));
         CourseId = Guard.Against.Null(sectionForCreation.CourseId, nameof(sectionForCreation.CourseId));
         AcademicTermId = Guard.Against.Null(sectionForCreation.AcademicTermId, nameof(sectionForCreation.AcademicTermId));
-        AdviserId = Guard.Against.Null(sectionForCreation.AdviserId, nameof(sectionForCreation.AdviserId));
+        AdviserId = sectionForCreation.AdviserId;
         SectionCode = Guard.Against.Null(sectionForCreation.SectionCode, nameof(sectionForCreation.SectionCode));
     }
 
@@ -32,7 +32,7 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
     public AcademicTermId AcademicTermId { get; private set; }
     public AcademicTerm? AcademicTerm { get; private set; }
 
-    public TeacherId AdviserId { get; private set; }
+    public TeacherId? AdviserId { get; private set; }
     public Teacher? Adviser { get; private set; }
 
     public SectionCode SectionCode { get; private set; }

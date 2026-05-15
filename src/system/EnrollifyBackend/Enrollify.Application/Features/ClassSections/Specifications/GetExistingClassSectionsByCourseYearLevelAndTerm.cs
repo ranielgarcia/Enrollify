@@ -13,4 +13,9 @@ public class GetExistingClassSectionsByCourseYearLevelAndTerm : Specification<Cl
         Query.Where(cs => cs.YearLevel == yearLevel && cs.CourseId == courseId && cs.AcademicTermId == academicTermId)
             .OrderBy(cs => cs.SectionCode);
     }
+
+    public GetExistingClassSectionsByCourseYearLevelAndTerm(List<YearLevel> yearLevels, List<CourseId> courseIds, List<AcademicTermId> academicTermIds)
+    {
+        Query.Where(cs => yearLevels.Contains(cs.YearLevel) && courseIds.Contains(cs.CourseId) && academicTermIds.Contains(cs.AcademicTermId));
+    }
 }
