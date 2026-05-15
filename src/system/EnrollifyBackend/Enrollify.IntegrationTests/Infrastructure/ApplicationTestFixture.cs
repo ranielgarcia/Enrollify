@@ -17,20 +17,25 @@ namespace Enrollify.IntegrationTests.Infrastructure;
 /// <summary>
 /// Test fixture for Application layer integration tests.
 /// Provides access to IMediator, DbContext, and services for testing commands, queries, and services.
+/// Each test class gets its own isolated database with fresh migrations.
 /// </summary>
 public class ApplicationTestFixture : IAsyncLifetime
 {
     private TestContainersManager _containersManager = null!;
+    private string _sqlConnectionString = null!;
     private IServiceProvider _serviceProvider = null!;
 
     public IServiceProvider Services => _serviceProvider;
-    public string SqlConnectionString => _containersManager.SqlConnectionString;
+    public string SqlConnectionString => _sqlConnectionString;
     public string AzuriteBlobConnectionString => _containersManager.AzuriteBlobConnectionString;
 
     public async Task InitializeAsync()
     {
         // Get shared testcontainers instance
         _containersManager = await TestContainersManager.GetInstanceAsync();
+        
+        // Create a unique database for this test class
+        _sqlConnectionString = await _containersManager.CreateDatabaseAsync();
 
         // Build service collection
         var services = new ServiceCollection();
@@ -44,7 +49,7 @@ public class ApplicationTestFixture : IAsyncLifetime
 
         // Add configuration
         var configuration = TestConfigurationBuilder.BuildForApplicationLayer(
-            _containersManager.SqlConnectionString,
+            _sqlConnectionString,
             _containersManager.AzuriteBlobConnectionString
         );
         services.AddSingleton<IConfiguration>(configuration);
@@ -85,7 +90,7 @@ public class ApplicationTestFixture : IAsyncLifetime
         // Build service provider
         _serviceProvider = services.BuildServiceProvider();
 
-        Console.WriteLine("[ApplicationTestFixture] Initialized.");
+        Console.WriteLine("[ApplicationTestFixture] Initialized with isolated database.");
     }
 
     public Task DisposeAsync()

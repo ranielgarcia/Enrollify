@@ -16,9 +16,9 @@ Both fixtures share the same testcontainers (MsSQL + Azurite) for optimal perfor
 ### Test Containers Strategy
 
 - **Shared Containers**: MsSQL and Azurite containers are started once per test run and shared across all tests
-- **Unique Database**: Each test run gets a unique database with full migrations (schema + seed + mock data)
-- **Performance**: Container reuse significantly speeds up test execution
-- **Isolation**: Tests within a run share the database but can use transactions or cleanup strategies for isolation
+- **Isolated Databases**: Each test class (fixture instance) gets its own unique database with full migrations (schema + seed + mock data)
+- **Performance**: Container reuse significantly speeds up test execution; database creation happens once per test class
+- **Isolation**: Each test class works with a fresh database, preventing test interference and avoiding shared state conflicts
 
 ### Test Fixtures
 
@@ -234,12 +234,20 @@ public class YourCommandOrQueryTests
 
 ## Test Data Management
 
+### Test Isolation Strategy
+
+**Each test class gets its own isolated database** with fresh migrations (schema + seed + mock data). This means:
+
+- **Test classes are fully isolated** from each other - no shared state between test classes
+- **Tests within the same class** share the same database instance
+- **Recommended**: Use `TestDataBuilder.GenerateUniqueString()` for creating unique data within a test class to avoid conflicts between tests in the same class
+
 ### Strategies for Test Isolation
 
-1. **Unique Data**: Use `TestDataBuilder.GenerateUniqueString()` for codes/names to avoid conflicts
-2. **Transactions with Rollback**: Use `DatabaseHelper.ExecuteInTransactionAsync()` for non-persisting tests
-3. **Cleanup**: Explicitly clean up test data after tests if needed
-4. **Seed Fresh**: Seed specific test data at the start of each test
+1. **Unique Data (Recommended)**: Use `TestDataBuilder.GenerateUniqueString()` for codes/names to avoid conflicts between tests in the same class
+2. **Transactions with Rollback**: Use `DatabaseHelper.ExecuteInTransactionAsync()` for non-persisting tests within the same test class
+3. **Cleanup (If Needed)**: Explicitly clean up test data if tests within the same class interfere with each other
+4. **Seed Data**: Use the pre-seeded data from migrations, or add specific test data at the start of each test
 
 ### Example: Test with Cleanup
 

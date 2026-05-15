@@ -7,19 +7,17 @@ namespace Enrollify.IntegrationTests.Infrastructure;
 /// <summary>
 /// Manages shared testcontainers for MsSQL and Azurite across all integration tests.
 /// Implements singleton pattern to ensure containers are started once per test run.
+/// Each test fixture can create its own isolated database with migrations.
 /// </summary>
 public class TestContainersManager : IAsyncLifetime
 {
     private static readonly SemaphoreSlim _initLock = new(1, 1);
     private static TestContainersManager? _instance;
     private static bool _isInitialized;
-
-    private string DatabaseName { get; set; } = $"EnrollifyIntegrationTest_{Guid.NewGuid():N}";
     
     public MsSqlContainer SqlDbContainer { get; private set; } = null!;
     public AzuriteContainer AzuriteContainer { get; private set; } = null!;
     
-    public string SqlConnectionString { get; private set; } = null!;
     public string AzuriteBlobConnectionString { get; private set; } = null!;
 
     private TestContainersManager()
@@ -78,28 +76,52 @@ public class TestContainersManager : IAsyncLifetime
         Console.WriteLine("[TestContainers] Containers started successfully.");
 
         // Setup connection strings
-        await SetupSqlDatabase();
         SetupAzuriteConnectionString();
-
-        // Run database migrations with seed and mock data
-        await RunDatabaseMigrations();
-
-        Console.WriteLine("[TestContainers] Database migrations completed.");
     }
 
-    private async Task SetupSqlDatabase()
+    /// <summary>
+    /// Creates a new isolated database with migrations for a test fixture.
+    /// Each test class (fixture instance) should call this to get its own database.
+    /// </summary>
+    /// <returns>Connection string for the newly created database</returns>
+    public async Task<string> CreateDatabaseAsync()
     {
-        // Create a unique database for this test run
-        // https://github.com/testcontainers/testcontainers-dotnet/issues/541#issuecomment-1925329033
+        var databaseName = $"EnrollifyTest_{Guid.NewGuid():N}";
+        
+        Console.WriteLine($"[TestContainers] Creating database: {databaseName}");
+
+        // Create a unique database
         await SqlDbContainer.ExecScriptAsync(
-            $"IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = '{DatabaseName}') CREATE DATABASE [{DatabaseName}]"
+            $"IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = '{databaseName}') CREATE DATABASE [{databaseName}]"
         );
 
-        SqlConnectionString = SqlDbContainer
+        var connectionString = SqlDbContainer
             .GetConnectionString()
-            .Replace("Database=master", $"Database={DatabaseName}");
+            .Replace("Database=master", $"Database={databaseName}");
 
-        Console.WriteLine($"[TestContainers] SQL Database created: {DatabaseName}");
+        // Run database migrations with seed and mock data
+        await RunDatabaseMigrations(connectionString, databaseName);
+
+        Console.WriteLine($"[TestContainers] Database ready: {databaseName}");
+        
+        return connectionString;
+    }
+
+    private async Task RunDatabaseMigrations(string connectionString, string databaseName)
+    {
+        Console.WriteLine($"[TestContainers] Running migrations for {databaseName} (schema + seed + mock data)...");
+
+        await Task.Run(() =>
+        {
+            DatabaseUpgrader.RunDbUpgradeActivities(
+                connectionString: connectionString,
+                forceEnsureDatabase: true,
+                createMockData: true,  // Include mock data as per requirements
+                createSeedData: true   // Include seed data
+            );
+        });
+
+        Console.WriteLine($"[TestContainers] Migrations completed for {databaseName}");
     }
 
     private void SetupAzuriteConnectionString()
@@ -107,21 +129,6 @@ public class TestContainersManager : IAsyncLifetime
         // Azurite connection string format
         AzuriteBlobConnectionString = AzuriteContainer.GetConnectionString();
         Console.WriteLine("[TestContainers] Azurite connection string configured.");
-    }
-
-    private async Task RunDatabaseMigrations()
-    {
-        Console.WriteLine("[TestContainers] Running database migrations (schema + seed + mock data)...");
-
-        await Task.Run(() =>
-        {
-            DatabaseUpgrader.RunDbUpgradeActivities(
-                connectionString: SqlConnectionString,
-                forceEnsureDatabase: true,
-                createMockData: true,  // Include mock data as per requirements
-                createSeedData: true   // Include seed data
-            );
-        });
     }
 
     public async Task DisposeAsync()

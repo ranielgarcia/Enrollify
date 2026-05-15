@@ -199,7 +199,7 @@ dotnet test --filter "FullyQualifiedName~CreateRoomType_ValidRequest_ReturnsCrea
 ##### Architecture
 
 **Testcontainers:** MsSQL + Azurite containers (shared across test run, singleton pattern)  
-**Database strategy:** Unique database per test run with full migrations (schema + seed + mock data)  
+**Database strategy:** Each test class gets its own database with full migrations (schema + seed + mock data)  
 **Test fixtures:**
 
 | Fixture                  | Purpose                                                                           | Collection Attribute   |
@@ -234,8 +234,8 @@ _Tests/
 - **Naming:** `{Method}_{Scenario}_{ExpectedResult}` (e.g., `CreateRoomType_ValidData_ReturnsSuccess`)
 - **Display names:** `[Fact(DisplayName = "Create room type with valid data succeeds")]`
 - **AAA pattern:** Arrange → Act → Assert with comment labels
-- **Unique data:** Use `TestDataBuilder.GenerateUniqueString("Prefix")` to avoid conflicts
-- **Test isolation:** Use unique data, transaction rollback, or explicit cleanup in `finally` blocks
+- **Unique data:** Use `TestDataBuilder.GenerateUniqueString("Prefix")` to avoid conflicts between tests in the same class
+- **Test isolation:** Each test class gets its own database; tests within a class share the database—use unique data, transaction rollback, or explicit cleanup
 - **Assertions:** Verify `Result<T>` status with `Assert.True(result.IsSuccess)`, check database state when needed
 
 ##### Choose WebAPI vs Application Test

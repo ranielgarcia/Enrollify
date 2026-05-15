@@ -48,9 +48,9 @@ Before writing any test, always read:
 ### Testcontainers Strategy
 
 - **Shared containers:** MsSQL and Azurite start once per test run (singleton pattern)
-- **Unique database:** Each test run gets a unique database with migrations (schema + seed + mock data)
-- **Performance:** Container reuse speeds up test execution significantly
-- **Isolation:** Tests within a run share the database — use unique data, transactions, or cleanup
+- **Isolated databases:** Each test class (fixture instance) gets its own database with migrations (schema + seed + mock data)
+- **Performance:** Container reuse speeds up test execution; database creation happens once per test class
+- **Isolation:** Each test class has a fresh database; tests within the same class share the database — use unique data, transactions, or cleanup for tests in the same class
 
 ---
 
@@ -388,9 +388,17 @@ public async Task CreateRoomType_DuplicateName_ReturnsConflict()
 
 ## Phase 3 — Test Data Management
 
+### Test Isolation Strategy
+
+**Each test class gets its own isolated database** with fresh migrations (schema + seed + mock data).
+
+- **Test classes are fully isolated** from each other - no shared state between different test files
+- **Tests within the same class** share the same database instance
+- **Recommended**: Use unique data generation to avoid conflicts between tests in the same class
+
 ### Strategy 1: Unique Data (Recommended)
 
-Use `TestDataBuilder.GenerateUniqueString()` to avoid conflicts:
+Use `TestDataBuilder.GenerateUniqueString()` to avoid conflicts between tests in the same class:
 
 ```csharp
 var command = new CreateRoomType.Command
@@ -400,7 +408,9 @@ var command = new CreateRoomType.Command
 };
 ```
 
-### Strategy 2: Transaction Rollback (For Non-Persisting Tests)
+### Strategy 2: Transaction Rollback (For Non-Persisting Tests Within Same Class)
+
+Use for tests that should not persist data in the shared database:
 
 ```csharp
 await _fixture.ExecuteDbContextAsync(async db =>
@@ -421,7 +431,9 @@ await _fixture.ExecuteDbContextAsync(async db =>
 });
 ```
 
-### Strategy 3: Explicit Cleanup
+### Strategy 3: Explicit Cleanup (If Needed Within Same Class)
+
+Only use if tests within the same class interfere with each other:
 
 ```csharp
 RoomTypeId? createdId = null;

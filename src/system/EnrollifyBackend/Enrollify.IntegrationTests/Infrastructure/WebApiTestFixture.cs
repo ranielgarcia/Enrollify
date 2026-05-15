@@ -12,13 +12,15 @@ namespace Enrollify.IntegrationTests.Infrastructure;
 /// <summary>
 /// Test fixture for WebAPI integration tests.
 /// Uses WebApplicationFactory to host the API with testcontainers.
+/// Each test class gets its own isolated database with fresh migrations.
 /// </summary>
 public class WebApiTestFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private TestContainersManager _containersManager = null!;
+    private string _sqlConnectionString = null!;
 
     public EnrollifyDbContext DbContext { get; private set; } = null!;
-    public string SqlConnectionString => _containersManager.SqlConnectionString;
+    public string SqlConnectionString => _sqlConnectionString;
     public string AzuriteBlobConnectionString => _containersManager.AzuriteBlobConnectionString;
 
     async Task IAsyncLifetime.InitializeAsync()
@@ -26,11 +28,14 @@ public class WebApiTestFixture : WebApplicationFactory<Program>, IAsyncLifetime
         // Get shared testcontainers instance
         _containersManager = await TestContainersManager.GetInstanceAsync();
         
+        // Create a unique database for this test class
+        _sqlConnectionString = await _containersManager.CreateDatabaseAsync();
+        
         // Create a scope to get DbContext for test setup/verification
         var scope = Services.CreateScope();
         DbContext = scope.ServiceProvider.GetRequiredService<EnrollifyDbContext>();
         
-        Console.WriteLine("[WebApiTestFixture] Initialized.");
+        Console.WriteLine("[WebApiTestFixture] Initialized with isolated database.");
     }
 
     async Task IAsyncLifetime.DisposeAsync()
@@ -50,7 +55,7 @@ public class WebApiTestFixture : WebApplicationFactory<Program>, IAsyncLifetime
 
             // Add test configuration with testcontainer settings
             var testConfig = TestConfigurationBuilder.BuildForWebApi(
-                _containersManager.SqlConnectionString,
+                _sqlConnectionString,
                 _containersManager.AzuriteBlobConnectionString
             );
 
@@ -66,7 +71,7 @@ public class WebApiTestFixture : WebApplicationFactory<Program>, IAsyncLifetime
             // Re-register DbContext with testcontainer connection string
             services.AddDbContext<EnrollifyDbContext>(options =>
             {
-                options.UseSqlServer(_containersManager.SqlConnectionString);
+                options.UseSqlServer(_sqlConnectionString);
                 options.EnableSensitiveDataLogging();
             });
 
