@@ -328,6 +328,186 @@ public class CreateClassSectionTests
         Assert.Contains(result.Errors, e => e.Contains("unexpected error"));
     }
 
+    [Fact(DisplayName = "Validation error does not begin transaction")]
+    public async Task Handle_ValidationError_DoesNotBeginTransaction()
+    {
+        // Arrange
+        var command = CreateCommand();
+        var validationResult = new ValidationResult(
+            new[] { new ValidationFailure("courseId", "The specified course does not exist.") });
+
+        _validatorMock
+            .Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(validationResult);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        // Validation errors happen before transaction starts, so transaction should never be created
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "No curriculum found does not begin transaction")]
+    public async Task Handle_NoCurriculumFound_DoesNotBeginTransaction()
+    {
+        // Arrange
+        var command = CreateCommand();
+        SetupSuccessfulValidation(command);
+
+        // No curriculum found
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(
+                It.IsAny<ISpecification<Curriculum>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Curriculum?)null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("No active curriculum found"));
+        // Transaction should never be started for validation errors
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "No curriculum subjects does not begin transaction")]
+    public async Task Handle_NoCurriculumSubjects_DoesNotBeginTransaction()
+    {
+        // Arrange
+        var command = CreateCommand();
+        SetupSuccessfulValidation(command);
+
+        // Curriculum found but no subjects
+        var curriculum = CreateCurriculum(command, hasSubjects: false);
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(
+                It.IsAny<ISpecification<Curriculum>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Error, result.Status);
+        Assert.Contains(result.Errors, e => e.Contains("No curriculum subjects found"));
+        // Transaction should never be started when no subjects exist
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "Class section creation failure causes rollback")]
+    public async Task Handle_ClassSectionCreationFails_CausesRollback()
+    {
+        // Arrange
+        var command = CreateCommand();
+        SetupSuccessfulValidation(command);
+        SetupSuccessfulCurriculumRetrieval(command);
+
+        // Class section creation fails
+        _classSectionRepositoryMock
+            .Setup(r => r.Create(It.IsAny<ClassSection>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Error("Unable to create the class section."));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Error, result.Status);
+        Assert.Contains(result.Errors, e => e.Contains("Unable to create the class section"));
+        // Transaction began but should not commit due to error
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        // Note: Explicit rollback is not called in the command - transaction auto-rollbacks on dispose without commit
+    }
+
+    [Fact(DisplayName = "Subject offering creation failure causes rollback")]
+    public async Task Handle_SubjectOfferingCreationFails_CausesRollback()
+    {
+        // Arrange
+        var command = CreateCommand();
+        SetupSuccessfulValidation(command);
+        SetupSuccessfulCurriculumRetrieval(command);
+        SetupSuccessfulClassSectionCreation();
+
+        // Subject offering creation fails
+        _mediatorMock
+            .Setup(m => m.Send(
+                It.IsAny<CreateClassSectionSubjectOffering.Command>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Error("Unable to create subject offering."));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Error, result.Status);
+        Assert.Contains(result.Errors, e => e.Contains("Unable to create one or more subject offerings"));
+        // Transaction began but should not commit due to error
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        // Note: Explicit rollback is not called in the command - transaction auto-rollbacks on dispose without commit
+    }
+
+    [Fact(DisplayName = "Successful request commits transaction")]
+    public async Task Handle_SuccessfulRequest_CommitsTransaction()
+    {
+        // Arrange
+        var command = CreateCommand();
+        SetupSuccessfulValidation(command);
+        SetupSuccessfulCurriculumRetrieval(command);
+        SetupSuccessfulClassSectionCreation();
+        SetupSuccessfulSubjectOfferingCreation();
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "Exception during processing causes automatic rollback")]
+    public async Task Handle_ExceptionDuringProcessing_CausesAutomaticRollback()
+    {
+        // Arrange
+        var command = CreateCommand();
+        SetupSuccessfulValidation(command);
+        SetupSuccessfulCurriculumRetrieval(command);
+
+        // Simulate an unexpected exception during class section creation
+        _classSectionRepositoryMock
+            .Setup(r => r.Create(It.IsAny<ClassSection>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Unexpected database error"));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Error, result.Status);
+        Assert.Contains(result.Errors, e => e.Contains("unexpected error"));
+        // Transaction began but should not commit due to exception
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        // Transaction automatically rolls back on dispose when exception occurs
+    }
+
     #endregion
 
     #region Success Scenarios
@@ -422,24 +602,6 @@ public class CreateClassSectionTests
                 It.IsAny<CreateClassSectionSubjectOffering.Command>(),
                 It.IsAny<CancellationToken>()),
             Times.Exactly(3));
-    }
-
-    [Fact(DisplayName = "Valid command commits transaction")]
-    public async Task Handle_ValidCommand_CommitsTransaction()
-    {
-        // Arrange
-        var command = CreateCommand();
-        SetupSuccessfulValidation(command);
-        SetupSuccessfulCurriculumRetrieval(command);
-        SetupSuccessfulClassSectionCreation();
-        SetupSuccessfulSubjectOfferingCreation();
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        Assert.True(result.IsSuccess);
-        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact(DisplayName = "Valid command logs success")]
