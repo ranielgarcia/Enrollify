@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Tests/">
     <Project Path="Enrollify.Application.Tests/Enrollify.Application.Tests.csproj" Id="8e9067e6-df0f-4048-a744-2cea7bf5a005" />
+    <Project Path="Enrollify.IntegrationTests/Enrollify.IntegrationTests.csproj" />
   </Folder>
   <Project Path="Enrollify.Analyzers/Enrollify.Analyzers.csproj" />
   <Project Path="Enrollify.Application/Enrollify.Application.csproj" Id="5a4d983a-b8db-4f09-9845-d325f6674418" />

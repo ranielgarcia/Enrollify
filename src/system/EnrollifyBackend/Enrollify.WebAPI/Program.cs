@@ -71,3 +71,5 @@ finally
 }
 
 
+// Make Program accessible for integration tests (WebApplicationFactory)
+public partial class Program { }
