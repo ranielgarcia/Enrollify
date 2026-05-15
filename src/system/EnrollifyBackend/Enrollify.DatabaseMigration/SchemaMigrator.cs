@@ -1,4 +1,4 @@
-﻿using DbUp;
+using DbUp;
 using DbUp.Engine;
 using DbUp.Helpers;
 using System;

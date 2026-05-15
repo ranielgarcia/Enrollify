@@ -2,8 +2,10 @@ using Enrollify.Application.Behaviors;
 using Enrollify.Application.Features.ClassSections.Validators;
 using Enrollify.Application.Features.Users.Queries;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
+using Enrollify.Core.Authentication;
 using Enrollify.Infrastructure;
 using Enrollify.Infrastructure.Data;
+using Enrollify.IntegrationTests.Helpers;
 using Enrollify.SharedKernel;
 using FluentValidation;
 using Mediator;
@@ -64,6 +66,9 @@ public class ApplicationTestFixture : IAsyncLifetime
 
         // Add Infrastructure services (DbContext, repositories, etc.)
         services.AddInfrastructureServices(configManager, logger, isDevelopment: true);
+
+        // Register test-specific services
+        services.AddSingleton<ICurrentUserAccessor, TestCurrentUserAccessor>();
 
         // Add Mediator with behaviors (mirroring WebAPI setup)
         services.AddMediator(options =>

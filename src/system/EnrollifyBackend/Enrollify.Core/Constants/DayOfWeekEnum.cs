@@ -2,7 +2,7 @@ using Ardalis.SmartEnum;
 
 namespace Enrollify.Core.Constants;
 
-public sealed class DayOfWeekEnum : SmartEnum<DayOfWeekEnum, string>
+public class DayOfWeekEnum : SmartEnum<DayOfWeekEnum, string>
 {
     public static readonly DayOfWeekEnum Sunday = new DayOfWeekEnum("Sunday", "SUN");
     public static readonly DayOfWeekEnum Monday = new DayOfWeekEnum("Monday", "MON");
@@ -11,5 +11,5 @@ public sealed class DayOfWeekEnum : SmartEnum<DayOfWeekEnum, string>
     public static readonly DayOfWeekEnum Thursday = new DayOfWeekEnum("Thursday", "THU");
     public static readonly DayOfWeekEnum Friday = new DayOfWeekEnum("Friday", "FRI");
     public static readonly DayOfWeekEnum Saturday = new DayOfWeekEnum("Saturday", "SAT");
-    private DayOfWeekEnum(string name, string value) : base(name, value) { }
+    protected DayOfWeekEnum(string name, string value) : base(name, value) { }
 }

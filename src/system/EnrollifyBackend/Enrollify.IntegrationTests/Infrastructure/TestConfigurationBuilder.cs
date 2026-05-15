@@ -27,6 +27,7 @@ public static class TestConfigurationBuilder
             // Azure Storage (Azurite) settings
             ["Storage:ConnectionString"] = azuriteBlobConnectionString,
             ["Storage:UseAzureCredential"] = "false",
+            ["Storage:Default:ConnectionString"] = azuriteBlobConnectionString,
             
             // Disable authentication for tests (can be overridden per test)
             ["Authentication:Disabled"] = "true",
@@ -66,6 +67,7 @@ public static class TestConfigurationBuilder
             // Azure Storage (Azurite) settings
             ["Storage:ConnectionString"] = azuriteBlobConnectionString,
             ["Storage:UseAzureCredential"] = "false",
+            ["Storage:Default:ConnectionString"] = azuriteBlobConnectionString,
             
             // Disable Azure AD authentication for tests
             ["AzureAd:Enabled"] = "false",
