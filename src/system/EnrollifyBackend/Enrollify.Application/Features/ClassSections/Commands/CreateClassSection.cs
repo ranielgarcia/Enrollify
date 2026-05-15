@@ -160,7 +160,7 @@ public static class CreateClassSection
         private async Task<Result<Curriculum>> GetCurriculum(CourseId courseId, YearLevel yearLevel, TermNumber termNumber, CancellationToken ct)
         {
             var curriculum = await _curriculumReadRepository
-                .FirstOrDefaultAsync(new GetLatestActiveCurriculumWithSubjectsByCourseYearLevelAndTerm(courseId, yearLevel, termNumber), ct);
+                .FirstOrDefaultAsync(new GetLatestActiveCurriculumWithSubjectsByCourseYearLevelAndTermSpec(courseId, yearLevel, termNumber), ct);
 
             if (curriculum == null)
             {

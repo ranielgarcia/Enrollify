@@ -13,6 +13,7 @@ using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Core.Models.Views;
 using Enrollify.Infrastructure.Data.Config;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.AcademicYearConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.BuildingConfigs;
@@ -50,6 +51,9 @@ public class EnrollifyDbContext: DbContext
     public DbSet<Course> Courses => Set<Course>(); 
     public DbSet<Subject> Subjects => Set<Subject>();
     public DbSet<Curriculum> Curriculums => Set<Curriculum>();
+
+    public DbSet<LatestActiveCurriculumPerCourseView> LatestActiveCurriculumPerCourse => Set<LatestActiveCurriculumPerCourseView>();
+
     public DbSet<SubjectEquivalenceGroup> SubjectEquivalenceGroups => Set<SubjectEquivalenceGroup>();
 
     public DbSet<Teacher> Teachers => Set<Teacher>();
@@ -66,6 +70,10 @@ public class EnrollifyDbContext: DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        modelBuilder.Entity<LatestActiveCurriculumPerCourseView>()
+            .ToView("vw_LatestActiveCurriculumPerCourse")
+            .HasNoKey();
 
         modelBuilder.AddSoftDeleteQueryFilter();
     }

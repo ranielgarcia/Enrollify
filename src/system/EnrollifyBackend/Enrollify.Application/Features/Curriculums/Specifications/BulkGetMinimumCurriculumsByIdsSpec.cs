@@ -3,9 +3,9 @@ using Enrollify.Core.Aggregates.CurriculumAggregate;
 
 namespace Enrollify.Application.Features.Curriculums.Specifications;
 
-public class BulkGetCurriculumsByIdsSpec : Specification<Curriculum>
+public class BulkGetMinimumCurriculumsByIdsSpec : Specification<Curriculum>
 {
-    public BulkGetCurriculumsByIdsSpec(List<CurriculumId> curriculumIds)
+    public BulkGetMinimumCurriculumsByIdsSpec(List<CurriculumId> curriculumIds)
     {
         var distinctIds = curriculumIds.Distinct().ToList();
         Query

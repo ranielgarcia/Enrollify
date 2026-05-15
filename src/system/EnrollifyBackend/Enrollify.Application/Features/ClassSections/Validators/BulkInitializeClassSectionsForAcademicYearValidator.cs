@@ -49,18 +49,30 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
         ValidationContext<BulkInitializeClassSectionsForAcademicYear.Command> context,
         CancellationToken cancellationToken)
     {
-        var courseIds = payloads.Select(p => p.courseId).Distinct().ToList();
-        var academicYearIds = payloads.Select(p => p.academicYearId).Distinct().ToList();
+        var courseIds = payloads
+            .Select(p => p.courseId)
+            .Where(id => id != CourseId.From(0))
+            .Distinct()
+            .ToList();
+        var academicYearIds = payloads
+            .Select(p => p.academicYearId)
+            .Where(id => id != AcademicYearId.From(0))
+            .Distinct()
+            .ToList();
         var curriculumIds = payloads
             .Select(p => p.curriculumId)
             .Where(id => id != CurriculumId.From(0))
             .Distinct()
             .ToList();
 
-        var existingCoursesTask = _courseRepository.ListAsync(new BulkGetMinimumCoursesByIdsSpec(courseIds), cancellationToken);
-        var existingAcademicYearsTask = _academicYearRepository.ListAsync(new BulkGetAcademicYearsByIdsSpec(academicYearIds), cancellationToken);
+        var existingCoursesTask = courseIds.Count > 0
+            ? _courseRepository.ListAsync(new BulkGetMinimumCoursesByIdsSpec(courseIds), cancellationToken)
+            : Task.FromResult<List<Course>>([]);
+        var existingAcademicYearsTask = academicYearIds.Count > 0 
+            ? _academicYearRepository.ListAsync(new BulkGetAcademicYearsByIdsSpec(academicYearIds), cancellationToken)
+            : Task.FromResult<List<AcademicYear>> ([]);
         var existingCurriculaTask = curriculumIds.Count > 0
-            ? _curriculumRepository.ListAsync(new BulkGetCurriculumsByIdsSpec(curriculumIds), cancellationToken)
+            ? _curriculumRepository.ListAsync(new BulkGetMinimumCurriculumsByIdsSpec(curriculumIds), cancellationToken)
             : Task.FromResult<List<Curriculum>>([]);
 
         await Task.WhenAll(existingCoursesTask, existingAcademicYearsTask, existingCurriculaTask);
