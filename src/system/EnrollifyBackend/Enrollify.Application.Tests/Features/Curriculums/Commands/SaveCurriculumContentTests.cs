@@ -1514,5 +1514,371 @@ public class SaveCurriculumContentTests
     }
 
     #endregion
+
+    #region Transaction Tests
+
+    [Fact(DisplayName = "Successful request commits transaction")]
+    public async Task Handle_SuccessfulRequest_CommitsTransaction()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum { Code = subjectCode }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        var callCount = 0;
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId))
+            .Callback<Curriculum, CancellationToken>((c, ct) =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    SimulateDatabaseIdAssignment(c);
+                }
+            });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionScopeMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "First UpdateCurriculum failure rolls back transaction")]
+    public async Task Handle_FirstUpdateCurriculumFails_RollsBackTransaction()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum { Code = subjectCode }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Simulate first UpdateCurriculum failure
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Invalid(new ValidationError("Database error")));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        _transactionScopeMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "Second UpdateCurriculum failure rolls back transaction")]
+    public async Task Handle_SecondUpdateCurriculumFails_RollsBackTransaction()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum { Code = subjectCode }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Simulate first UpdateCurriculum success, second failure
+        var callCount = 0;
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    SimulateDatabaseIdAssignment(curriculum);
+                    return Result.Success(curriculumId);
+                }
+                return Result.Invalid(new ValidationError("Database error on second update"));
+            });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        _transactionScopeMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "Missing subject code causes validation error and rollback")]
+    public async Task Handle_MissingSubjectCode_RollsBackTransaction()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var missingCode = SubjectCode.From("MISSING101");
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum { Code = missingCode }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        // Validation errors happen before transaction starts, so neither rollback nor commit should be called
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionScopeMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "Prerequisite validation error does not begin transaction")]
+    public async Task Handle_PrerequisiteValidationError_RollsBackTransaction()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+
+        // Subject has itself as a prerequisite (invalid)
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = subjectCode,
+                    Prerequisites = [subjectCode] // Self-prerequisite (invalid)
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("cannot be its own prerequisite"));
+        // Validation errors happen before transaction starts, so neither rollback nor commit should be called
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionScopeMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "Curriculum not found does not begin transaction")]
+    public async Task Handle_CurriculumNotFound_DoesNotBeginTransaction()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(999);
+        var command = new SaveCurriculumContent.Command(curriculumId, []);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Curriculum?)null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        // Transaction should never be started for early validation failures
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionScopeMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "Exception during processing causes automatic rollback on dispose")]
+    public async Task Handle_ExceptionDuringProcessing_RollsBackOnDispose()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum { Code = subjectCode }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Simulate an unexpected exception in UpdateCurriculum
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Database connection failed"));
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(command, CancellationToken.None).AsTask());
+
+        // Transaction should be disposed (which triggers automatic rollback if not committed)
+        _transactionScopeMock.Verify(t => t.DisposeAsync(), Times.Once);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "Multiple subjects with prerequisites commits successfully")]
+    public async Task Handle_MultipleSubjectsWithPrerequisites_CommitsTransaction()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+
+        var subject1 = CreateTestSubject(SubjectId.From(1), SubjectCode.From("CS101"));
+        var subject2 = CreateTestSubject(SubjectId.From(2), SubjectCode.From("CS201"));
+        var subject3 = CreateTestSubject(SubjectId.From(3), SubjectCode.From("CS301"));
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = SubjectCode.From("CS101"),
+                    Prerequisites = []
+                }]
+            },
+            [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = SubjectCode.From("CS201"),
+                    Prerequisites = [SubjectCode.From("CS101")]
+                }]
+            },
+            [3] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = SubjectCode.From("CS301"),
+                    Prerequisites = [SubjectCode.From("CS201")]
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject1, subject2, subject3]);
+
+        var callCount = 0;
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId))
+            .Callback<Curriculum, CancellationToken>((c, ct) =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    SimulateDatabaseIdAssignment(c);
+                }
+            });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionScopeMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _curriculumRepositoryMock.Verify(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    #endregion
 }
 

@@ -1,23 +1,19 @@
 using Ardalis.Result;
 using Ardalis.Specification;
-using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Application.Features.ClassSections;
 using Enrollify.Application.Features.ClassSections.Commands;
-using Enrollify.Application.Features.ClassSections.Specifications;
-using Enrollify.Application.Features.ClassSectionSubjectOfferings;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings.Commands;
-using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
-using Enrollify.Core.Aggregates.CollegeAggregate;
-using Enrollify.Core.Constants;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using FluentValidation;
@@ -595,6 +591,7 @@ public class CreateClassSectionTests
                     null,
                     null);
                 SetEntityProperty(subject, "Id", CurriculumSubjectId.From(i));
+                SetEntityProperty(subject, "IsActive", true);
                 subjects.Add(subject);
             }
             SetEntityProperty(curriculum, "_curriculumSubjects", subjects);
