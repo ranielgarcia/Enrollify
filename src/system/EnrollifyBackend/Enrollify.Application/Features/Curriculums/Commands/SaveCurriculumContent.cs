@@ -4,6 +4,7 @@ using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Application.Features.Subjects.Specifications;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Mediator;
@@ -50,6 +51,11 @@ public class SaveCurriculumContent
             if (curriculum == null)
             {
                 return Result.Invalid(new ValidationError($"Curriculum with an id of {command.CurriculumId.Value} not found"));
+            }
+
+            if (curriculum.StatusId == CurriculumStatusEnum.Active)
+            {
+                return Result.Forbidden("Active curriculums cannot be modified. Please deactivate the curriculum before making changes.");
             }
 
             // Collect all subject codes from the grid (including prerequisites)

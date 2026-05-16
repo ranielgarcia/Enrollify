@@ -5,6 +5,7 @@ using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.SharedKernel;
 using FluentValidation;
 

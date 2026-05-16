@@ -1,12 +1,22 @@
+CREATE TABLE ClassSectionStatuses
+(
+	Id INT NOT NULL PRIMARY KEY,
+	Name VARCHAR(20) NOT NULL,
+	CONSTRAINT UQ_ClassSectionStatuses_Name UNIQUE (Name),
+);
+GO
+
 CREATE TABLE ClassSections
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	Name VARCHAR(50) NOT NULL, -- Use course code, e.g. "BSCS", "BSCS"
 	YearLevel INT NOT NULL,
 	CourseId INT NOT NULL,
+    CurriculumId INT NOT NULL, -- Which curriculum version this section follows, for reporting purposes, e.g. "2024-A", "2024-REV1"
 	AcademicTermId INT NOT NULL,
 	AdviserId INT NULL,
     SectionCode CHAR(1) NOT NULL, -- "A", "B", "C"
+    StatusId INT NOT NULL DEFAULT 1, -- References ClassSectionStatuses, default to Draft
 
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
@@ -16,8 +26,10 @@ CREATE TABLE ClassSections
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_ClassSections_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
+	CONSTRAINT FK_ClassSections_Curriculum FOREIGN KEY (CurriculumId) REFERENCES Curriculums(Id),
 	CONSTRAINT FK_ClassSections_AcademicTerm FOREIGN KEY (AcademicTermId) REFERENCES AcademicTerms(Id),
 	CONSTRAINT FK_ClassSections_Adviser FOREIGN KEY (AdviserId) REFERENCES Teachers(Id),
+	CONSTRAINT FK_ClassSections_Status FOREIGN KEY (StatusId) REFERENCES ClassSectionStatuses(Id),
 	CONSTRAINT FK_ClassSections_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_ClassSections_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_ClassSections_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
@@ -29,6 +41,10 @@ GO;
 -- ClassSections indexes
 CREATE NONCLUSTERED INDEX IX_ClassSections_CourseId
 ON ClassSections(CourseId);
+GO
+
+CREATE NONCLUSTERED INDEX IX_ClassSections_CurriculumId
+ON ClassSections(CurriculumId);
 GO
 
 CREATE NONCLUSTERED INDEX IX_ClassSections_AcademicTermId

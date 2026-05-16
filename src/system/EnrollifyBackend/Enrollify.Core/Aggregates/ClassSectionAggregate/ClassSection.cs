@@ -2,8 +2,10 @@ using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 
@@ -18,9 +20,11 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
         Name = Guard.Against.NullOrEmpty(sectionForCreation.Name, nameof(sectionForCreation.Name));
         YearLevel = Guard.Against.Null(sectionForCreation.YearLevel, nameof(sectionForCreation.YearLevel));
         CourseId = Guard.Against.Null(sectionForCreation.CourseId, nameof(sectionForCreation.CourseId));
+        CurriculumId = Guard.Against.Null(sectionForCreation.CurriculumId, nameof(sectionForCreation.CurriculumId));
         AcademicTermId = Guard.Against.Null(sectionForCreation.AcademicTermId, nameof(sectionForCreation.AcademicTermId));
         AdviserId = sectionForCreation.AdviserId;
         SectionCode = Guard.Against.Null(sectionForCreation.SectionCode, nameof(sectionForCreation.SectionCode));
+        StatusId = ClassSectionStatusEnum.Draft; // New sections default to Draft status
     }
 
     public string Name { get; private set; } = null!;
@@ -28,6 +32,9 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
 
     public CourseId CourseId { get; private set; }
     public Course? Course { get; private set; }
+
+    public CurriculumId CurriculumId { get; private set; }
+    public Curriculum? Curriculum { get; private set; }
 
     public AcademicTermId AcademicTermId { get; private set; }
     public AcademicTerm? AcademicTerm { get; private set; }
@@ -37,6 +44,7 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
 
     public SectionCode SectionCode { get; private set; }
 
+    public ClassSectionStatusEnum StatusId { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
@@ -68,6 +76,13 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
     {
         if (newCourseId == CourseId) return this;
         CourseId = Guard.Against.Null(newCourseId, nameof(newCourseId));
+        return this;
+    }
+
+    public ClassSection UpdateCurriculum(CurriculumId newCurriculumId)
+    {
+        if (newCurriculumId == CurriculumId) return this;
+        CurriculumId = Guard.Against.Null(newCurriculumId, nameof(newCurriculumId));
         return this;
     }
 

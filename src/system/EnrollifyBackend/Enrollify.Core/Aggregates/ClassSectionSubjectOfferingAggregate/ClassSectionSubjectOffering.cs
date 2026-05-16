@@ -29,7 +29,7 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
         SubjectUnitsOverride = subjectUnitsOverride;
         TeacherId = teacherId;
         ClassSectionId = Guard.Against.Null(classSectionId, nameof(classSectionId));
-        RoomId = Guard.Against.Null(roomId, nameof(roomId));
+        RoomId = roomId; // RoomId is optional - no guard check needed
         DaysPerWeek = Guard.Against.NegativeOrZero(daysPerWeek, nameof(daysPerWeek));
         HoursPerDay = Guard.Against.NegativeOrZero(hoursPerDay, nameof(hoursPerDay));
         MaxNumberOfStudents = maxNumberOfStudents;

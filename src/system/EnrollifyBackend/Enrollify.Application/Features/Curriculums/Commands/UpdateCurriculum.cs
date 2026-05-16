@@ -1,6 +1,7 @@
 using Ardalis.Result;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.SharedKernel;
 using Mediator;
 
@@ -36,6 +37,11 @@ public static class UpdateCurriculum
             var curriculum = await _curriculumReadRepository.GetByIdAsync(command.Id, cancellationToken);
             if (curriculum == null)
                 return Result.NotFound($"Curriculum with an id of {command.Id.Value} not found");
+
+            if (curriculum.StatusId == CurriculumStatusEnum.Active)
+            {
+                return Result.Forbidden("Active curriculums cannot be modified. Please deactivate the curriculum before making changes.");
+            }
 
             // Status should be updated manually
             curriculum

@@ -2,7 +2,7 @@ using Ardalis.Result;
 using Ardalis.Specification;
 using Enrollify.Application.Features.ClassSections;
 using Enrollify.Application.Features.ClassSections.Commands;
-using Enrollify.Application.Features.ClassSectionSubjectOfferings.Commands;
+using Enrollify.Application.Features.ClassSectionSubjectOfferings;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
@@ -30,9 +30,9 @@ public class CreateClassSectionTests
     private readonly Mock<IReadRepository<ClassSection>> _classSectionReadRepositoryMock = new();
     private readonly Mock<IReadRepository<Curriculum>> _curriculumReadRepositoryMock = new();
     private readonly Mock<IClassSectionRepository> _classSectionRepositoryMock = new();
-    private readonly Mock<IMediator> _mediatorMock = new();
+    private readonly Mock<IClassSectionSubjectOfferingRepository> _mockClassSectionSubjectOfferingRepository = new();
     private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
-    private readonly Mock<ITransactionScope> _transactionMock = new();
+    private readonly FakeTransactionScope _fakeTransaction = new();
     private readonly FakeLogger<CreateClassSection.Handler> _logger;
     private readonly CreateClassSection.Handler _handler;
 
@@ -47,14 +47,14 @@ public class CreateClassSectionTests
             _classSectionReadRepositoryMock.Object,
             _curriculumReadRepositoryMock.Object,
             _classSectionRepositoryMock.Object,
-            _mediatorMock.Object,
+            _mockClassSectionSubjectOfferingRepository.Object,
             _unitOfWorkMock.Object,
             _logger);
 
-        // Default setup for transaction
+        // Default setup for transaction - use fake implementation
         _unitOfWorkMock
             .Setup(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(_transactionMock.Object);
+            .ReturnsAsync(_fakeTransaction);
     }
 
     #region Curriculum Scenarios
@@ -115,9 +115,28 @@ public class CreateClassSectionTests
         SetupSuccessfulSubjectOfferingCreation();
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
+        Exception? caughtException = null;
+        Result<ClassSectionId> result;
+        try
+        {
+            result = await _handler.Handle(command, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            caughtException = ex;
+            throw;
+        }
 
         // Assert
+        if (caughtException != null)
+        {
+            Assert.Fail($"Unexpected exception: {caughtException.GetType().Name}: {caughtException.Message}\n{caughtException.StackTrace}");
+        }
+        if (!result.IsSuccess)
+        {
+            var errors = string.Join("; ", result.Errors);
+            Assert.True(result.IsSuccess, $"Expected success but got errors: {errors}");
+        }
         Assert.True(result.IsSuccess);
         _curriculumReadRepositoryMock.Verify(
             r => r.FirstOrDefaultAsync(
@@ -151,7 +170,7 @@ public class CreateClassSectionTests
         Assert.Contains(result.Errors, e => e.Contains("Unable to create the class section"));
     }
 
-    [Fact(DisplayName = "Subject offering creation fails (mediator returns error)")]
+    [Fact(DisplayName = "Subject offering creation fails (ClassSectionSubjectOfferingRepository returns error)")]
     public async Task Handle_SubjectOfferingCreationFails_ReturnsError()
     {
         // Arrange
@@ -160,10 +179,8 @@ public class CreateClassSectionTests
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulClassSectionCreation();
 
-        _mediatorMock
-            .Setup(m => m.Send(
-                It.IsAny<CreateClassSectionSubjectOffering.Command>(),
-                It.IsAny<CancellationToken>()))
+        _mockClassSectionSubjectOfferingRepository
+            .Setup(r => r.Create(It.IsAny<ClassSectionSubjectOffering>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<ClassSectionSubjectOfferingId>.Error("Failed to create offering"));
 
         // Act
@@ -185,9 +202,18 @@ public class CreateClassSectionTests
         SetupSuccessfulClassSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
 
-        _transactionMock
+        // Override with a mock transaction that throws on commit
+        var throwingTransactionMock = new Mock<ITransactionScope>();
+        throwingTransactionMock
             .Setup(t => t.CommitAsync(It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Database commit failed"));
+        throwingTransactionMock
+            .Setup(t => t.DisposeAsync())
+            .Returns(ValueTask.CompletedTask);
+        
+        _unitOfWorkMock
+            .Setup(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(throwingTransactionMock.Object);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -221,8 +247,8 @@ public class CreateClassSectionTests
         Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("No active curriculum found"));
         // Transaction should never be started for validation errors
         _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
-        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
-        _transactionMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+        Assert.False(_fakeTransaction.IsCommitted);
+        Assert.False(_fakeTransaction.IsRolledBack);
     }
 
     [Fact(DisplayName = "No curriculum subjects does not begin transaction")]
@@ -249,8 +275,8 @@ public class CreateClassSectionTests
         Assert.Contains(result.Errors, e => e.Contains("No curriculum subjects found"));
         // Transaction should never be started when no subjects exist
         _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
-        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
-        _transactionMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+        Assert.False(_fakeTransaction.IsCommitted);
+        Assert.False(_fakeTransaction.IsRolledBack);
     }
 
     [Fact(DisplayName = "Class section creation failure causes rollback")]
@@ -275,7 +301,7 @@ public class CreateClassSectionTests
         Assert.Contains(result.Errors, e => e.Contains("Unable to create the class section"));
         // Transaction began but should not commit due to error
         _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        Assert.False(_fakeTransaction.IsCommitted);
         // Note: Explicit rollback is not called in the command - transaction auto-rollbacks on dispose without commit
     }
 
@@ -289,11 +315,9 @@ public class CreateClassSectionTests
         SetupSuccessfulClassSectionCreation();
 
         // Subject offering creation fails
-        _mediatorMock
-            .Setup(m => m.Send(
-                It.IsAny<CreateClassSectionSubjectOffering.Command>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Error("Unable to create subject offering."));
+        _mockClassSectionSubjectOfferingRepository
+            .Setup(r => r.Create(It.IsAny<ClassSectionSubjectOffering>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<ClassSectionSubjectOfferingId>.Error("Unable to create subject offering."));
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -304,7 +328,7 @@ public class CreateClassSectionTests
         Assert.Contains(result.Errors, e => e.Contains("Unable to create one or more subject offerings"));
         // Transaction began but should not commit due to error
         _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        Assert.False(_fakeTransaction.IsCommitted);
         // Note: Explicit rollback is not called in the command - transaction auto-rollbacks on dispose without commit
     }
 
@@ -324,8 +348,8 @@ public class CreateClassSectionTests
         // Assert
         Assert.True(result.IsSuccess);
         _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _transactionMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+        Assert.True(_fakeTransaction.IsCommitted);
+        Assert.False(_fakeTransaction.IsRolledBack);
     }
 
     [Fact(DisplayName = "Exception during processing causes automatic rollback")]
@@ -350,7 +374,7 @@ public class CreateClassSectionTests
         Assert.Contains(result.Errors, e => e.Contains("unexpected error"));
         // Transaction began but should not commit due to exception
         _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
-        _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        Assert.False(_fakeTransaction.IsCommitted);
         // Transaction automatically rolls back on dispose when exception occurs
     }
 
@@ -443,10 +467,8 @@ public class CreateClassSectionTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        _mediatorMock.Verify(
-            m => m.Send(
-                It.IsAny<CreateClassSectionSubjectOffering.Command>(),
-                It.IsAny<CancellationToken>()),
+        _mockClassSectionSubjectOfferingRepository.Verify(
+            r => r.Create(It.IsAny<ClassSectionSubjectOffering>(), It.IsAny<CancellationToken>()),
             Times.Exactly(3));
     }
 
@@ -467,6 +489,30 @@ public class CreateClassSectionTests
         Assert.True(result.IsSuccess);
         var logs = _logger.Collector.GetSnapshot();
         Assert.Contains(logs, l => l.Level == LogLevel.Information && l.Message.Contains("Successfully created class section"));
+    }
+
+    [Fact(DisplayName = "New ClassSection defaults to Draft status")]
+    public async Task Handle_ValidCommand_CreatesClassSectionWithDraftStatus()
+    {
+        // Arrange
+        var command = CreateCommand();
+        SetupHandlerPrerequisites(command);
+        SetupSuccessfulCurriculumRetrieval(command);
+        SetupSuccessfulSubjectOfferingCreation();
+
+        ClassSection? capturedClassSection = null;
+        _classSectionRepositoryMock
+            .Setup(r => r.Create(It.IsAny<ClassSection>(), It.IsAny<CancellationToken>()))
+            .Callback<ClassSection, CancellationToken>((cs, _) => capturedClassSection = cs)
+            .ReturnsAsync(Result.Success(ClassSectionId.From(1)));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(capturedClassSection);
+        Assert.Equal(ClassSectionStatusEnum.Draft, capturedClassSection.StatusId);
     }
 
     #endregion
@@ -490,6 +536,9 @@ public class CreateClassSectionTests
 
     private void SetupHandlerPrerequisites(CreateClassSection.Command command)
     {
+        // Reset fake transaction state for each test
+        _fakeTransaction.Reset();
+        
         var course = CreateCourse(command.courseId);
         var academicYear = CreateAcademicYear(command.academicTermId);
 
@@ -529,10 +578,8 @@ public class CreateClassSectionTests
 
     private void SetupSuccessfulSubjectOfferingCreation()
     {
-        _mediatorMock
-            .Setup(m => m.Send(
-                It.IsAny<CreateClassSectionSubjectOffering.Command>(),
-                It.IsAny<CancellationToken>()))
+        _mockClassSectionSubjectOfferingRepository
+            .Setup(r => r.Create(It.IsAny<ClassSectionSubjectOffering>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(ClassSectionSubjectOfferingId.From(1)));
     }
 
@@ -611,6 +658,7 @@ public class CreateClassSectionTests
             Name = $"BSCS-{YearLevel.From(1)}{sectionCode}",
             YearLevel = YearLevel.From(1),
             CourseId = CourseId.From(1),
+            CurriculumId = CurriculumId.From(1),
             AcademicTermId = AcademicTermId.From(1),
             AdviserId = TeacherId.From(1),
             SectionCode = sectionCode
@@ -635,4 +683,39 @@ public class CreateClassSectionTests
     }
 
     #endregion
+}
+
+/// <summary>
+/// Fake transaction implementation for testing
+/// </summary>
+internal class FakeTransactionScope : ITransactionScope
+{
+    public bool IsCommitted { get; private set; }
+    public bool IsRolledBack { get; private set; }
+    public bool IsDisposed { get; private set; }
+
+    public Task CommitAsync(CancellationToken cancellationToken = default)
+    {
+        IsCommitted = true;
+        return Task.CompletedTask;
+    }
+
+    public Task RollbackAsync(CancellationToken cancellationToken = default)
+    {
+        IsRolledBack = true;
+        return Task.CompletedTask;
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        IsDisposed = true;
+        return ValueTask.CompletedTask;
+    }
+
+    public void Reset()
+    {
+        IsCommitted = false;
+        IsRolledBack = false;
+        IsDisposed = false;
+    }
 }

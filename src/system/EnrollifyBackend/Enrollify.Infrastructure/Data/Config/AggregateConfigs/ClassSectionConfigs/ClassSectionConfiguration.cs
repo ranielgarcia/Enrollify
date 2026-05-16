@@ -21,6 +21,11 @@ public class ClassSectionConfiguration : IEntityTypeConfiguration<ClassSection>
             .HasForeignKey(e => e.CourseId)
             .OnDelete(DeleteBehavior.NoAction);
 
+        builder.HasOne(e => e.Curriculum)
+            .WithMany()
+            .HasForeignKey(e => e.CurriculumId)
+            .OnDelete(DeleteBehavior.NoAction);
+
         builder.HasOne(e => e.AcademicTerm)
             .WithMany()
             .HasForeignKey(e => e.AcademicTermId)

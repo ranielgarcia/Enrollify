@@ -6,6 +6,7 @@ using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.ValueObjects;
@@ -395,6 +396,7 @@ public class CreateClassSectionValidatorTests
             Name = $"BSCS-1{sectionCode}",
             YearLevel = YearLevel.From(1),
             CourseId = CourseId.From(1),
+            CurriculumId = CurriculumId.From(1),
             AcademicTermId = AcademicTermId.From(1),
             AdviserId = null,
             SectionCode = sectionCode

@@ -1,25 +1,25 @@
-using DbUp.Engine;
-using Enrollify.Core.Constants;
 using System.Data;
 using System.Text;
+using DbUp.Engine;
+using Enrollify.Core.Constants;
 
 namespace Enrollify.DatabaseMigration.Seeds;
 
-public class Seed0004__CurriculumStatuses : IScript
+public class Seed0009__ClassSectionStatuses : IScript
 {
     public string ProvideScript(Func<IDbCommand> dbCommandFactory)
     {
-        var curriculumStatuses = CurriculumStatusEnum.List;
+        var classSectionStatuses = ClassSectionStatusEnum.List;
 
         var scriptBuilder = new StringBuilder();
 
-        scriptBuilder.Append(@"MERGE [CurriculumStatuses] As [Target]
+        scriptBuilder.Append(@"MERGE [ClassSectionStatuses] As [Target]
             USING (");
         scriptBuilder.Append(@"VALUES");
 
-        var values = new List<string>(curriculumStatuses.Count);
+        var values = new List<string>(classSectionStatuses.Count);
 
-        foreach (var status in curriculumStatuses)
+        foreach (var status in classSectionStatuses)
         {
             values.Add(string.Format("({0}, '{1}')", status.Value, status.Name));
         }

@@ -2,11 +2,12 @@ using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Application.Features.ClassSections.Extensions;
 using Enrollify.Application.Features.ClassSections.Specifications;
-using Enrollify.Application.Features.ClassSectionSubjectOfferings.Commands;
+using Enrollify.Application.Features.ClassSectionSubjectOfferings;
 using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
+using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
@@ -33,7 +34,7 @@ public static class CreateClassSection
         private readonly IReadRepository<ClassSection> _classSectionReadRepository;
         private readonly IReadRepository<Curriculum> _curriculumReadRepository;
         private readonly IClassSectionRepository _classSectionRepository;
-        private readonly IMediator _mediator;
+        private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<Handler> _logger;
 
@@ -43,7 +44,7 @@ public static class CreateClassSection
             IReadRepository<ClassSection> classSectionReadRepository,
             IReadRepository<Curriculum> curriculumReadRepository,
             IClassSectionRepository classSectionRepository,
-            IMediator mediator,
+            IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
             IUnitOfWork unitOfWork,
             ILogger<Handler> logger)
         {
@@ -52,7 +53,7 @@ public static class CreateClassSection
             _classSectionReadRepository = classSectionReadRepository;
             _curriculumReadRepository = curriculumReadRepository;
             _classSectionRepository = classSectionRepository;
-            _mediator = mediator;
+            _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
@@ -101,6 +102,7 @@ public static class CreateClassSection
                     Name = $"{course!.Code.Value}-{command.yearLevel}{sectionCode}",
                     YearLevel = command.yearLevel,
                     CourseId = command.courseId,
+                    CurriculumId = curriculum.Id,
                     AcademicTermId = command.academicTermId,
                     AdviserId = command.adviserId,
                     SectionCode = sectionCode,
@@ -116,9 +118,10 @@ public static class CreateClassSection
 
                 foreach (var curriculumSubject in curriculumSubjects)
                 {
-                    var offeringResult = await _mediator.Send(
-                        new CreateClassSectionSubjectOffering.Command(classSectionId, curriculumSubject.SubjectId),
+                    var offeringResult = await _classSectionSubjectOfferingRepository.Create(
+                        new ClassSectionSubjectOffering(classSectionId, curriculumSubject.SubjectId),
                         cancellationToken);
+
                     if (!offeringResult.IsSuccess)
                     {
                         _logger.LogError(

@@ -63,6 +63,39 @@ public class SaveCurriculumContentTests
         Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("not found"));
     }
 
+    [Fact(DisplayName = "Active curriculum cannot be modified - returns Forbidden")]
+    public async Task Handle_ActiveCurriculum_ReturnsForbidden()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        
+        // Set curriculum status to Active
+        SetEntityProperty(curriculum, "StatusId", Enrollify.Core.Constants.CurriculumStatusEnum.Active);
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum { Code = SubjectCode.From("CS101") }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Forbidden, result.Status);
+        Assert.Contains(result.Errors, e => e.Contains("Active curriculums cannot be modified"));
+    }
+
     [Fact]
     public async Task Handle_SubjectCodeNotFound_ReturnsInvalidResult()
     {
