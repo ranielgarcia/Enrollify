@@ -26,6 +26,16 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
         _academicYearRepository = academicYearRepository;
         _curriculumRepository = curriculumRepository;
 
+        RuleFor(x => x.academicTermId)
+            .NotNull()
+            .NotEmpty()
+            .WithMessage("Academic term is required.");
+
+        RuleFor(x => x.yearLevel)
+            .NotNull()
+            .NotEmpty()
+            .WithMessage("Year level is required.");
+
         RuleFor(x => x.requestPayload)
             .NotEmpty()
             .WithMessage("At least one payload entry is required.");
@@ -38,26 +48,19 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
                     .WithMessage("Number of sections must be greater than zero.");
             });
 
-        RuleFor(x => x.requestPayload)
-            .MustAsync(ValidateEntitiesExistAsync)
-            .WithMessage("One or more entries reference entities that do not exist.")
-            .When(x => x.requestPayload is { Count: > 0 });
+        RuleFor(x => x)
+            .MustAsync((command, ct) => ValidateEntitiesExistAsync(command, ct))
+            .WithMessage("One or more entries reference entities that do not exist.");
     }
 
     private async Task<bool> ValidateEntitiesExistAsync(
         BulkInitializeClassSectionsForAcademicYear.Command command,
-        List<BulkInitializeClassSectionsForAcademicYear.Payload> payloads,
-        ValidationContext<BulkInitializeClassSectionsForAcademicYear.Command> context,
         CancellationToken cancellationToken)
     {
+        var payloads = command.requestPayload;
         var courseIds = payloads
             .Select(p => p.courseId)
             .Where(id => id != CourseId.From(0))
-            .Distinct()
-            .ToList();
-        var academicYearIds = payloads
-            .Select(p => p.academicYearId)
-            .Where(id => id != AcademicYearId.From(0))
             .Distinct()
             .ToList();
         var curriculumIds = payloads
@@ -66,23 +69,28 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
             .Distinct()
             .ToList();
 
+        // Validate academic term exists
+        var academicYearTask = _academicYearRepository
+            .FirstOrDefaultAsync(new GetAcademicYearByAcademicTermIdSpec(command.academicTermId), cancellationToken);
         var existingCoursesTask = courseIds.Count > 0
             ? _courseRepository.ListAsync(new BulkGetMinimumCoursesByIdsSpec(courseIds), cancellationToken)
             : Task.FromResult<List<Course>>([]);
-        var existingAcademicYearsTask = academicYearIds.Count > 0 
-            ? _academicYearRepository.ListAsync(new BulkGetAcademicYearsByIdsSpec(academicYearIds), cancellationToken)
-            : Task.FromResult<List<AcademicYear>> ([]);
         var existingCurriculaTask = curriculumIds.Count > 0
             ? _curriculumRepository.ListAsync(new BulkGetMinimumCurriculumsByIdsSpec(curriculumIds), cancellationToken)
             : Task.FromResult<List<Curriculum>>([]);
 
-        await Task.WhenAll(existingCoursesTask, existingAcademicYearsTask, existingCurriculaTask);
-
-        var existingCourseIds = existingCoursesTask.Result.Select(c => c.Id).ToHashSet();
-        var existingAcademicYearIds = existingAcademicYearsTask.Result.Select(ay => ay.Id).ToHashSet();
-        var existingCurriculaById = existingCurriculaTask.Result.ToDictionary(c => c.Id);
+        await Task.WhenAll(academicYearTask, existingCoursesTask, existingCurriculaTask);
 
         var isValid = true;
+
+        // Validate academic term
+        if (academicYearTask.Result == null)
+        {
+            return false;
+        }
+
+        var existingCourseIds = existingCoursesTask.Result.Select(c => c.Id).ToHashSet();
+        var existingCurriculaById = existingCurriculaTask.Result.ToDictionary(c => c.Id);
 
         for (var i = 0; i < payloads.Count; i++)
         {
@@ -90,13 +98,6 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
 
             if (!existingCourseIds.Contains(payload.courseId))
             {
-                context.AddFailure($"requestPayload[{i}].courseId", $"Course with ID '{payload.courseId}' does not exist.");
-                isValid = false;
-            }
-
-            if (!existingAcademicYearIds.Contains(payload.academicYearId))
-            {
-                context.AddFailure($"requestPayload[{i}].academicYearId", $"Academic year with ID '{payload.academicYearId}' does not exist.");
                 isValid = false;
             }
 
@@ -105,12 +106,10 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
 
             if (!existingCurriculaById.TryGetValue(payload.curriculumId, out var curriculum))
             {
-                context.AddFailure($"requestPayload[{i}].curriculumId", $"Curriculum with ID '{payload.curriculumId}' does not exist.");
                 isValid = false;
             }
             else if (curriculum.CourseId != payload.courseId)
             {
-                context.AddFailure($"requestPayload[{i}].curriculumId", $"Curriculum with ID '{payload.curriculumId}' does not belong to course with ID '{payload.courseId}'.");
                 isValid = false;
             }
         }

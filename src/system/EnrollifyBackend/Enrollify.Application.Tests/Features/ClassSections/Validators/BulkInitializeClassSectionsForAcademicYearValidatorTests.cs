@@ -6,6 +6,7 @@ using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
+using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Moq;
 
@@ -31,7 +32,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     [Fact(DisplayName = "Empty requestPayload - returns invalid result")]
     public async Task ValidateAsync_EmptyRequestPayload_HasCollectionError()
     {
-        var command = new BulkInitializeClassSectionsForAcademicYear.Command([]);
+        var command = CreateCommand(payloadCount: 0);
 
         var result = await _validator.ValidateAsync(command);
 
@@ -46,12 +47,90 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     {
         var command = CreateCommand();
         SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.requestPayload[0].academicYearId);
+        SetupAcademicYears(command.academicTermId);
         SetupCurricula();
 
         var result = await _validator.ValidateAsync(command);
 
         Assert.DoesNotContain(result.Errors, e => e.PropertyName == "requestPayload");
+    }
+
+    #endregion
+
+    #region AcademicTermId Validation
+
+    [Fact(DisplayName = "AcademicTermId does not exist - returns error")]
+    public async Task ValidateAsync_AcademicTermDoesNotExist_HasAcademicTermError()
+    {
+        var command = CreateCommand(academicTermId: AcademicTermId.From(99));
+        SetupCourses(command.requestPayload[0].courseId);
+        SetupAcademicYears(); // No matching academic term
+        SetupCurricula();
+
+        var result = await _validator.ValidateAsync(command);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e =>
+            e.ErrorMessage.Contains("Academic term") ||
+            e.ErrorMessage.Contains("do not exist"));
+    }
+
+    [Fact(DisplayName = "AcademicTermId exists - no academic term error")]
+    public async Task ValidateAsync_AcademicTermExists_NoAcademicTermError()
+    {
+        var command = CreateCommand();
+        SetupCourses(command.requestPayload[0].courseId);
+        SetupAcademicYears(command.academicTermId);
+        SetupCurricula();
+
+        var result = await _validator.ValidateAsync(command);
+
+        Assert.DoesNotContain(result.Errors, e => e.ErrorMessage.Contains("Academic term"));
+    }
+
+    #endregion
+
+    #region YearLevel Validation
+
+    [Fact(DisplayName = "YearLevel is zero - returns invalid result")]
+    public async Task ValidateAsync_YearLevelIsZero_HasYearLevelError()
+    {
+        var command = CreateCommand(yearLevel: YearLevel.From(0));
+        SetupCourses(command.requestPayload[0].courseId);
+        SetupAcademicYears(command.academicTermId);
+        SetupCurricula();
+
+        var result = await _validator.ValidateAsync(command);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("Year level must be between 1 and 6"));
+    }
+
+    [Fact(DisplayName = "YearLevel is greater than 6 - returns invalid result")]
+    public async Task ValidateAsync_YearLevelIsGreaterThanSix_HasYearLevelError()
+    {
+        var command = CreateCommand(yearLevel: YearLevel.From(7));
+        SetupCourses(command.requestPayload[0].courseId);
+        SetupAcademicYears(command.academicTermId);
+        SetupCurricula();
+
+        var result = await _validator.ValidateAsync(command);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("Year level must be between 1 and 6"));
+    }
+
+    [Fact(DisplayName = "YearLevel is valid - no year level error")]
+    public async Task ValidateAsync_YearLevelIsValid_NoYearLevelError()
+    {
+        var command = CreateCommand(yearLevel: YearLevel.From(3));
+        SetupCourses(command.requestPayload[0].courseId);
+        SetupAcademicYears(command.academicTermId);
+        SetupCurricula();
+
+        var result = await _validator.ValidateAsync(command);
+
+        Assert.DoesNotContain(result.Errors, e => e.ErrorMessage.Contains("Year level"));
     }
 
     #endregion
@@ -63,7 +142,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     {
         var command = CreateCommand(courseId: CourseId.From(99));
         SetupCourses();
-        SetupAcademicYears(command.requestPayload[0].academicYearId);
+        SetupAcademicYears(command.academicTermId);
         SetupCurricula();
 
         var result = await _validator.ValidateAsync(command);
@@ -79,45 +158,12 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     {
         var command = CreateCommand();
         SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.requestPayload[0].academicYearId);
+        SetupAcademicYears(command.academicTermId);
         SetupCurricula();
 
         var result = await _validator.ValidateAsync(command);
 
         Assert.DoesNotContain(result.Errors, e => e.PropertyName == "requestPayload[0].courseId");
-    }
-
-    #endregion
-
-    #region AcademicYearId Validation
-
-    [Fact(DisplayName = "AcademicYearId does not exist - returns error with indexed property name")]
-    public async Task ValidateAsync_AcademicYearDoesNotExist_HasAcademicYearErrorAtIndexZero()
-    {
-        var command = CreateCommand(academicYearId: AcademicYearId.From(99));
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears();
-        SetupCurricula();
-
-        var result = await _validator.ValidateAsync(command);
-
-        Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e =>
-            e.PropertyName == "requestPayload[0].academicYearId" &&
-            e.ErrorMessage.Contains("does not exist"));
-    }
-
-    [Fact(DisplayName = "AcademicYearId exists - no academic year error")]
-    public async Task ValidateAsync_AcademicYearExists_NoAcademicYearError()
-    {
-        var command = CreateCommand();
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.requestPayload[0].academicYearId);
-        SetupCurricula();
-
-        var result = await _validator.ValidateAsync(command);
-
-        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "requestPayload[0].academicYearId");
     }
 
     #endregion
@@ -130,7 +176,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         var courseId = CourseId.From(1);
         var command = CreateCommand(courseId: courseId, curriculumId: CurriculumId.From(99));
         SetupCourses(courseId);
-        SetupAcademicYears(command.requestPayload[0].academicYearId);
+        SetupAcademicYears(command.academicTermId);
         SetupCurricula();
 
         var result = await _validator.ValidateAsync(command);
@@ -149,7 +195,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         var curriculumId = CurriculumId.From(5);
         var command = CreateCommand(courseId: courseId, curriculumId: curriculumId);
         SetupCourses(courseId);
-        SetupAcademicYears(command.requestPayload[0].academicYearId);
+        SetupAcademicYears(command.academicTermId);
         SetupCurricula(CreateCurriculum(curriculumId, differentCourseId));
 
         var result = await _validator.ValidateAsync(command);
@@ -167,7 +213,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         var curriculumId = CurriculumId.From(5);
         var command = CreateCommand(courseId: courseId, curriculumId: curriculumId);
         SetupCourses(courseId);
-        SetupAcademicYears(command.requestPayload[0].academicYearId);
+        SetupAcademicYears(command.academicTermId);
         SetupCurricula(CreateCurriculum(curriculumId, courseId));
 
         var result = await _validator.ValidateAsync(command);
@@ -180,7 +226,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     {
         var command = CreateCommand(curriculumId: CurriculumId.From(0));
         SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.requestPayload[0].academicYearId);
+        SetupAcademicYears(command.academicTermId);
 
         var result = await _validator.ValidateAsync(command);
 
@@ -199,7 +245,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     {
         var command = CreateCommand(numberOfSections: 0);
         SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.requestPayload[0].academicYearId);
+        SetupAcademicYears(command.academicTermId);
         SetupCurricula();
 
         var result = await _validator.ValidateAsync(command);
@@ -213,7 +259,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     {
         var command = CreateCommand(numberOfSections: -3);
         SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.requestPayload[0].academicYearId);
+        SetupAcademicYears(command.academicTermId);
         SetupCurricula();
 
         var result = await _validator.ValidateAsync(command);
@@ -227,7 +273,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     {
         var command = CreateCommand(numberOfSections: 3);
         SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.requestPayload[0].academicYearId);
+        SetupAcademicYears(command.academicTermId);
         SetupCurricula();
 
         var result = await _validator.ValidateAsync(command);
@@ -244,7 +290,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     {
         var command = CreateCommand(numberOfSections: 2);
         SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.requestPayload[0].academicYearId);
+        SetupAcademicYears(command.academicTermId);
         SetupCurricula();
 
         var result = await _validator.ValidateAsync(command);
@@ -260,7 +306,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         var curriculumId = CurriculumId.From(5);
         var command = CreateCommand(courseId: courseId, curriculumId: curriculumId, numberOfSections: 2);
         SetupCourses(courseId);
-        SetupAcademicYears(command.requestPayload[0].academicYearId);
+        SetupAcademicYears(command.academicTermId);
         SetupCurricula(CreateCurriculum(curriculumId, courseId));
 
         var result = await _validator.ValidateAsync(command);
@@ -278,14 +324,16 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     {
         var courseId1 = CourseId.From(1);
         var courseId2 = CourseId.From(2);
-        var academicYearId = AcademicYearId.From(10);
+        var academicTermId = AcademicTermId.From(10);
         var command = new BulkInitializeClassSectionsForAcademicYear.Command(
+            academicTermId,
+            YearLevel.From(1),
         [
-            new(courseId1, academicYearId, CurriculumId.From(0), 2),
-            new(courseId2, academicYearId, CurriculumId.From(0), 3),
+            new(courseId1, CurriculumId.From(0), 2),
+            new(courseId2, CurriculumId.From(0), 3),
         ]);
         SetupCourses(courseId1, courseId2);
-        SetupAcademicYears(academicYearId);
+        SetupAcademicYears(academicTermId);
         SetupCurricula();
 
         var result = await _validator.ValidateAsync(command);
@@ -295,7 +343,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
             r => r.ListAsync(It.IsAny<ISpecification<Course>>(), It.IsAny<CancellationToken>()),
             Times.Once);
         _academicYearRepositoryMock.Verify(
-            r => r.ListAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()),
+            r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -304,14 +352,16 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     {
         var courseId1 = CourseId.From(1);
         var missingCourseId = CourseId.From(99);
-        var academicYearId = AcademicYearId.From(10);
+        var academicTermId = AcademicTermId.From(10);
         var command = new BulkInitializeClassSectionsForAcademicYear.Command(
+            academicTermId,
+            YearLevel.From(1),
         [
-            new(courseId1, academicYearId, CurriculumId.From(0), 1),
-            new(missingCourseId, academicYearId, CurriculumId.From(0), 1),
+            new(courseId1, CurriculumId.From(0), 1),
+            new(missingCourseId, CurriculumId.From(0), 1),
         ]);
         SetupCourses(courseId1);
-        SetupAcademicYears(academicYearId);
+        SetupAcademicYears(academicTermId);
         SetupCurricula();
 
         var result = await _validator.ValidateAsync(command);
@@ -323,65 +373,22 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
             e.ErrorMessage.Contains("does not exist"));
     }
 
-    [Fact(DisplayName = "Multiple payloads - missing academic year in first entry produces error at index 0 only")]
-    public async Task ValidateAsync_MultiplePayloadsMissingAcademicYearInFirstEntry_HasErrorAtIndexZeroOnly()
-    {
-        var courseId = CourseId.From(1);
-        var missingAcademicYearId = AcademicYearId.From(99);
-        var validAcademicYearId = AcademicYearId.From(10);
-        var command = new BulkInitializeClassSectionsForAcademicYear.Command(
-        [
-            new(courseId, missingAcademicYearId, CurriculumId.From(0), 1),
-            new(courseId, validAcademicYearId, CurriculumId.From(0), 1),
-        ]);
-        SetupCourses(courseId);
-        SetupAcademicYears(validAcademicYearId);
-        SetupCurricula();
-
-        var result = await _validator.ValidateAsync(command);
-
-        Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e =>
-            e.PropertyName == "requestPayload[0].academicYearId" &&
-            e.ErrorMessage.Contains("does not exist"));
-        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "requestPayload[1].academicYearId");
-    }
-
-    [Fact(DisplayName = "Multiple payloads - errors across different entries are all reported")]
-    public async Task ValidateAsync_MultiplePayloadsWithErrorsInDifferentEntries_AllErrorsReported()
-    {
-        var courseId = CourseId.From(1);
-        var academicYearId = AcademicYearId.From(10);
-        var command = new BulkInitializeClassSectionsForAcademicYear.Command(
-        [
-            new(CourseId.From(99), academicYearId, CurriculumId.From(0), 1),
-            new(courseId, AcademicYearId.From(99), CurriculumId.From(0), 1),
-        ]);
-        SetupCourses(courseId);
-        SetupAcademicYears(academicYearId);
-        SetupCurricula();
-
-        var result = await _validator.ValidateAsync(command);
-
-        Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.PropertyName == "requestPayload[0].courseId");
-        Assert.Contains(result.Errors, e => e.PropertyName == "requestPayload[1].academicYearId");
-    }
-
     [Fact(DisplayName = "Multiple payloads with curricula - exactly one bulk DB call for curricula")]
     public async Task ValidateAsync_MultiplePayloadsWithCurricula_UsesOneBulkCurriculumCall()
     {
         var courseId = CourseId.From(1);
-        var academicYearId = AcademicYearId.From(10);
+        var academicTermId = AcademicTermId.From(10);
         var curriculumId1 = CurriculumId.From(5);
         var curriculumId2 = CurriculumId.From(6);
         var command = new BulkInitializeClassSectionsForAcademicYear.Command(
+            academicTermId,
+            YearLevel.From(1),
         [
-            new(courseId, academicYearId, curriculumId1, 1),
-            new(courseId, academicYearId, curriculumId2, 2),
+            new(courseId, curriculumId1, 1),
+            new(courseId, curriculumId2, 2),
         ]);
         SetupCourses(courseId);
-        SetupAcademicYears(academicYearId);
+        SetupAcademicYears(academicTermId);
         SetupCurricula(
             CreateCurriculum(curriculumId1, courseId),
             CreateCurriculum(curriculumId2, courseId));
@@ -399,18 +406,26 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     #region Helper Methods
 
     private static BulkInitializeClassSectionsForAcademicYear.Command CreateCommand(
+        AcademicTermId? academicTermId = null,
+        YearLevel? yearLevel = null,
         CourseId? courseId = null,
-        AcademicYearId? academicYearId = null,
         CurriculumId? curriculumId = null,
-        int numberOfSections = 1)
+        int numberOfSections = 1,
+        int payloadCount = 1)
     {
-        var payload = new BulkInitializeClassSectionsForAcademicYear.Payload(
-            courseId ?? CourseId.From(1),
-            academicYearId ?? AcademicYearId.From(1),
-            curriculumId ?? CurriculumId.From(0),
-            numberOfSections);
+        var payloads = payloadCount == 0
+            ? new List<BulkInitializeClassSectionsForAcademicYear.Payload>()
+            : Enumerable.Range(0, payloadCount)
+                .Select(_ => new BulkInitializeClassSectionsForAcademicYear.Payload(
+                    courseId ?? CourseId.From(1),
+                    curriculumId ?? CurriculumId.From(0),
+                    numberOfSections))
+                .ToList();
 
-        return new BulkInitializeClassSectionsForAcademicYear.Command([payload]);
+        return new BulkInitializeClassSectionsForAcademicYear.Command(
+            academicTermId ?? AcademicTermId.From(1),
+            yearLevel ?? YearLevel.From(1),
+            payloads);
     }
 
     private void SetupCourses(params CourseId[] existingIds)
@@ -432,20 +447,28 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
             .ReturnsAsync(courses);
     }
 
-    private void SetupAcademicYears(params AcademicYearId[] existingIds)
+    private void SetupAcademicYears(params AcademicTermId[] existingTermIds)
     {
-        var academicYears = existingIds.Select((id, i) =>
+        if (existingTermIds.Length == 0)
         {
-            var startDate = AcademicYearStartDate.From(new DateTime(2024 + i, 8, 1));
-            var endDate = AcademicYearEndDate.From(new DateTime(2025 + i, 7, 31));
-            var ay = new AcademicYear(startDate, endDate);
-            SetEntityProperty(ay, "Id", id);
-            return ay;
-        }).ToList();
+            // No academic years - validator will fail
+            _academicYearRepositoryMock
+                .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((AcademicYear?)null);
+            return;
+        }
 
+        // Create an academic year with terms matching the provided IDs
+        var startDate = AcademicYearStartDate.From(new DateTime(2024, 8, 1));
+        var endDate = AcademicYearEndDate.From(new DateTime(2025, 7, 31));
+        var academicYear = new AcademicYear(startDate, endDate);
+        SetEntityProperty(academicYear, "Id", AcademicYearId.From(1));
+
+        // Any call to FirstOrDefaultAsync for academic year will return this academic year
+        // (validator uses GetAcademicYearByAcademicTermIdSpec which fetches by term ID)
         _academicYearRepositoryMock
-            .Setup(r => r.ListAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(academicYears);
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(academicYear);
     }
 
     private void SetupCurricula(params Curriculum[] curricula)

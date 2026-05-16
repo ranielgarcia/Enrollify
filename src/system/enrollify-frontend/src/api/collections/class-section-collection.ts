@@ -273,3 +273,28 @@ export const deleteSectionOptions = (id: number) =>
       onSuccess: () => toast.success("Class section deleted successfully"),
     },
   });
+
+// Bulk initialize types
+export interface BulkInitializePayload {
+  courseId: number;
+  curriculumId: number;
+  numberOfSections: number;
+}
+
+export interface BulkInitializeClassSectionsRequest {
+  academicTermId: number;
+  yearLevel: number;
+  requestPayload: BulkInitializePayload[];
+}
+
+export const bulkInitializeSectionsOptions = () =>
+  // @ts-ignore - path will be registered in api.ts when backend is implemented
+  createMutationOptions({
+    httpVerb: "post",
+    path: "/api/class-sections/bulk-initialize" as any,
+    mutationKey: [...queryKeys.base(), "bulk-initialize"],
+    options: {
+      meta: { invalidateQueries: [queryKeys.base()] },
+      onSuccess: () => toast.success("Class sections bulk initialized successfully"),
+    },
+  });
