@@ -4,6 +4,8 @@ using Azure.Storage.Blobs;
 using Dapper;
 using Enrollify.Application.Features.AcademicYearAndTerm;
 using Enrollify.Application.Features.Buildings;
+using Enrollify.Application.Features.ClassSections;
+using Enrollify.Application.Features.ClassSectionSubjectOfferings;
 using Enrollify.Application.Features.Colleges;
 using Enrollify.Application.Features.Courses;
 using Enrollify.Application.Features.Curriculums;
@@ -77,6 +79,8 @@ public static class InfrastructureServiceExtensions
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>))
                .AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
 
+        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+
         services.AddScoped<IListRolesQueryService, ListRolesQueryService>();
         services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
         services.AddScoped<ICollegeRepository, CollegeRepository>();
@@ -90,7 +94,8 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ITeacherRepository, TeacherRepository>();
         services.AddScoped<ITeacherPhotoStorageService, TeacherPhotoStorageService>();
         services.AddScoped<IAcademicYearAndTermRepository, AcademicYearAndTermRepository>();
-
+        services.AddScoped<IClassSectionRepository, ClassSectionRepository>();
+        services.AddScoped<IClassSectionSubjectOfferingRepository, ClassSectionSubjectOfferingRepository>();
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 
@@ -115,9 +120,45 @@ public static class InfrastructureServiceExtensions
 
         foreach (var smartEnumType in smartEnumTypes)
         {
-            var handlerType = typeof(SmartEnumByValueTypeHandler<>).MakeGenericType(smartEnumType);
-            var handler = Activator.CreateInstance(handlerType);
-            SqlMapper.AddTypeHandler(smartEnumType, (SqlMapper.ITypeHandler)handler!);
+            try
+            {
+                // Check if it's SmartEnum<T> (int value) or SmartEnum<T, TValue> (custom value type)
+                var baseType = smartEnumType.BaseType;
+                while (baseType != null && baseType.IsGenericType)
+                {
+                    var genericTypeDef = baseType.GetGenericTypeDefinition();
+                    
+                    if (genericTypeDef == typeof(SmartEnum<>))
+                    {
+                        // SmartEnum<T> with int values - use SmartEnumByValueTypeHandler
+                        var handlerType = typeof(SmartEnumByValueTypeHandler<>).MakeGenericType(smartEnumType);
+                        var handler = Activator.CreateInstance(handlerType);
+                        SqlMapper.AddTypeHandler(smartEnumType, (SqlMapper.ITypeHandler)handler!);
+                        break;
+                    }
+                    else if (genericTypeDef == typeof(SmartEnum<,>))
+                    {
+                        // SmartEnum<T, TValue> with custom value type - use SmartEnumByNameTypeHandler
+                        var handlerType = typeof(SmartEnumByNameTypeHandler<>).MakeGenericType(smartEnumType);
+                        var handler = Activator.CreateInstance(handlerType);
+                        SqlMapper.AddTypeHandler(smartEnumType, (SqlMapper.ITypeHandler)handler!);
+                        break;
+                    }
+                    
+                    baseType = baseType.BaseType;
+                }
+            }
+            catch (ArgumentException)
+            {
+                // Skip SmartEnum types that violate generic constraints (e.g., sealed classes with custom value types)
+                // These types cannot be used with the standard Dapper type handlers from Ardalis.SmartEnum.Dapper
+                continue;
+            }
+            catch (TypeLoadException)
+            {
+                // Skip types that cannot be loaded or instantiated
+                continue;
+            }
         }
     }
 

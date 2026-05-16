@@ -1,6 +1,7 @@
 using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Core.ValueObjects;
 
 namespace Enrollify.Core.Aggregates.CurriculumAggregate;
 
@@ -17,17 +18,19 @@ public class CurriculumSubject : IAuditable
     public CurriculumSubject(
         CurriculumId curriculumId,
         SubjectId subjectId,
-        int yearLevel,
-        int semester,
+        YearLevel yearLevel,
+        TermNumber termNumber,
         bool isElective,
-        string? electiveGroupName)
+        string? electiveGroupName,
+        decimal? subjectUnitsOverride)
     {
         CurriculumId = curriculumId;
         SubjectId = subjectId;
-        YearLevel = Guard.Against.OutOfRange(yearLevel, nameof(yearLevel), 1, 6);
-        TermNumber = Guard.Against.OutOfRange(semester, nameof(semester), 1, 3);
+        YearLevel = Guard.Against.Null(yearLevel, nameof(yearLevel));
+        TermNumber = Guard.Against.Null(termNumber, nameof(termNumber));
         IsElective = isElective;
         ElectiveGroupName = electiveGroupName;
+        SubjectUnitsOverride = subjectUnitsOverride;
     }
 
     public CurriculumSubjectId Id { get; private set; }
@@ -37,17 +40,19 @@ public class CurriculumSubject : IAuditable
     /// <summary>
     /// Which year this subject is typically taken (1-6)
     /// </summary>
-    public int YearLevel { get; private set; }
+    public YearLevel YearLevel { get; private set; }
 
     /// <summary>
     /// Which semester (1 = First, 2 = Second, 3 = Summer)
     /// </summary>
-    public int TermNumber { get; private set; }
+    public TermNumber TermNumber { get; private set; }
 
     /// <summary>
     /// Whether this is an elective slot
     /// </summary>
     public bool IsElective { get; private set; }
+
+    public decimal? SubjectUnitsOverride { get; private set; }
 
     /// <summary>
     /// Group name for electives (e.g., 'Major Elective', 'Free Elective')
@@ -69,17 +74,17 @@ public class CurriculumSubject : IAuditable
     public User? DeletedByUser { get; private set; }
     public bool IsActive { get; private set; }
 
-    public CurriculumSubject UpdateYearLevel(int newYearLevel)
+    public CurriculumSubject UpdateYearLevel(YearLevel newYearLevel)
     {
         if (YearLevel == newYearLevel) return this;
-        YearLevel = Guard.Against.OutOfRange(newYearLevel, nameof(newYearLevel), 1, 6);
+        YearLevel = Guard.Against.Null(newYearLevel, nameof(newYearLevel));
         return this;
     }
 
-    public CurriculumSubject UpdateTermNumber(int newTermNumber)
+    public CurriculumSubject UpdateTermNumber(TermNumber newTermNumber)
     {
         if (TermNumber == newTermNumber) return this;
-        TermNumber = Guard.Against.OutOfRange(newTermNumber, nameof(newTermNumber), 1, 3);
+        TermNumber = Guard.Against.Null(newTermNumber, nameof(newTermNumber));
         return this;
     }
 
@@ -87,6 +92,13 @@ public class CurriculumSubject : IAuditable
     {
         IsElective = isElective;
         ElectiveGroupName = electiveGroupName;
+        return this;
+    }
+
+    public CurriculumSubject UpdateSubjectUnitsOverride(decimal? subjectUnitsOverride)
+    {
+        if (SubjectUnitsOverride == subjectUnitsOverride) return this;
+        SubjectUnitsOverride = subjectUnitsOverride;
         return this;
     }
 

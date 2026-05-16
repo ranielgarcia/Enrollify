@@ -8,6 +8,7 @@ using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate.Models;
+using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Moq;
 
@@ -18,6 +19,8 @@ public class SaveCurriculumContentTests
     private readonly Mock<IReadRepository<Curriculum>> _curriculumReadRepositoryMock;
     private readonly Mock<IReadRepository<Subject>> _subjectReadRepositoryMock;
     private readonly Mock<ICurriculumRepository> _curriculumRepositoryMock;
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+    private readonly Mock<ITransactionScope> _transactionScopeMock;
     private readonly SaveCurriculumContent.Handler _handler;
 
     public SaveCurriculumContentTests()
@@ -25,11 +28,19 @@ public class SaveCurriculumContentTests
         _curriculumReadRepositoryMock = new Mock<IReadRepository<Curriculum>>();
         _subjectReadRepositoryMock = new Mock<IReadRepository<Subject>>();
         _curriculumRepositoryMock = new Mock<ICurriculumRepository>();
+        _unitOfWorkMock = new Mock<IUnitOfWork>();
+        _transactionScopeMock = new Mock<ITransactionScope>();
+
+        // Setup UnitOfWork to return transaction scope
+        _unitOfWorkMock
+            .Setup(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(_transactionScopeMock.Object);
 
         _handler = new SaveCurriculumContent.Handler(
             _curriculumReadRepositoryMock.Object,
             _subjectReadRepositoryMock.Object,
-            _curriculumRepositoryMock.Object);
+            _curriculumRepositoryMock.Object,
+            _unitOfWorkMock.Object);
     }
 
     [Fact]
@@ -50,6 +61,39 @@ public class SaveCurriculumContentTests
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultStatus.Invalid, result.Status);
         Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("not found"));
+    }
+
+    [Fact(DisplayName = "Active curriculum cannot be modified - returns Forbidden")]
+    public async Task Handle_ActiveCurriculum_ReturnsForbidden()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        
+        // Set curriculum status to Active
+        SetEntityProperty(curriculum, "StatusId", Enrollify.Core.Constants.CurriculumStatusEnum.Active);
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum { Code = SubjectCode.From("CS101") }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Forbidden, result.Status);
+        Assert.Contains(result.Errors, e => e.Contains("Active curriculums cannot be modified"));
     }
 
     [Fact]
@@ -205,8 +249,8 @@ public class SaveCurriculumContentTests
         Assert.True(result.IsSuccess);
         var curriculumSubject = curriculum.GetCurriculumSubject(subjectId);
         Assert.NotNull(curriculumSubject);
-        Assert.Equal(2, curriculumSubject.YearLevel);
-        Assert.Equal(2, curriculumSubject.TermNumber);
+        Assert.Equal(YearLevel.From(2), curriculumSubject.YearLevel);
+        Assert.Equal(TermNumber.From(2), curriculumSubject.TermNumber);
     }
 
     [Fact]
@@ -670,7 +714,7 @@ public class SaveCurriculumContentTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("must be from an earlier semester"));
+        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("must be from an earlier term"));
     }
 
     [Fact]
@@ -720,7 +764,7 @@ public class SaveCurriculumContentTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("must be from an earlier semester"));
+        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("must be from an earlier term"));
     }
 
     [Fact]
@@ -1016,12 +1060,13 @@ public class SaveCurriculumContentTests
     /// </summary>
     private static CurriculumSubject AddSubjectToCurriculum(
         Curriculum curriculum, 
-        SubjectId subjectId, 
+        SubjectId subjectId,
         int yearLevel, 
         int semester,
-        CurriculumSubjectId curriculumSubjectId)
+        CurriculumSubjectId curriculumSubjectId,
+        decimal? subjectUnitsOverride = null)
     {
-        var curriculumSubject = curriculum.AddSubject(subjectId, yearLevel, semester, isElective: false, electiveGroupName: null);
+        var curriculumSubject = curriculum.AddSubject(subjectId, yearLevel, semester, isElective: false, electiveGroupName: null, subjectUnitsOverride: subjectUnitsOverride);
         if (curriculumSubject != null)
         {
             SetEntityProperty(curriculumSubject, "Id", curriculumSubjectId);
@@ -1035,4 +1080,838 @@ public class SaveCurriculumContentTests
         var property = typeof(T).GetProperty(propertyName);
         property?.SetValue(entity, value);
     }
+
+    private static void SimulateDatabaseIdAssignment(Curriculum curriculum, int startingId = 100)
+    {
+        // Find curriculum subjects that don't have IDs set yet (newly added ones)
+        var curriculumSubjects = curriculum.CurriculumSubjects.Where(cs =>
+        {
+            var idType = cs.Id.GetType();
+            var valueField = idType.GetField("_value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (valueField == null) return false;
+            var value = valueField.GetValue(cs.Id);
+            return value != null && Convert.ToInt32(value) == 0;
+        }).ToList();
+        
+        var idCounter = startingId;
+        foreach (var cs in curriculumSubjects)
+        {
+            SetEntityProperty(cs, "Id", CurriculumSubjectId.From(idCounter++));
+            SetEntityProperty(cs, "IsActive", true);
+        }
+    }
+
+    #region UnitsOverride Tests
+
+    [Fact(DisplayName = "Adding new subject with UnitsOverride sets the override value")]
+    public async Task Handle_AddNewSubjectWithUnitsOverride_SetsOverrideValue()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+        var unitsOverride = 4.5m;
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = subjectCode, 
+                    UnitsOverride = unitsOverride 
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Mock UpdateCurriculum to simulate database setting IDs
+        var callCount = 0;
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId))
+            .Callback<Curriculum, CancellationToken>((c, ct) =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    SimulateDatabaseIdAssignment(c);
+                }
+            });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subject.Id);
+        Assert.NotNull(curriculumSubject);
+        Assert.Equal(unitsOverride, curriculumSubject.SubjectUnitsOverride);
+    }
+
+    [Fact(DisplayName = "Adding new subject without UnitsOverride keeps it null")]
+    public async Task Handle_AddNewSubjectWithoutUnitsOverride_KeepsItNull()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = subjectCode, 
+                    UnitsOverride = null 
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Mock UpdateCurriculum to simulate database setting IDs
+        var callCount = 0; _curriculumRepositoryMock .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>())) .ReturnsAsync(Result.Success(curriculumId)) .Callback<Curriculum, CancellationToken>((c, ct) => { callCount++; if (callCount == 1) { SimulateDatabaseIdAssignment(c); } });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subject.Id);
+        Assert.NotNull(curriculumSubject);
+        Assert.Null(curriculumSubject.SubjectUnitsOverride);
+    }
+
+    [Fact(DisplayName = "Multiple subjects can have different UnitsOverride values")]
+    public async Task Handle_MultipleSubjectsWithDifferentUnitsOverride_SetsEachCorrectly()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+
+        var subject1 = CreateTestSubject(SubjectId.From(1), SubjectCode.From("CS101"));
+        var subject2 = CreateTestSubject(SubjectId.From(2), SubjectCode.From("CS102"));
+        var subject3 = CreateTestSubject(SubjectId.From(3), SubjectCode.From("MATH101"));
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [
+                    new SaveCurriculumContent.SubjectInCurriculum 
+                    { 
+                        Code = SubjectCode.From("CS101"), 
+                        UnitsOverride = 2.0m 
+                    },
+                    new SaveCurriculumContent.SubjectInCurriculum 
+                    { 
+                        Code = SubjectCode.From("MATH101"), 
+                        UnitsOverride = null 
+                    }
+                ],
+                [2] = [
+                    new SaveCurriculumContent.SubjectInCurriculum 
+                    { 
+                        Code = SubjectCode.From("CS102"), 
+                        UnitsOverride = 4.5m 
+                    }
+                ]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject1, subject2, subject3]);
+
+        // Mock UpdateCurriculum to simulate database setting IDs
+        var callCount = 0; _curriculumRepositoryMock .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>())) .ReturnsAsync(Result.Success(curriculumId)) .Callback<Curriculum, CancellationToken>((c, ct) => { callCount++; if (callCount == 1) { SimulateDatabaseIdAssignment(c); } });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        
+        var curriculumSubject1 = curriculum.GetCurriculumSubject(subject1.Id);
+        Assert.NotNull(curriculumSubject1);
+        Assert.Equal(2.0m, curriculumSubject1.SubjectUnitsOverride);
+
+        var curriculumSubject2 = curriculum.GetCurriculumSubject(subject2.Id);
+        Assert.NotNull(curriculumSubject2);
+        Assert.Equal(4.5m, curriculumSubject2.SubjectUnitsOverride);
+
+        var curriculumSubject3 = curriculum.GetCurriculumSubject(subject3.Id);
+        Assert.NotNull(curriculumSubject3);
+        Assert.Null(curriculumSubject3.SubjectUnitsOverride);
+    }
+
+    [Fact(DisplayName = "Updating existing subject preserves its UnitsOverride value")]
+    public async Task Handle_UpdateExistingSubject_PreservesUnitsOverride()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectId = SubjectId.From(1);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(subjectId, subjectCode);
+        var originalUnitsOverride = 3.5m;
+
+        // Add subject with UnitsOverride at year 1, semester 1
+        AddSubjectToCurriculum(curriculum, subjectId, yearLevel: 1, semester: 1, CurriculumSubjectId.From(100), subjectUnitsOverride: originalUnitsOverride);
+
+        // Move to year 2, semester 2 (note: we're NOT providing UnitsOverride in the command)
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [2] = [new SaveCurriculumContent.SubjectInCurriculum { Code = subjectCode }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subjectId);
+        Assert.NotNull(curriculumSubject);
+        Assert.Equal(YearLevel.From(2), curriculumSubject.YearLevel);
+        Assert.Equal(TermNumber.From(2), curriculumSubject.TermNumber);
+        // The UnitsOverride should be updated to null since the command didn't specify one
+        Assert.Null(curriculumSubject.SubjectUnitsOverride);
+    }
+
+    [Fact(DisplayName = "Updating existing subject can change UnitsOverride value")]
+    public async Task Handle_UpdateExistingSubjectWithNewUnitsOverride_UpdatesValue()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectId = SubjectId.From(1);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(subjectId, subjectCode);
+        var originalUnitsOverride = 3.0m;
+        var newUnitsOverride = 4.5m;
+
+        // Add subject with UnitsOverride at year 1, semester 1
+        AddSubjectToCurriculum(curriculum, subjectId, yearLevel: 1, semester: 1, CurriculumSubjectId.From(100), subjectUnitsOverride: originalUnitsOverride);
+
+        // Update with new UnitsOverride
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [2] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = subjectCode,
+                    UnitsOverride = newUnitsOverride
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subjectId);
+        Assert.NotNull(curriculumSubject);
+        Assert.Equal(YearLevel.From(2), curriculumSubject.YearLevel);
+        Assert.Equal(TermNumber.From(2), curriculumSubject.TermNumber);
+        Assert.Equal(newUnitsOverride, curriculumSubject.SubjectUnitsOverride);
+    }
+
+    [Fact(DisplayName = "Updating existing subject can clear UnitsOverride by setting to null")]
+    public async Task Handle_UpdateExistingSubjectClearUnitsOverride_SetsToNull()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectId = SubjectId.From(1);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(subjectId, subjectCode);
+        var originalUnitsOverride = 3.5m;
+
+        // Add subject with UnitsOverride at year 1, semester 1
+        AddSubjectToCurriculum(curriculum, subjectId, yearLevel: 1, semester: 1, CurriculumSubjectId.From(100), subjectUnitsOverride: originalUnitsOverride);
+
+        // Explicitly clear UnitsOverride by setting to null
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = subjectCode,
+                    UnitsOverride = null
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subjectId);
+        Assert.NotNull(curriculumSubject);
+        Assert.Null(curriculumSubject.SubjectUnitsOverride);
+    }
+
+    [Fact(DisplayName = "Adding subject with zero UnitsOverride is allowed")]
+    public async Task Handle_AddSubjectWithZeroUnitsOverride_AllowsZeroValue()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+        var zeroUnitsOverride = 0m;
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = subjectCode, 
+                    UnitsOverride = zeroUnitsOverride 
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Mock UpdateCurriculum to simulate database setting IDs
+        var callCount = 0; _curriculumRepositoryMock .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>())) .ReturnsAsync(Result.Success(curriculumId)) .Callback<Curriculum, CancellationToken>((c, ct) => { callCount++; if (callCount == 1) { SimulateDatabaseIdAssignment(c); } });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subject.Id);
+        Assert.NotNull(curriculumSubject);
+        Assert.Equal(zeroUnitsOverride, curriculumSubject.SubjectUnitsOverride);
+    }
+
+    [Fact(DisplayName = "Subject with UnitsOverride can be used as prerequisite")]
+    public async Task Handle_SubjectWithUnitsOverrideAsPrerequisite_WorksCorrectly()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+
+        var subject1 = CreateTestSubject(SubjectId.From(1), SubjectCode.From("CS101"));
+        var subject2 = CreateTestSubject(SubjectId.From(2), SubjectCode.From("CS201"));
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = SubjectCode.From("CS101"), 
+                    UnitsOverride = 2.5m,
+                    Prerequisites = []
+                }]
+            },
+            [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = SubjectCode.From("CS201"), 
+                    UnitsOverride = 3.0m,
+                    Prerequisites = [SubjectCode.From("CS101")]
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject1, subject2]);
+
+        // Mock UpdateCurriculum to simulate database setting IDs
+        var callCount = 0;
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId))
+            .Callback<Curriculum, CancellationToken>((c, ct) =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    SimulateDatabaseIdAssignment(c);
+                }
+            });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert - verify the command succeeds and UnitsOverride values are set correctly
+        Assert.True(result.IsSuccess);
+        
+        var curriculumSubject1 = curriculum.GetCurriculumSubject(subject1.Id);
+        Assert.NotNull(curriculumSubject1);
+        Assert.Equal(2.5m, curriculumSubject1.SubjectUnitsOverride);
+
+        var curriculumSubject2 = curriculum.GetCurriculumSubject(subject2.Id);
+        Assert.NotNull(curriculumSubject2);
+        Assert.Equal(3.0m, curriculumSubject2.SubjectUnitsOverride);
+        
+        // Verify the command was called twice (once for subjects, once for prerequisites)
+        _curriculumRepositoryMock.Verify(r => r.UpdateCurriculum(curriculum, It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    #endregion
+
+    #region Transaction Tests
+
+    [Fact(DisplayName = "Successful request commits transaction")]
+    public async Task Handle_SuccessfulRequest_CommitsTransaction()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum { Code = subjectCode }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        var callCount = 0;
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId))
+            .Callback<Curriculum, CancellationToken>((c, ct) =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    SimulateDatabaseIdAssignment(c);
+                }
+            });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionScopeMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "First UpdateCurriculum failure rolls back transaction")]
+    public async Task Handle_FirstUpdateCurriculumFails_RollsBackTransaction()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum { Code = subjectCode }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Simulate first UpdateCurriculum failure
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Invalid(new ValidationError("Database error")));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        _transactionScopeMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "Second UpdateCurriculum failure rolls back transaction")]
+    public async Task Handle_SecondUpdateCurriculumFails_RollsBackTransaction()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum { Code = subjectCode }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Simulate first UpdateCurriculum success, second failure
+        var callCount = 0;
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    SimulateDatabaseIdAssignment(curriculum);
+                    return Result.Success(curriculumId);
+                }
+                return Result.Invalid(new ValidationError("Database error on second update"));
+            });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        _transactionScopeMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "Missing subject code causes validation error and rollback")]
+    public async Task Handle_MissingSubjectCode_RollsBackTransaction()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var missingCode = SubjectCode.From("MISSING101");
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum { Code = missingCode }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        // Validation errors happen before transaction starts, so neither rollback nor commit should be called
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionScopeMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "Prerequisite validation error does not begin transaction")]
+    public async Task Handle_PrerequisiteValidationError_RollsBackTransaction()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+
+        // Subject has itself as a prerequisite (invalid)
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = subjectCode,
+                    Prerequisites = [subjectCode] // Self-prerequisite (invalid)
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("cannot be its own prerequisite"));
+        // Validation errors happen before transaction starts, so neither rollback nor commit should be called
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionScopeMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "Curriculum not found does not begin transaction")]
+    public async Task Handle_CurriculumNotFound_DoesNotBeginTransaction()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(999);
+        var command = new SaveCurriculumContent.Command(curriculumId, []);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Curriculum?)null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
+        // Transaction should never be started for early validation failures
+        _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _transactionScopeMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "Exception during processing causes automatic rollback on dispose")]
+    public async Task Handle_ExceptionDuringProcessing_RollsBackOnDispose()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum { Code = subjectCode }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Simulate an unexpected exception in UpdateCurriculum
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Database connection failed"));
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(command, CancellationToken.None).AsTask());
+
+        // Transaction should be disposed (which triggers automatic rollback if not committed)
+        _transactionScopeMock.Verify(t => t.DisposeAsync(), Times.Once);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "Multiple subjects with prerequisites commits successfully")]
+    public async Task Handle_MultipleSubjectsWithPrerequisites_CommitsTransaction()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+
+        var subject1 = CreateTestSubject(SubjectId.From(1), SubjectCode.From("CS101"));
+        var subject2 = CreateTestSubject(SubjectId.From(2), SubjectCode.From("CS201"));
+        var subject3 = CreateTestSubject(SubjectId.From(3), SubjectCode.From("CS301"));
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = SubjectCode.From("CS101"),
+                    Prerequisites = []
+                }]
+            },
+            [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = SubjectCode.From("CS201"),
+                    Prerequisites = [SubjectCode.From("CS101")]
+                }]
+            },
+            [3] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
+                { 
+                    Code = SubjectCode.From("CS301"),
+                    Prerequisites = [SubjectCode.From("CS201")]
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject1, subject2, subject3]);
+
+        var callCount = 0;
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId))
+            .Callback<Curriculum, CancellationToken>((c, ct) =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    SimulateDatabaseIdAssignment(c);
+                }
+            });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        _transactionScopeMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _transactionScopeMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _curriculumRepositoryMock.Verify(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    #endregion
 }
+

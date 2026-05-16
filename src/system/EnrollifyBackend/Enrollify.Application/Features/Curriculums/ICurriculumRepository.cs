@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
+using Enrollify.Core.Models.Views;
 
 namespace Enrollify.Application.Features.Curriculums;
 
@@ -7,5 +8,5 @@ public interface ICurriculumRepository
 {
     Task<Result<CurriculumId>> CreateDraftCurriculum(Curriculum newCurriculum, CancellationToken cancellationToken);
     Task<Result<CurriculumId>> UpdateCurriculum(Curriculum newCurriculum, CancellationToken cancellationToken);
-
+    Task<Result<List<LatestActiveCurriculumPerCourseView>>> GetAllLatestActiveCurriculumPerCourse();
 }

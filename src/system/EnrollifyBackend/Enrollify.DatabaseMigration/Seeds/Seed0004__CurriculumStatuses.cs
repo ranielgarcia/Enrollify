@@ -17,7 +17,7 @@ public class Seed0004__CurriculumStatuses : IScript
             USING (");
         scriptBuilder.Append(@"VALUES");
 
-        var values = new List<string>();
+        var values = new List<string>(curriculumStatuses.Count);
 
         foreach (var status in curriculumStatuses)
         {

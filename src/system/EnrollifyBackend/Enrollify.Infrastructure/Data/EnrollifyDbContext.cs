@@ -1,5 +1,7 @@
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.BuildingAggregate;
+using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
@@ -11,9 +13,12 @@ using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Core.Models.Views;
 using Enrollify.Infrastructure.Data.Config;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.AcademicYearConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.BuildingConfigs;
+using Enrollify.Infrastructure.Data.Config.AggregateConfigs.ClassSectionConfigs;
+using Enrollify.Infrastructure.Data.Config.AggregateConfigs.ClassSectionSubjectOfferingConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CollegeConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CourseConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CurriculumConfigs;
@@ -46,11 +51,16 @@ public class EnrollifyDbContext: DbContext
     public DbSet<Course> Courses => Set<Course>(); 
     public DbSet<Subject> Subjects => Set<Subject>();
     public DbSet<Curriculum> Curriculums => Set<Curriculum>();
+
+    public DbSet<LatestActiveCurriculumPerCourseView> LatestActiveCurriculumPerCourse => Set<LatestActiveCurriculumPerCourseView>();
+
     public DbSet<SubjectEquivalenceGroup> SubjectEquivalenceGroups => Set<SubjectEquivalenceGroup>();
 
     public DbSet<Teacher> Teachers => Set<Teacher>();
 
     public DbSet<AcademicYear> AcademicYears => Set<AcademicYear>();
+    public DbSet<ClassSection> ClassSections => Set<ClassSection>();
+    public DbSet<ClassSectionSubjectOffering> ClassSectionSubjectOfferings => Set<ClassSectionSubjectOffering>();
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
@@ -60,6 +70,10 @@ public class EnrollifyDbContext: DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        modelBuilder.Entity<LatestActiveCurriculumPerCourseView>()
+            .ToView("vw_LatestActiveCurriculumPerCourse")
+            .HasNoKey();
 
         modelBuilder.AddSoftDeleteQueryFilter();
     }
@@ -88,6 +102,8 @@ public class EnrollifyDbContext: DbContext
         configurationBuilder.RegisterAllInTeacherVogenEfCoreConverters();
         configurationBuilder.RegisterAllInSharedValueObjectsVogenEfCoreConverters();
         configurationBuilder.RegisterAllInAcademicYearVogenEfCoreConverters();
+        configurationBuilder.RegisterAllInClassSectionVogenEfCoreConverters();
+        configurationBuilder.RegisterAllInClassSectionSubjectOfferingVogenEfCoreConverters();
 
     }
 }

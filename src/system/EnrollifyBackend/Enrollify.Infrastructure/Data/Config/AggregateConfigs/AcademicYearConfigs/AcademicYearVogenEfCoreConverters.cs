@@ -7,7 +7,6 @@ namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.AcademicYearConf
 [EfCoreConverter<AcademicYearStartDate>]
 [EfCoreConverter<AcademicYearEndDate>]
 [EfCoreConverter<AcademicTermId>]
-[EfCoreConverter<AcademicTermNumber>]
 [EfCoreConverter<AcademicTermStartDate>]
 [EfCoreConverter<AcademicTermEndDate>]
 internal partial class AcademicYearVogenEfCoreConverters;

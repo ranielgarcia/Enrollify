@@ -1,6 +1,6 @@
 import type { ClassSection } from "@/api/models/class-section";
 import { DeleteAlertDialog } from "@/components/delete-alert-dialog";
-import { deleteSectionOptions } from "@/api/collections/section-collection";
+import { deleteSectionOptions } from "@/api/collections/class-section-collection";
 import { useMutation } from "@tanstack/react-query";
 
 interface DeleteSectionAlertDialogProps {

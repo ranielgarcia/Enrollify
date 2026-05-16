@@ -47,52 +47,16 @@ public class AcademicYearConfiguration : IEntityTypeConfiguration<AcademicYear>
           .HasForeignKey(e => e.DeletedBy)
           .OnDelete(DeleteBehavior.NoAction);
 
+        // One-to-many relationship with AcademicTerms
+        builder.HasMany(ay => ay.AcademicTerms)
+            .WithOne()
+            .HasForeignKey(at => at.AcademicYearId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // EF Core can't add/remove items via a read-only collection,
         // so you tell EF to use the backing field instead of the property
-        // This is mainly about materialization and change-tracking without requiring a public setter or a mutable collection property.
         builder.Navigation(c => c.AcademicTerms)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
-
-        builder.OwnsMany<AcademicTerm>(at => at.AcademicTerms, atb =>
-        {
-            atb.ToTable("AcademicTerms");
-
-            atb.WithOwner().HasForeignKey(e => e.AcademicYearId);
-
-            atb.HasKey(at => at.Id);
-            atb.Property(at => at.Id)
-                .UseIdentityColumn()
-                .IsRequired();
-
-
-            atb.Property(e => e.TermNumber).IsRequired();
-            atb.Ignore(e => e.TermName);
-            atb.Property(e => e.AcademicYearId).IsRequired();
-
-
-            // Audit fields
-            atb.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
-            atb.Property(a => a.CreatedBy).HasColumnName("CreatedBy");
-            atb.Property(a => a.UpdatedAt).HasColumnName("UpdatedAt");
-            atb.Property(a => a.UpdatedBy).HasColumnName("UpdatedBy");
-            atb.Property(a => a.DeletedAt).HasColumnName("DeletedAt");
-            atb.Property(a => a.DeletedBy).HasColumnName("DeletedBy");
-            atb.Property(a => a.IsActive).HasColumnName("IsActive");
-
-            // Foreign key relationships for audit fields
-            atb.HasOne(e => e.CreatedByUser)
-              .WithMany()
-              .HasForeignKey(e => e.CreatedBy)
-              .OnDelete(DeleteBehavior.NoAction);
-            atb.HasOne(e => e.UpdatedByUser)
-              .WithMany()
-              .HasForeignKey(e => e.UpdatedBy)
-              .OnDelete(DeleteBehavior.NoAction);
-            atb.HasOne(e => e.DeletedByUser)
-              .WithMany()
-              .HasForeignKey(e => e.DeletedBy)
-              .OnDelete(DeleteBehavior.NoAction);
-        });
 
 
     }

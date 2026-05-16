@@ -9,11 +9,19 @@ Enrollify is a university enrollment management system with two main sub-systems
 ```
 src/
   system/
-    EnrollifyBackend/     # .NET 10 Web API (Clean Architecture + DDD)
-    enrollify-frontend/   # React 19 + Vite + TanStack Router SPA
+    EnrollifyBackend/                # .NET 10 Web API (Clean Architecture + DDD)
+      Enrollify.Core/                # Domain layer
+      Enrollify.Application/         # Use cases (Mediator commands/queries)
+      Enrollify.Infrastructure/      # Data access (EF Core, Dapper)
+      Enrollify.WebAPI/              # FastEndpoints API
+      Enrollify.SharedKernel/        # Shared abstractions
+      Enrollify.DatabaseMigration/   # DbUp migration runner
+      Enrollify.UnitTests/           # Unit tests
+      Enrollify.IntegrationTests/    # Integration tests (Testcontainers)
+    enrollify-frontend/              # React 19 + Vite + TanStack Router SPA
   POCs/
-    Enrollify.CleanArchPOC/   # Aspire-hosted Clean Architecture reference
-    Genetic-algorithm/        # GA scheduling solver
+    Enrollify.CleanArchPOC/          # Aspire-hosted Clean Architecture reference
+    Genetic-algorithm/               # GA scheduling solver
 ```
 
 ---
@@ -152,12 +160,105 @@ Policies are declared in `Enrollify.WebAPI/Authorization/PolicyName.cs` and regi
 
 The permission system uses `Ardalis.SmartFlag` enum (`PermissionEnum`) stored as bit-flags per role.
 
-### Testing Conventions
+### Testing
+
+#### Unit Tests
+
+**Project:** `Enrollify.UnitTests`
 
 - Test naming: `MethodName_Condition_ExpectedResult()`
 - Test structure: Setup → Execution → Verification (no comment labels needed in simple tests)
 - Tests use `[Fact(DisplayName = "...")]` for descriptive scenarios
 - `FeaturesTestsFixture` provides a shared service provider for integration-style application tests
+
+#### Integration Tests
+
+**Project:** `Enrollify.IntegrationTests`  
+**Root:** `src/system/EnrollifyBackend/Enrollify.IntegrationTests/`  
+**README:** `Enrollify.IntegrationTests/README.md` — **Read this first when writing integration tests**
+
+##### Commands
+
+```bash
+# Run all integration tests
+dotnet test Enrollify.IntegrationTests
+
+# Run WebAPI collection tests
+dotnet test --filter "WebApi"
+
+# Run Application collection tests
+dotnet test --filter "Application"
+
+# Run specific test class
+dotnet test --filter "RoomTypeEndpointsTests"
+
+# Run single test method
+dotnet test --filter "FullyQualifiedName~CreateRoomType_ValidRequest_ReturnsCreated"
+```
+
+##### Architecture
+
+**Testcontainers:** MsSQL + Azurite containers (shared across test run, singleton pattern)  
+**Database strategy:** Each test class gets its own database with full migrations (schema + seed + mock data)  
+**Test fixtures:**
+
+| Fixture                  | Purpose                                                                           | Collection Attribute   |
+| ------------------------ | --------------------------------------------------------------------------------- | ---------------------- |
+| `WebApiTestFixture`      | HTTP endpoint testing via `WebApplicationFactory<Program>` + TestServer           | `[Collection("WebApi")]` |
+| `ApplicationTestFixture` | Direct Mediator testing (commands/queries) without HTTP overhead                  | `[Collection("Application")]` |
+
+**Key files:**
+
+- `Infrastructure/TestContainersManager.cs` — Singleton container manager with database migration
+- `Infrastructure/WebApiTestFixture.cs` — WebAPI test fixture with HttpClient and DbContext access
+- `Infrastructure/ApplicationTestFixture.cs` — Application layer fixture with Mediator and DbContext access
+- `Helpers/TestDataBuilder.cs` — Bogus-based test data generation (simple entities only)
+- `Helpers/HttpClientExtensions.cs` — HTTP convenience methods (`PostAsJsonAsync<TReq, TRes>`, etc.)
+- `Helpers/DatabaseHelper.cs` — Database operations (seed, transaction rollback, detach)
+- `_Tests/WebApi/_SampleWebApiTests.cs` — WebAPI test examples
+- `_Tests/Application/_SampleApplicationTests.cs` — Application test examples
+
+##### Test Structure
+
+```
+_Tests/
+  WebApi/                          # HTTP endpoint tests
+    {Feature}EndpointsTests.cs
+  Application/                     # Command/Query tests
+    {Feature}/
+      {CommandOrQuery}Tests.cs
+```
+
+##### Conventions
+
+- **Naming:** `{Method}_{Scenario}_{ExpectedResult}` (e.g., `CreateRoomType_ValidData_ReturnsSuccess`)
+- **Display names:** `[Fact(DisplayName = "Create room type with valid data succeeds")]`
+- **AAA pattern:** Arrange → Act → Assert with comment labels
+- **Unique data:** Use `TestDataBuilder.GenerateUniqueString("Prefix")` to avoid conflicts between tests in the same class
+- **Test isolation:** Each test class gets its own database; tests within a class share the database—use unique data, transaction rollback, or explicit cleanup
+- **Assertions:** Verify `Result<T>` status with `Assert.True(result.IsSuccess)`, check database state when needed
+
+##### Choose WebAPI vs Application Test
+
+**WebAPI test when:**
+- Testing HTTP request/response cycle, routing, status codes, serialization
+- Testing authentication/authorization at HTTP level
+- End-to-end API surface testing
+
+**Application test when:**
+- Testing command/query handlers directly
+- Testing business logic without HTTP overhead
+- Faster execution (no HTTP layer)
+
+**Default:** Prefer Application tests unless HTTP concerns must be tested.
+
+##### Test Data Strategies
+
+1. **Unique data (recommended):** `TestDataBuilder.GenerateUniqueString("RoomType")` — no cleanup needed
+2. **Transaction rollback:** `DatabaseHelper.ExecuteInTransactionAsync(db, async () => { /* test */ })` — automatic rollback
+3. **Explicit cleanup:** `try { /* test */ } finally { /* cleanup */ }` — use sparingly
+
+**Use the `enrollify-integration-tests` skill** (`.github/skills/enrollify-integration-tests/SKILL.md`) when writing any integration test — it provides phase-by-phase templates, examples, and best practices for both WebAPI and Application layer tests.
 
 ---
 
@@ -177,3 +278,11 @@ Additional scoped instruction files exist in `.github/`:
 
 - `.github/dotnet-architecture-good-practices.instructions.md` — applies to all `*.cs` files; enforces DDD + SOLID analysis process before implementation
 - `.github/genetic-algo-instructions.md` — applies to `src/POCs/Genetic-algorithm/**`; GA tuning and data-model conventions
+
+## Agent Skills
+
+Project-level Copilot skills for complex, multi-step workflows:
+
+- `.github/skills/enrollify-management-page/SKILL.md` — Step-by-step guide for implementing CRUD management pages in the React frontend (model schema, API collection, table, form drawer, delete dialog)
+- `.github/skills/enrollify-ui-redesign/SKILL.md` — Design language guide for redesigning frontend components (hero-card pattern, icon chips, status badges, form sections, empty states)
+- `.github/skills/enrollify-integration-tests/SKILL.md` — Comprehensive guide for creating integration tests (WebAPI tests via TestServer, Application tests via Mediator, test data strategies, fixtures, helpers)

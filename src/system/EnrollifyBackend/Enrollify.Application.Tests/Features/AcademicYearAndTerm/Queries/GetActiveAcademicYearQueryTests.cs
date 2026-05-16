@@ -3,6 +3,7 @@ using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 using Enrollify.Application.Features.AcademicYearAndTerm.Queries;
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
+using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Moq;
 
@@ -104,15 +105,15 @@ public class GetActiveAcademicYearQueryTests
     {
         var year = new AcademicYear(ValidStart, ValidEnd);
         year.AddTerm(
-            AcademicTermNumber.From(1),
+            TermNumber.From(1),
             AcademicTermStartDate.From(new DateTime(2024, 6, 1)),
             AcademicTermEndDate.From(new DateTime(2024, 9, 30)));
         year.AddTerm(
-            AcademicTermNumber.From(2),
+            TermNumber.From(2),
             AcademicTermStartDate.From(new DateTime(2024, 10, 1)),
             AcademicTermEndDate.From(new DateTime(2025, 1, 31)));
         year.AddTerm(
-            AcademicTermNumber.From(3),
+            TermNumber.From(3),
             AcademicTermStartDate.From(new DateTime(2025, 2, 1)),
             AcademicTermEndDate.From(new DateTime(2025, 5, 31)));
 
@@ -130,15 +131,15 @@ public class GetActiveAcademicYearQueryTests
     {
         var year = new AcademicYear(ValidStart, ValidEnd);
         year.AddTerm(
-            AcademicTermNumber.From(1),
+            TermNumber.From(1),
             AcademicTermStartDate.From(new DateTime(2024, 6, 1)),
             AcademicTermEndDate.From(new DateTime(2024, 9, 30)));
         year.AddTerm(
-            AcademicTermNumber.From(2),
+            TermNumber.From(2),
             AcademicTermStartDate.From(new DateTime(2024, 10, 1)),
             AcademicTermEndDate.From(new DateTime(2025, 1, 31)));
         year.AddTerm(
-            AcademicTermNumber.From(3),
+            TermNumber.From(3),
             AcademicTermStartDate.From(new DateTime(2025, 2, 1)),
             AcademicTermEndDate.From(new DateTime(2025, 5, 31)));
 

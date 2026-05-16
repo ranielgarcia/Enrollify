@@ -5,6 +5,7 @@ using Enrollify.Application.Features.AcademicYearAndTerm.Commands;
 using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 using Enrollify.Application.Features.AcademicYearAndTerm.Models;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
+using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -301,19 +302,19 @@ public class InitiateAcademicYearAndTermsTests
             .ReturnsAsync((AcademicYear?)null);
 
     private static InitiateAcademicTerm CreateTerm(int termNumber, DateTime start, DateTime end) =>
-        new(AcademicTermNumber.From(termNumber),
+        new(TermNumber.From(termNumber),
             AcademicTermStartDate.From(start),
             AcademicTermEndDate.From(end));
 
     private static InitiateAcademicTerm[] CreateValidTerms() =>
     [
-        new(AcademicTermNumber.From(1),
+        new(TermNumber.From(1),
             AcademicTermStartDate.From(new DateTime(2024, 6, 1)),
             AcademicTermEndDate.From(new DateTime(2024, 9, 30))),
-        new(AcademicTermNumber.From(2),
+        new(TermNumber.From(2),
             AcademicTermStartDate.From(new DateTime(2024, 10, 1)),
             AcademicTermEndDate.From(new DateTime(2025, 1, 31))),
-        new(AcademicTermNumber.From(3),
+        new(TermNumber.From(3),
             AcademicTermStartDate.From(new DateTime(2025, 2, 1)),
             AcademicTermEndDate.From(new DateTime(2025, 5, 31)))
     ];

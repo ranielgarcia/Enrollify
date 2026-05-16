@@ -4,9 +4,11 @@ using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Application.Features.Subjects.Specifications;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
+using Enrollify.Core.Constants;
+using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Mediator;
-using Semester = int;
+using Term = int;
 using Year = int;
 
 namespace Enrollify.Application.Features.Curriculums.Commands;
@@ -16,30 +18,34 @@ public class SaveCurriculumContent
     public class SubjectInCurriculum
     {
         public SubjectCode Code { get; set; }
+        public decimal? UnitsOverride { get; set; }
         public SubjectCode[] Prerequisites { get; set; } = [];
     }
 
-    public sealed record Command(CurriculumId CurriculumId, Dictionary<Year, Dictionary<Semester, SubjectInCurriculum[]>> SubjectsGrid) : ICommand<Result<CurriculumDto>>;
+    public sealed record Command(CurriculumId CurriculumId, Dictionary<Year, Dictionary<Term, SubjectInCurriculum[]>> SubjectsGrid) : ICommand<Result<CurriculumDto>>;
 
     public sealed class Handler : ICommandHandler<Command, Result<CurriculumDto>>
     {
         private readonly IReadRepository<Curriculum> _readRepository;
         private readonly IReadRepository<Subject> _subjectReadRepository;
         private readonly ICurriculumRepository _curriculumRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
         public Handler(
             IReadRepository<Curriculum> readRepository, 
             IReadRepository<Subject> subjectReadRepository,
-            ICurriculumRepository curriculumRepository)
+            ICurriculumRepository curriculumRepository,
+            IUnitOfWork unitOfWork)
         {
             _readRepository = readRepository;
             _subjectReadRepository = subjectReadRepository;
             _curriculumRepository = curriculumRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async ValueTask<Result<CurriculumDto>> Handle(Command command, CancellationToken cancellationToken)
         {
-            var spec = new GetCurriculumWithSubjectsByIdSpec(command.CurriculumId);
+            var spec = new GetCurriculumsWithSubjectsByIdsSpec([command.CurriculumId]);
             var curriculum = await _readRepository.FirstOrDefaultAsync(spec, cancellationToken);
 
             if (curriculum == null)
@@ -47,9 +53,14 @@ public class SaveCurriculumContent
                 return Result.Invalid(new ValidationError($"Curriculum with an id of {command.CurriculumId.Value} not found"));
             }
 
+            if (curriculum.StatusId == CurriculumStatusEnum.Active)
+            {
+                return Result.Forbidden("Active curriculums cannot be modified. Please deactivate the curriculum before making changes.");
+            }
+
             // Collect all subject codes from the grid (including prerequisites)
             var allSubjectCodes = command.SubjectsGrid.Values
-                .SelectMany(semesters => semesters.Values)
+                .SelectMany(terms => terms.Values)
                 .SelectMany(subjects => subjects)
                 .SelectMany(subject => subject.Prerequisites.Prepend(subject.Code))
                 .Distinct()
@@ -57,7 +68,7 @@ public class SaveCurriculumContent
 
             // Get only the main subject codes (not prerequisites) for determining what should exist
             var gridSubjectCodes = command.SubjectsGrid.Values
-                .SelectMany(semesters => semesters.Values)
+                .SelectMany(terms => terms.Values)
                 .SelectMany(subjects => subjects)
                 .Select(subject => subject.Code)
                 .Distinct()
@@ -79,15 +90,15 @@ public class SaveCurriculumContent
                 return Result.Invalid(new ValidationError($"Subjects with codes {string.Join(", ", missingCodes)} not found"));
             }
 
-            // Validate prerequisites - build a lookup of subject code to (year, semester)
+            // Validate prerequisites - build a lookup of subject code to (year, term)
             var subjectPositions = command.SubjectsGrid
-                .SelectMany(year => year.Value.SelectMany(semester => 
-                    semester.Value.Select(subject => (Code: subject.Code, Year: year.Key, Semester: semester.Key))))
-                .ToDictionary(x => x.Code, x => (x.Year, x.Semester));
+                .SelectMany(year => year.Value.SelectMany(term => 
+                    term.Value.Select(subject => (Code: subject.Code, Year: year.Key, Term: term.Key))))
+                .ToDictionary(x => x.Code, x => (x.Year, x.Term));
 
             // Build reverse lookup: prerequisite code -> list of subjects that depend on it
             var prerequisiteDependents = command.SubjectsGrid.Values
-                .SelectMany(semesters => semesters.Values)
+                .SelectMany(terms => terms.Values)
                 .SelectMany(subjects => subjects)
                 .SelectMany(subject => subject.Prerequisites.Select(prereq => (Prerequisite: prereq, Dependent: subject.Code)))
                 .GroupBy(x => x.Prerequisite)
@@ -98,13 +109,13 @@ public class SaveCurriculumContent
             var reportedMissingPrereqs = new HashSet<SubjectCode>();
             foreach (var year in command.SubjectsGrid)
             {
-                foreach (var semester in year.Value)
+                foreach (var term in year.Value)
                 {
-                    foreach (var subjectInCurriculum in semester.Value)
+                    foreach (var subjectInCurriculum in term.Value)
                     {
                         var subjectCode = subjectInCurriculum.Code;
                         var subjectYear = year.Key;
-                        var subjectSemester = semester.Key;
+                        var subjectTerm = term.Key;
                         var seenPrereqs = new HashSet<SubjectCode>();
 
                         foreach (var prereqCode in subjectInCurriculum.Prerequisites)
@@ -137,19 +148,19 @@ public class SaveCurriculumContent
                             }
 
                             var prereqYear = prereqPosition.Year;
-                            var prereqSemester = prereqPosition.Semester;
+                            var prereqTerm = prereqPosition.Term;
 
                             // Val: Prerequisites cannot be from future years
                             if (prereqYear > subjectYear)
                             {
-                                prerequisiteErrors.Add($"Prerequisite '{prereqCode.Value}' (Year {prereqYear}, Sem {prereqSemester}) cannot be from a future year for subject '{subjectCode.Value}' (Year {subjectYear}, Sem {subjectSemester})");
+                                prerequisiteErrors.Add($"Prerequisite '{prereqCode.Value}' (Year {prereqYear}, Term {prereqTerm}) cannot be from a future year for subject '{subjectCode.Value}' (Year {subjectYear}, Sem {subjectTerm})");
                                 continue;
                             }
 
-                            // Val: Prerequisites cannot be from the same year with same or future semester
-                            if (prereqYear == subjectYear && prereqSemester >= subjectSemester)
+                            // Val: Prerequisites cannot be from the same year with same or future term
+                            if (prereqYear == subjectYear && prereqTerm >= subjectTerm)
                             {
-                                prerequisiteErrors.Add($"Prerequisite '{prereqCode.Value}' (Year {prereqYear}, Sem {prereqSemester}) must be from an earlier semester for subject '{subjectCode.Value}' (Year {subjectYear}, Sem {subjectSemester})");
+                                prerequisiteErrors.Add($"Prerequisite '{prereqCode.Value}' (Year {prereqYear}, Term {prereqTerm}) must be from an earlier term for subject '{subjectCode.Value}' (Year {subjectYear}, Sem {subjectTerm})");
                                 continue;
                             }
                         }
@@ -180,113 +191,137 @@ public class SaveCurriculumContent
             // Track CurriculumSubject by SubjectCode
             var curriculumSubjectsLookup = new Dictionary<SubjectCode, CurriculumSubject>();
 
-            // Add new subjects or update existing ones
-            foreach (var year in command.SubjectsGrid.OrderBy(kvp => kvp.Key))
+            // Begin transaction to ensure all database operations succeed or fail together
+            await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
+            try
             {
-                foreach (var semester in year.Value.OrderBy(kvp => kvp.Key))
+                // Add new subjects or update existing ones
+                foreach (var year in command.SubjectsGrid.OrderBy(kvp => kvp.Key))
                 {
-                    foreach (var subjectInCurriculum in semester.Value)
+                    foreach (var term in year.Value.OrderBy(kvp => kvp.Key))
                     {
-                        var subject = subjectsByCode[subjectInCurriculum.Code];
-
-                        // Try to get existing curriculum subject
-                        var curriculumSubject = curriculum.GetCurriculumSubject(subject.Id);
-
-                        if (curriculumSubject != null)
+                        foreach (var subjectInCurriculum in term.Value)
                         {
-                            // Update existing subject's year/semester if changed
-                            curriculumSubject.UpdateYearLevel(year.Key);
-                            curriculumSubject.UpdateTermNumber(semester.Key);
-                            curriculumSubjectsLookup[subjectInCurriculum.Code] = curriculumSubject;
-                        }
-                        else
-                        {
-                            // Add new subject
-                            curriculumSubject = curriculum.AddSubject(subject.Id, year.Key, semester.Key, isElective: false, electiveGroupName: null);
+                            var subject = subjectsByCode[subjectInCurriculum.Code];
+
+                            // Try to get existing curriculum subject
+                            var curriculumSubject = curriculum.GetCurriculumSubject(subject.Id);
+
                             if (curriculumSubject != null)
                             {
+                                // Update existing subject's year/term if changed
+                                curriculumSubject.UpdateYearLevel(YearLevel.From(year.Key));
+                                curriculumSubject.UpdateTermNumber(TermNumber.From(term.Key));
+                                curriculumSubject.UpdateSubjectUnitsOverride(subjectInCurriculum.UnitsOverride);
                                 curriculumSubjectsLookup[subjectInCurriculum.Code] = curriculumSubject;
                             }
+                            else
+                            {
+                                // Add new subject
+                                curriculumSubject = curriculum.AddSubject(subject.Id, year.Key, term.Key, isElective: false, electiveGroupName: null, subjectInCurriculum.UnitsOverride);
+                                if (curriculumSubject != null)
+                                {
+                                    curriculumSubjectsLookup[subjectInCurriculum.Code] = curriculumSubject;
+                                }
+                            }
                         }
                     }
                 }
-            }
 
-            // Save the curriculum subjects first to get their database-generated IDs
-            // This is required because CurriculumSubjectPrerequisite needs valid CurriculumSubjectIds
-            var saveSubjectsResult = await _curriculumRepository.UpdateCurriculum(curriculum, cancellationToken);
-            if (!saveSubjectsResult.IsSuccess)
-            {
-                return Result.Invalid(saveSubjectsResult.ValidationErrors);
-            }
-
-            // Build expected prerequisites map: SubjectCode -> Set of prerequisite SubjectCodes
-            var expectedPrerequisites = command.SubjectsGrid.Values
-                .SelectMany(semesters => semesters.Values)
-                .SelectMany(subjects => subjects)
-                .ToDictionary(
-                    s => s.Code,
-                    s => s.Prerequisites.ToHashSet());
-
-            // Sync prerequisites for each subject
-            foreach (var year in command.SubjectsGrid)
-            {
-                foreach (var semester in year.Value)
+                // Save the curriculum subjects first to get their database-generated IDs
+                // This is required because CurriculumSubjectPrerequisite needs valid CurriculumSubjectIds
+                var saveSubjectsResult = await _curriculumRepository.UpdateCurriculum(curriculum, cancellationToken);
+                if (!saveSubjectsResult.IsSuccess)
                 {
-                    foreach (var subjectInCurriculum in semester.Value)
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Result.Invalid(saveSubjectsResult.ValidationErrors);
+                }
+
+                // Build expected prerequisites map: SubjectCode -> Set of prerequisite SubjectCodes
+                var expectedPrerequisites = command.SubjectsGrid.Values
+                    .SelectMany(terms => terms.Values)
+                    .SelectMany(subjects => subjects)
+                    .ToDictionary(
+                        s => s.Code,
+                        s => s.Prerequisites.ToHashSet());
+
+                // Sync prerequisites for each subject
+                foreach (var year in command.SubjectsGrid)
+                {
+                    foreach (var term in year.Value)
                     {
-                        var subject = subjectsByCode[subjectInCurriculum.Code];
-                        var curriculumSubject = curriculumSubjectsLookup.TryGetValue(subjectInCurriculum.Code, out var cs)
-                            ? cs
-                            : curriculum.GetCurriculumSubject(subject.Id);
-
-                        if (curriculumSubject == null)
+                        foreach (var subjectInCurriculum in term.Value)
                         {
-                            return Result.Invalid(new ValidationError($"CurriculumSubject for code {subjectInCurriculum.Code.Value} was not found"));
-                        }
+                            var subject = subjectsByCode[subjectInCurriculum.Code];
+                            var curriculumSubject = curriculumSubjectsLookup.TryGetValue(subjectInCurriculum.Code, out var cs)
+                                ? cs
+                                : curriculum.GetCurriculumSubject(subject.Id);
 
-                        var expectedPrereqCodes = expectedPrerequisites.GetValueOrDefault(subjectInCurriculum.Code) ?? [];
-
-                        // Get expected prerequisite CurriculumSubjectIds
-                        var expectedPrereqIds = new HashSet<CurriculumSubjectId>();
-                        foreach (var prereqCode in expectedPrereqCodes)
-                        {
-                            var prereqSubject = subjectsByCode[prereqCode];
-                            var prereqCurriculumSubject = curriculumSubjectsLookup.TryGetValue(prereqCode, out var pcs)
-                                ? pcs
-                                : curriculum.GetCurriculumSubject(prereqSubject.Id);
-
-                            if (prereqCurriculumSubject == null)
+                            if (curriculumSubject == null)
                             {
-                                return Result.Invalid(new ValidationError($"Prerequisite with code {prereqCode.Value} not found in the curriculum"));
+                                await transaction.RollbackAsync(cancellationToken);
+                                return Result.Invalid(new ValidationError($"CurriculumSubject for code {subjectInCurriculum.Code.Value} was not found"));
                             }
 
-                            expectedPrereqIds.Add(prereqCurriculumSubject.Id);
-                        }
+                            var expectedPrereqCodes = expectedPrerequisites.GetValueOrDefault(subjectInCurriculum.Code) ?? [];
 
-                        // Remove prerequisites that are no longer in the grid
-                        var existingPrerequisites = curriculumSubject.Prerequisites.Where(p => p.IsActive).ToList();
-                        foreach (var existingPrereq in existingPrerequisites)
-                        {
-                            if (!expectedPrereqIds.Contains(existingPrereq.PrerequisiteCurriculumSubjectId))
+                            // Get expected prerequisite CurriculumSubjectIds
+                            var expectedPrereqIds = new HashSet<CurriculumSubjectId>();
+                            foreach (var prereqCode in expectedPrereqCodes)
                             {
-                                curriculumSubject.RemovePrerequisite(existingPrereq.PrerequisiteCurriculumSubjectId);
-                            }
-                        }
+                                var prereqSubject = subjectsByCode[prereqCode];
+                                var prereqCurriculumSubject = curriculumSubjectsLookup.TryGetValue(prereqCode, out var pcs)
+                                    ? pcs
+                                    : curriculum.GetCurriculumSubject(prereqSubject.Id);
 
-                        // Add new prerequisites
-                        foreach (var prereqId in expectedPrereqIds)
-                        {
-                            curriculumSubject.AddPrerequisite(prereqId, minimumGrade: null, addedBy: curriculum.CreatedBy);
+                                if (prereqCurriculumSubject == null)
+                                {
+                                    await transaction.RollbackAsync(cancellationToken);
+                                    return Result.Invalid(new ValidationError($"Prerequisite with code {prereqCode.Value} not found in the curriculum"));
+                                }
+
+                                expectedPrereqIds.Add(prereqCurriculumSubject.Id);
+                            }
+
+                            // Remove prerequisites that are no longer in the grid
+                            var existingPrerequisites = curriculumSubject.Prerequisites.Where(p => p.IsActive).ToList();
+                            foreach (var existingPrereq in existingPrerequisites)
+                            {
+                                if (!expectedPrereqIds.Contains(existingPrereq.PrerequisiteCurriculumSubjectId))
+                                {
+                                    curriculumSubject.RemovePrerequisite(existingPrereq.PrerequisiteCurriculumSubjectId);
+                                }
+                            }
+
+                            // Add new prerequisites
+                            foreach (var prereqId in expectedPrereqIds)
+                            {
+                                curriculumSubject.AddPrerequisite(prereqId, minimumGrade: null, addedBy: curriculum.CreatedBy);
+                            }
                         }
                     }
                 }
+
+                // Save the prerequisites
+                var updateResult = await _curriculumRepository.UpdateCurriculum(curriculum, cancellationToken);
+
+                if (!updateResult.IsSuccess)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Result.Invalid(updateResult.ValidationErrors);
+                }
+
+                // Commit the transaction if all operations succeeded
+                await transaction.CommitAsync(cancellationToken);
+
+                return Result.Success(CurriculumDto.FromEntity(curriculum));
             }
-
-            // Save the prerequisites
-            var updateResult = await _curriculumRepository.UpdateCurriculum(curriculum, cancellationToken);
-
-            return updateResult.IsSuccess ? Result.Success(CurriculumDto.FromEntity(curriculum)) : Result.Invalid(updateResult.ValidationErrors);
+            catch
+            {
+                // Transaction will be rolled back automatically on dispose if not committed
+                throw;
+            }
         }
     }
 }

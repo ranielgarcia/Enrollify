@@ -11,6 +11,7 @@
   <ItemGroup>
     <None Remove="appsettings.json" />
     <None Remove="Mocks\Common\Mock0001__Initial.sql" />
+    <None Remove="SchemaScripts\DropProgrammabilityObjects.sql" />
     <None Remove="Scripts\Script0000 - Turn on Snapshop trans level.sql" />
   </ItemGroup>
 
@@ -26,6 +27,11 @@
 	  <EmbeddedResource Include="Seeds/**/*.sql" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="SchemaScripts\DropProgrammabilityObjects.sql" />
+    <EmbeddedResource Include="SchemaScripts\Views\Views0001__LatestActiveCurriculumPerCourse.sql" />
+  </ItemGroup>
+
 
 	<ItemGroup>
 		<PackageReference Include="dbup-sqlserver" Version="7.2.0" />
@@ -39,7 +45,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="SchemaScripts\Views\" />
 		<Folder Include="SchemaScripts\TVFs\" />
 		<Folder Include="SchemaScripts\StoredProcedures\" />
 		<Folder Include="SchemaScripts\Shared\" />

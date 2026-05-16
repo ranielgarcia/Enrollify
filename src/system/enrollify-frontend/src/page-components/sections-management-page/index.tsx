@@ -1,5 +1,6 @@
-import { filterSectionsPaginatedOptions } from "@/api/collections/section-collection";
+import { filterSectionsPaginatedOptions } from "@/api/collections/class-section-collection";
 import { getAllCoursesOptions } from "@/api/collections/course-collection";
+import { getAllCurriculumsOptions } from "@/api/collections/curriculum-collection";
 import { filterTeachersPaginatedOptions } from "@/api/collections/teacher-collection";
 import type { ClassSection } from "@/api/models/class-section";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
@@ -9,9 +10,11 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useQueryStates } from "nuqs";
 import { SectionFormDrawer } from "./section-form-drawer";
+import { BulkInitializeSectionsDrawer } from "./bulk-initialize-sections-drawer";
 import { SectionsTable } from "./sections-table";
 import { DeleteSectionAlertDialog } from "./delete-section-alert-dialog";
 import { searchParams } from "./searchParams";
+import { useState } from "react";
 
 export default function SectionsManagementPage() {
   const [{ page, perPage, filters, sort, joinOperator }] =
@@ -26,6 +29,8 @@ export default function SectionsManagementPage() {
     handleFormOpenChange,
     handleDeleteDialogOpenChange,
   } = useCrudState<ClassSection>();
+
+  const [isBulkInitializeOpen, setIsBulkInitializeOpen] = useState(false);
 
   const currentPage = page ? Number(page) : 1;
   const currentPageSize = perPage ? Number(perPage) : 10;
@@ -44,6 +49,7 @@ export default function SectionsManagementPage() {
   );
 
   const { data: courses } = useSuspenseQuery(getAllCoursesOptions());
+  const { data: curricula } = useSuspenseQuery(getAllCurriculumsOptions(true));
   const { data: teachers } = useSuspenseQuery(
     filterTeachersPaginatedOptions(1, 10, [], [], "and"),
   );
@@ -107,16 +113,26 @@ export default function SectionsManagementPage() {
       description="Manage class sections, assign subjects, and build weekly schedules"
       icon={<ModuleIcons.sections />}
       createNewItemButton={
-        <SectionFormDrawer
-          key={sectionToEdit?.id ?? "new"}
-          courses={courses ?? []}
-          teachers={teachers?.items ?? []}
-          academicTerms={[]}
-          onOpenChange={handleFormOpenChange}
-          sectionToUpdate={sectionToEdit}
-          isOpen={isFormOpen}
-          setIsOpen={handleFormOpenChange}
-        />
+        <div className="flex gap-2">
+          <BulkInitializeSectionsDrawer
+            isOpen={isBulkInitializeOpen}
+            setIsOpen={setIsBulkInitializeOpen}
+            onOpenChange={setIsBulkInitializeOpen}
+            courses={courses ?? []}
+            curricula={curricula ?? []}
+            academicTerms={[]}
+          />
+          <SectionFormDrawer
+            key={sectionToEdit?.id ?? "new"}
+            courses={courses ?? []}
+            teachers={teachers?.items ?? []}
+            academicTerms={[]}
+            onOpenChange={handleFormOpenChange}
+            sectionToUpdate={sectionToEdit}
+            isOpen={isFormOpen}
+            setIsOpen={handleFormOpenChange}
+          />
+        </div>
       }
     >
       <SectionsTable

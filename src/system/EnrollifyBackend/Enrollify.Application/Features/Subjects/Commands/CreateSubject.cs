@@ -4,6 +4,7 @@ using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate.Models;
+using Enrollify.Core.Constants.AcademicBuiltInData;
 using Enrollify.SharedKernel;
 using Mediator;
 
@@ -26,7 +27,10 @@ public static class CreateSubject
             _roomTypeReadRepository = roomTypeReadRepository;
         }
         public async ValueTask<Result<SubjectId>> Handle(Command command, CancellationToken cancellationToken)
-        {            
+        {
+            if (command.subject.Code == BuiltInSubjectsEnum.ElectivePlaceholder.Code)
+                return Result.Invalid(new ValidationError { ErrorMessage = $"The subject code '{BuiltInSubjectsEnum.ElectivePlaceholder.Code}' is reserved and cannot be used." });
+
             var preferRoomType = await _roomTypeReadRepository.GetByIdAsync(command.subject.PreferRoomTypeId, cancellationToken);
             if (preferRoomType == null) return Result.Invalid(new ValidationError { ErrorMessage = $"Room type with an ID of {command.subject.PreferRoomTypeId} not found." });
 

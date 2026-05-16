@@ -1,7 +1,7 @@
 import {
   createSectionOptions,
   updateSectionOptions,
-} from "@/api/collections/section-collection";
+} from "@/api/collections/class-section-collection";
 import type { ClassSection } from "@/api/models/class-section";
 import type { Course } from "@/api/models/course";
 import type { Teacher } from "@/api/models/teacher";

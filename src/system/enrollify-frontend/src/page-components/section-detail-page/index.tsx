@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getSectionWithOfferingsOptions } from "@/api/collections/section-collection";
+import { getSectionWithOfferingsOptions } from "@/api/collections/class-section-collection";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -87,10 +87,7 @@ export default function SectionDetailPage({
           value="offerings"
           className="flex min-h-0 flex-col space-y-4"
         >
-          <OfferingsTab
-            sectionId={sectionId}
-            offerings={section.offerings}
-          />
+          <OfferingsTab sectionId={sectionId} offerings={section.offerings} />
         </TabsContent>
 
         <TabsContent value="grid" className="flex min-h-0 flex-col space-y-4">

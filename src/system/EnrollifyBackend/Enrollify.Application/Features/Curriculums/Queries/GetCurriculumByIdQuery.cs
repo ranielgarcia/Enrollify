@@ -16,7 +16,7 @@ public class GetCurriculumByIdQueryHandler(IReadRepository<Curriculum> readRepos
     public async ValueTask<Result<CurriculumDetailDto>> Handle(GetCurriculumByIdQuery query, CancellationToken cancellationToken)
     {
         var spec = new GetCurriculumByIdSpec(CurriculumId.From(query.Id));
-        var projectionSpec = new CurriculumToCurriculumDetailDto();
+        var projectionSpec = new CurriculumToCurriculumDetailDtoProjectionSpec();
         var combinedSpec = spec.WithProjectionOf(projectionSpec);
 
         var curriculumDto = await readRepository.FirstOrDefaultAsync(combinedSpec, cancellationToken);

@@ -16,7 +16,7 @@ public class ListCurriculumsQueryHandler(IReadRepository<Curriculum> readReposit
 {
     public async ValueTask<Result<List<CurriculumDto>>> Handle(ListCurriculumsQuery query, CancellationToken cancellationToken)
     {
-        var spec = new ListCurriculumSpec();
+        var spec = new ListCurriculumsSpec();
         var curriculums = await readRepository.ListAsync(spec, cancellationToken);
 
         var toReturn =

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+using FluentValidation;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -22,6 +23,9 @@ public class GlobalExceptionHandler(IHostEnvironment env, ILogger<GlobalExceptio
         CancellationToken cancellationToken)
     {
         exception.AddErrorCode();
+
+        if (exception is ValidationException)
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
         //If your logger logs DiagnosticsTelemetry, you should remove the string below to avoid the exception being logged twice.
         //logger.LogError(exception, exception is YourAppException ? exception.Message : UnhandledExceptionMsg);
@@ -60,6 +64,20 @@ public class GlobalExceptionHandler(IHostEnvironment env, ILogger<GlobalExceptio
             reasonPhrase = UnhandledExceptionMsg;
         }
 
+        if (exception is ValidationException validationException)
+        {
+            var errors = validationException.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(e => e.ErrorMessage).ToArray());
+
+            return new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(errors)
+            {
+                Status = statusCode,
+                Title = "One or more validation errors occurred."
+            };
+        }
         var problemDetails = new ProblemDetails
         {
             Status = statusCode,
