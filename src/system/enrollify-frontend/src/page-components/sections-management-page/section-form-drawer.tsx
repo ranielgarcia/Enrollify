@@ -142,7 +142,7 @@ export function SectionFormDrawer({
           />
         }
       >
-        <DrawerContent className="data-[vaul-drawer-direction=right]:w-[480px] data-[vaul-drawer-direction=right]:sm:max-w-none h-full w-full overflow-y-auto">
+        <DrawerContent className="data-[vaul-drawer-direction=right]:w-[480px] data-[vaul-drawer-direction=right]:sm:max-w-none h-full overflow-y-auto overflow-x-hidden">
           <DrawerHeader className="border-b pb-4">
             <DrawerTitle>
               {isUpdating

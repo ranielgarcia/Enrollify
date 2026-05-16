@@ -3,10 +3,8 @@ import {
   type BulkInitializeClassSectionsRequest,
   type BulkInitializePayload,
 } from "@/api/collections/class-section-collection";
-import type { AcademicTerm } from "@/api/models/academic-year";
 import type { Course } from "@/api/models/course";
 import type { Curriculum } from "@/api/models/curriculum";
-import { FormField } from "@/components/form/form-field";
 import { FormSelectField } from "@/components/form/form-select-field";
 import { FormSection } from "@/components/form/form-section";
 import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
@@ -28,6 +26,7 @@ import { ListPlus, X } from "lucide-react";
 import { z } from "zod";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
+import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 const YEAR_LEVEL_OPTIONS = [
   { value: "1", label: "1st Year" },
@@ -40,7 +39,11 @@ const YEAR_LEVEL_OPTIONS = [
 
 const bulkInitializeFormSchema = z.object({
   academicTermId: z.number().min(1, "Academic term is required"),
-  yearLevel: z.number().int().min(1).max(6, "Year level must be between 1 and 6"),
+  yearLevel: z
+    .number()
+    .int()
+    .min(1)
+    .max(6, "Year level must be between 1 and 6"),
 });
 
 type BulkInitializeFormData = z.infer<typeof bulkInitializeFormSchema>;
@@ -57,7 +60,6 @@ interface BulkInitializeSectionsDrawerProps {
   onOpenChange: (isOpen: boolean) => void;
   courses: Course[];
   curricula: Curriculum[];
-  academicTerms: AcademicTerm[];
 }
 
 export function BulkInitializeSectionsDrawer({
@@ -66,19 +68,23 @@ export function BulkInitializeSectionsDrawer({
   onOpenChange,
   courses,
   curricula,
-  academicTerms,
 }: BulkInitializeSectionsDrawerProps) {
-  const [selectedCourseRows, setSelectedCourseRows] = useState<CoursePayloadRow[]>([]);
+  const [selectedCourseRows, setSelectedCourseRows] = useState<
+    CoursePayloadRow[]
+  >([]);
   const [selectedCourseId, setSelectedCourseId] = useState<number>(0);
+
+  const { selectedAcademicYear } = useEnrollmentContext();
 
   const { mutateAsync: bulkInitialize } = useMutation(
     bulkInitializeSectionsOptions(),
   );
 
-  const termOptions = academicTerms.map((t) => ({
-    value: t.id.toString(),
-    label: t.termName ?? `Term ${t.termNumber}`,
-  }));
+  const termOptions =
+    selectedAcademicYear?.academicTerms?.map((t) => ({
+      value: t.id.toString(),
+      label: t.termName ?? `Term ${t.termNumber}`,
+    })) ?? [];
 
   const availableCourses = courses.filter(
     (c) => !selectedCourseRows.some((r) => r.course.id === c.id),
@@ -152,7 +158,9 @@ export function BulkInitializeSectionsDrawer({
   };
 
   const handleRemoveCourse = (courseId: number) => {
-    setSelectedCourseRows(selectedCourseRows.filter((r) => r.course.id !== courseId));
+    setSelectedCourseRows(
+      selectedCourseRows.filter((r) => r.course.id !== courseId),
+    );
   };
 
   const handleUpdateSectionCount = (courseId: number, count: number) => {
@@ -189,11 +197,16 @@ export function BulkInitializeSectionsDrawer({
           />
         }
       >
-        <DrawerContent className="h-full w-full max-w-3xl overflow-y-auto">
+        <DrawerContent className="h-full overflow-y-auto overflow-x-hidden data-[vaul-drawer-direction=right]:w-[480px] data-[vaul-drawer-direction=right]:sm:max-w-none">
           <DrawerHeader className="border-b pb-4">
-            <DrawerTitle>Bulk Initialize Class Sections</DrawerTitle>
+            <DrawerTitle>
+              Bulk Initialize Class Sections for{" "}
+              {selectedAcademicYear?.academicYearTitle ??
+                "<invalid academic year...>"}
+            </DrawerTitle>
             <p className="text-sm text-muted-foreground">
-              Create multiple class sections for one academic term and year level
+              Create multiple class sections for one academic term and year
+              level
             </p>
           </DrawerHeader>
 
@@ -337,8 +350,8 @@ export function BulkInitializeSectionsDrawer({
                 )}
 
                 <p className="text-xs text-muted-foreground">
-                  Tip: The system will auto-generate section codes (A, B, C...) and
-                  create subject offerings based on the curriculum.
+                  Tip: The system will auto-generate section codes (A, B, C...)
+                  and create subject offerings based on the curriculum.
                 </p>
               </div>
             </FormSection>
