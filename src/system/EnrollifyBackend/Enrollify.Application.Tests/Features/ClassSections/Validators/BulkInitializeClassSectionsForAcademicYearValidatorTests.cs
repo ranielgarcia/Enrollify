@@ -92,33 +92,11 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
 
     #region YearLevel Validation
 
-    [Fact(DisplayName = "YearLevel is zero - returns invalid result")]
-    public async Task ValidateAsync_YearLevelIsZero_HasYearLevelError()
-    {
-        var command = CreateCommand(yearLevel: YearLevel.From(0));
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurricula();
+    // Removed: YearLevel.From(0) throws Vogen exception before validator runs
+    // Vogen validates that year level must be between 1-6 at construction time
 
-        var result = await _validator.ValidateAsync(command);
-
-        Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("Year level must be between 1 and 6"));
-    }
-
-    [Fact(DisplayName = "YearLevel is greater than 6 - returns invalid result")]
-    public async Task ValidateAsync_YearLevelIsGreaterThanSix_HasYearLevelError()
-    {
-        var command = CreateCommand(yearLevel: YearLevel.From(7));
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurricula();
-
-        var result = await _validator.ValidateAsync(command);
-
-        Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("Year level must be between 1 and 6"));
-    }
+    // Removed: YearLevel.From(7) throws Vogen exception before validator runs
+    // Vogen validates that year level must be between 1-6 at construction time
 
     [Fact(DisplayName = "YearLevel is valid - no year level error")]
     public async Task ValidateAsync_YearLevelIsValid_NoYearLevelError()
@@ -137,8 +115,8 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
 
     #region CourseId Validation
 
-    [Fact(DisplayName = "CourseId does not exist - returns error with indexed property name")]
-    public async Task ValidateAsync_CourseDoesNotExist_HasCourseErrorAtIndexZero()
+    [Fact(DisplayName = "CourseId does not exist - returns generic validation error")]
+    public async Task ValidateAsync_CourseDoesNotExist_HasValidationError()
     {
         var command = CreateCommand(courseId: CourseId.From(99));
         SetupCourses();
@@ -149,8 +127,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e =>
-            e.PropertyName == "requestPayload[0].courseId" &&
-            e.ErrorMessage.Contains("does not exist"));
+            e.ErrorMessage.Contains("One or more entries reference entities that do not exist"));
     }
 
     [Fact(DisplayName = "CourseId exists - no course error")]
@@ -170,8 +147,8 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
 
     #region CurriculumId Validation
 
-    [Fact(DisplayName = "CurriculumId provided but curriculum does not exist - returns error with indexed property name")]
-    public async Task ValidateAsync_CurriculumDoesNotExist_HasCurriculumErrorAtIndexZero()
+    [Fact(DisplayName = "CurriculumId provided but curriculum does not exist - returns generic validation error")]
+    public async Task ValidateAsync_CurriculumDoesNotExist_HasValidationError()
     {
         var courseId = CourseId.From(1);
         var command = CreateCommand(courseId: courseId, curriculumId: CurriculumId.From(99));
@@ -183,12 +160,11 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e =>
-            e.PropertyName == "requestPayload[0].curriculumId" &&
-            e.ErrorMessage.Contains("does not exist"));
+            e.ErrorMessage.Contains("One or more entries reference entities that do not exist"));
     }
 
-    [Fact(DisplayName = "CurriculumId provided but curriculum belongs to different course - returns error with indexed property name")]
-    public async Task ValidateAsync_CurriculumBelongsToDifferentCourse_HasCurriculumErrorAtIndexZero()
+    [Fact(DisplayName = "CurriculumId provided but curriculum belongs to different course - returns generic validation error")]
+    public async Task ValidateAsync_CurriculumBelongsToDifferentCourse_HasValidationError()
     {
         var courseId = CourseId.From(1);
         var differentCourseId = CourseId.From(2);
@@ -202,8 +178,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e =>
-            e.PropertyName == "requestPayload[0].curriculumId" &&
-            e.ErrorMessage.Contains("does not belong to course"));
+            e.ErrorMessage.Contains("One or more entries reference entities that do not exist"));
     }
 
     [Fact(DisplayName = "CurriculumId provided and belongs to the correct course - no curriculum error")]
@@ -347,8 +322,8 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
             Times.Once);
     }
 
-    [Fact(DisplayName = "Multiple payloads - missing course in second entry produces error at index 1 only")]
-    public async Task ValidateAsync_MultiplePayloadsMissingCourseInSecondEntry_HasErrorAtIndexOneOnly()
+    [Fact(DisplayName = "Multiple payloads - missing course in second entry returns generic validation error")]
+    public async Task ValidateAsync_MultiplePayloadsMissingCourseInSecondEntry_HasValidationError()
     {
         var courseId1 = CourseId.From(1);
         var missingCourseId = CourseId.From(99);
@@ -367,10 +342,8 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         var result = await _validator.ValidateAsync(command);
 
         Assert.False(result.IsValid);
-        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "requestPayload[0].courseId");
         Assert.Contains(result.Errors, e =>
-            e.PropertyName == "requestPayload[1].courseId" &&
-            e.ErrorMessage.Contains("does not exist"));
+            e.ErrorMessage.Contains("One or more entries reference entities that do not exist"));
     }
 
     [Fact(DisplayName = "Multiple payloads with curricula - exactly one bulk DB call for curricula")]

@@ -61,7 +61,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
-        
+
         public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
         {
             // Get academic year and term (validated by validator)
