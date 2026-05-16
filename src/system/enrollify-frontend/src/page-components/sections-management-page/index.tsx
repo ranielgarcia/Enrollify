@@ -15,10 +15,13 @@ import { SectionsTable } from "./sections-table";
 import { DeleteSectionAlertDialog } from "./delete-section-alert-dialog";
 import { searchParams } from "./searchParams";
 import { useState } from "react";
+import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 export default function SectionsManagementPage() {
   const [{ page, perPage, filters, sort, joinOperator }] =
     useQueryStates(searchParams);
+
+  const { selectedAcademicYear } = useEnrollmentContext();
 
   const {
     isFormOpen,
@@ -109,7 +112,7 @@ export default function SectionsManagementPage() {
 
   return (
     <ManagementPageLayout
-      title="Class Sections"
+      title={`Class Sections of ${selectedAcademicYear?.academicYearTitle ?? "<invalid academic year...>"}`}
       description="Manage class sections, assign subjects, and build weekly schedules"
       icon={<ModuleIcons.sections />}
       createNewItemButton={

@@ -202,10 +202,10 @@ dotnet test --filter "FullyQualifiedName~CreateRoomType_ValidRequest_ReturnsCrea
 **Database strategy:** Each test class gets its own database with full migrations (schema + seed + mock data)  
 **Test fixtures:**
 
-| Fixture                  | Purpose                                                                           | Collection Attribute   |
-| ------------------------ | --------------------------------------------------------------------------------- | ---------------------- |
-| `WebApiTestFixture`      | HTTP endpoint testing via `WebApplicationFactory<Program>` + TestServer           | `[Collection("WebApi")]` |
-| `ApplicationTestFixture` | Direct Mediator testing (commands/queries) without HTTP overhead                  | `[Collection("Application")]` |
+| Fixture                  | Purpose                                                                 | Collection Attribute          |
+| ------------------------ | ----------------------------------------------------------------------- | ----------------------------- |
+| `WebApiTestFixture`      | HTTP endpoint testing via `WebApplicationFactory<Program>` + TestServer | `[Collection("WebApi")]`      |
+| `ApplicationTestFixture` | Direct Mediator testing (commands/queries) without HTTP overhead        | `[Collection("Application")]` |
 
 **Key files:**
 
@@ -241,11 +241,13 @@ _Tests/
 ##### Choose WebAPI vs Application Test
 
 **WebAPI test when:**
+
 - Testing HTTP request/response cycle, routing, status codes, serialization
 - Testing authentication/authorization at HTTP level
 - End-to-end API surface testing
 
 **Application test when:**
+
 - Testing command/query handlers directly
 - Testing business logic without HTTP overhead
 - Faster execution (no HTTP layer)
@@ -286,3 +288,5 @@ Project-level Copilot skills for complex, multi-step workflows:
 - `.github/skills/enrollify-management-page/SKILL.md` — Step-by-step guide for implementing CRUD management pages in the React frontend (model schema, API collection, table, form drawer, delete dialog)
 - `.github/skills/enrollify-ui-redesign/SKILL.md` — Design language guide for redesigning frontend components (hero-card pattern, icon chips, status badges, form sections, empty states)
 - `.github/skills/enrollify-integration-tests/SKILL.md` — Comprehensive guide for creating integration tests (WebAPI tests via TestServer, Application tests via Mediator, test data strategies, fixtures, helpers)
+- `.github/skills/enrollify-resize-dialog/SKILL.md` — Quick reference for resizing Dialog components (width classes, height control, scrollable body, when to switch from Dialog to Drawer)
+- `.github/skills/enrollify-resize-drawer/SKILL.md` — Step-by-step guide for resizing right-side Drawer components (vaul data-attribute override pattern, half-screen, near-full, full-screen widths)
