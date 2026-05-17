@@ -26,9 +26,13 @@ public class CourseCurriculumAssignment : EntityBase<CourseCurriculumAssignment,
     }
 
     public CourseId CourseId { get; private set; }
+    public Course? Course { get; private set; }
+
     public AcademicYearId EntryAcademicYearId { get; private set; }
+    public AcademicYear EntryAcademicYear { get; private set; }
 
     public CurriculumId CurriculumId { get; private set; }
+    public Curriculum? Curriculum { get; private set; }
 
 
     public DateTimeOffset CreatedAt { get; private set; }

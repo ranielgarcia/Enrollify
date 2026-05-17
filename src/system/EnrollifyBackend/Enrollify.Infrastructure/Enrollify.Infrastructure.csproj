@@ -56,6 +56,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Repositories\CourseCurriculumAssignmentRepository.cs~RF49b6460.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Ardalis.SmartEnum.Dapper" Version="8.2.0" />
     <PackageReference Include="Ardalis.SmartEnum.EFCore" Version="8.2.0" />
     <PackageReference Include="Ardalis.Specification.EntityFrameworkCore" Version="9.3.1" />

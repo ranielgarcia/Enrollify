@@ -7,6 +7,7 @@ using Enrollify.Application.Features.Buildings;
 using Enrollify.Application.Features.ClassSections;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings;
 using Enrollify.Application.Features.Colleges;
+using Enrollify.Application.Features.CourseCurriculumAssignments;
 using Enrollify.Application.Features.Courses;
 using Enrollify.Application.Features.Curriculums;
 using Enrollify.Application.Features.Departments;
@@ -96,6 +97,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IAcademicYearAndTermRepository, AcademicYearAndTermRepository>();
         services.AddScoped<IClassSectionRepository, ClassSectionRepository>();
         services.AddScoped<IClassSectionSubjectOfferingRepository, ClassSectionSubjectOfferingRepository>();
+        services.AddScoped<ICourseCurriculumAssignmentRepository, CourseCurriculumAssignmentRepository>();
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 
