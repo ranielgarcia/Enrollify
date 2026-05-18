@@ -1,9 +1,11 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Application.Features.Curriculums;
+using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.SharedKernel;
 using Mediator;
 using Microsoft.Extensions.Logging;
@@ -19,7 +21,7 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
         private readonly IReadRepository<CourseCurriculumAssignment> _readRepository;
         private readonly IReadRepository<AcademicYear> _academicYearReadRepository;
         private readonly IReadRepository<Course> _courseReadRepository;
-        private readonly ICurriculumRepository _curriculumRepository;
+        private readonly IReadRepository<Curriculum> _curriculumReadRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<Command> _logger;
 
@@ -27,7 +29,7 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
             IReadRepository<CourseCurriculumAssignment> readRepository,
             IReadRepository<AcademicYear> academicYearReadRepository,
             IReadRepository<Course> courseReadRepository,
-            ICurriculumRepository curriculumRepository,
+            IReadRepository<Curriculum> curriculumReadRepository,
             IUnitOfWork unitOfWork,
             ILogger<Command> logger)
         {
@@ -35,7 +37,7 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
             _readRepository = readRepository;
             _academicYearReadRepository = academicYearReadRepository;
             _courseReadRepository = courseReadRepository;
-            _curriculumRepository = curriculumRepository;
+            _curriculumReadRepository = curriculumReadRepository;
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
@@ -51,7 +53,9 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
 
             var courses = await _courseReadRepository.ListAsync(cancellationToken);
             var existingAssignments = await _readRepository.ListAsync(new GetAllCourseCurriculumAssignmentsForAcademicYearIdSpec(academicYear.Id), cancellationToken);
-            var courseLatestActiveCurriculum = await _curriculumRepository.GetAllLatestActiveCurriculumPerCourse(cancellationToken);
+
+            // Get the latest active curriculum for each course that is applicable to the academic year's start date/year
+            var courseLatestActiveCurriculum = await _curriculumReadRepository.ListAsync(new GetCurriculumsApplicableToAcademicYearStartYearSpec(academicYear.StartDate), cancellationToken);
 
             var courseCurriculumByCourseId = courseLatestActiveCurriculum.ToDictionary(c => c.CourseId, c => c);
             var existingAssignmentByCourseId = existingAssignments.ToDictionary(c => c.CourseId, c => c);
@@ -76,7 +80,8 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
                     existing.UpdateCurriculum(curriculum.Id);
                     courseCurriculumAssignmentsToUpdate.Add(existing);
                 }
-                else
+
+                if (existing == null)
                 {
                     var newAssignment = new CourseCurriculumAssignment(course.Id, command.AcademicYearId, curriculum.Id);
                     _logger.LogInformation("Added new course-curriculum assignment: {@newCourseCurriculumAssignment}", newAssignment);

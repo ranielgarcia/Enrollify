@@ -8,4 +8,5 @@ namespace Enrollify.Infrastructure.Data.Config;
 [EfCoreConverter<SubFolder>]
 [EfCoreConverter<YearLevel>]
 [EfCoreConverter<TermNumber>]
+[EfCoreConverter<Year>]
 public partial class SharedValueObjectsVogenEfCoreConverters;

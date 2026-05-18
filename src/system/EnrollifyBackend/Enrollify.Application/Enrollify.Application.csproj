@@ -7,6 +7,10 @@
 	</PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Features\Curriculums\Commands\ApproveCurriculum.cs~RF9ea76dc.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Ardalis.Result" Version="10.1.0" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />

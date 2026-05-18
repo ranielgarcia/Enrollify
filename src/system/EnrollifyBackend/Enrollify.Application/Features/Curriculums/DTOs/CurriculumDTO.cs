@@ -20,7 +20,7 @@ public class CurriculumDto : BaseDto
         return new CurriculumDto
         {
             Id = curriculum.Id,
-            EffectiveYear = curriculum.EffectiveYear,
+            EffectiveYear = curriculum.EffectiveYear.Value,
             Version = curriculum.Version,
             Status = curriculum.StatusId,
             Course = curriculum.Course != null ? CourseSummaryDto.FromEntity(curriculum.Course) : null,

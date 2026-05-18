@@ -1,6 +1,6 @@
 using Vogen;
 
-namespace Enrollify.Core.Aggregates.AcademicYearAggregate;
+namespace Enrollify.Core.ValueObjects;
 
 [ValueObject<int>]
 public readonly partial struct Year

@@ -2,6 +2,7 @@ using Ardalis.Result;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
+using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Mediator;
 
@@ -9,7 +10,7 @@ namespace Enrollify.Application.Features.Curriculums.Commands;
 
 public static class CreateDraftCurriculum
 {
-    public sealed record Command(CourseId courseId, int effectiveYear, string version, string? description) :
+    public sealed record Command(CourseId courseId, Year effectiveYear, string version, string? description) :
         ICommand<Result<CurriculumId>>;
 
     public sealed class Handler : ICommandHandler<Command, Result<CurriculumId>>

@@ -74,6 +74,7 @@ public static class CreateClassSection
                 command.courseId,
                 command.yearLevel,
                 academicTerm.TermNumber,
+                academicYear.StartDate,
                 cancellationToken);
 
             if (!latestActiveCurriculum.IsSuccess || latestActiveCurriculum.Value == null)
@@ -160,10 +161,10 @@ public static class CreateClassSection
             return lastExistingClassSectionCode.GetNextSectionCode();
         }
 
-        private async Task<Result<Curriculum>> GetCurriculum(CourseId courseId, YearLevel yearLevel, TermNumber termNumber, CancellationToken ct)
+        private async Task<Result<Curriculum>> GetCurriculum(CourseId courseId, YearLevel yearLevel, TermNumber termNumber, AcademicYearStartDate academicYearStartDate, CancellationToken ct)
         {
             var curriculum = await _curriculumReadRepository
-                .FirstOrDefaultAsync(new GetLatestActiveCurriculumWithSubjectsByCourseYearLevelAndTermSpec(courseId, yearLevel, termNumber), ct);
+                .FirstOrDefaultAsync(new GetLatestActiveCurriculumWithSubjectsByCourseYearLevelAndTermSpec(courseId, yearLevel, termNumber, academicYearStartDate), ct);
 
             if (curriculum == null)
             {

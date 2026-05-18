@@ -3,10 +3,12 @@ using Ardalis.Specification;
 using Enrollify.Application.Features.AcademicYearAndTerm;
 using Enrollify.Application.Features.AcademicYearAndTerm.Commands;
 using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
+using Enrollify.Application.Features.AcademicYearAndTerm.Events;
 using Enrollify.Application.Features.AcademicYearAndTerm.Models;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
+using Mediator;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
@@ -17,6 +19,7 @@ public class InitiateAcademicYearAndTermsTests
 {
     private readonly Mock<IAcademicYearAndTermRepository> _repositoryMock = new();
     private readonly Mock<IReadRepository<AcademicYear>> _readRepositoryMock = new();
+    private readonly Mock<IMediator> _mediatorMock = new();
     private readonly FakeLogger<InitiateAcademicYearAndTerms.Handler> _logger;
     private readonly InitiateAcademicYearAndTerms.Handler _handler;
 
@@ -33,6 +36,7 @@ public class InitiateAcademicYearAndTermsTests
         _handler = new InitiateAcademicYearAndTerms.Handler(
             _repositoryMock.Object,
             _readRepositoryMock.Object,
+            _mediatorMock.Object,
             _logger);
     }
 
@@ -292,6 +296,73 @@ public class InitiateAcademicYearAndTermsTests
         await _handler.Handle(command, CancellationToken.None);
 
         Assert.DoesNotContain(_logger.Collector.GetSnapshot(), l => l.Level == LogLevel.Warning);
+    }
+
+    [Fact]
+    public async Task Handle_ValidCommand_PublishesAcademicYearCreatedEvent()
+    {
+        SetupNoOverlap();
+        var academicYear = new AcademicYear(ValidStart, ValidEnd);
+        _repositoryMock
+            .Setup(r => r.Create(It.IsAny<AcademicYear>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(academicYear));
+
+        var command = new InitiateAcademicYearAndTerms.Command(ValidStart, ValidEnd, CreateValidTerms());
+
+        await _handler.Handle(command, CancellationToken.None);
+
+        _mediatorMock.Verify(
+            m => m.Publish(
+                It.Is<AcademicYearCreatedEvent>(e => e.AcademicYear == academicYear),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_RepositoryFailure_DoesNotPublishEvent()
+    {
+        SetupNoOverlap();
+        _repositoryMock
+            .Setup(r => r.Create(It.IsAny<AcademicYear>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Error("Repository error"));
+
+        var command = new InitiateAcademicYearAndTerms.Command(ValidStart, ValidEnd, CreateValidTerms());
+
+        await _handler.Handle(command, CancellationToken.None);
+
+        _mediatorMock.Verify(
+            m => m.Publish(It.IsAny<AcademicYearCreatedEvent>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_ValidationFailure_DoesNotPublishEvent()
+    {
+        var command = new InitiateAcademicYearAndTerms.Command(ValidStart, ValidEnd, null!);
+
+        await _handler.Handle(command, CancellationToken.None);
+
+        _mediatorMock.Verify(
+            m => m.Publish(It.IsAny<AcademicYearCreatedEvent>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_ConflictingAcademicYear_DoesNotPublishEvent()
+    {
+        _readRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(
+                It.IsAny<ISpecification<AcademicYear>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new AcademicYear(ValidStart, ValidEnd));
+
+        var command = new InitiateAcademicYearAndTerms.Command(ValidStart, ValidEnd, CreateValidTerms());
+
+        await _handler.Handle(command, CancellationToken.None);
+
+        _mediatorMock.Verify(
+            m => m.Publish(It.IsAny<AcademicYearCreatedEvent>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     private void SetupNoOverlap() =>

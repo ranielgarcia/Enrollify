@@ -1,5 +1,6 @@
 using Enrollify.Application.Features.Curriculums.Commands;
 using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.Core.ValueObjects;
 
 namespace Enrollify.WebAPI.Features.Curriculums;
 
@@ -46,7 +47,7 @@ public class CreateDraftCurriculumEndpoint (IMediator mediator)
         ExecuteAsync(CreateDraftCurriculumRequest request, CancellationToken ct)
     {
         var result = await mediator.Send(new CreateDraftCurriculum
-            .Command(CourseId.From(request.CourseId), request.EffectiveYear, request.Version, request.Description));
+            .Command(CourseId.From(request.CourseId), Year.From(request.EffectiveYear), request.Version, request.Description));
 
         return result.ToCreatedResult(
             id => $"/curriculums/{id}",

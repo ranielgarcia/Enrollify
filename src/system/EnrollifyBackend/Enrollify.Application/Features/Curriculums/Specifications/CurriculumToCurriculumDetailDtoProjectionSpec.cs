@@ -15,7 +15,7 @@ public class CurriculumToCurriculumDetailDtoProjectionSpec : Specification<Curri
         .Select(c => new CurriculumDetailDto
         {
             Id = c.Id,
-            EffectiveYear = c.EffectiveYear,
+            EffectiveYear = c.EffectiveYear.Value,
             Version = c.Version,
             Status = c.StatusId,
             Course = c.Course != null ? new CourseSummaryDto

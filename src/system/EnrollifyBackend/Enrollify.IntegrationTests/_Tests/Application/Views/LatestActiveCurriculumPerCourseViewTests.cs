@@ -4,6 +4,7 @@ using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.Constants;
 using Enrollify.Core.Models.Views;
+using Enrollify.Core.ValueObjects;
 using Enrollify.Infrastructure.Data;
 using Enrollify.IntegrationTests.Helpers;
 using Enrollify.IntegrationTests.Infrastructure;
@@ -50,7 +51,7 @@ public class LatestActiveCurriculumPerCourseViewTests
         // Assert
         Assert.Single(result);
         var latestCurriculum = result.First();
-        Assert.Equal(2024, latestCurriculum.EffectiveYear);
+        Assert.Equal(Year.From(2024), latestCurriculum.EffectiveYear);
         Assert.Equal("2024-A", latestCurriculum.Version);
         Assert.Equal(CurriculumStatusEnum.Active, latestCurriculum.StatusId);
     }
@@ -88,7 +89,7 @@ public class LatestActiveCurriculumPerCourseViewTests
 
         // Assert
         Assert.Single(result);
-        Assert.Equal(activeCurriculumId, result.First().Id);
+        Assert.Equal(activeCurriculumId, result.First().CurriculumId);
         Assert.Equal(CurriculumStatusEnum.Active, result.First().StatusId);
     }
 
@@ -120,7 +121,7 @@ public class LatestActiveCurriculumPerCourseViewTests
 
         // Assert
         Assert.Single(result);
-        Assert.Equal(activeCurriculumId, result.First().Id);
+        Assert.Equal(activeCurriculumId, result.First().CurriculumId);
         Assert.Equal(CurriculumStatusEnum.Active, result.First().StatusId);
     }
 
@@ -166,8 +167,8 @@ public class LatestActiveCurriculumPerCourseViewTests
 
         Assert.Single(course1Result);
         Assert.Single(course2Result);
-        Assert.Equal(testData.Item4, course1Result.First().Id);
-        Assert.Equal(testData.Item5, course2Result.First().Id);
+        Assert.Equal(testData.Item4, course1Result.First().CurriculumId);
+        Assert.Equal(testData.Item5, course2Result.First().CurriculumId);
     }
 
     [Fact(DisplayName = "View returns empty when course has no active curriculums")]
@@ -234,9 +235,9 @@ public class LatestActiveCurriculumPerCourseViewTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(curriculumId, result.Id);
+        Assert.Equal(curriculumId, result.CurriculumId);
         Assert.Equal(courseId, result.CourseId);
-        Assert.Equal(2024, result.EffectiveYear);
+        Assert.Equal(Year.From(2024), result.EffectiveYear);
         Assert.Equal(uniqueVersion, result.Version);
         Assert.Equal(CurriculumStatusEnum.Active, result.StatusId);
         Assert.Equal(testDescription, result.Description);
@@ -270,8 +271,8 @@ public class LatestActiveCurriculumPerCourseViewTests
         });
 
         // Assert
-        Assert.Equal(curriculum2025Id, result.Id);
-        Assert.Equal(2025, result.EffectiveYear);
+        Assert.Equal(curriculum2025Id, result.CurriculumId);
+        Assert.Equal(Year.From(2025), result.EffectiveYear);
     }
 
     [Fact(DisplayName = "View handles multiple courses with different latest curriculum years")]
@@ -316,9 +317,9 @@ public class LatestActiveCurriculumPerCourseViewTests
         var chemResult = testData.results.Single(c => c.CourseId == testData.Item3);
         var physResult = testData.results.Single(c => c.CourseId == testData.Item4);
 
-        Assert.Equal(2024, bioResult.EffectiveYear);
-        Assert.Equal(2022, chemResult.EffectiveYear);
-        Assert.Equal(2025, physResult.EffectiveYear);
+        Assert.Equal(Year.From(2024), bioResult.EffectiveYear);
+        Assert.Equal(Year.From(2022), chemResult.EffectiveYear);
+        Assert.Equal(Year.From(2025), physResult.EffectiveYear);
     }
 
     #region Helper Methods
@@ -369,7 +370,7 @@ public class LatestActiveCurriculumPerCourseViewTests
         var curriculum = Curriculum.CreateDraftCurriculum(new DraftCurriculumForCreation
         {
             CourseId = courseId,
-            EffectiveYear = effectiveYear,
+            EffectiveYear = Year.From(effectiveYear),
             Version = version,
             Description = description
         });

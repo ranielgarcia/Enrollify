@@ -26,7 +26,7 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
         return new Curriculum
         {
             CourseId = Guard.Against.Null(newCurricula.CourseId),
-            EffectiveYear = Guard.Against.OutOfRange(newCurricula.EffectiveYear, nameof(newCurricula.EffectiveYear), 2000, 9999),
+            EffectiveYear = Year.From(Guard.Against.OutOfRange(newCurricula.EffectiveYear.Value, nameof(newCurricula.EffectiveYear), 2000, 9999)),
             Version = Guard.Against.NullOrWhiteSpace(newCurricula.Version),
             StatusId = CurriculumStatusEnum.Draft,
             Description = newCurricula.Description,
@@ -38,7 +38,7 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
     /// <summary>
     /// Academic year when this curriculum takes effect (e.g., 2024)
     /// </summary>
-    public int EffectiveYear { get; private set; }
+    public Year EffectiveYear { get; private set; }
 
     /// <summary>
     /// Version identifier (e.g., '2024-A', '2024-REV1')
@@ -78,7 +78,7 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
     public Curriculum UpdateEffectiveYear(int newEffectiveYear)
     {
         if (EffectiveYear == newEffectiveYear) return this;
-        EffectiveYear = Guard.Against.OutOfRange(newEffectiveYear, nameof(newEffectiveYear), 2000, 9999);
+        EffectiveYear = Year.From(Guard.Against.OutOfRange(newEffectiveYear, nameof(newEffectiveYear), 2000, 9999));
         return this;
     }
 

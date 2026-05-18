@@ -20,7 +20,7 @@ public class ListLatestActiveCurriculumsQueryHandler
     {
         var result = await curriculumRepository.GetAllLatestActiveCurriculumPerCourse(cancellationToken);
 
-        var curriculumIds = result.Select(c => c.Id).ToList();
+        var curriculumIds = result.Select(c => c.CurriculumId).ToList();
 
         var curriculums = await readRepository.ListAsync(new GetCurriculumsWithSubjectsByIdsSpec(curriculumIds), cancellationToken);
 

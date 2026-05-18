@@ -4,7 +4,7 @@
 -- No course will appear more than once in this view.
 CREATE VIEW vw_LatestActiveCurriculumPerCourse AS
 SELECT
-    Id,
+    Id As CurriculumId,
     CourseId,
     EffectiveYear,
     Version,
