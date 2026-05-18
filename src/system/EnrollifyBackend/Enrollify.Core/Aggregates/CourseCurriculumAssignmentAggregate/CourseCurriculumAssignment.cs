@@ -46,4 +46,11 @@ public class CourseCurriculumAssignment : EntityBase<CourseCurriculumAssignment,
     public User? DeletedByUser { get; private set; }
     public bool IsActive { get; private set; }
 
+    public CourseCurriculumAssignment UpdateCurriculum(CurriculumId newCurriculumId)
+    {
+        if (CurriculumId == newCurriculumId) return this;
+        CurriculumId = Guard.Against.Null(newCurriculumId, nameof(newCurriculumId));
+        return this;
+    }
+
 }

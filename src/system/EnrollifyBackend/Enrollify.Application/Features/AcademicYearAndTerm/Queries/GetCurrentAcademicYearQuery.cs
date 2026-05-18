@@ -7,18 +7,18 @@ using Mediator;
 
 namespace Enrollify.Application.Features.AcademicYearAndTerm.Queries;
 
-public class GetActiveAcademicYearQuery : IQuery<Result<AcademicYearDto>>;
+public class GetCurrentAcademicYearQuery : IQuery<Result<AcademicYearDto>>;
 
-public sealed class GetActiveAcademicYearQueryHandler : IQueryHandler<GetActiveAcademicYearQuery, Result<AcademicYearDto>>
+public sealed class GetCurrentAcademicYearQueryHandler : IQueryHandler<GetCurrentAcademicYearQuery, Result<AcademicYearDto>>
 {
     private readonly IReadRepository<AcademicYear> _readRepository;
 
-    public GetActiveAcademicYearQueryHandler(IReadRepository<AcademicYear> readRepository)
+    public GetCurrentAcademicYearQueryHandler(IReadRepository<AcademicYear> readRepository)
     {
         _readRepository = readRepository;
     }
 
-    public async ValueTask<Result<AcademicYearDto>> Handle(GetActiveAcademicYearQuery query, CancellationToken cancellationToken)
+    public async ValueTask<Result<AcademicYearDto>> Handle(GetCurrentAcademicYearQuery query, CancellationToken cancellationToken)
     {
         var activeAcademicYear = await _readRepository.FirstOrDefaultAsync(new GetActiveAcademicYearSpec(), cancellationToken);
         if (activeAcademicYear is null)
