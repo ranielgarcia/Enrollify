@@ -1,11 +1,8 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
-using Enrollify.Application.Features.Curriculums;
-using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
-using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Services;
 using Enrollify.SharedKernel;
 using Mediator;
