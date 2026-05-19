@@ -16,7 +16,7 @@ FROM (
         c.*,
         ROW_NUMBER() OVER (
             PARTITION BY c.CourseId
-            ORDER BY c.EffectiveYear DESC
+            ORDER BY c.EffectiveYear DESC, c.Version DESC, c.ApprovedDate DESC, c.Id DESC
         ) AS rn
     FROM Curriculums c
     WHERE c.IsActive = 1
