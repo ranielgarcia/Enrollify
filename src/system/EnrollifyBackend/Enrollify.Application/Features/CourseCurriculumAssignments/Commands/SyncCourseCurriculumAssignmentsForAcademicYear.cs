@@ -50,7 +50,7 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
             }
 
             var courses = await _courseReadRepository.ListAsync(cancellationToken);
-            var existingAssignments = await _readRepository.ListAsync(new GetAllCourseCurriculumAssignmentsForAcademicYearIdSpec(academicYear.Id), cancellationToken);
+            var existingAssignments = await _readRepository.ListAsync(new GetAllCourseCurriculumAssignmentsByAcademicYearIdSpec(academicYear.Id), cancellationToken);
 
             // Get the latest active curriculum for each course that is applicable to the academic year's start date/year
             var applicableCurriculums = await _applicableCurriculumQueryService.GetApplicableCurriculumsForAcademicYearStartDateAsync(academicYear.StartDate, cancellationToken);
