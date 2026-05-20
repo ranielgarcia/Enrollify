@@ -123,7 +123,6 @@ export default function SectionsManagementPage() {
             onOpenChange={setIsBulkInitializeOpen}
             courses={courses ?? []}
             curricula={curricula ?? []}
-            academicTerms={[]}
           />
           <SectionFormDrawer
             key={sectionToEdit?.id ?? "new"}
