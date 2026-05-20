@@ -55,7 +55,7 @@ public class SaveCurriculumContent
 
             if (curriculum.StatusId == CurriculumStatusEnum.Active)
             {
-                return Result.Forbidden("Active curriculums cannot be modified. Please deactivate the curriculum before making changes.");
+                return Result.Forbidden("Active curriculums cannot be modified.");
             }
 
             // Collect all subject codes from the grid (including prerequisites)

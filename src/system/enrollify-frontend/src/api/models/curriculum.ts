@@ -28,8 +28,8 @@ const CurriculumStatusSchema = z.object({
 });
 
 // sample:
-// curriculum.status.value === CurriculumStatusEnum.Active; // 2 === 2 ✓
-// curriculum.status.name === "Active";
+// curriculum.status.value === CurriculumStatusEnum.Active  // 2 === 2 ✓
+// curriculum.status.name === "Active"                      // "Active" === "Active" ✓
 
 export const CurriculumSchema = z
   .object({
