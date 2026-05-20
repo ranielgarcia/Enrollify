@@ -1,7 +1,3 @@
-import {
-  createSectionOptions,
-  updateSectionOptions,
-} from "@/api/collections/class-section-collection";
 import type { ClassSection } from "@/api/models/class-section";
 import type { Course } from "@/api/models/course";
 import type { Teacher } from "@/api/models/teacher";
@@ -21,7 +17,6 @@ import {
 } from "@/components/ui/drawer";
 import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { z } from "zod";
 import type { AcademicTerm } from "@/api/models/academic-year";
@@ -67,10 +62,10 @@ export function SectionFormDrawer({
 }: SectionFormDrawerProps) {
   const isUpdating = !!sectionToUpdate;
 
-  const { mutateAsync: createSection } = useMutation(createSectionOptions());
-  const { mutateAsync: updateSection } = useMutation(
-    updateSectionOptions(sectionToUpdate?.id ?? 0),
-  );
+  // const { mutateAsync: createSection } = useMutation(createSectionOptions());
+  // const { mutateAsync: updateSection } = useMutation(
+  //   updateSectionOptions(sectionToUpdate?.id ?? 0),
+  // );
 
   const courseOptions = courses.map((c) => ({
     value: c.id.toString(),
@@ -105,9 +100,11 @@ export function SectionFormDrawer({
     onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
       if (meta.submitAction === "create") {
-        await createSection(value);
+        console.log(value);
+        // await createSection(value);
       } else if (meta.submitAction === "update") {
-        await updateSection(value);
+        // await updateSection(value);
+        console.log(value);
       }
       if (meta.formAction === "close") {
         setIsOpen(false);

@@ -1,11 +1,7 @@
-import {
-  bulkInitializeSectionsOptions,
-  type BulkInitializeClassSectionsRequest,
-  type BulkInitializePayload,
-} from "@/api/collections/class-section-collection";
+import { bulkInitializeSectionsOptions } from "@/api/collections/class-section-collection";
 import type { Course } from "@/api/models/course";
-import type { Curriculum } from "@/api/models/curriculum";
 import { FormSelectField } from "@/components/form/form-select-field";
+import { SearchableSelectWithCustomTrigger } from "@/components/form/searchable-select-with-custom-trigger";
 import { FormSection } from "@/components/form/form-section";
 import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
 import { Unauthorized } from "@/components/unauthorized";
@@ -19,14 +15,12 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { ListPlus, X } from "lucide-react";
+import { BookOpen, ChevronDown, ListPlus, Minus, Plus, X } from "lucide-react";
 import { z } from "zod";
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 const YEAR_LEVEL_OPTIONS = [
@@ -34,9 +28,14 @@ const YEAR_LEVEL_OPTIONS = [
   { value: "2", label: "2nd Year" },
   { value: "3", label: "3rd Year" },
   { value: "4", label: "4th Year" },
-  { value: "5", label: "5th Year" },
-  { value: "6", label: "6th Year" },
 ];
+
+const bulkInitializePayload = z.object({
+  courseId: z.number(),
+  numberOfSections: z.number().min(1).max(26),
+});
+
+type BulkInitializePayload = z.infer<typeof bulkInitializePayload>;
 
 const bulkInitializeFormSchema = z.object({
   academicTermId: z.number().min(1, "Academic term is required"),
@@ -45,13 +44,15 @@ const bulkInitializeFormSchema = z.object({
     .int()
     .min(1)
     .max(6, "Year level must be between 1 and 6"),
+  requestPayload: z
+    .array(bulkInitializePayload)
+    .min(1, "Add at least one course"),
 });
 
 type BulkInitializeFormData = z.infer<typeof bulkInitializeFormSchema>;
 
 interface CoursePayloadRow {
   course: Course;
-  curriculum: Curriculum | null;
   numberOfSections: number;
 }
 
@@ -60,7 +61,6 @@ interface BulkInitializeSectionsDrawerProps {
   setIsOpen: (open: boolean) => void;
   onOpenChange: (isOpen: boolean) => void;
   courses: Course[];
-  curricula: Curriculum[];
 }
 
 export function BulkInitializeSectionsDrawer({
@@ -68,12 +68,10 @@ export function BulkInitializeSectionsDrawer({
   setIsOpen,
   onOpenChange,
   courses,
-  curricula,
 }: BulkInitializeSectionsDrawerProps) {
   const [selectedCourseRows, setSelectedCourseRows] = useState<
     CoursePayloadRow[]
   >([]);
-  const [selectedCourseId, setSelectedCourseId] = useState<number>(0);
 
   const { selectedAcademicYear } = useEnrollmentContext();
 
@@ -99,6 +97,7 @@ export function BulkInitializeSectionsDrawer({
   const defaultValues: BulkInitializeFormData = {
     academicTermId: 0,
     yearLevel: 1,
+    requestPayload: [],
   };
 
   const form = useForm({
@@ -113,12 +112,11 @@ export function BulkInitializeSectionsDrawer({
         const payloads: BulkInitializePayload[] = selectedCourseRows.map(
           (row) => ({
             courseId: row.course.id,
-            curriculumId: row.curriculum?.id ?? 0,
             numberOfSections: row.numberOfSections,
           }),
         );
 
-        const request: BulkInitializeClassSectionsRequest = {
+        const request: BulkInitializeFormData = {
           academicTermId: value.academicTermId,
           yearLevel: value.yearLevel,
           requestPayload: payloads,
@@ -130,33 +128,10 @@ export function BulkInitializeSectionsDrawer({
       if (meta.formAction === "close") {
         setIsOpen(false);
         setSelectedCourseRows([]);
-        setSelectedCourseId(0);
       }
       form.reset();
     },
   });
-
-  const handleAddCourse = () => {
-    if (selectedCourseId === 0) return;
-
-    const course = courses.find((c) => c.id === selectedCourseId);
-    if (!course) return;
-
-    // Find latest active curriculum for this course
-    const latestCurriculum = curricula
-      .filter((cur) => cur.courseId === course.id && cur.statusId === 2) // statusId 2 = Active
-      .sort((a, b) => (b.id ?? 0) - (a.id ?? 0))[0];
-
-    setSelectedCourseRows([
-      ...selectedCourseRows,
-      {
-        course,
-        curriculum: latestCurriculum ?? null,
-        numberOfSections: 1,
-      },
-    ]);
-    setSelectedCourseId(0);
-  };
 
   const handleRemoveCourse = (courseId: number) => {
     setSelectedCourseRows(
@@ -252,113 +227,142 @@ export function BulkInitializeSectionsDrawer({
               <FormSection title="Courses & Sections">
                 <div className="space-y-4">
                   {/* Course Selector */}
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <label className="text-sm font-medium mb-1.5 block">
-                        Add Course
-                      </label>
-                      <select
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                        value={selectedCourseId}
-                        onChange={(e) =>
-                          setSelectedCourseId(Number(e.target.value))
-                        }
-                      >
-                        <option value="0">Select a course...</option>
-                        {courseOptions.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <Button
-                      type="button"
-                      onClick={handleAddCourse}
-                      disabled={selectedCourseId === 0}
-                      className="self-end"
-                      size="sm"
-                    >
-                      Add
-                    </Button>
+                  <div>
+                    <label className="text-sm font-medium mb-1.5 block">
+                      Add Course
+                    </label>
+                    <SearchableSelectWithCustomTrigger
+                      options={courseOptions}
+                      searchPlaceholder="Search courses..."
+                      emptyMessage="No courses found."
+                      value={[]}
+                      onValueChange={(vals) => {
+                        if (vals.length === 0) return;
+                        const courseId = Number(vals[vals.length - 1]);
+                        const course = courses.find((c) => c.id === courseId);
+                        if (!course) return;
+                        setSelectedCourseRows((prev) => [
+                          ...prev,
+                          { course, numberOfSections: 1 },
+                        ]);
+                      }}
+                      trigger={
+                        <div className="w-full border border-input rounded-md px-3 py-2 text-sm flex items-center justify-between cursor-pointer bg-background hover:bg-accent">
+                          <span className="text-muted-foreground">
+                            Select a course...
+                          </span>
+                          <ChevronDown className="size-4 opacity-50" />
+                        </div>
+                      }
+                    />
                   </div>
 
                   {/* Selected Courses List */}
                   {selectedCourseRows.length === 0 ? (
-                    <Card className="p-6 text-center text-sm text-muted-foreground border-dashed">
-                      No courses selected. Add at least one course to continue.
-                    </Card>
+                    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed bg-muted/20 py-8 text-center">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-dashed bg-muted/60">
+                        <BookOpen className="h-5 w-5 text-muted-foreground/50" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-muted-foreground">
+                          No courses added yet
+                        </p>
+                        <p className="text-xs text-muted-foreground/70">
+                          Select a course above to get started
+                        </p>
+                      </div>
+                    </div>
                   ) : (
-                    <div className="space-y-3">
-                      {selectedCourseRows.map((row) => (
-                        <Card key={row.course.id} className="p-4">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1 space-y-2">
-                              <div className="flex items-center gap-2">
-                                <span className="font-semibold text-sm">
-                                  {row.course.code}
-                                </span>
-                                <span className="text-sm text-muted-foreground">
-                                  — {row.course.name}
-                                </span>
-                              </div>
-
-                              {row.curriculum ? (
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className="text-xs">
-                                    Curriculum: {row.curriculum.version}
-                                  </Badge>
-                                  <span className="text-xs text-muted-foreground">
-                                    (Auto-selected latest active)
+                    <div className="space-y-2">
+                      <p className="px-0.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                        {selectedCourseRows.length}{" "}
+                        {selectedCourseRows.length === 1 ? "course" : "courses"}{" "}
+                        added
+                      </p>
+                      <div className="grid gap-2">
+                        {selectedCourseRows.map((row, idx) => (
+                          <div
+                            key={row.course.id}
+                            className="group flex items-center justify-between rounded-lg border bg-card px-4 py-3 transition-colors hover:bg-accent/40"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-bold text-primary">
+                                {idx + 1}
+                              </span>
+                              <div className="space-y-0.5">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="rounded bg-primary/10 px-1.5 py-0.5 text-xs font-semibold text-primary">
+                                    {row.course.code}
+                                  </span>
+                                  <span className="text-sm font-medium leading-none">
+                                    {row.course.name}
                                   </span>
                                 </div>
-                              ) : (
-                                <Badge variant="destructive" className="text-xs">
-                                  No active curriculum found
-                                </Badge>
-                              )}
-
-                              <div className="flex items-center gap-2">
-                                <label className="text-xs font-medium">
-                                  Number of Sections:
-                                </label>
-                                <input
-                                  type="number"
-                                  min="1"
-                                  max="26"
-                                  value={row.numberOfSections}
-                                  onChange={(e) =>
-                                    handleUpdateSectionCount(
-                                      row.course.id,
-                                      Number(e.target.value),
-                                    )
-                                  }
-                                  className="w-20 border border-gray-300 rounded px-2 py-1 text-xs"
-                                />
-                                <span className="text-xs text-muted-foreground">
-                                  (Max 26: A-Z)
-                                </span>
+                                <p className="text-xs text-muted-foreground">
+                                  {row.numberOfSections}{" "}
+                                  {row.numberOfSections === 1
+                                    ? "section"
+                                    : "sections"}{" "}
+                                  will be created
+                                </p>
                               </div>
                             </div>
 
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleRemoveCourse(row.course.id)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <X className="size-4" />
-                            </Button>
+                            <div className="flex items-center gap-2">
+                              {/* +/- stepper */}
+                              <div className="flex items-center gap-1 rounded-lg border bg-muted/40 px-1 py-0.5">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleUpdateSectionCount(
+                                      row.course.id,
+                                      Math.max(1, row.numberOfSections - 1),
+                                    )
+                                  }
+                                  disabled={row.numberOfSections <= 1}
+                                  className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:opacity-40"
+                                >
+                                  <Minus className="size-3" />
+                                </button>
+                                <span className="w-5 text-center text-sm font-semibold tabular-nums">
+                                  {row.numberOfSections}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleUpdateSectionCount(
+                                      row.course.id,
+                                      Math.min(26, row.numberOfSections + 1),
+                                    )
+                                  }
+                                  disabled={row.numberOfSections >= 26}
+                                  className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:opacity-40"
+                                >
+                                  <Plus className="size-3" />
+                                </button>
+                              </div>
+
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  handleRemoveCourse(row.course.id)
+                                }
+                                className="h-8 w-8 p-0 text-muted-foreground opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+                              >
+                                <X className="size-4" />
+                              </Button>
+                            </div>
                           </div>
-                        </Card>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   )}
 
                   <p className="text-xs text-muted-foreground">
-                    Tip: The system will auto-generate section codes (A, B, C...)
-                    and create subject offerings based on the curriculum.
+                    Tip: The system will auto-generate section codes (A, B,
+                    C...) and create subject offerings based on the curriculum.
                   </p>
                 </div>
               </FormSection>
