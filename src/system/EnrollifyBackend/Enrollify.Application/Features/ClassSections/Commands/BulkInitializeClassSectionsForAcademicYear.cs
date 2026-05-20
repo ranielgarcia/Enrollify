@@ -61,9 +61,28 @@ public static class BulkInitializeClassSectionsForAcademicYear
             var courseCurriculumAssignments = await _courseCurriculumAssignmentsReadRepository.ListAsync(new GetAllCourseCurriculumAssignmentsByAcademicYearIdSpec(academicYear.Id), cancellationToken);
             var courseCurriculumAssignmentsByCourseId = courseCurriculumAssignments.ToDictionary(x => x.CourseId, x => x);
 
-            var existingSections = await _classSectionReadRepository.ListAsync(new GetExistingClassSectionsByCourseYearLevelAndTerm(command.yearLevel, command.academicTermId, command.requestPayload.Select(p => p.courseId).ToList()), cancellationToken);
+            var payloadCourseIds = command.requestPayload.Select(p => p.courseId).ToList();
+            var existingSections = await _classSectionReadRepository.ListAsync(
+                new GetExistingClassSectionsByCourseYearLevelAndTerm(
+                    new List<YearLevel> { command.yearLevel },
+                    payloadCourseIds,
+                    new List<AcademicTermId> { command.academicTermId }),
+                cancellationToken);
             var existingSectionsByCourseId = existingSections.GroupBy(s => s.CourseId).ToDictionary(g => g.Key, g => g.ToList());
 
+            // H5: Pre-validate that every course has subjects for the given year level and term before opening the transaction.
+            // Fails fast without any DB writes if any course's curriculum has no subjects for this year/term.
+            foreach (var payload in command.requestPayload)
+            {
+                var assignment = courseCurriculumAssignmentsByCourseId[payload.courseId];
+                if (!assignment.Curriculum!.GetSubjectsByYearAndTerm(command.yearLevel, academicTerm.TermNumber).Any())
+                {
+                    _logger.LogWarning(
+                        "No curriculum subjects found for course {CourseId}, year level {YearLevel}, term {TermNumber}",
+                        payload.courseId, command.yearLevel, academicTerm.TermNumber);
+                    return Result.Error($"No curriculum subjects found for course '{assignment.Course!.Code.Value}', year level {command.yearLevel}, term {academicTerm.TermNumber}.");
+                }
+            }
 
             // Begin transaction to ensure all database operations succeed or fail together
             await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -74,33 +93,24 @@ public static class BulkInitializeClassSectionsForAcademicYear
 
                 foreach (var payload in command.requestPayload)
                 {
+                    // H3: Direct property access — validator guarantees assignment exists;
+                    // dictionary indexer throws rather than returning null, so ?. operators are redundant.
                     var courseCurriculumAssignment = courseCurriculumAssignmentsByCourseId[payload.courseId];
+                    var curriculum = courseCurriculumAssignment.Curriculum!;
+                    var course = courseCurriculumAssignment.Course!;
 
-                    var curriculum = courseCurriculumAssignment?.Curriculum;
-                    var course = courseCurriculumAssignment?.Course;
-
-                    if (courseCurriculumAssignment == null || curriculum == null || course == null)
-                    {
-                        _logger.LogWarning("Skipping initializing class section for courseId {CourseId}", payload.courseId);
-                        continue;
-                    }
-
-                    // Get subjects that should be offered for this class section
-                    var curriculumSubjects = courseCurriculumAssignment?.Curriculum?.GetSubjectsByYearAndTerm(command.yearLevel, academicTerm.TermNumber);
-                    if (curriculumSubjects == null || !curriculumSubjects.Any())
-                    {
-                        _logger.LogWarning(
-                            "No curriculum subjects found for course {CourseId}, year level {YearLevel}, term {TermNumber}",
-                            payload.courseId, command.yearLevel, academicTerm.TermNumber);
-                        return Result.Error($"No curriculum subjects found for course '{course.Code.Value}', year level {command.yearLevel}, term {academicTerm.TermNumber}.");
-                    }
+                    // H4: Materialize once so .Count is a cheap property read and the inner foreach
+                    // doesn't re-evaluate the IEnumerable on every iteration.
+                    var curriculumSubjects = curriculum
+                        .GetSubjectsByYearAndTerm(command.yearLevel, academicTerm.TermNumber)
+                        .ToList();
 
                     // Get existing sections to determine starting section code
                     var existingClassSections = existingSectionsByCourseId.GetValueOrDefault(payload.courseId);
                     var lastExistingClassSectionCode = existingClassSections?
                         .OrderByDescending(cs => cs.SectionCode)
                         .FirstOrDefault()?
-                        .SectionCode; 
+                        .SectionCode;
 
                     // Create the requested number of sections
                     for (var i = 0; i < payload.numberOfSections; i++)
@@ -149,7 +159,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
                         totalSectionsCreated++;
                         _logger.LogInformation(
                             "Created class section {SectionName} (ID: {ClassSectionId}) with {SubjectCount} subject offerings",
-                            newClassSection.Name, classSectionId, curriculumSubjects.Count());
+                            newClassSection.Name, classSectionId, curriculumSubjects.Count);
                     }
                 }
 
