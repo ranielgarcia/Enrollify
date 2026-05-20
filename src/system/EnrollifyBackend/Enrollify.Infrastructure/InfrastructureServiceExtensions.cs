@@ -23,6 +23,7 @@ using Enrollify.Core.Services;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
 using Enrollify.Infrastructure.Data.Queries;
+using Enrollify.Infrastructure.Persistence;
 using Enrollify.Infrastructure.Repositories;
 using Enrollify.Infrastructure.Services;
 using Enrollify.Infrastructure.Storage;
@@ -84,6 +85,7 @@ public static class InfrastructureServiceExtensions
 
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
+        services.AddSingleton<IDbExceptionTranslator, SqlServerExceptionTranslator>();
         services.AddScoped<IListRolesQueryService, ListRolesQueryService>();
         services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
         services.AddScoped<ICollegeRepository, CollegeRepository>();

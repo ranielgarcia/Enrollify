@@ -61,6 +61,10 @@ public static class BulkInitializeClassSectionsForAcademicYear
             var courseCurriculumAssignments = await _courseCurriculumAssignmentsReadRepository.ListAsync(new GetAllCourseCurriculumAssignmentsByAcademicYearIdSpec(academicYear.Id), cancellationToken);
             var courseCurriculumAssignmentsByCourseId = courseCurriculumAssignments.ToDictionary(x => x.CourseId, x => x);
 
+            var existingSections = await _classSectionReadRepository.ListAsync(new GetExistingClassSectionsByCourseYearLevelAndTerm(command.yearLevel, command.academicTermId, command.requestPayload.Select(p => p.courseId).ToList()), cancellationToken);
+            var existingSectionsByCourseId = existingSections.GroupBy(s => s.CourseId).ToDictionary(g => g.Key, g => g.ToList());
+
+
             // Begin transaction to ensure all database operations succeed or fail together
             await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
@@ -92,13 +96,11 @@ public static class BulkInitializeClassSectionsForAcademicYear
                     }
 
                     // Get existing sections to determine starting section code
-                    var existingClassSections = await _classSectionReadRepository.ListAsync(
-                        new GetExistingClassSectionsByCourseYearLevelAndTerm(command.yearLevel, payload.courseId, command.academicTermId),
-                        cancellationToken);
+                    var existingClassSections = existingSectionsByCourseId.GetValueOrDefault(payload.courseId);
                     var lastExistingClassSectionCode = existingClassSections?
                         .OrderByDescending(cs => cs.SectionCode)
                         .FirstOrDefault()?
-                        .SectionCode;
+                        .SectionCode; 
 
                     // Create the requested number of sections
                     for (var i = 0; i < payload.numberOfSections; i++)
