@@ -10,7 +10,7 @@ public class GetAllCourseCurriculumAssignmentsByAcademicYearIdSpec : Specificati
     {
         Query
             .Include(a => a.Course)
-            .Include(a => a.Curriculum)
+            .Include(a => a.Curriculum).ThenInclude(a => a.CurriculumSubjects.Where(x => x.IsActive))
             .AsSplitQuery()
             .Where(a => a.EntryAcademicYearId == academicYearId);
     }

@@ -9,10 +9,9 @@ public class GetCourseCurriculumAssignmentByCourseAndAcademicYear : Specificatio
 {
     public GetCourseCurriculumAssignmentByCourseAndAcademicYear(CourseId courseId, AcademicYearId academicYearId)
     {
-
         Query
             .Include(a => a.Course)
-            .Include(a => a.Curriculum)
+            .Include(a => a.Curriculum).ThenInclude(x => x.CurriculumSubjects.Where(cs => cs.IsActive))
             .Where(a => a.EntryAcademicYearId == academicYearId && a.CourseId == courseId);
     }
 }
