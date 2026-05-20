@@ -40,7 +40,7 @@ public static class UpdateCurriculum
 
             if (curriculum.StatusId == CurriculumStatusEnum.Active)
             {
-                return Result.Forbidden("Active curriculums cannot be modified. Please deactivate the curriculum before making changes.");
+                return Result.Forbidden("Active curriculums cannot be modified.");
             }
 
             // Status should be updated manually

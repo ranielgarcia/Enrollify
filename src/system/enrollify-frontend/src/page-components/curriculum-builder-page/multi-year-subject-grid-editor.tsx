@@ -1,4 +1,7 @@
-import { saveCurriculumContentOptions } from "@/api/collections/curriculum-collection";
+import {
+  approveCurriculumOptions,
+  saveCurriculumContentOptions,
+} from "@/api/collections/curriculum-collection";
 import { getAllSubjectsMinimalOptions } from "@/api/collections/subject-collection";
 import type { CurriculumWithSubjects } from "@/api/models/curriculum";
 import {
@@ -168,6 +171,9 @@ export default function MultiYearSubjectGridEditor({
   const [grid, setGrid] = useState<YearGrid>(initialState.grid);
   const { mutateAsync: saveCurriculumContentAsync } = useMutation(
     saveCurriculumContentOptions(curriculum.id),
+  );
+  const { mutateAsync: approveCurriculumAsync } = useMutation(
+    approveCurriculumOptions(curriculum.id),
   );
 
   const { data: availableSubjects } = useSuspenseQuery(
@@ -790,7 +796,10 @@ export default function MultiYearSubjectGridEditor({
             ) : null}
             Save as Draft
           </Button>
-          <Button className="bg-primary text-primary-foreground">
+          <Button
+            className="bg-primary text-primary-foreground"
+            onClick={async () => await approveCurriculumAsync({})}
+          >
             Finalize Curriculum
           </Button>
         </div>

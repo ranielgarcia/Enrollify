@@ -356,6 +356,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/curriculums/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesCurriculumsApproveCurriculumEndpoint"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/curriculums": {
         parameters: {
             query?: never;
@@ -981,6 +997,7 @@ export interface components {
             /** Format: int32 */
             collegeId: number;
         };
+        EnrollifyWebAPIFeaturesCurriculumsApproveCurriculumRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesCurriculumsCreateDraftCurriculumRequest: {
             /** Format: int32 */
             courseId: number;
@@ -1166,8 +1183,6 @@ export interface components {
         EnrollifyWebAPIFeaturesClassSectionsBulkInitializePayloadRequest: {
             /** Format: int32 */
             courseId?: number;
-            /** Format: int32 */
-            curriculumId?: number;
             /** Format: int32 */
             numberOfSections?: number;
         };
@@ -2462,6 +2477,42 @@ export interface operations {
         };
     };
     EnrollifyWebAPIFeaturesDepartmentsDeleteEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesCurriculumsApproveCurriculumEndpoint: {
         parameters: {
             query?: never;
             header?: never;

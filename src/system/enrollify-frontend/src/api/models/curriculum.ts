@@ -3,15 +3,33 @@ import { AuditInfoSchema } from "./audit-info";
 import { CourseSchema } from "./course";
 import { dateTransformer } from "./date-transformer";
 
+export const CurriculumStatusEnum = {
+  Draft: 1,
+  Active: 2,
+  PhaseOut: 3,
+  Archived: 4,
+} as const;
+
+type CurriculumStatusName = keyof typeof CurriculumStatusEnum;
+
 const CourseSummarySchema = CourseSchema.pick({
   id: true,
   name: true,
 });
 
 const CurriculumStatusSchema = z.object({
-  value: z.number(),
-  name: z.string(),
+  value: z.enum(CurriculumStatusEnum),
+  name: z.enum(
+    Object.keys(CurriculumStatusEnum) as [
+      CurriculumStatusName,
+      ...CurriculumStatusName[],
+    ],
+  ),
 });
+
+// sample:
+// curriculum.status.value === CurriculumStatusEnum.Active; // 2 === 2 ✓
+// curriculum.status.name === "Active";
 
 export const CurriculumSchema = z
   .object({
