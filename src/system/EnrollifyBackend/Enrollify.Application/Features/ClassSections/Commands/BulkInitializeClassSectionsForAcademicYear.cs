@@ -19,15 +19,9 @@ namespace Enrollify.Application.Features.ClassSections.Commands;
 
 public static class BulkInitializeClassSectionsForAcademicYear
 {
-    public sealed record Payload(
-        CourseId courseId,
-        int numberOfSections);
+    public sealed record Payload(CourseId courseId, int numberOfSections);
 
-    public sealed record Command(
-        AcademicTermId academicTermId,
-        YearLevel yearLevel,
-        List<Payload> requestPayload
-        ) : ICommand<Result>;
+    public sealed record Command(AcademicTermId academicTermId, YearLevel yearLevel, List<Payload> requestPayload) : ICommand<Result>;
 
     public sealed class Handler : ICommandHandler<Command, Result>
     {
