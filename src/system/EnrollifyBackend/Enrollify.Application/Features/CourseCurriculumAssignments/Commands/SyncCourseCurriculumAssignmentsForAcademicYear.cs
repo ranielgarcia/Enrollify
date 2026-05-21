@@ -82,7 +82,7 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
                 if (existing == null)
                 {
                     var newAssignment = new CourseCurriculumAssignment(course.Id, command.AcademicYearId, curriculum.Id);
-                    _logger.LogInformation("Added new course-curriculum assignment: {@newCourseCurriculumAssignment}", newAssignment);
+                    //_logger.LogInformation("Added new course-curriculum assignment: {@newCourseCurriculumAssignment}", newAssignment);
                     courseCurriculumAssignmentsToCreate.Add(newAssignment);
                 }
             }

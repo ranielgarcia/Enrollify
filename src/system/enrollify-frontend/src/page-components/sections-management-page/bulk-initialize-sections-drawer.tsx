@@ -20,7 +20,7 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { BookOpen, ChevronDown, ListPlus, Minus, Plus, X } from "lucide-react";
 import { z } from "zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 const YEAR_LEVEL_OPTIONS = [
@@ -34,8 +34,6 @@ const bulkInitializePayload = z.object({
   courseId: z.number(),
   numberOfSections: z.number().min(1).max(26),
 });
-
-type BulkInitializePayload = z.infer<typeof bulkInitializePayload>;
 
 const bulkInitializeFormSchema = z.object({
   academicTermId: z.number().min(1, "Academic term is required"),
@@ -109,20 +107,11 @@ export function BulkInitializeSectionsDrawer({
     onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
       if (meta.submitAction === "create") {
-        const payloads: BulkInitializePayload[] = selectedCourseRows.map(
-          (row) => ({
-            courseId: row.course.id,
-            numberOfSections: row.numberOfSections,
-          }),
-        );
-
-        const request: BulkInitializeFormData = {
+        await bulkInitialize({
           academicTermId: value.academicTermId,
           yearLevel: value.yearLevel,
-          requestPayload: payloads,
-        };
-
-        await bulkInitialize(request);
+          requestPayload: value.requestPayload,
+        });
       }
 
       if (meta.formAction === "close") {
@@ -132,6 +121,17 @@ export function BulkInitializeSectionsDrawer({
       form.reset();
     },
   });
+
+  useEffect(() => {
+    form.setFieldValue(
+      "requestPayload",
+      selectedCourseRows.map((row) => ({
+        courseId: row.course.id,
+        numberOfSections: row.numberOfSections,
+      })),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCourseRows]);
 
   const handleRemoveCourse = (courseId: number) => {
     setSelectedCourseRows(

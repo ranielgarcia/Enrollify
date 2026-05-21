@@ -3,6 +3,7 @@ using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Application.Features.ClassSections.Extensions;
 using Enrollify.Application.Features.ClassSections.Specifications;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings;
+using Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;

@@ -8,10 +8,12 @@ public class GetAllCourseCurriculumAssignmentsByAcademicYearIdSpec : Specificati
 {
     public GetAllCourseCurriculumAssignmentsByAcademicYearIdSpec(AcademicYearId academicYearId)
     {
+        // NOTE: Next you encounter an issue related to adding AsSplitQuery, check all related query entities EF IEntityTypeConfiguration,
+        // They are not configured properly, e.g. a nullable column is marked as required in the configuration
         Query
             .Include(a => a.Course)
             .Include(a => a.Curriculum).ThenInclude(a => a.CurriculumSubjects.Where(x => x.IsActive))
-            .AsSplitQuery()
+            .AsSplitQuery() 
             .Where(a => a.EntryAcademicYearId == academicYearId);
     }
 }
