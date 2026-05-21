@@ -8,6 +8,8 @@ import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { SearchTeachersDialog } from "@/components/shared/search-teachers-dialog";
 import {
   Drawer,
   DrawerContent,
@@ -17,7 +19,8 @@ import {
 } from "@/components/ui/drawer";
 import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { useForm } from "@tanstack/react-form";
-import { Plus } from "lucide-react";
+import { Plus, UserRound } from "lucide-react";
+import { useState } from "react";
 import { z } from "zod";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
@@ -37,7 +40,6 @@ interface SectionFormDrawerProps {
   sectionToUpdate?: ClassSection | null;
   onOpenChange: (isOpen: boolean) => void;
   courses: Course[];
-  teachers: Teacher[];
 }
 
 export function SectionFormDrawer({
@@ -46,13 +48,27 @@ export function SectionFormDrawer({
   sectionToUpdate,
   onOpenChange,
   courses,
-  teachers,
 }: SectionFormDrawerProps) {
   const isUpdating = !!sectionToUpdate;
   const {
     selectedAcademicYear,
     academicCoreSettings: { yearLevelOptions },
   } = useEnrollmentContext();
+
+  const [isAdviserDialogOpen, setIsAdviserDialogOpen] = useState(false);
+  const [selectedAdviser, setSelectedAdviser] = useState<Pick<
+    Teacher,
+    "id" | "firstName" | "lastName" | "teacherIdentifier"
+  > | null>(
+    sectionToUpdate?.adviser
+      ? {
+          id: sectionToUpdate.adviser.id,
+          firstName: sectionToUpdate.adviser.firstName,
+          lastName: sectionToUpdate.adviser.lastName,
+          teacherIdentifier: "",
+        }
+      : null,
+  );
 
   // const { mutateAsync: createSection } = useMutation(createSectionOptions());
   // const { mutateAsync: updateSection } = useMutation(
@@ -62,11 +78,6 @@ export function SectionFormDrawer({
   const courseOptions = courses.map((c) => ({
     value: c.id.toString(),
     label: `${c.code} — ${c.name}`,
-  }));
-
-  const teacherOptions = teachers.map((t) => ({
-    value: t.id.toString(),
-    label: `${t.firstName} ${t.lastName}`,
   }));
 
   const termOptions = selectedAcademicYear?.academicTerms
@@ -203,17 +214,57 @@ export function SectionFormDrawer({
               </form.Field>
 
               <form.Field name="adviserId">
-                {(field) => (
-                  <FormSelectField
-                    field={field}
-                    label="Adviser"
-                    options={teacherOptions}
-                    placeholder="Select adviser"
-                    searchPlaceholder="Search teachers..."
-                    required
-                  />
-                )}
+                {(field) => {
+                  const errorMessage = field.state.meta.errors
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    .map((e: any) => (typeof e === "string" ? e : e?.message))
+                    .filter(Boolean)
+                    .join(", ");
+                  const hasError = !field.state.meta.isValid && errorMessage;
+                  return (
+                    <div className="grid w-full items-center gap-1.5">
+                      <Label htmlFor={field.name}>
+                        Adviser
+                        <span className="text-destructive ml-0.5">*</span>
+                      </Label>
+                      <Button
+                        id={field.name}
+                        type="button"
+                        variant="outline"
+                        className="justify-start font-normal"
+                        onClick={() => setIsAdviserDialogOpen(true)}
+                      >
+                        <UserRound className="size-4 text-muted-foreground" />
+                        {selectedAdviser ? (
+                          `${selectedAdviser.firstName} ${selectedAdviser.lastName}`
+                        ) : (
+                          <span className="text-muted-foreground">
+                            Select adviser
+                          </span>
+                        )}
+                      </Button>
+                      {hasError && (
+                        <p className="text-sm text-destructive">
+                          {errorMessage}
+                        </p>
+                      )}
+                    </div>
+                  );
+                }}
               </form.Field>
+
+              <SearchTeachersDialog
+                isOpen={isAdviserDialogOpen}
+                onOpenChange={setIsAdviserDialogOpen}
+                title="Select Adviser"
+                maxSelections={1}
+                excludeTeacherIds={selectedAdviser ? [selectedAdviser.id] : []}
+                onSubmit={async (teachers) => {
+                  const teacher = teachers[0];
+                  setSelectedAdviser(teacher);
+                  form.setFieldValue("adviserId", teacher.id);
+                }}
+              />
             </FormSection>
           </form>
 

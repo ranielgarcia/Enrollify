@@ -1,5 +1,4 @@
 import { getAllCoursesOptions } from "@/api/collections/course-collection";
-import { filterTeachersPaginatedOptions } from "@/api/collections/teacher-collection";
 import type { ClassSection } from "@/api/models/class-section";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { ModuleIcons } from "@/config/module-icons";
@@ -44,9 +43,6 @@ export default function SectionsManagementPage() {
   // );
 
   const { data: courses } = useSuspenseQuery(getAllCoursesOptions());
-  const { data: teachers } = useSuspenseQuery(
-    filterTeachersPaginatedOptions(1, 10, [], [], "and"),
-  );
 
   return (
     <ManagementPageLayout
@@ -64,7 +60,6 @@ export default function SectionsManagementPage() {
           <SectionFormDrawer
             key={sectionToEdit?.id ?? "new"}
             courses={courses ?? []}
-            teachers={teachers?.items ?? []}
             onOpenChange={handleFormOpenChange}
             sectionToUpdate={sectionToEdit}
             isOpen={isFormOpen}

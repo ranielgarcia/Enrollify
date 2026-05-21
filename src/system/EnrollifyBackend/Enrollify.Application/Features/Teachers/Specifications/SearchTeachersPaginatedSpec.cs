@@ -28,7 +28,7 @@ public class SearchTeachersPaginatedSpec : Specification<Teacher>
         }
 
         Query
-            .OrderBy(x => new { x.LastName, x.FirstName })
+            .OrderBy(x => x.LastName).ThenBy(x => x.FirstName)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize);
     }

@@ -22,6 +22,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { searchTeachersPaginatedOptions } from "@/api/collections/teacher-collection";
 import { useDebounce } from "@/hooks/use-debounce";
+import type { Teacher } from "@/api/models/teacher";
 
 interface SearchTeachersDialogProps {
   isOpen: boolean;
@@ -34,7 +35,7 @@ interface SearchTeachersDialogProps {
   excludeTeacherIds?: number[];
   /** Maximum number of teachers that can be selected. Omit for unlimited. */
   maxSelections?: number;
-  onSubmit: (teacherIds: number[]) => Promise<void>;
+  onSubmit: (teachers: Teacher[]) => Promise<void>;
 }
 
 export function SearchTeachersDialog({
@@ -47,9 +48,11 @@ export function SearchTeachersDialog({
   onSubmit,
 }: SearchTeachersDialogProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTeacherIds, setSelectedTeacherIds] = useState<number[]>([]);
+  const [selectedTeachers, setSelectedTeachers] = useState<Teacher[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [page, setPage] = useState(1);
+
+  const selectedTeacherIds = selectedTeachers.map((t) => t.id);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -57,7 +60,7 @@ export function SearchTeachersDialog({
   useEffect(() => {
     if (isOpen) {
       setSearchTerm("");
-      setSelectedTeacherIds([]);
+      setSelectedTeachers([]);
       setPage(1);
     }
   }, [isOpen]);
@@ -87,25 +90,27 @@ export function SearchTeachersDialog({
   }, [paginatedTeachers, excludeSet]);
 
   const isAtLimit =
-    maxSelections !== undefined && selectedTeacherIds.length >= maxSelections;
+    maxSelections !== undefined && selectedTeachers.length >= maxSelections;
 
-  const handleToggleTeacher = (teacherId: number) => {
-    setSelectedTeacherIds((prev) => {
-      if (prev.includes(teacherId)) {
-        return prev.filter((id) => id !== teacherId);
-      }
-      if (maxSelections !== undefined && prev.length >= maxSelections) {
-        return prev;
-      }
-      return [...prev, teacherId];
-    });
+  const handleToggleTeacher = (teacher: Teacher) => {
+    const isSelected = selectedTeachers.some((t) => t.id === teacher.id);
+    if (isSelected) {
+      setSelectedTeachers((prev) => prev.filter((t) => t.id !== teacher.id));
+    } else {
+      if (
+        maxSelections !== undefined &&
+        selectedTeachers.length >= maxSelections
+      )
+        return;
+      setSelectedTeachers((prev) => [...prev, teacher]);
+    }
   };
 
   const handleSubmit = async () => {
     if (selectedTeacherIds.length === 0) return;
     setIsSubmitting(true);
     try {
-      await onSubmit(selectedTeacherIds);
+      await onSubmit(selectedTeachers);
       onOpenChange(false);
     } finally {
       setIsSubmitting(false);
@@ -171,7 +176,7 @@ export function SearchTeachersDialog({
                   >
                     <Checkbox
                       checked={selectedTeacherIds.includes(teacher.id)}
-                      onCheckedChange={() => handleToggleTeacher(teacher.id)}
+                      onCheckedChange={() => handleToggleTeacher(teacher)}
                       disabled={
                         isAtLimit && !selectedTeacherIds.includes(teacher.id)
                       }
