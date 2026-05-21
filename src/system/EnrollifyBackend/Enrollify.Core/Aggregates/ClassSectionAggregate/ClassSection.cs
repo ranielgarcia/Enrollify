@@ -57,13 +57,21 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
     public User? DeletedByUser { get; private set; }
     public bool IsActive { get; private set; }
 
+    public string FullName => $"{Name}-{YearLevel.Value.ToString()}{SectionCode.Value.ToString()}";
+
+    public ClassSection UpdateSectionCode(SectionCode newSectionCode)
+    {
+        if (newSectionCode == SectionCode) return this;
+        SectionCode = Guard.Against.Null(newSectionCode, nameof(newSectionCode));
+        return this;
+    }
+
     public ClassSection UpdateName (string newName)
     {
         if (newName == Name) return this;
         Name = Guard.Against.NullOrEmpty(newName, nameof(newName));
         return this;
     }
-
 
     public ClassSection UpdateYearLevel(YearLevel newYearLevel)
     {

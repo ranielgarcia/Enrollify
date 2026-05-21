@@ -13,6 +13,8 @@ public class ClassSectionConfiguration : IEntityTypeConfiguration<ClassSection>
           .UseIdentityColumn()
           .IsRequired();
 
+        builder.Ignore(x => x.FullName);
+
         builder.Property(e => e.Name).IsRequired();
         builder.Property(e => e.YearLevel).IsRequired();
 

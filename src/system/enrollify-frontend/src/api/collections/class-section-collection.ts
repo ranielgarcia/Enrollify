@@ -4,6 +4,9 @@ import { toast } from "sonner";
 const queryKeys = {
   base: () => ["sections"],
   bulkInitializeSections: () => [...queryKeys.base(), "bulk-initialize"],
+  create: () => [...queryKeys.base(), "create"],
+  update: (sectionId: number) => [...queryKeys.base(), "update", sectionId],
+  delete: (sectionId: number) => [...queryKeys.base(), "delete", sectionId],
 };
 
 export const bulkInitializeClassSectionsOptions = () =>
@@ -22,10 +25,9 @@ export const createNewClassSectionsOptions = () =>
   createMutationOptions({
     httpVerb: "post",
     path: "/api/class-sections",
-    mutationKey: queryKeys.bulkInitializeSections(),
+    mutationKey: queryKeys.create(),
     options: {
       meta: { invalidateQueries: [queryKeys.base()] },
-      onSuccess: () =>
-        toast.success("Class sections bulk initialized successfully"),
+      onSuccess: () => toast.success("Class section created successfully"),
     },
   });

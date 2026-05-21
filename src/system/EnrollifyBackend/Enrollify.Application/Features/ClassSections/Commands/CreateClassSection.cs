@@ -93,7 +93,7 @@ public static class CreateClassSection
                 // Create the class section
                 var newClassSection = new ClassSection(new ClassSectionForCreation
                 {
-                    Name = $"{course!.Code.Value}-{command.yearLevel}{sectionCode}",
+                    Name = course!.Code.Value,
                     YearLevel = command.yearLevel,
                     CourseId = command.courseId,
                     CurriculumId = curriculum!.Id,
@@ -113,7 +113,8 @@ public static class CreateClassSection
                 foreach (var curriculumSubject in curriculumSubjects)
                 {
                     var offeringResult = await _classSectionSubjectOfferingRepository.Create(
-                        new ClassSectionSubjectOffering(classSectionId, curriculumSubject.SubjectId),
+                        new ClassSectionSubjectOffering(classSectionId, curriculumSubject.SubjectId,
+                        maxNumberOfStudents: command.studentCapacity),
                         cancellationToken);
 
                     if (!offeringResult.IsSuccess)

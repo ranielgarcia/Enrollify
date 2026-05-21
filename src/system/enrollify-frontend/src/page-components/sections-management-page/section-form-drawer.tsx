@@ -23,6 +23,8 @@ import { Plus, UserRound } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
+import { createNewClassSectionsOptions } from "@/api/collections/class-section-collection";
+import { useMutation } from "@tanstack/react-query";
 
 const sectionFormSchema = z.object({
   yearLevel: z.number().int().min(1).max(6),
@@ -70,7 +72,9 @@ export function SectionFormDrawer({
       : null,
   );
 
-  // const { mutateAsync: createSection } = useMutation(createSectionOptions());
+  const { mutateAsync: createSectionAsync } = useMutation(
+    createNewClassSectionsOptions(),
+  );
   // const { mutateAsync: updateSection } = useMutation(
   //   updateSectionOptions(sectionToUpdate?.id ?? 0),
   // );
@@ -105,7 +109,7 @@ export function SectionFormDrawer({
     onSubmit: async ({ value, meta }) => {
       if (meta.submitAction === "create") {
         console.log(value);
-        // await createSection(value);
+        await createSectionAsync(value);
       } else if (meta.submitAction === "update") {
         // await updateSection(value);
         console.log(value);

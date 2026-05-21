@@ -123,7 +123,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
                         // Create class section with auto-generated name
                         var newClassSection = new ClassSection(new ClassSectionForCreation
                         {
-                            Name = $"{course.Code.Value}-{command.yearLevel}{sectionCode}",
+                            Name = course.Code.Value,
                             YearLevel = command.yearLevel,
                             CourseId = payload.courseId,
                             CurriculumId = curriculum.Id,
