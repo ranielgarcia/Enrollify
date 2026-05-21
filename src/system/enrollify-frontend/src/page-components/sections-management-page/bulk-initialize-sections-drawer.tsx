@@ -1,4 +1,4 @@
-import { bulkInitializeSectionsOptions } from "@/api/collections/class-section-collection";
+import { bulkInitializeClassSectionsOptions } from "@/api/collections/class-section-collection";
 import type { Course } from "@/api/models/course";
 import { FormSelectField } from "@/components/form/form-select-field";
 import { SearchableSelectWithCustomTrigger } from "@/components/form/searchable-select-with-custom-trigger";
@@ -22,13 +22,6 @@ import { BookOpen, ChevronDown, ListPlus, Minus, Plus, X } from "lucide-react";
 import { z } from "zod";
 import { useState, useEffect } from "react";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
-
-const YEAR_LEVEL_OPTIONS = [
-  { value: "1", label: "1st Year" },
-  { value: "2", label: "2nd Year" },
-  { value: "3", label: "3rd Year" },
-  { value: "4", label: "4th Year" },
-];
 
 const bulkInitializePayload = z.object({
   courseId: z.number(),
@@ -71,10 +64,13 @@ export function BulkInitializeSectionsDrawer({
     CoursePayloadRow[]
   >([]);
 
-  const { selectedAcademicYear } = useEnrollmentContext();
+  const {
+    selectedAcademicYear,
+    academicCoreSettings: { yearLevelOptions },
+  } = useEnrollmentContext();
 
   const { mutateAsync: bulkInitialize } = useMutation(
-    bulkInitializeSectionsOptions(),
+    bulkInitializeClassSectionsOptions(),
   );
 
   const termOptions =
@@ -213,7 +209,10 @@ export function BulkInitializeSectionsDrawer({
                     <FormSelectField
                       field={field}
                       label="Year Level"
-                      options={YEAR_LEVEL_OPTIONS}
+                      options={yearLevelOptions.map((o) => ({
+                        value: o.value.toString(),
+                        label: o.label,
+                      }))}
                       placeholder="Select year level"
                       required
                       hint="All sections will be created for this year level"

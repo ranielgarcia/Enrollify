@@ -15,6 +15,21 @@ public readonly struct CreatedApiResult<TResponse>(IResult inner) : IResult
 }
 
 /// <summary>
+/// Centralized result type for Bulk Create endpoints.
+/// Add or remove constituent types here to update all Bulk Create endpoints at once.
+/// </summary>
+public readonly struct BulkCreatedApiResult(IResult inner) : IResult
+{
+    public Task ExecuteAsync(HttpContext httpContext) => inner.ExecuteAsync(httpContext);
+
+    public static implicit operator BulkCreatedApiResult(NoContent r) => new(r);
+    public static implicit operator BulkCreatedApiResult(ValidationProblem r) => new(r);
+    public static implicit operator BulkCreatedApiResult(Conflict<string[]> r) => new(r);
+    public static implicit operator BulkCreatedApiResult(ProblemHttpResult r) => new(r);
+}
+
+
+/// <summary>
 /// Centralized result type for Get/Update endpoints (Ok + NotFound pattern).
 /// Add or remove constituent types here to update all Get/Update endpoints at once.
 /// </summary>

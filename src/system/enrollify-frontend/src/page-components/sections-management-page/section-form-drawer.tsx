@@ -19,15 +19,14 @@ import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { useForm } from "@tanstack/react-form";
 import { Plus } from "lucide-react";
 import { z } from "zod";
-import type { AcademicTerm } from "@/api/models/academic-year";
+import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 const sectionFormSchema = z.object({
-  name: z.string().min(1, "Section name is required"),
   yearLevel: z.number().int().min(1).max(6),
-  studentCapacity: z.number().int().min(1, "Capacity must be at least 1"),
   courseId: z.number().min(1, "Course is required"),
   academicTermId: z.number().min(1, "Academic term is required"),
   adviserId: z.number().min(1, "Adviser is required"),
+  studentCapacity: z.number().int().min(1, "Capacity must be at least 1"),
 });
 
 type SectionFormData = z.infer<typeof sectionFormSchema>;
@@ -39,17 +38,7 @@ interface SectionFormDrawerProps {
   onOpenChange: (isOpen: boolean) => void;
   courses: Course[];
   teachers: Teacher[];
-  academicTerms: AcademicTerm[];
 }
-
-const YEAR_LEVEL_OPTIONS = [
-  { value: "1", label: "1st Year" },
-  { value: "2", label: "2nd Year" },
-  { value: "3", label: "3rd Year" },
-  { value: "4", label: "4th Year" },
-  { value: "5", label: "5th Year" },
-  { value: "6", label: "6th Year" },
-];
 
 export function SectionFormDrawer({
   isOpen,
@@ -58,9 +47,12 @@ export function SectionFormDrawer({
   onOpenChange,
   courses,
   teachers,
-  academicTerms,
 }: SectionFormDrawerProps) {
   const isUpdating = !!sectionToUpdate;
+  const {
+    selectedAcademicYear,
+    academicCoreSettings: { yearLevelOptions },
+  } = useEnrollmentContext();
 
   // const { mutateAsync: createSection } = useMutation(createSectionOptions());
   // const { mutateAsync: updateSection } = useMutation(
@@ -77,13 +69,14 @@ export function SectionFormDrawer({
     label: `${t.firstName} ${t.lastName}`,
   }));
 
-  const termOptions = academicTerms.map((t) => ({
-    value: t.id.toString(),
-    label: t.termName ?? "<Invalid term name...>",
-  }));
+  const termOptions = selectedAcademicYear?.academicTerms
+    ? selectedAcademicYear?.academicTerms?.map((t) => ({
+        value: t.id.toString(),
+        label: t.termName ?? "<Invalid term name...>",
+      }))
+    : [];
 
   const defaultValues: SectionFormData = {
-    name: sectionToUpdate?.name ?? "",
     yearLevel: sectionToUpdate?.yearLevel ?? 1,
     studentCapacity: sectionToUpdate?.studentCapacity ?? 40,
     courseId: sectionToUpdate?.course?.id ?? 0,
@@ -153,24 +146,15 @@ export function SectionFormDrawer({
             onSubmit={(e) => e.preventDefault()}
           >
             <FormSection title="Section Details">
-              <form.Field name="name">
-                {(field) => (
-                  <FormField
-                    field={field}
-                    label="Section Name"
-                    placeholder="e.g. BSCS-1A"
-                    required
-                    hint="Unique identifier for this class section"
-                  />
-                )}
-              </form.Field>
-
               <form.Field name="yearLevel">
                 {(field) => (
                   <FormSelectField
                     field={field}
                     label="Year Level"
-                    options={YEAR_LEVEL_OPTIONS}
+                    options={yearLevelOptions.map((o) => ({
+                      value: o.value.toString(),
+                      label: o.label,
+                    }))}
                     placeholder="Select year level"
                     required
                   />

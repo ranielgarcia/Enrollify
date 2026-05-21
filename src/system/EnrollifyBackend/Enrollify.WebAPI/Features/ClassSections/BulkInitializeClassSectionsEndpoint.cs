@@ -49,7 +49,7 @@ public class BulkInitializeClassSectionsRequestValidator : Validator<BulkInitial
 [HttpPost("bulk-initialize")]
 [Group<ClassSectionsEndpointGroup>]
 [Authorize(Policy = PolicyName.HasCreateClassSectionPermission)]
-public class BulkInitializeClassSectionsEndpoint : Endpoint<BulkInitializeClassSectionsRequest, DeleteApiResult>
+public class BulkInitializeClassSectionsEndpoint : Endpoint<BulkInitializeClassSectionsRequest, BulkCreatedApiResult>
 {
     private readonly IMediator _mediator;
 
@@ -58,7 +58,7 @@ public class BulkInitializeClassSectionsEndpoint : Endpoint<BulkInitializeClassS
         _mediator = mediator;
     }
 
-    public override async Task<DeleteApiResult> ExecuteAsync(
+    public override async Task<BulkCreatedApiResult> ExecuteAsync(
         BulkInitializeClassSectionsRequest request, 
         CancellationToken cancellationToken)
     {
@@ -75,6 +75,6 @@ public class BulkInitializeClassSectionsEndpoint : Endpoint<BulkInitializeClassS
 
         var result = await _mediator.Send(command, cancellationToken);
 
-        return result.ToDeleteResult();
+        return result.ToBulkCreatedResult();
     }
 }

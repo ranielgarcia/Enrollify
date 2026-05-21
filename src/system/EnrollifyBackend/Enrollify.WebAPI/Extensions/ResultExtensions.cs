@@ -1,4 +1,4 @@
-﻿using Ardalis.Result;
+using Ardalis.Result;
 
 namespace Enrollify.WebAPI.Extensions;
 
@@ -47,6 +47,30 @@ public static class ResultExtensions
         return result.Status switch
         {
             ResultStatus.Ok => TypedResults.Created(locationBuilder(result.Value), mapResponse(result.Value)),
+            ResultStatus.Invalid => TypedResults.ValidationProblem(
+              result.ValidationErrors
+                .GroupBy(e => e.Identifier ?? string.Empty)
+                .ToDictionary(
+                  g => g.Key,
+                  g => g.Select(e => e.ErrorMessage).ToArray()
+                )
+            ),
+            ResultStatus.Conflict => TypedResults.Conflict(result.Errors.ToArray()),
+            _ => TypedResults.Problem(
+              title: "Create failed",
+              detail: string.Join("; ", result.Errors),
+              statusCode: StatusCodes.Status400BadRequest)
+        };
+    }
+
+    /// <summary>
+    /// Maps Result to TypedResults for endpoints that return NoContent, ValidationProblem, Conflict, or ProblemHttpResult
+    /// </summary>
+    public static BulkCreatedApiResult ToBulkCreatedResult(this Result result)
+    {
+        return result.Status switch
+        {
+            ResultStatus.Ok => TypedResults.NoContent(),
             ResultStatus.Invalid => TypedResults.ValidationProblem(
               result.ValidationErrors
                 .GroupBy(e => e.Identifier ?? string.Empty)
