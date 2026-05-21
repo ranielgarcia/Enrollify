@@ -30,11 +30,60 @@ const queryKeys = {
     sort,
     joinOperator,
   ],
+  search: (page: number, pageSize: number, searchTerm?: string | null) => [
+    ...queryKeys.base(),
+    "search",
+    page,
+    pageSize,
+    searchTerm,
+  ],
   create: () => [...queryKeys.base(), `create`],
   update: (teacherId: number) => [...queryKeys.base(), "update", teacherId],
 };
 
 const pagedTeachersSchema = pagedResultSchema(TeacherSchema);
+
+export const searchTeachersPaginatedOptions = (
+  page: number,
+  pageSize: number,
+  searchTerm?: string | null,
+  enabled: boolean = false,
+) =>
+  createQueryOptions({
+    path: "/api/teachers/search/{page}/{pageSize}",
+    pathParams: {
+      page: page,
+      pageSize: pageSize,
+    },
+    params: {
+      SearchTerm: searchTerm,
+    },
+    options: {
+      enabled: !!page && !!pageSize && enabled,
+      queryKey: queryKeys.search(page, pageSize, searchTerm),
+      staleTime: 1000 * 60 * 2,
+      select: (pagedResults): PagedResult<Teacher> => {
+        // Handle empty response or string response
+        if (
+          !pagedResults ||
+          (typeof pagedResults === "string" && pagedResults === "")
+        ) {
+          return {
+            items: [],
+            page,
+            pageSize,
+            totalCount: 0,
+            totalPages: 0,
+          };
+        }
+        const data =
+          typeof pagedResults === "string"
+            ? JSON.parse(pagedResults)
+            : pagedResults;
+        return pagedTeachersSchema.parse(data);
+      },
+    },
+  });
 
 export const filterTeachersPaginatedOptions = (
   page: number,

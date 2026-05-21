@@ -11,45 +11,43 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  BookOpen,
   ChevronLeft,
   ChevronRight,
   Loader2,
   Search,
+  UserRound,
   X,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { searchSubjectsPaginatedOptions } from "@/api/collections/subject-collection";
+import { searchTeachersPaginatedOptions } from "@/api/collections/teacher-collection";
 import { useDebounce } from "@/hooks/use-debounce";
 
-interface AddSubjectsDialogProps {
+interface SearchTeachersDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   /** Dialog title */
   title?: string;
   /** Dialog description / subtitle */
   description?: React.ReactNode;
-  /** Subject codes already held by the calling entity — these will be excluded from the list */
-  excludeSubjectCodes?: string[];
-  /** Maximum number of subjects that can be selected. Omit for unlimited. */
+  /** Teacher IDs already held by the calling entity — these will be excluded from the list */
+  excludeTeacherIds?: number[];
+  /** Maximum number of teachers that can be selected. Omit for unlimited. */
   maxSelections?: number;
-  onSubmit: (subjectCodes: string[]) => Promise<void>;
+  onSubmit: (teacherIds: number[]) => Promise<void>;
 }
 
-export function SearchSubjectsDialog({
+export function SearchTeachersDialog({
   isOpen,
   onOpenChange,
-  title = "Add Subjects",
+  title = "Add Teachers",
   description,
-  excludeSubjectCodes = [],
+  excludeTeacherIds = [],
   maxSelections,
   onSubmit,
-}: AddSubjectsDialogProps) {
+}: SearchTeachersDialogProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedSubjectCodes, setSelectedSubjectCodes] = useState<string[]>(
-    [],
-  );
+  const [selectedTeacherIds, setSelectedTeacherIds] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -59,7 +57,7 @@ export function SearchSubjectsDialog({
   useEffect(() => {
     if (isOpen) {
       setSearchTerm("");
-      setSelectedSubjectCodes([]);
+      setSelectedTeacherIds([]);
       setPage(1);
     }
   }, [isOpen]);
@@ -70,45 +68,44 @@ export function SearchSubjectsDialog({
   }, [debouncedSearchTerm]);
 
   const excludeSet = useMemo(
-    () => new Set(excludeSubjectCodes),
-    [excludeSubjectCodes],
+    () => new Set(excludeTeacherIds),
+    [excludeTeacherIds],
   );
 
-  const { data: paginatedSubjects, isLoading } = useQuery(
-    searchSubjectsPaginatedOptions(page, 10, debouncedSearchTerm, isOpen),
+  const { data: paginatedTeachers, isLoading } = useQuery(
+    searchTeachersPaginatedOptions(page, 10, debouncedSearchTerm, isOpen),
   );
 
-  const totalPages = paginatedSubjects?.totalPages ?? 1;
+  const totalPages = paginatedTeachers?.totalPages ?? 1;
   const hasNextPage = page < totalPages;
   const hasPreviousPage = page > 1;
 
-  const filteredSubjects = useMemo(() => {
-    return paginatedSubjects?.items?.filter(
-      (subject) => !(subject.code && excludeSet.has(subject.code)),
+  const filteredTeachers = useMemo(() => {
+    return paginatedTeachers?.items?.filter(
+      (teacher) => !excludeSet.has(teacher.id),
     );
-  }, [paginatedSubjects, excludeSet]);
+  }, [paginatedTeachers, excludeSet]);
 
   const isAtLimit =
-    maxSelections !== undefined && selectedSubjectCodes.length >= maxSelections;
+    maxSelections !== undefined && selectedTeacherIds.length >= maxSelections;
 
-  const handleToggleSubject = (subjectCode?: string) => {
-    if (!subjectCode) return;
-    setSelectedSubjectCodes((prev) => {
-      if (prev.includes(subjectCode)) {
-        return prev.filter((code) => code !== subjectCode);
+  const handleToggleTeacher = (teacherId: number) => {
+    setSelectedTeacherIds((prev) => {
+      if (prev.includes(teacherId)) {
+        return prev.filter((id) => id !== teacherId);
       }
       if (maxSelections !== undefined && prev.length >= maxSelections) {
         return prev;
       }
-      return [...prev, subjectCode];
+      return [...prev, teacherId];
     });
   };
 
   const handleSubmit = async () => {
-    if (selectedSubjectCodes.length === 0) return;
+    if (selectedTeacherIds.length === 0) return;
     setIsSubmitting(true);
     try {
-      await onSubmit(selectedSubjectCodes);
+      await onSubmit(selectedTeacherIds);
       onOpenChange(false);
     } finally {
       setIsSubmitting(false);
@@ -132,7 +129,7 @@ export function SearchSubjectsDialog({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              placeholder="Search by code or title..."
+              placeholder="Search by name or ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-9"
@@ -149,48 +146,51 @@ export function SearchSubjectsDialog({
             )}
           </div>
 
-          {/* Subject List */}
+          {/* Teacher List */}
           <ScrollArea className="h-[300px] border rounded-md">
             <div className="p-2 space-y-1">
               {isLoading ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Loader2 className="size-8 mx-auto mb-2 animate-spin" />
-                  <p className="text-sm">Loading subjects...</p>
+                  <p className="text-sm">Loading teachers...</p>
                 </div>
-              ) : filteredSubjects?.length === 0 ? (
+              ) : filteredTeachers?.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <BookOpen className="size-8 mx-auto mb-2 opacity-50" />
+                  <UserRound className="size-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">
                     {searchTerm
-                      ? "No subjects match your search"
-                      : "No available subjects to add"}
+                      ? "No teachers match your search"
+                      : "No available teachers to add"}
                   </p>
                 </div>
               ) : (
-                filteredSubjects?.map((subject) => (
+                filteredTeachers?.map((teacher) => (
                   <label
-                    key={subject.id}
+                    key={teacher.id}
                     className="flex items-center gap-3 p-3 rounded-md hover:bg-muted cursor-pointer transition-colors"
                   >
                     <Checkbox
-                      checked={selectedSubjectCodes.includes(subject.code)}
-                      onCheckedChange={() => handleToggleSubject(subject.code)}
+                      checked={selectedTeacherIds.includes(teacher.id)}
+                      onCheckedChange={() => handleToggleTeacher(teacher.id)}
                       disabled={
-                        isAtLimit &&
-                        !selectedSubjectCodes.includes(subject.code)
+                        isAtLimit && !selectedTeacherIds.includes(teacher.id)
                       }
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-accent">
-                          {subject.code}
+                          {teacher.teacherIdentifier}
                         </span>
                         <span className="text-muted-foreground">-</span>
-                        <span className="truncate">{subject.title}</span>
+                        <span className="truncate">
+                          {teacher.firstName} {teacher.lastName}
+                        </span>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {Number(subject.units).toFixed(1)} units
-                      </p>
+                      {teacher.department?.name && (
+                        <p className="text-xs text-muted-foreground">
+                          {teacher.department.name}
+                        </p>
+                      )}
                     </div>
                   </label>
                 ))
@@ -229,11 +229,11 @@ export function SearchSubjectsDialog({
             </div>
           )}
 
-          {(selectedSubjectCodes.length > 0 || maxSelections !== undefined) && (
+          {(selectedTeacherIds.length > 0 || maxSelections !== undefined) && (
             <p className="text-sm text-muted-foreground">
-              {selectedSubjectCodes.length}
-              {maxSelections !== undefined ? ` / ${maxSelections}` : ""} subject
-              {selectedSubjectCodes.length !== 1 ? "s" : ""} selected
+              {selectedTeacherIds.length}
+              {maxSelections !== undefined ? ` / ${maxSelections}` : ""} teacher
+              {selectedTeacherIds.length !== 1 ? "s" : ""} selected
               {isAtLimit && " — limit reached"}
             </p>
           )}
@@ -251,16 +251,15 @@ export function SearchSubjectsDialog({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || selectedSubjectCodes.length === 0}
+            disabled={isSubmitting || selectedTeacherIds.length === 0}
             size="sm"
           >
             {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
-            Add{" "}
-            {selectedSubjectCodes.length > 0
-              ? selectedSubjectCodes.length
+            Add {selectedTeacherIds.length > 0
+              ? selectedTeacherIds.length
               : ""}{" "}
-            Subject
-            {selectedSubjectCodes.length > 1 ? "s" : ""}
+            Teacher
+            {selectedTeacherIds.length > 1 ? "s" : ""}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -23,7 +23,7 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
         DepartmentId departmentId)
     {
         FirstName = Guard.Against.Null(firstName, message: "First name is required.");
-        MiddleName = Guard.Against.Null(middleName, message: "Middle name is required.");
+        MiddleName = middleName;
         LastName = Guard.Against.Null(lastName, message: "Last name is required.");
         TeacherIdentifier = Guard.Against.Null(teacherIdentifier, message: "Teacher identifier is required.");
         Email = Guard.Against.Null(email, message: "Email is required.");

@@ -8,7 +8,7 @@ public class TeacherDto : BaseDto
 {
     public TeacherId Id { get; set; }
     public string FirstName { get; set; } = null!;
-    public string MiddleName { get; set; } = null!;
+    public string? MiddleName { get; set; } = null!;
     public string LastName { get; set; } = null!;
 
     public TeacherIdentifier TeacherIdentifier { get; set; }
@@ -50,6 +50,32 @@ public class TeacherDto : BaseDto
             UpdatedBy = teacher.UpdatedByUser != null ? BaseUserDto.FromUser(teacher.UpdatedByUser) : null,
             IsActive = teacher.IsActive,
             Subjects = subjects.Select(SubjectSummaryDto.FromEntity).ToArray()
+        };
+    }
+
+    public static TeacherDto FromEntity(Teacher teacher)
+    {
+        return new TeacherDto
+        {
+            Id = teacher.Id,
+            FirstName = teacher.FirstName,
+            MiddleName = teacher.MiddleName,
+            LastName = teacher.LastName,
+            TeacherIdentifier = teacher.TeacherIdentifier,
+            Email = teacher.Email,
+            PhoneNumber = teacher.PhoneNumber,
+            Department = teacher.Department != null ? DepartmentSummaryDto.FromEntity(teacher.Department) : new DepartmentSummaryDto(),
+            AcademicTitle = teacher.AcademicTitle,
+            Qualification = teacher.Qualification,
+            Specialization = teacher.Specialization,
+            OfficeLocation = teacher.OfficeLocation,
+            OfficeHours = teacher.OfficeHours,
+            Biography = teacher.Biography,
+            CreatedAt = teacher.CreatedAt,
+            CreatedBy = BaseUserDto.FromUser(teacher.CreatedByUser),
+            UpdatedAt = teacher.UpdatedAt,
+            UpdatedBy = teacher.UpdatedByUser != null ? BaseUserDto.FromUser(teacher.UpdatedByUser) : null,
+            IsActive = teacher.IsActive
         };
     }
 }

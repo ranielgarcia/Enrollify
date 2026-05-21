@@ -65,7 +65,6 @@ export default function SectionsManagementPage() {
             key={sectionToEdit?.id ?? "new"}
             courses={courses ?? []}
             teachers={teachers?.items ?? []}
-            academicTerms={[]}
             onOpenChange={handleFormOpenChange}
             sectionToUpdate={sectionToEdit}
             isOpen={isFormOpen}
