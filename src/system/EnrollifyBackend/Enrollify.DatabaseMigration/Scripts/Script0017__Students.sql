@@ -26,7 +26,6 @@ CREATE TABLE StudentStatuses
 );
 GO
 
-
 CREATE TABLE StudentTypes
 (
     Id          INT NOT NULL PRIMARY KEY,
@@ -34,11 +33,19 @@ CREATE TABLE StudentTypes
     Name        VARCHAR(50) NOT NULL,
     Description VARCHAR(255) NULL,
     DisplayOrder INT DEFAULT 0,
-    IsActive    BIT NOT NULL DEFAULT 1,
-    CreatedAt   DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
-    CreatedBy   INT NOT NULL,
+
+    CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+	CreatedBy INT NOT NULL,
+	UpdatedAt DATETIMEOFFSET NULL,
+	UpdatedBy INT NULL,
+	DeletedAt DATETIMEOFFSET NULL,
+	DeletedBy INT NULL,
+	IsActive BIT NOT NULL DEFAULT 1,
+
     CONSTRAINT UQ_StudentTypes_Code UNIQUE (Code),
-    CONSTRAINT FK_StudentTypes_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id)
+	CONSTRAINT FK_StudentTypes_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_StudentTypes_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_StudentTypes_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
 );
 GO
 

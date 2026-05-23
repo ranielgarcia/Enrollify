@@ -9,10 +9,11 @@ namespace Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 public class ClassSectionForCreation
 {
     public required string Name { get; set; }
-    public required YearLevel YearLevel { get; set; }
+    public required YearLevel IntendedYearLevel { get; set; }
     public required CourseId CourseId { get; set; }
     public required CurriculumId CurriculumId { get; set; }
     public required AcademicTermId AcademicTermId { get; set; }
+    public required AcademicYearId CohortAcademicYearId { get; set; }
     public TeacherId? AdviserId { get; set; }
     public required SectionCode SectionCode { get; set; }
 }

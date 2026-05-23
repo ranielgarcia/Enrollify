@@ -63,7 +63,7 @@ public class BulkInitializeClassSectionsEndpoint : Endpoint<BulkInitializeClassS
         CancellationToken cancellationToken)
     {
         var payloads = request.RequestPayload.Select(p => 
-            new BulkInitializeClassSectionsForAcademicYear.Payload(
+            new BulkInitializeClassSectionsForAcademicYear.TargetCourse(
                 CourseId.From(p.CourseId),
                 p.NumberOfSections))
             .ToList();

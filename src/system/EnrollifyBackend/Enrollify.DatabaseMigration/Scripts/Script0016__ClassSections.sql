@@ -11,11 +11,11 @@ CREATE TABLE ClassSections
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	Name VARCHAR(50) NOT NULL, -- Use course code, e.g. "BSCS", "BSCS"
 	CourseId INT NOT NULL,
-    AcademicYearId INT NOT NULL, -- Current academic year
+    AcademicTermId INT NOT NULL, -- Current academic term
 	IntendedYearLevel INT NOT NULL, -- Intended year level
-    EntryAcademicYearId	INT NOT NULL, -- Intended cohort
+    CohortAcademicYearId INT NOT NULL, -- Which cohort the section is intended for
     CurriculumId INT NOT NULL, -- Which curriculum version this section follows, for reporting purposes, e.g. "2024-A", "2024-REV1"
-	AdviserId INT NULL,
+	AdviserId INT NULL, -- to allow bulk creation of sections without immediately assigning advisers, can be updated later
     SectionCode CHAR(1) NOT NULL, -- "A", "B", "C"
     StatusId INT NOT NULL DEFAULT 1, -- References ClassSectionStatuses, default to Draft
 
@@ -27,8 +27,8 @@ CREATE TABLE ClassSections
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_ClassSections_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
-	CONSTRAINT FK_ClassSections_AcademicYear FOREIGN KEY (AcademicYearId) REFERENCES AcademicYears(Id),
-	CONSTRAINT FK_ClassSections_EntryAcademicYear FOREIGN KEY (EntryAcademicYearId) REFERENCES AcademicYears(Id),
+	CONSTRAINT FK_ClassSections_AcademicTerm FOREIGN KEY (AcademicTermId) REFERENCES AcademicTerms(Id),
+	CONSTRAINT FK_ClassSections_CohortAcademicYear FOREIGN KEY (CohortAcademicYearId) REFERENCES AcademicYears(Id),
 	CONSTRAINT FK_ClassSections_Curriculum FOREIGN KEY (CurriculumId, CourseId) REFERENCES Curriculums(Id, CourseId),
 	CONSTRAINT FK_ClassSections_Adviser FOREIGN KEY (AdviserId) REFERENCES Teachers(Id),
 	CONSTRAINT FK_ClassSections_Status FOREIGN KEY (StatusId) REFERENCES ClassSectionStatuses(Id),

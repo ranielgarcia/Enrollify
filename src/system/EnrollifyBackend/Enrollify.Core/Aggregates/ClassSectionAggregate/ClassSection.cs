@@ -18,17 +18,17 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
     public ClassSection(ClassSectionForCreation sectionForCreation)
     {
         Name = Guard.Against.NullOrEmpty(sectionForCreation.Name, nameof(sectionForCreation.Name));
-        YearLevel = Guard.Against.Null(sectionForCreation.YearLevel, nameof(sectionForCreation.YearLevel));
+        IntendedYearLevel = Guard.Against.Null(sectionForCreation.IntendedYearLevel, nameof(sectionForCreation.IntendedYearLevel));
         CourseId = Guard.Against.Null(sectionForCreation.CourseId, nameof(sectionForCreation.CourseId));
         CurriculumId = Guard.Against.Null(sectionForCreation.CurriculumId, nameof(sectionForCreation.CurriculumId));
         AcademicTermId = Guard.Against.Null(sectionForCreation.AcademicTermId, nameof(sectionForCreation.AcademicTermId));
+        CohortAcademicYearId = Guard.Against.Null(sectionForCreation.CohortAcademicYearId, nameof(sectionForCreation.CohortAcademicYearId));
         AdviserId = sectionForCreation.AdviserId;
         SectionCode = Guard.Against.Null(sectionForCreation.SectionCode, nameof(sectionForCreation.SectionCode));
-        StatusId = ClassSectionStatusEnum.Draft; // New sections default to Draft status
     }
 
     public string Name { get; private set; } = null!;
-    public YearLevel YearLevel { get; private set; }
+    public YearLevel IntendedYearLevel { get; private set; }
 
     public CourseId CourseId { get; private set; }
     public Course? Course { get; private set; }
@@ -39,12 +39,15 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
     public AcademicTermId AcademicTermId { get; private set; }
     public AcademicTerm? AcademicTerm { get; private set; }
 
+    public AcademicYearId CohortAcademicYearId { get; private set; }
+    public AcademicYear? CohortAcademicYear { get; private set; }
+
     public TeacherId? AdviserId { get; private set; }
     public Teacher? Adviser { get; private set; }
 
     public SectionCode SectionCode { get; private set; }
 
-    public ClassSectionStatusEnum StatusId { get; private set; }
+    public ClassSectionStatusEnum StatusId { get; private set; } = ClassSectionStatusEnum.Draft;
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
@@ -57,7 +60,7 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
     public User? DeletedByUser { get; private set; }
     public bool IsActive { get; private set; }
 
-    public string FullName => $"{Name}-{YearLevel.Value.ToString()}{SectionCode.Value.ToString()}";
+    public string FullName => $"{Name}-{IntendedYearLevel.Value.ToString()}{SectionCode.Value.ToString()}";
 
     public ClassSection UpdateSectionCode(SectionCode newSectionCode)
     {
@@ -73,10 +76,10 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
         return this;
     }
 
-    public ClassSection UpdateYearLevel(YearLevel newYearLevel)
+    public ClassSection UpdateYearLevel(YearLevel newIntendedYearLevel)
     {
-        if (newYearLevel == YearLevel) return this;
-        YearLevel = Guard.Against.Null(newYearLevel, nameof(newYearLevel));
+        if (newIntendedYearLevel == IntendedYearLevel) return this;
+        IntendedYearLevel = Guard.Against.Null(newIntendedYearLevel, nameof(newIntendedYearLevel));
         return this;
     }
 
@@ -98,6 +101,13 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
     {
         if (newAcademicTermId == AcademicTermId) return this;
         AcademicTermId = Guard.Against.Null(newAcademicTermId, nameof(newAcademicTermId));
+        return this;
+    }
+
+    public ClassSection UpdateCohortAcademicYearId (AcademicYearId newCohortAcademicYearId)
+    {
+        if (newCohortAcademicYearId == CohortAcademicYearId) return this;
+        CohortAcademicYearId = Guard.Against.Null(newCohortAcademicYearId, nameof(newCohortAcademicYearId));
         return this;
     }
 

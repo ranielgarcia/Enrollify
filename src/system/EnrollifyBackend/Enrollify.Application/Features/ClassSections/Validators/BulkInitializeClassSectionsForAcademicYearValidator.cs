@@ -25,36 +25,36 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
         _academicYearRepository = academicYearRepository;
         _courseCurriculumAssignmentRepository = courseCurriculumAssignmentRepository;
 
-        RuleFor(x => x.academicTermId)
+        RuleFor(x => x.AcademicTermId)
             .NotNull()
             .NotEmpty()
             .WithMessage("Academic term is required.");
 
-        RuleFor(x => x.yearLevel)
+        RuleFor(x => x.YearLevel)
             .NotNull()
             .NotEmpty()
             .WithMessage("Year level is required.");
 
-        RuleFor(x => x.requestPayload)
+        RuleFor(x => x.TargetCourses)
             .NotEmpty()
             .WithMessage("At least one payload entry is required.");
 
         // E4: Reject duplicate courseIds in a single request
-        RuleFor(x => x.requestPayload)
-            .Must(payload => payload.Select(p => p.courseId).Distinct().Count() == payload.Count)
+        RuleFor(x => x.TargetCourses)
+            .Must(payload => payload.Select(p => p.CourseId).Distinct().Count() == payload.Count)
             .WithMessage("Duplicate course IDs are not allowed in the same bulk initialization request.")
-            .When(x => x.requestPayload is { Count: > 0 });
+            .When(x => x.TargetCourses is { Count: > 0 });
 
-        RuleForEach(x => x.requestPayload)
+        RuleForEach(x => x.TargetCourses)
             .ChildRules(payload =>
             {
                 // E2: Explicit non-zero courseId guard replaces the silent sentinel filter
-                payload.RuleFor(x => x.courseId)
+                payload.RuleFor(x => x.CourseId)
                     .Must(id => id != CourseId.From(0))
                     .WithMessage("Course ID must be a valid non-zero value.");
 
                 // E3: Upper bound added — section codes are alphabetical (A–Z)
-                payload.RuleFor(x => x.numberOfSections)
+                payload.RuleFor(x => x.NumberOfSections)
                     .GreaterThan(0)
                     .WithMessage("Number of sections must be greater than zero.")
                     .LessThanOrEqualTo(26)
@@ -62,19 +62,19 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
             });
 
         // E5: Granular async rule with targeted message for academic term
-        RuleFor(x => x.academicTermId)
+        RuleFor(x => x.AcademicTermId)
             .MustAsync(AcademicTermExistsAsync)
             .WithMessage("The specified academic term does not exist or is inactive.");
 
         // E5: Granular async rule listing specific missing course IDs
-        RuleFor(x => x.requestPayload)
+        RuleFor(x => x.TargetCourses)
             .CustomAsync(ValidateCourseIdsExistAsync)
-            .When(x => x.requestPayload is { Count: > 0 });
+            .When(x => x.TargetCourses is { Count: > 0 });
 
         // E6: Validate every course has a CourseCurriculumAssignment — prevents KeyNotFoundException in handler
         RuleFor(x => x)
             .CustomAsync(ValidateCurriculumAssignmentsAsync)
-            .When(x => x.requestPayload is { Count: > 0 });
+            .When(x => x.TargetCourses is { Count: > 0 });
     }
 
     private async Task<bool> AcademicTermExistsAsync(
@@ -88,12 +88,12 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
 
     // E5 + E7: Replaced monolithic ValidateEntitiesExistAsync; lists missing course IDs in the error message
     private async Task ValidateCourseIdsExistAsync(
-        List<BulkInitializeClassSectionsForAcademicYear.Payload> payloads,
+        List<BulkInitializeClassSectionsForAcademicYear.TargetCourse> targetCourses,
         ValidationContext<BulkInitializeClassSectionsForAcademicYear.Command> context,
         CancellationToken cancellationToken)
     {
-        var courseIds = payloads
-            .Select(p => p.courseId)
+        var courseIds = targetCourses
+            .Select(p => p.CourseId)
             .Where(id => id != CourseId.From(0))
             .Distinct()
             .ToList();
@@ -109,7 +109,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
         if (missingIds.Count > 0)
         {
             context.AddFailure(
-                nameof(BulkInitializeClassSectionsForAcademicYear.Command.requestPayload),
+                nameof(BulkInitializeClassSectionsForAcademicYear.Command.TargetCourses),
                 $"The following course IDs do not exist: {string.Join(", ", missingIds.Select(id => id.Value))}.");
         }
     }
@@ -121,12 +121,12 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
         CancellationToken cancellationToken)
     {
         var academicYear = await _academicYearRepository
-            .FirstOrDefaultAsync(new GetAcademicYearByAcademicTermIdSpec(command.academicTermId), cancellationToken);
+            .FirstOrDefaultAsync(new GetAcademicYearByAcademicTermIdSpec(command.AcademicTermId), cancellationToken);
 
         if (academicYear == null) return; // Already caught by AcademicTermExistsAsync
 
-        var courseIds = command.requestPayload
-            .Select(p => p.courseId)
+        var courseIds = command.TargetCourses
+            .Select(p => p.CourseId)
             .Where(id => id != CourseId.From(0))
             .Distinct()
             .ToList();
@@ -144,7 +144,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
         if (unassignedIds.Count > 0)
         {
             context.AddFailure(
-                nameof(BulkInitializeClassSectionsForAcademicYear.Command.requestPayload),
+                nameof(BulkInitializeClassSectionsForAcademicYear.Command.TargetCourses),
                 $"The following courses do not have a curriculum assignment for the specified academic year: {string.Join(", ", unassignedIds.Select(id => id.Value))}.");
         }
     }
