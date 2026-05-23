@@ -99,14 +99,9 @@ public static class CreateClassSection
             }
 
             var (cohortAcademicYear, courseCurriculumAssignment) = getCohortCourseCurriculumAssignmentResult.Value;
-            if (courseCurriculumAssignment == null)
-            {
-                _logger.LogWarning("No course-curriculum assignment found for course with an id of {CourseId} and academic year with an id of {AcademicYearId}.", command.CourseId, command.AcademicTermId);
-                return Result.Error("No course-curriculum assignment found for course and academic year.");
-            }
 
-            var course = courseCurriculumAssignment?.Course;
-            var curriculum = courseCurriculumAssignment?.Curriculum;
+            var course = courseCurriculumAssignment.Course;
+            var curriculum = courseCurriculumAssignment.Curriculum;
 
             // Generate section code
             var sectionCode = await GetSectionCode(command, cancellationToken);

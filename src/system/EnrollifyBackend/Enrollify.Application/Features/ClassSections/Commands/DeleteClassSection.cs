@@ -41,7 +41,7 @@ public static class DeleteClassSection
             {
                 _logger.LogInformation("Re-ordering class section codes...");
                 var existingClassSections = await _readRepository.ListAsync(
-                    new GetExistingClassSectionsByCourseYearLevelAndTerm(classSectionToDelete.YearLevel, classSectionToDelete.CourseId, classSectionToDelete.AcademicTermId), cancellationToken);
+                    new GetExistingClassSectionsByCourseYearLevelAndTerm(classSectionToDelete.IntendedYearLevel, classSectionToDelete.CourseId, classSectionToDelete.AcademicTermId), cancellationToken);
 
                 var remainingClassSections = existingClassSections.Where(x => x.Id != classSectionToDelete.Id).OrderBy(x => x.SectionCode).ToList();
 

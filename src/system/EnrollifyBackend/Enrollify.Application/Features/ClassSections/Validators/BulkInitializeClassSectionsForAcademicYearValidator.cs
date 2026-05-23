@@ -5,6 +5,7 @@ using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using FluentValidation;
 
@@ -120,10 +121,24 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
         ValidationContext<BulkInitializeClassSectionsForAcademicYear.Command> context,
         CancellationToken cancellationToken)
     {
-        var academicYear = await _academicYearRepository
+        var currentAcademicYear = await _academicYearRepository
             .FirstOrDefaultAsync(new GetAcademicYearByAcademicTermIdSpec(command.AcademicTermId), cancellationToken);
 
-        if (academicYear == null) return; // Already caught by AcademicTermExistsAsync
+        if (currentAcademicYear == null) return; // Already caught by AcademicTermExistsAsync
+
+        // Derive cohort entry year — the AY when Year 1 students of this cohort started
+        var cohortEntryYear = Year.From(currentAcademicYear.StartDate.Value.Year - (command.YearLevel.Value - 1));
+
+        var cohortAcademicYear = await _academicYearRepository
+            .FirstOrDefaultAsync(new GetAcademicYearByStartDateYearSpec(cohortEntryYear), cancellationToken);
+
+        if (cohortAcademicYear == null)
+        {
+            context.AddFailure(
+                nameof(BulkInitializeClassSectionsForAcademicYear.Command.TargetCourses),
+                "No academic year exists for the cohort entry year. Ensure historical academic years are created before initializing sections for higher year levels.");
+            return;
+        }
 
         var courseIds = command.TargetCourses
             .Select(p => p.CourseId)
@@ -135,7 +150,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
 
         var assignments = await _courseCurriculumAssignmentRepository
             .ListAsync(
-                new BulkGetCourseCurriculumAssignmentsByAcademicYearIdAndCourseIdsSpec(academicYear.Id, courseIds),
+                new BulkGetCourseCurriculumAssignmentsByAcademicYearIdAndCourseIdsSpec(cohortAcademicYear.Id, courseIds),
                 cancellationToken);
 
         var assignedCourseIds = assignments.Select(a => a.CourseId).ToHashSet();
@@ -145,7 +160,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
         {
             context.AddFailure(
                 nameof(BulkInitializeClassSectionsForAcademicYear.Command.TargetCourses),
-                $"The following courses do not have a curriculum assignment for the specified academic year: {string.Join(", ", unassignedIds.Select(id => id.Value))}.");
+                $"The following courses do not have a curriculum assignment for the cohort entry year: {string.Join(", ", unassignedIds.Select(id => id.Value))}.");
         }
     }
 }

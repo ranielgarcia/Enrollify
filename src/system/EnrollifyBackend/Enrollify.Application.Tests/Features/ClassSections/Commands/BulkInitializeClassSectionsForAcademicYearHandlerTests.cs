@@ -59,11 +59,11 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
     {
         // Arrange
         var command = CreateCommand();
-        var course = CreateCourse(command.requestPayload[0].courseId, "BSCS");
-        var curriculum = CreateCurriculumWithNoSubjects(command.requestPayload[0].courseId);
-        SetupAcademicYear(command.academicTermId);
+        var course = CreateCourse(command.TargetCourses[0].CourseId, "BSCS");
+        var curriculum = CreateCurriculumWithNoSubjects(command.TargetCourses[0].CourseId);
+        SetupAcademicYear(command.AcademicTermId);
         SetupCourseCurriculumAssignments(
-            (command.requestPayload[0].courseId, course, curriculum));
+            (command.TargetCourses[0].CourseId, course, curriculum));
         SetupExistingSections();
 
         // Act
@@ -80,11 +80,11 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
     {
         // Arrange
         var command = CreateCommand();
-        var course = CreateCourse(command.requestPayload[0].courseId, "BSCS");
-        var curriculum = CreateCurriculumWithNoSubjects(command.requestPayload[0].courseId);
-        SetupAcademicYear(command.academicTermId);
+        var course = CreateCourse(command.TargetCourses[0].CourseId, "BSCS");
+        var curriculum = CreateCurriculumWithNoSubjects(command.TargetCourses[0].CourseId);
+        SetupAcademicYear(command.AcademicTermId);
         SetupCourseCurriculumAssignments(
-            (command.requestPayload[0].courseId, course, curriculum));
+            (command.TargetCourses[0].CourseId, course, curriculum));
         SetupExistingSections();
 
         // Act
@@ -155,7 +155,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
         // Arrange
         var command = CreateCommand(numberOfSections: 1);
         SetupStandardSuccessPath(command);
-        SetupExistingSections(CreateExistingSection(command.requestPayload[0].courseId, SectionCode.From('A')));
+        SetupExistingSections(CreateExistingSection(command.TargetCourses[0].CourseId, SectionCode.From('A')));
         var capturedSections = CaptureCreatedSections();
 
         // Act
@@ -196,11 +196,11 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
     {
         // Arrange
         var command = CreateCommand(numberOfSections: 1);
-        var course = CreateCourse(command.requestPayload[0].courseId, "BSCS");
+        var course = CreateCourse(command.TargetCourses[0].CourseId, "BSCS");
         var curriculum = CreateCurriculumWithSubjects(
-            command.requestPayload[0].courseId, command.yearLevel, TermNumber.From(1), subjectCount: 3);
-        SetupAcademicYear(command.academicTermId);
-        SetupCourseCurriculumAssignments((command.requestPayload[0].courseId, course, curriculum));
+            command.TargetCourses[0].CourseId, command.YearLevel, TermNumber.From(1), subjectCount: 3);
+        SetupAcademicYear(command.AcademicTermId);
+        SetupCourseCurriculumAssignments((command.TargetCourses[0].CourseId, course, curriculum));
         SetupExistingSections();
         SetupSuccessfulSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
@@ -220,11 +220,11 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
     {
         // Arrange
         var command = CreateCommand(numberOfSections: 2);
-        var course = CreateCourse(command.requestPayload[0].courseId, "BSCS");
+        var course = CreateCourse(command.TargetCourses[0].CourseId, "BSCS");
         var curriculum = CreateCurriculumWithSubjects(
-            command.requestPayload[0].courseId, command.yearLevel, TermNumber.From(1), subjectCount: 2);
-        SetupAcademicYear(command.academicTermId);
-        SetupCourseCurriculumAssignments((command.requestPayload[0].courseId, course, curriculum));
+            command.TargetCourses[0].CourseId, command.YearLevel, TermNumber.From(1), subjectCount: 2);
+        SetupAcademicYear(command.AcademicTermId);
+        SetupCourseCurriculumAssignments((command.TargetCourses[0].CourseId, course, curriculum));
         SetupExistingSections();
         SetupSuccessfulSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
@@ -248,11 +248,11 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
     {
         // Arrange
         var command = CreateCommand(courseId: CourseId.From(1), yearLevel: YearLevel.From(2), numberOfSections: 1);
-        var course = CreateCourse(command.requestPayload[0].courseId, "BSCS");
+        var course = CreateCourse(command.TargetCourses[0].CourseId, "BSCS");
         var curriculum = CreateCurriculumWithSubjects(
-            command.requestPayload[0].courseId, command.yearLevel, TermNumber.From(1), subjectCount: 1);
-        SetupAcademicYear(command.academicTermId);
-        SetupCourseCurriculumAssignments((command.requestPayload[0].courseId, course, curriculum));
+            command.TargetCourses[0].CourseId, command.YearLevel, TermNumber.From(1), subjectCount: 1);
+        SetupAcademicYear(command.AcademicTermId);
+        SetupCourseCurriculumAssignments((command.TargetCourses[0].CourseId, course, curriculum));
         SetupExistingSections();
         var capturedSections = CaptureCreatedSections();
         SetupSuccessfulSubjectOfferingCreation();
@@ -263,7 +263,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Single(capturedSections);
-        Assert.Equal($"BSCS-{command.yearLevel}A", capturedSections[0].Name);
+        Assert.Equal($"BSCS-{command.YearLevel}A", capturedSections[0].FullName);
     }
 
     #endregion
@@ -565,10 +565,10 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
     /// </summary>
     private void SetupStandardSuccessPath(BulkInitializeClassSectionsForAcademicYear.Command command)
     {
-        var courseId = command.requestPayload[0].courseId;
+        var courseId = command.TargetCourses[0].CourseId;
         var course = CreateCourse(courseId, "BSCS");
-        var curriculum = CreateCurriculumWithSubjects(courseId, command.yearLevel, TermNumber.From(1), subjectCount: 2);
-        SetupAcademicYear(command.academicTermId);
+        var curriculum = CreateCurriculumWithSubjects(courseId, command.YearLevel, TermNumber.From(1), subjectCount: 2);
+        SetupAcademicYear(command.AcademicTermId);
         SetupCourseCurriculumAssignments((courseId, course, curriculum));
         SetupSuccessfulSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
@@ -717,10 +717,11 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
         return new ClassSection(new ClassSectionForCreation
         {
             Name = $"ExistingSection-{sectionCode}",
-            YearLevel = YearLevel.From(1),
+            IntendedYearLevel = YearLevel.From(1),
             CourseId = courseId,
             CurriculumId = CurriculumId.From(1),
             AcademicTermId = AcademicTermId.From(1),
+            CohortAcademicYearId = AcademicYearId.From(1),
             AdviserId = null,
             SectionCode = sectionCode
         });
