@@ -4,6 +4,9 @@
 > **🚧 This project is currently under active development and is not yet complete.**
 > Features, APIs, and documentation are subject to change. Some modules are still being implemented and may not be fully functional.
 
+> [!NOTE]
+> **🎯 This is a personal hobby project** in its early stage of development. Standard Git workflow best practices (small, focused commits and pull requests) are intentionally not followed here — expect large, multi-feature pull requests bundling significant updates at once.
+
 **Enrollify** is a full-stack, web-based enrollment management system designed for colleges and universities. It digitizes and streamlines the entire academic lifecycle — from setting up master data and building class schedules, to managing student enrollments, computing fees, recording grades, and generating official documents.
 
 ---

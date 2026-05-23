@@ -10,10 +10,11 @@ CREATE TABLE ClassSections
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 	Name VARCHAR(50) NOT NULL, -- Use course code, e.g. "BSCS", "BSCS"
-	YearLevel INT NOT NULL,
 	CourseId INT NOT NULL,
+    AcademicYearId INT NOT NULL, -- Current academic year
+	IntendedYearLevel INT NOT NULL, -- Intended year level
+    EntryAcademicYearId	INT NOT NULL, -- Intended cohort
     CurriculumId INT NOT NULL, -- Which curriculum version this section follows, for reporting purposes, e.g. "2024-A", "2024-REV1"
-	AcademicTermId INT NOT NULL,
 	AdviserId INT NULL,
     SectionCode CHAR(1) NOT NULL, -- "A", "B", "C"
     StatusId INT NOT NULL DEFAULT 1, -- References ClassSectionStatuses, default to Draft
@@ -26,14 +27,15 @@ CREATE TABLE ClassSections
 	DeletedBy INT NULL,
 	IsActive BIT NOT NULL DEFAULT 1,
 	CONSTRAINT FK_ClassSections_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
-	CONSTRAINT FK_ClassSections_Curriculum FOREIGN KEY (CurriculumId) REFERENCES Curriculums(Id),
-	CONSTRAINT FK_ClassSections_AcademicTerm FOREIGN KEY (AcademicTermId) REFERENCES AcademicTerms(Id),
+	CONSTRAINT FK_ClassSections_AcademicYear FOREIGN KEY (AcademicYearId) REFERENCES AcademicYears(Id),
+	CONSTRAINT FK_ClassSections_EntryAcademicYear FOREIGN KEY (EntryAcademicYearId) REFERENCES AcademicYears(Id),
+	CONSTRAINT FK_ClassSections_Curriculum FOREIGN KEY (CurriculumId, CourseId) REFERENCES Curriculums(Id, CourseId),
 	CONSTRAINT FK_ClassSections_Adviser FOREIGN KEY (AdviserId) REFERENCES Teachers(Id),
 	CONSTRAINT FK_ClassSections_Status FOREIGN KEY (StatusId) REFERENCES ClassSectionStatuses(Id),
 	CONSTRAINT FK_ClassSections_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_ClassSections_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_ClassSections_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
-	CONSTRAINT CHK_ClassSections_YearLevel_Valid CHECK (YearLevel BETWEEN 1 AND 6)
+	CONSTRAINT CHK_ClassSections_IntendedYearLevel_Valid CHECK (IntendedYearLevel BETWEEN 1 AND 6)
 );
 GO;
 
@@ -47,8 +49,8 @@ CREATE NONCLUSTERED INDEX IX_ClassSections_CurriculumId
 ON ClassSections(CurriculumId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_ClassSections_AcademicTermId
-ON ClassSections(AcademicTermId);
+CREATE NONCLUSTERED INDEX IX_ClassSections_EntryAcademicYearId
+ON ClassSections(EntryAcademicYearId);
 GO
 
 CREATE NONCLUSTERED INDEX IX_ClassSections_AdviserId
@@ -182,17 +184,35 @@ CREATE TABLE StudentStatuses
 );
 GO
 
+
+CREATE TABLE StudentTypes
+(
+    Id          INT NOT NULL PRIMARY KEY,
+    Code        VARCHAR(20) NOT NULL,
+    Name        VARCHAR(50) NOT NULL,
+    Description VARCHAR(255) NULL,
+    DisplayOrder INT DEFAULT 0,
+    IsActive    BIT NOT NULL DEFAULT 1,
+    CreatedAt   DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
+    CreatedBy   INT NOT NULL,
+    CONSTRAINT UQ_StudentTypes_Code UNIQUE (Code),
+    CONSTRAINT FK_StudentTypes_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id)
+);
+GO
+
 -- ************************************
 
 CREATE TABLE Students
 (
 	Id INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+    StudentTypeId INT NOT NULL DEFAULT 1, -- References StudentTypes, default to Regular
 	StudentNumber VARCHAR(13) NOT NULL,
 	FirstName VARCHAR(50) NOT NULL,
 	LastName VARCHAR(50) NOT NULL,
 	Email VARCHAR(255) NOT NULL,
 	CourseId INT NOT NULL,
 	CurriculumId INT NOT NULL,             -- Which curriculum version the student follows
+    EntryAcademicYearId INT NOT NULL,      -- The AY when Year 1 students of this cohort start, used to determine curriculum lock and class section assignment
 	YearLevel INT NOT NULL,
 	Status INT NOT NULL DEFAULT 1, -- References StudentStatuses, default to ACTIVE
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
@@ -205,8 +225,10 @@ CREATE TABLE Students
 	CONSTRAINT UQ_Students_StudentNumber UNIQUE (StudentNumber),
 	CONSTRAINT UQ_Students_Email UNIQUE (Email),
 	CONSTRAINT FK_Students_Course FOREIGN KEY (CourseId) REFERENCES Courses(Id),
-	CONSTRAINT FK_Students_Curriculum FOREIGN KEY (CurriculumId) REFERENCES Curriculums(Id),
+    CONSTRAINT FK_Students_Curriculum FOREIGN KEY (CurriculumId, CourseId) REFERENCES Curriculums(Id, CourseId),
+    CONSTRAINT FK_Students_EntryAcademicYear FOREIGN KEY (EntryAcademicYearId) REFERENCES AcademicYears(Id),
     CONSTRAINT FK_Students_StudentStatus FOREIGN KEY (Status) REFERENCES StudentStatuses(Id),
+    CONSTRAINT FK_Students_StudentType FOREIGN KEY (StudentTypeId) REFERENCES StudentTypes(Id),
     CONSTRAINT FK_Students_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_Students_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
     CONSTRAINT FK_Students_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
@@ -228,6 +250,9 @@ CREATE NONCLUSTERED INDEX IX_Students_Status
 ON Students(Status);
 GO
 
+CREATE NONCLUSTERED INDEX IX_Students_StudentTypeId
+    ON Students(StudentTypeId);
+GO
 
 -- ************************************
 

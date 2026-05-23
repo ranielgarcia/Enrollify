@@ -33,7 +33,10 @@ CREATE TABLE Curriculums
 	CONSTRAINT FK_Curriculums_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Curriculums_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_Curriculums_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
-	CONSTRAINT CHK_Curriculums_EffectiveYear_Valid CHECK (EffectiveYear >= 2000)
+	CONSTRAINT CHK_Curriculums_EffectiveYear_Valid CHECK (EffectiveYear >= 2000),
+	-- Composite unique constraint enables composite FK from CourseCurriculumAssignments,
+	-- guaranteeing at DB level that the curriculum belongs to the referenced course.
+	CONSTRAINT UQ_Curriculums_Id_CourseId UNIQUE (Id, CourseId)
 );
 GO;
 
