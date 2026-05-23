@@ -18,6 +18,12 @@ const CourseSummarySchema = CourseSchema.pick({
 });
 
 const CurriculumStatusSchema = z.object({
+  // value: z.union([
+  //   z.literal(CurriculumStatusEnum.Draft),
+  //   z.literal(CurriculumStatusEnum.Active),
+  //   z.literal(CurriculumStatusEnum.PhaseOut),
+  //   z.literal(CurriculumStatusEnum.Archived),
+  // ]),
   value: z.enum(CurriculumStatusEnum),
   name: z.enum(
     Object.keys(CurriculumStatusEnum) as [
