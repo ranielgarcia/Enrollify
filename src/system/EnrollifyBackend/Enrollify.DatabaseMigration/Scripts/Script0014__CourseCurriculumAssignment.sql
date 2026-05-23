@@ -20,7 +20,8 @@ CREATE TABLE CourseCurriculumAssignments
 
     CONSTRAINT FK_CourseCurriculumAssignments_Course       FOREIGN KEY (CourseId)            REFERENCES Courses(Id),
     CONSTRAINT FK_CourseCurriculumAssignments_AcademicYear FOREIGN KEY (EntryAcademicYearId) REFERENCES AcademicYears(Id),
-    CONSTRAINT FK_CourseCurriculumAssignments_Curriculum   FOREIGN KEY (CurriculumId)        REFERENCES Curriculums(Id),
+    -- Composite FK ensures the curriculum belongs to the same course as this assignment (enforced at DB level).
+    CONSTRAINT FK_CourseCurriculumAssignments_Curriculum   FOREIGN KEY (CurriculumId, CourseId) REFERENCES Curriculums(Id, CourseId),
     CONSTRAINT FK_CourseCurriculumAssignments_CreatedBy    FOREIGN KEY (CreatedBy)           REFERENCES Users(Id),
     CONSTRAINT FK_CourseCurriculumAssignments_UpdatedBy    FOREIGN KEY (UpdatedBy)           REFERENCES Users(Id),
     CONSTRAINT FK_CourseCurriculumAssignments_DeletedBy    FOREIGN KEY (DeletedBy)           REFERENCES Users(Id)
