@@ -13,7 +13,7 @@ public class ApproveCurriculumRequestValidator : Validator<ApproveCurriculumRequ
     public ApproveCurriculumRequestValidator()
     {
         RuleFor(x => x.Id)
-            .NotNull().WithMessage("Please provide a valid curriculum ID.");
+            .GreaterThan(0).WithMessage("Please provide a valid curriculum ID.");
     }
 }
 
@@ -26,7 +26,7 @@ public class ApproveCurriculumEndpoint(IMediator mediator)
     public override async Task<OkOrNotFoundApiResult<int>>
         ExecuteAsync(ApproveCurriculumRequest request, CancellationToken cancellationToken)
     {
-        var result = await mediator.Send(new ApproveCurriculum.Command(CurriculumId.From(request.Id)));
+        var result = await mediator.Send(new ApproveCurriculum.Command(CurriculumId.From(request.Id)), cancellationToken);
         return result.ToUpdateResult(
             id => request.Id);
     }

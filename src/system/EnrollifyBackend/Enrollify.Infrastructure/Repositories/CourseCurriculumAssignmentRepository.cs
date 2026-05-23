@@ -23,14 +23,14 @@ public class CourseCurriculumAssignmentRepository : ICourseCurriculumAssignmentR
         try
         {
             _dbContext.CourseCurriculumAssignments.AddRange(courseCurriculumAssignments);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(ct);
             return Result.Success();
         }
         catch(Exception ex)
         {
             _logger.LogError(ex, "Unable to bulk create Course-Curriculum assignments.");
             // Transaction will rollback automatically on dispose
-            return Result.Error("An unexecpted error occured while creating Course-Curriculum assignments.");
+            return Result.Error("An unexpected error occurred while creating Course-Curriculum assignments.");
         }
     }
 
@@ -38,15 +38,15 @@ public class CourseCurriculumAssignmentRepository : ICourseCurriculumAssignmentR
     {
         try
         {
-            _dbContext.CourseCurriculumAssignments.AddRange(courseCurriculumAssignments);
-            await _dbContext.SaveChangesAsync();
+            _dbContext.CourseCurriculumAssignments.UpdateRange(courseCurriculumAssignments);
+            await _dbContext.SaveChangesAsync(ct);
             return Result.Success();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unable to bulk create Course-Curriculum assignments.");
+            _logger.LogError(ex, "Unable to bulk update Course-Curriculum assignments.");
             // Transaction will rollback automatically on dispose
-            return Result.Error("An unexecpted error occured while creating Course-Curriculum assignments.");
+            return Result.Error("An unexpected error occurred while updating Course-Curriculum assignments.");
         }
     }
 }

@@ -1,4 +1,3 @@
-using System.Windows.Input;
 using Ardalis.Result;
 using Enrollify.Application.Features.ClassSections.Extensions;
 using Enrollify.Application.Features.ClassSections.Specifications;

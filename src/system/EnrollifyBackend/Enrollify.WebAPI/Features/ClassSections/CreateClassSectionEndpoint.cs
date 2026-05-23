@@ -12,7 +12,7 @@ public class CreateClassSectionRequest
     public int CourseId { get; set; }
     public int AcademicTermId { get; set; }
     public int AdviserId { get; set; }
-    public int studentCapacity { get; set; }
+    public int StudentCapacity { get; set; }
 }
 
 public class CreateClassSectionRequestValidator : Validator<CreateClassSectionRequest>
@@ -32,7 +32,7 @@ public class CreateClassSectionRequestValidator : Validator<CreateClassSectionRe
         RuleFor(x => x.AdviserId)
             .NotEmpty().WithMessage("Adviser ID is required.");
 
-        RuleFor(x => x.studentCapacity)
+        RuleFor(x => x.StudentCapacity)
             .GreaterThan(0).WithMessage("Student capacity must be greater than zero.")
             .LessThanOrEqualTo(100).WithMessage("Student capacity cannot exceed 100.");
     }
@@ -59,7 +59,7 @@ public class CreateClassSectionEndpoint : Endpoint<CreateClassSectionRequest, Cr
                 CourseId.From(request.CourseId),
                 AcademicTermId.From(request.AcademicTermId),
                 TeacherId.From(request.AdviserId),
-                request.studentCapacity));
+                request.StudentCapacity), cancellationToken);
 
         return result.ToCreatedResult(
             id => $"/class-sections/{id.Value}",

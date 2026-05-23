@@ -108,7 +108,6 @@ export function SectionFormDrawer({
     onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
       if (meta.submitAction === "create") {
-        console.log(value);
         await createSectionAsync(value);
       } else if (meta.submitAction === "update") {
         // await updateSection(value);

@@ -7,9 +7,9 @@ public class SearchTeachersPaginatedSpec : Specification<Teacher>
 {
     public SearchTeachersPaginatedSpec(int pageNumber, int pageSize, string? searchTerm)
     {
-        // The explicit cast `((string)s.Code).Contains(searchTerm)` leverages Vogen's generated explicit operator string(SubjectCode) to let EF Core resolve it to the
-        // underlying string column. string.Contains then translates to SQL LIKE '%term%'.
-        // No EF Core dependency needed — only Ardalis.Specification.
+        // EF Core translates string.Contains(...) to SQL LIKE (depending on provider/collation).
+        // Explicit casts are used for Vogen value objects (e.g., TeacherIdentifier) so EF Core can translate to the underlying column type.
+        // (Plain string properties like FirstName/LastName don’t need the cast, but keeping it consistent is fine.)
         Query
             .AsNoTracking()
             .Include(x => x.Department)
@@ -19,9 +19,9 @@ public class SearchTeachersPaginatedSpec : Specification<Teacher>
         {
             var term = searchTerm.Trim();
             Query.Where(x =>
-                ((string)x.FirstName).Contains(term) ||
-                ((string)x.LastName).Contains(term) ||
-                (x.MiddleName != null && ((string)x.MiddleName).Contains(term)) ||
+                x.FirstName.Contains(term) ||
+                x.LastName.Contains(term) ||
+                (x.MiddleName != null && x.MiddleName.Contains(term)) ||
                 ((string)x.TeacherIdentifier).Contains(term) ||
                 ((string)x.Email).Contains(term) ||
                 ((string)x.PhoneNumber).Contains(term));

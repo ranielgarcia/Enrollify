@@ -92,9 +92,25 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
 
             try
             {
-                await _repository.BulkCreate(courseCurriculumAssignmentsToCreate, cancellationToken);
-                await _repository.BulkUpdate(courseCurriculumAssignmentsToUpdate, cancellationToken);
-                await transaction.CommitAsync();
+                var bulkCreateResult = await _repository.BulkCreate(courseCurriculumAssignmentsToCreate, cancellationToken);
+                var bulkUpdateResult = await _repository.BulkUpdate(courseCurriculumAssignmentsToUpdate, cancellationToken);
+
+                if (!bulkCreateResult.IsSuccess)
+                {
+                    _logger.LogError("Bulk Create - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}", string.Join(", ", bulkCreateResult.Errors));
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Result.Error("Failed to sync course-curriculum assignments.");
+                }
+
+
+                if (!bulkUpdateResult.IsSuccess)
+                {
+                    _logger.LogError("Bulk Update - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}", string.Join(", ", bulkCreateResult.Errors));
+                    await transaction.RollbackAsync(cancellationToken);
+                    return Result.Error("Failed to sync course-curriculum assignments.");
+                }
+
+                await transaction.CommitAsync(cancellationToken);
 
                 return Result.Success();
             }catch(Exception ex)
