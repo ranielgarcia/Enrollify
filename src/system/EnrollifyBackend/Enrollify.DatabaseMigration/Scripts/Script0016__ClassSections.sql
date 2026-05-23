@@ -49,8 +49,8 @@ CREATE NONCLUSTERED INDEX IX_ClassSections_CurriculumId
 ON ClassSections(CurriculumId);
 GO
 
-CREATE NONCLUSTERED INDEX IX_ClassSections_EntryAcademicYearId
-ON ClassSections(EntryAcademicYearId);
+CREATE NONCLUSTERED INDEX IX_ClassSections_CohortAcademicYearId
+ON ClassSections(CohortAcademicYearId);
 GO
 
 CREATE NONCLUSTERED INDEX IX_ClassSections_AdviserId
