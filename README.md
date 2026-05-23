@@ -1,5 +1,9 @@
 # Enrollify — College Enrollment Management System
 
+> [!WARNING]
+> **🚧 This project is currently under active development and is not yet complete.**
+> Features, APIs, and documentation are subject to change. Some modules are still being implemented and may not be fully functional.
+
 **Enrollify** is a full-stack, web-based enrollment management system designed for colleges and universities. It digitizes and streamlines the entire academic lifecycle — from setting up master data and building class schedules, to managing student enrollments, computing fees, recording grades, and generating official documents.
 
 ---
