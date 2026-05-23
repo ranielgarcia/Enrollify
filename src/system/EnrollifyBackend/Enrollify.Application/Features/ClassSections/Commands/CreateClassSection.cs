@@ -57,7 +57,7 @@ public static class CreateClassSection
 
 
         private Year GetCohortEntryYear(AcademicYear classSectionAcademicYear, YearLevel yearLevel)
-            => Year.From(classSectionAcademicYear.StartDate.Value.Year - yearLevel.Value);
+            => Year.From(classSectionAcademicYear.StartDate.Value.Year - (yearLevel.Value - 1));
 
 
         private async Task<Result<(AcademicYear cohortAcademicYear, CourseCurriculumAssignment cohortCourseCurriculumAssignment)>>

@@ -224,7 +224,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
         }
 
         private Year GetCohortEntryYear(AcademicYear classSectionAcademicYear, YearLevel yearLevel)
-            => Year.From(classSectionAcademicYear.StartDate.Value.Year - yearLevel.Value);
+            => Year.From(classSectionAcademicYear.StartDate.Value.Year - (yearLevel.Value - 1));
     }
 
 }
