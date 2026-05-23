@@ -1,4 +1,7 @@
-import type { CurriculumWithSubjects } from "@/api/models/curriculum";
+import {
+  CurriculumStatusEnum,
+  type CurriculumWithSubjects,
+} from "@/api/models/curriculum";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +17,8 @@ export default function CurriculumBasicDetails({
   onEditDetails,
   onClose,
 }: CurriculumBasicDetailsProps) {
+  const isReadOnly = curriculum.status.value === CurriculumStatusEnum.Active;
+
   return (
     <Card className="border-accent bg-accent/5">
       <CardContent className="pt-6">
@@ -52,9 +57,11 @@ export default function CurriculumBasicDetails({
               {curriculum.description || "No description provided."}
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={onEditDetails}>
-            Edit Details
-          </Button>
+          {!isReadOnly && (
+            <Button variant="outline" size="sm" onClick={onEditDetails}>
+              Edit Details
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={onClose}>
             Close
           </Button>

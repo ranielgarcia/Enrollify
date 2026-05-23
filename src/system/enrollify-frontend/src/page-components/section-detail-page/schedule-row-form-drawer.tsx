@@ -81,7 +81,7 @@ export function ScheduleRowFormDrawer({
       </Button>
 
       <Drawer open={isOpen} onOpenChange={setIsOpen} direction="right" dismissible={false}>
-        <DrawerContent className="h-full w-full max-w-sm overflow-y-auto">
+        <DrawerContent className="data-[vaul-drawer-direction=right]:w-[480px] data-[vaul-drawer-direction=right]:sm:max-w-none h-full w-full overflow-y-auto">
           <DrawerHeader className="border-b pb-4">
             <DrawerTitle>Add Schedule Row</DrawerTitle>
           </DrawerHeader>

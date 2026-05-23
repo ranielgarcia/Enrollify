@@ -121,7 +121,7 @@ export function SubjectFormDrawer({
           Add Subject
         </Button>
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className="data-[vaul-drawer-direction=right]:w-[480px] data-[vaul-drawer-direction=right]:sm:max-w-none">
         <AuthorizeView
           policy={isUpdatingSubject ? "canUpdateSubject" : "canCreateSubject"}
           unauthorized={

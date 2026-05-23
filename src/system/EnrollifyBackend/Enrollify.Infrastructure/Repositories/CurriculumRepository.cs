@@ -41,10 +41,9 @@ internal class CurriculumRepository : ICurriculumRepository
         }
     }
 
-    public async Task<Result<List<LatestActiveCurriculumPerCourseView>>> GetAllLatestActiveCurriculumPerCourse()
+    public async Task<List<LatestActiveCurriculumPerCourseView>> GetAllLatestActiveCurriculumPerCourse(CancellationToken cancellationToken)
     {
-        var result = await _dbContext.LatestActiveCurriculumPerCourse.ToListAsync();
-        return Result.Success(result);
+        return await _dbContext.LatestActiveCurriculumPerCourse.ToListAsync(cancellationToken);
     }
 
     public async Task<Result<CurriculumId>> UpdateCurriculum(Curriculum newCurriculum, CancellationToken cancellationToken)

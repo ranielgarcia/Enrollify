@@ -7,6 +7,7 @@ using Enrollify.Application.Features.Buildings;
 using Enrollify.Application.Features.ClassSections;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings;
 using Enrollify.Application.Features.Colleges;
+using Enrollify.Application.Features.CourseCurriculumAssignments;
 using Enrollify.Application.Features.Courses;
 using Enrollify.Application.Features.Curriculums;
 using Enrollify.Application.Features.Departments;
@@ -18,10 +19,13 @@ using Enrollify.Application.Features.Subjects;
 using Enrollify.Application.Features.Teachers;
 using Enrollify.Application.Features.Teachers.Storage;
 using Enrollify.Core.Constants.Authorization;
+using Enrollify.Core.Services;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
 using Enrollify.Infrastructure.Data.Queries;
+using Enrollify.Infrastructure.Persistence;
 using Enrollify.Infrastructure.Repositories;
+using Enrollify.Infrastructure.Services;
 using Enrollify.Infrastructure.Storage;
 using Enrollify.SharedKernel;
 
@@ -81,6 +85,7 @@ public static class InfrastructureServiceExtensions
 
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
+        services.AddSingleton<IDbExceptionTranslator, SqlServerExceptionTranslator>();
         services.AddScoped<IListRolesQueryService, ListRolesQueryService>();
         services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
         services.AddScoped<ICollegeRepository, CollegeRepository>();
@@ -96,6 +101,10 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IAcademicYearAndTermRepository, AcademicYearAndTermRepository>();
         services.AddScoped<IClassSectionRepository, ClassSectionRepository>();
         services.AddScoped<IClassSectionSubjectOfferingRepository, ClassSectionSubjectOfferingRepository>();
+        services.AddScoped<ICourseCurriculumAssignmentRepository, CourseCurriculumAssignmentRepository>();
+
+
+        services.AddScoped<IApplicableCurriculumQueryService, ApplicableCurriculumQueryService>();
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 

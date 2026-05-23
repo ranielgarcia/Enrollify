@@ -1,7 +1,3 @@
-import {
-  createSectionOptions,
-  updateSectionOptions,
-} from "@/api/collections/class-section-collection";
 import type { ClassSection } from "@/api/models/class-section";
 import type { Course } from "@/api/models/course";
 import type { Teacher } from "@/api/models/teacher";
@@ -12,6 +8,8 @@ import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
 import { Unauthorized } from "@/components/unauthorized";
 import { AuthorizeView } from "@/infrastructure/authorization/components/AuthorizeView";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { SearchTeachersDialog } from "@/components/shared/search-teachers-dialog";
 import {
   Drawer,
   DrawerContent,
@@ -21,18 +19,19 @@ import {
 } from "@/components/ui/drawer";
 import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Plus, UserRound } from "lucide-react";
+import { useState } from "react";
 import { z } from "zod";
-import type { AcademicTerm } from "@/api/models/academic-year";
+import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
+import { createNewClassSectionsOptions } from "@/api/collections/class-section-collection";
+import { useMutation } from "@tanstack/react-query";
 
 const sectionFormSchema = z.object({
-  name: z.string().min(1, "Section name is required"),
   yearLevel: z.number().int().min(1).max(6),
-  studentCapacity: z.number().int().min(1, "Capacity must be at least 1"),
   courseId: z.number().min(1, "Course is required"),
   academicTermId: z.number().min(1, "Academic term is required"),
   adviserId: z.number().min(1, "Adviser is required"),
+  studentCapacity: z.number().int().min(1, "Capacity must be at least 1"),
 });
 
 type SectionFormData = z.infer<typeof sectionFormSchema>;
@@ -43,18 +42,7 @@ interface SectionFormDrawerProps {
   sectionToUpdate?: ClassSection | null;
   onOpenChange: (isOpen: boolean) => void;
   courses: Course[];
-  teachers: Teacher[];
-  academicTerms: AcademicTerm[];
 }
-
-const YEAR_LEVEL_OPTIONS = [
-  { value: "1", label: "1st Year" },
-  { value: "2", label: "2nd Year" },
-  { value: "3", label: "3rd Year" },
-  { value: "4", label: "4th Year" },
-  { value: "5", label: "5th Year" },
-  { value: "6", label: "6th Year" },
-];
 
 export function SectionFormDrawer({
   isOpen,
@@ -62,33 +50,48 @@ export function SectionFormDrawer({
   sectionToUpdate,
   onOpenChange,
   courses,
-  teachers,
-  academicTerms,
 }: SectionFormDrawerProps) {
   const isUpdating = !!sectionToUpdate;
+  const {
+    selectedAcademicYear,
+    academicCoreSettings: { yearLevelOptions },
+  } = useEnrollmentContext();
 
-  const { mutateAsync: createSection } = useMutation(createSectionOptions());
-  const { mutateAsync: updateSection } = useMutation(
-    updateSectionOptions(sectionToUpdate?.id ?? 0),
+  const [isAdviserDialogOpen, setIsAdviserDialogOpen] = useState(false);
+  const [selectedAdviser, setSelectedAdviser] = useState<Pick<
+    Teacher,
+    "id" | "firstName" | "lastName" | "teacherIdentifier"
+  > | null>(
+    sectionToUpdate?.adviser
+      ? {
+          id: sectionToUpdate.adviser.id,
+          firstName: sectionToUpdate.adviser.firstName,
+          lastName: sectionToUpdate.adviser.lastName,
+          teacherIdentifier: "",
+        }
+      : null,
   );
+
+  const { mutateAsync: createSectionAsync } = useMutation(
+    createNewClassSectionsOptions(),
+  );
+  // const { mutateAsync: updateSection } = useMutation(
+  //   updateSectionOptions(sectionToUpdate?.id ?? 0),
+  // );
 
   const courseOptions = courses.map((c) => ({
     value: c.id.toString(),
     label: `${c.code} — ${c.name}`,
   }));
 
-  const teacherOptions = teachers.map((t) => ({
-    value: t.id.toString(),
-    label: `${t.firstName} ${t.lastName}`,
-  }));
-
-  const termOptions = academicTerms.map((t) => ({
-    value: t.id.toString(),
-    label: t.termName ?? "<Invalid term name...>",
-  }));
+  const termOptions = selectedAcademicYear?.academicTerms
+    ? selectedAcademicYear?.academicTerms?.map((t) => ({
+        value: t.id.toString(),
+        label: t.termName ?? "<Invalid term name...>",
+      }))
+    : [];
 
   const defaultValues: SectionFormData = {
-    name: sectionToUpdate?.name ?? "",
     yearLevel: sectionToUpdate?.yearLevel ?? 1,
     studentCapacity: sectionToUpdate?.studentCapacity ?? 40,
     courseId: sectionToUpdate?.course?.id ?? 0,
@@ -105,9 +108,10 @@ export function SectionFormDrawer({
     onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
       if (meta.submitAction === "create") {
-        await createSection(value);
+        await createSectionAsync(value);
       } else if (meta.submitAction === "update") {
-        await updateSection(value);
+        // await updateSection(value);
+        console.log(value);
       }
       if (meta.formAction === "close") {
         setIsOpen(false);
@@ -142,7 +146,7 @@ export function SectionFormDrawer({
           />
         }
       >
-        <DrawerContent className="h-full w-full max-w-md overflow-y-auto">
+        <DrawerContent className="data-[vaul-drawer-direction=right]:w-[480px] data-[vaul-drawer-direction=right]:sm:max-w-none h-full overflow-y-auto overflow-x-hidden">
           <DrawerHeader className="border-b pb-4">
             <DrawerTitle>
               {isUpdating
@@ -156,24 +160,15 @@ export function SectionFormDrawer({
             onSubmit={(e) => e.preventDefault()}
           >
             <FormSection title="Section Details">
-              <form.Field name="name">
-                {(field) => (
-                  <FormField
-                    field={field}
-                    label="Section Name"
-                    placeholder="e.g. BSCS-1A"
-                    required
-                    hint="Unique identifier for this class section"
-                  />
-                )}
-              </form.Field>
-
               <form.Field name="yearLevel">
                 {(field) => (
                   <FormSelectField
                     field={field}
                     label="Year Level"
-                    options={YEAR_LEVEL_OPTIONS}
+                    options={yearLevelOptions.map((o) => ({
+                      value: o.value.toString(),
+                      label: o.label,
+                    }))}
                     placeholder="Select year level"
                     required
                   />
@@ -222,17 +217,57 @@ export function SectionFormDrawer({
               </form.Field>
 
               <form.Field name="adviserId">
-                {(field) => (
-                  <FormSelectField
-                    field={field}
-                    label="Adviser"
-                    options={teacherOptions}
-                    placeholder="Select adviser"
-                    searchPlaceholder="Search teachers..."
-                    required
-                  />
-                )}
+                {(field) => {
+                  const errorMessage = field.state.meta.errors
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    .map((e: any) => (typeof e === "string" ? e : e?.message))
+                    .filter(Boolean)
+                    .join(", ");
+                  const hasError = !field.state.meta.isValid && errorMessage;
+                  return (
+                    <div className="grid w-full items-center gap-1.5">
+                      <Label htmlFor={field.name}>
+                        Adviser
+                        <span className="text-destructive ml-0.5">*</span>
+                      </Label>
+                      <Button
+                        id={field.name}
+                        type="button"
+                        variant="outline"
+                        className="justify-start font-normal"
+                        onClick={() => setIsAdviserDialogOpen(true)}
+                      >
+                        <UserRound className="size-4 text-muted-foreground" />
+                        {selectedAdviser ? (
+                          `${selectedAdviser.firstName} ${selectedAdviser.lastName}`
+                        ) : (
+                          <span className="text-muted-foreground">
+                            Select adviser
+                          </span>
+                        )}
+                      </Button>
+                      {hasError && (
+                        <p className="text-sm text-destructive">
+                          {errorMessage}
+                        </p>
+                      )}
+                    </div>
+                  );
+                }}
               </form.Field>
+
+              <SearchTeachersDialog
+                isOpen={isAdviserDialogOpen}
+                onOpenChange={setIsAdviserDialogOpen}
+                title="Select Adviser"
+                maxSelections={1}
+                excludeTeacherIds={selectedAdviser ? [selectedAdviser.id] : []}
+                onSubmit={async (teachers) => {
+                  const teacher = teachers[0];
+                  setSelectedAdviser(teacher);
+                  form.setFieldValue("adviserId", teacher.id);
+                }}
+              />
             </FormSection>
           </form>
 

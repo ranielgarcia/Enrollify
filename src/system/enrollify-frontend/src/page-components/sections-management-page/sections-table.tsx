@@ -115,9 +115,7 @@ export function SectionsTable({
           <DataTableColumnHeader column={column} label="Capacity" />
         ),
         meta: { label: "Capacity", variant: "number" },
-        cell: (info) => (
-          <span className="tabular-nums">{info.getValue()}</span>
-        ),
+        cell: (info) => <span className="tabular-nums">{info.getValue()}</span>,
       }),
       columnHelper.display({
         id: "actions",
@@ -133,8 +131,8 @@ export function SectionsTable({
                 size="sm"
                 onClick={() =>
                   navigate({
-                    to: "/portal/curriculum-and-scheduling/sections/$sectionId" as any,
-                    params: { sectionId: String(item.id) } as any,
+                    to: "/portal/curriculum-and-scheduling/sections/$sectionId",
+                    params: { sectionId: String(item.id) },
                   })
                 }
                 className="hover:bg-primary/10 text-primary hover:text-primary"

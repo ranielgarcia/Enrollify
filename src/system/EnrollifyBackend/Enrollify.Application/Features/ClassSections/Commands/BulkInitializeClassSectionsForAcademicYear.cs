@@ -3,14 +3,14 @@ using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Application.Features.ClassSections.Extensions;
 using Enrollify.Application.Features.ClassSections.Specifications;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings;
-using Enrollify.Application.Features.Courses.Specifications;
-using Enrollify.Application.Features.Curriculums.Specifications;
+using Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
+using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
-using Enrollify.Core.Aggregates.CurriculumAggregate;
+using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Mediator;
@@ -20,42 +20,32 @@ namespace Enrollify.Application.Features.ClassSections.Commands;
 
 public static class BulkInitializeClassSectionsForAcademicYear
 {
-    public sealed record Payload(
-        CourseId courseId,
-        CurriculumId curriculumId,
-        int numberOfSections);
+    public sealed record Payload(CourseId courseId, int numberOfSections);
 
-    public sealed record Command(
-        AcademicTermId academicTermId,
-        YearLevel yearLevel,
-        List<Payload> requestPayload
-        ) : ICommand<Result>;
+    public sealed record Command(AcademicTermId academicTermId, YearLevel yearLevel, List<Payload> requestPayload) : ICommand<Result>;
 
     public sealed class Handler : ICommandHandler<Command, Result>
     {
-        private readonly IReadRepository<Course> _courseRepository;
         private readonly IReadRepository<AcademicYear> _academicYearRepository;
-        private readonly IReadRepository<Curriculum> _curriculumRepository;
         private readonly IReadRepository<ClassSection> _classSectionReadRepository;
+        private readonly IReadRepository<CourseCurriculumAssignment> _courseCurriculumAssignmentsReadRepository;
         private readonly IClassSectionRepository _classSectionRepository;
         private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<Handler> _logger;
 
         public Handler(
-            IReadRepository<Course> courseRepository,
             IReadRepository<AcademicYear> academicYearRepository,
-            IReadRepository<Curriculum> curriculumRepository,
             IReadRepository<ClassSection> classSectionReadRepository,
+            IReadRepository<CourseCurriculumAssignment> courseCurriculumAssignmentsReadRepository,
             IClassSectionRepository classSectionRepository,
             IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
             IUnitOfWork unitOfWork,
             ILogger<Handler> logger)
         {
-            _courseRepository = courseRepository;
             _academicYearRepository = academicYearRepository;
-            _curriculumRepository = curriculumRepository;
             _classSectionReadRepository = classSectionReadRepository;
+            _courseCurriculumAssignmentsReadRepository = courseCurriculumAssignmentsReadRepository;
             _classSectionRepository = classSectionRepository;
             _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
             _unitOfWork = unitOfWork;
@@ -69,21 +59,31 @@ public static class BulkInitializeClassSectionsForAcademicYear
                 .FirstOrDefaultAsync(new GetAcademicYearByAcademicTermIdSpec(command.academicTermId), cancellationToken);
             var academicTerm = academicYear!.AcademicTerms.First(at => at.Id == command.academicTermId);
 
-            // Get all courses (validated by validator)
-            var courseIds = command.requestPayload.Select(p => p.courseId).Distinct().ToList();
-            var courses = await _courseRepository.ListAsync(new BulkGetMinimumCoursesByIdsSpec(courseIds), cancellationToken);
-            var courseById = courses.ToDictionary(c => c.Id);
+            var courseCurriculumAssignments = await _courseCurriculumAssignmentsReadRepository.ListAsync(new GetAllCourseCurriculumAssignmentsByAcademicYearIdSpec(academicYear.Id), cancellationToken);
+            var courseCurriculumAssignmentsByCourseId = courseCurriculumAssignments.ToDictionary(x => x.CourseId, x => x);
 
-            // Get all curricula (validated by validator)
-            var curriculumIds = command.requestPayload
-                .Select(p => p.curriculumId)
-                .Where(id => id != CurriculumId.From(0))
-                .Distinct()
-                .ToList();
-            var curricula = curriculumIds.Count > 0
-                ? await _curriculumRepository.ListAsync(new BulkGetCurriculumWithSubjectsByIdsSpec(curriculumIds), cancellationToken)
-                : new List<Curriculum>();
-            var curriculumById = curricula.ToDictionary(c => c.Id);
+            var payloadCourseIds = command.requestPayload.Select(p => p.courseId).ToList();
+            var existingSections = await _classSectionReadRepository.ListAsync(
+                new GetExistingClassSectionsByCourseYearLevelAndTerm(
+                    new List<YearLevel> { command.yearLevel },
+                    payloadCourseIds,
+                    new List<AcademicTermId> { command.academicTermId }),
+                cancellationToken);
+            var existingSectionsByCourseId = existingSections.GroupBy(s => s.CourseId).ToDictionary(g => g.Key, g => g.ToList());
+
+            // H5: Pre-validate that every course has subjects for the given year level and term before opening the transaction.
+            // Fails fast without any DB writes if any course's curriculum has no subjects for this year/term.
+            foreach (var payload in command.requestPayload)
+            {
+                var assignment = courseCurriculumAssignmentsByCourseId[payload.courseId];
+                if (!assignment.Curriculum!.GetSubjectsByYearAndTerm(command.yearLevel, academicTerm.TermNumber).Any())
+                {
+                    _logger.LogWarning(
+                        "No curriculum subjects found for course {CourseId}, year level {YearLevel}, term {TermNumber}",
+                        payload.courseId, command.yearLevel, academicTerm.TermNumber);
+                    return Result.Error($"No curriculum subjects found for course '{assignment.Course!.Code.Value}', year level {command.yearLevel}, term {academicTerm.TermNumber}.");
+                }
+            }
 
             // Begin transaction to ensure all database operations succeed or fail together
             await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -94,23 +94,20 @@ public static class BulkInitializeClassSectionsForAcademicYear
 
                 foreach (var payload in command.requestPayload)
                 {
-                    var course = courseById[payload.courseId];
-                    var curriculum = curriculumById[payload.curriculumId];
+                    // H3: Direct property access — validator guarantees assignment exists;
+                    // dictionary indexer throws rather than returning null, so ?. operators are redundant.
+                    var courseCurriculumAssignment = courseCurriculumAssignmentsByCourseId[payload.courseId];
+                    var curriculum = courseCurriculumAssignment.Curriculum!;
+                    var course = courseCurriculumAssignment.Course!;
 
-                    // Get subjects that should be offered for this class section
-                    var curriculumSubjects = curriculum.GetSubjectsByYearAndTerm(command.yearLevel, academicTerm.TermNumber);
-                    if (!curriculumSubjects.Any())
-                    {
-                        _logger.LogWarning(
-                            "No curriculum subjects found for course {CourseId}, year level {YearLevel}, term {TermNumber}",
-                            payload.courseId, command.yearLevel, academicTerm.TermNumber);
-                        return Result.Error($"No curriculum subjects found for course '{course.Code.Value}', year level {command.yearLevel}, term {academicTerm.TermNumber}.");
-                    }
+                    // H4: Materialize once so .Count is a cheap property read and the inner foreach
+                    // doesn't re-evaluate the IEnumerable on every iteration.
+                    var curriculumSubjects = curriculum
+                        .GetSubjectsByYearAndTerm(command.yearLevel, academicTerm.TermNumber)
+                        .ToList();
 
                     // Get existing sections to determine starting section code
-                    var existingClassSections = await _classSectionReadRepository.ListAsync(
-                        new GetExistingClassSectionsByCourseYearLevelAndTerm(command.yearLevel, payload.courseId, command.academicTermId),
-                        cancellationToken);
+                    var existingClassSections = existingSectionsByCourseId.GetValueOrDefault(payload.courseId);
                     var lastExistingClassSectionCode = existingClassSections?
                         .OrderByDescending(cs => cs.SectionCode)
                         .FirstOrDefault()?
@@ -126,7 +123,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
                         // Create class section with auto-generated name
                         var newClassSection = new ClassSection(new ClassSectionForCreation
                         {
-                            Name = $"{course.Code.Value}-{command.yearLevel}{sectionCode}",
+                            Name = course.Code.Value,
                             YearLevel = command.yearLevel,
                             CourseId = payload.courseId,
                             CurriculumId = curriculum.Id,
@@ -163,7 +160,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
                         totalSectionsCreated++;
                         _logger.LogInformation(
                             "Created class section {SectionName} (ID: {ClassSectionId}) with {SubjectCount} subject offerings",
-                            newClassSection.Name, classSectionId, curriculumSubjects.Count());
+                            newClassSection.Name, classSectionId, curriculumSubjects.Count);
                     }
                 }
 
@@ -182,6 +179,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
                 return Result.Error("An unexpected error occurred while initializing class sections.");
             }
         }
+
     }
 
 }

@@ -1024,7 +1024,7 @@ public class SaveCurriculumContentTests
         var curriculum = Curriculum.CreateDraftCurriculum(new DraftCurriculumForCreation
         {
             CourseId = CourseId.From(1),
-            EffectiveYear = 2024,
+            EffectiveYear = Year.From(2024),
             Version = "2024-A",
             Description = "Test Curriculum"
         });

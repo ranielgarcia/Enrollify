@@ -9,7 +9,6 @@ namespace Enrollify.WebAPI.Features.ClassSections;
 public class BulkInitializePayloadRequest
 {
     public int CourseId { get; set; }
-    public int CurriculumId { get; set; }
     public int NumberOfSections { get; set; }
 }
 
@@ -40,9 +39,6 @@ public class BulkInitializeClassSectionsRequestValidator : Validator<BulkInitial
                 payload.RuleFor(x => x.CourseId)
                     .NotEmpty().WithMessage("Course ID is required.");
 
-                payload.RuleFor(x => x.CurriculumId)
-                    .NotEmpty().WithMessage("Curriculum ID is required.");
-
                 payload.RuleFor(x => x.NumberOfSections)
                     .GreaterThan(0).WithMessage("Number of sections must be greater than zero.")
                     .LessThanOrEqualTo(26).WithMessage("Number of sections cannot exceed 26 (A-Z).");
@@ -53,7 +49,7 @@ public class BulkInitializeClassSectionsRequestValidator : Validator<BulkInitial
 [HttpPost("bulk-initialize")]
 [Group<ClassSectionsEndpointGroup>]
 [Authorize(Policy = PolicyName.HasCreateClassSectionPermission)]
-public class BulkInitializeClassSectionsEndpoint : Endpoint<BulkInitializeClassSectionsRequest, DeleteApiResult>
+public class BulkInitializeClassSectionsEndpoint : Endpoint<BulkInitializeClassSectionsRequest, BulkCreatedApiResult>
 {
     private readonly IMediator _mediator;
 
@@ -62,14 +58,13 @@ public class BulkInitializeClassSectionsEndpoint : Endpoint<BulkInitializeClassS
         _mediator = mediator;
     }
 
-    public override async Task<DeleteApiResult> ExecuteAsync(
+    public override async Task<BulkCreatedApiResult> ExecuteAsync(
         BulkInitializeClassSectionsRequest request, 
         CancellationToken cancellationToken)
     {
         var payloads = request.RequestPayload.Select(p => 
             new BulkInitializeClassSectionsForAcademicYear.Payload(
                 CourseId.From(p.CourseId),
-                CurriculumId.From(p.CurriculumId),
                 p.NumberOfSections))
             .ToList();
 
@@ -80,6 +75,6 @@ public class BulkInitializeClassSectionsEndpoint : Endpoint<BulkInitializeClassS
 
         var result = await _mediator.Send(command, cancellationToken);
 
-        return result.ToDeleteResult();
+        return result.ToBulkCreatedResult();
     }
 }

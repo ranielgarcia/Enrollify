@@ -4,6 +4,7 @@ using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
 using Enrollify.Core.Aggregates.RoleAggregate;
@@ -21,6 +22,7 @@ using Enrollify.Infrastructure.Data.Config.AggregateConfigs.ClassSectionConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.ClassSectionSubjectOfferingConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CollegeConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CourseConfigs;
+using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CourseCurriculumAssignmentConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CurriculumConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.DepartmentConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.PermissionScopeConfigs;
@@ -59,6 +61,7 @@ public class EnrollifyDbContext: DbContext
     public DbSet<Teacher> Teachers => Set<Teacher>();
 
     public DbSet<AcademicYear> AcademicYears => Set<AcademicYear>();
+    public DbSet<CourseCurriculumAssignment> CourseCurriculumAssignments => Set<CourseCurriculumAssignment>();
     public DbSet<ClassSection> ClassSections => Set<ClassSection>();
     public DbSet<ClassSectionSubjectOffering> ClassSectionSubjectOfferings => Set<ClassSectionSubjectOffering>();
 
@@ -104,6 +107,7 @@ public class EnrollifyDbContext: DbContext
         configurationBuilder.RegisterAllInAcademicYearVogenEfCoreConverters();
         configurationBuilder.RegisterAllInClassSectionVogenEfCoreConverters();
         configurationBuilder.RegisterAllInClassSectionSubjectOfferingVogenEfCoreConverters();
+        configurationBuilder.RegisterAllInCourseCurriculumAssignmentEfCoreConverters();
 
     }
 }

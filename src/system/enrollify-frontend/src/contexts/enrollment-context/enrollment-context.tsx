@@ -14,6 +14,8 @@ export interface EnrollmentContextValue {
 export const defaultEnrollmentContextValue: EnrollmentContextValue = {
   academicCoreSettings: {
     academicTermSystem: 0,
+    maximumAllowableYearLevel: 0,
+    yearLevelOptions: [],
   },
   activeAcademicYear: null,
   academicYears: [],

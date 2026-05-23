@@ -32,6 +32,8 @@ interface AddSubjectsDialogProps {
   description?: React.ReactNode;
   /** Subject codes already held by the calling entity — these will be excluded from the list */
   excludeSubjectCodes?: string[];
+  /** Maximum number of subjects that can be selected. Omit for unlimited. */
+  maxSelections?: number;
   onSubmit: (subjectCodes: string[]) => Promise<void>;
 }
 
@@ -41,6 +43,7 @@ export function SearchSubjectsDialog({
   title = "Add Subjects",
   description,
   excludeSubjectCodes = [],
+  maxSelections,
   onSubmit,
 }: AddSubjectsDialogProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -85,13 +88,20 @@ export function SearchSubjectsDialog({
     );
   }, [paginatedSubjects, excludeSet]);
 
+  const isAtLimit =
+    maxSelections !== undefined && selectedSubjectCodes.length >= maxSelections;
+
   const handleToggleSubject = (subjectCode?: string) => {
     if (!subjectCode) return;
-    setSelectedSubjectCodes((prev) =>
-      prev.includes(subjectCode)
-        ? prev.filter((code) => code !== subjectCode)
-        : [...prev, subjectCode],
-    );
+    setSelectedSubjectCodes((prev) => {
+      if (prev.includes(subjectCode)) {
+        return prev.filter((code) => code !== subjectCode);
+      }
+      if (maxSelections !== undefined && prev.length >= maxSelections) {
+        return prev;
+      }
+      return [...prev, subjectCode];
+    });
   };
 
   const handleSubmit = async () => {
@@ -165,6 +175,10 @@ export function SearchSubjectsDialog({
                     <Checkbox
                       checked={selectedSubjectCodes.includes(subject.code)}
                       onCheckedChange={() => handleToggleSubject(subject.code)}
+                      disabled={
+                        isAtLimit &&
+                        !selectedSubjectCodes.includes(subject.code)
+                      }
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -215,10 +229,12 @@ export function SearchSubjectsDialog({
             </div>
           )}
 
-          {selectedSubjectCodes.length > 0 && (
+          {(selectedSubjectCodes.length > 0 || maxSelections !== undefined) && (
             <p className="text-sm text-muted-foreground">
-              {selectedSubjectCodes.length} subject
-              {selectedSubjectCodes.length > 1 ? "s" : ""} selected
+              {selectedSubjectCodes.length}
+              {maxSelections !== undefined ? ` / ${maxSelections}` : ""} subject
+              {selectedSubjectCodes.length !== 1 ? "s" : ""} selected
+              {isAtLimit && " — limit reached"}
             </p>
           )}
         </div>

@@ -1,4 +1,4 @@
-﻿namespace Enrollify.WebAPI.Authorization.Curriculums;
+namespace Enrollify.WebAPI.Authorization.Curriculums;
 
 public static class CurriculumAuthorizationPolicyRegistration
 {
@@ -8,6 +8,7 @@ public static class CurriculumAuthorizationPolicyRegistration
         services.AddScoped<IAuthorizationHandler, HasUpdateCurriculumPermissionHandler>();
         services.AddScoped<IAuthorizationHandler, HasDeleteCurriculumPermissionHandler>();
         services.AddScoped<IAuthorizationHandler, HasViewCurriculumsPermissionHandler>();
+        services.AddScoped<IAuthorizationHandler, CanApproveCurriculumPermissionHandler>();
 
         return services;
     }
@@ -22,5 +23,7 @@ public static class CurriculumAuthorizationPolicyRegistration
             policyBuilder.AddRequirements(new HasDeleteCurriculumPermission()));
         options.AddPolicy(PolicyName.HasViewCurriculumsPermission, policyBuilder =>
             policyBuilder.AddRequirements(new HasViewCurriculumsPermission()));
+        options.AddPolicy(PolicyName.CanApproveCurriculumPermission, policyBuilder =>
+            policyBuilder.AddRequirements(new CanApproveCurriculumPermission()));
     }
 }

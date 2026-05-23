@@ -4,7 +4,7 @@
 -- No course will appear more than once in this view.
 CREATE VIEW vw_LatestActiveCurriculumPerCourse AS
 SELECT
-    Id,
+    Id As CurriculumId,
     CourseId,
     EffectiveYear,
     Version,
@@ -16,7 +16,7 @@ FROM (
         c.*,
         ROW_NUMBER() OVER (
             PARTITION BY c.CourseId
-            ORDER BY c.EffectiveYear DESC
+            ORDER BY c.EffectiveYear DESC, c.Version DESC, c.ApprovedDate DESC, c.Id DESC
         ) AS rn
     FROM Curriculums c
     WHERE c.IsActive = 1

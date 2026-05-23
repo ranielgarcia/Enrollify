@@ -92,3 +92,19 @@ export const saveCurriculumContentOptions = (curriculumId: number) =>
       },
     },
   });
+
+export const approveCurriculumOptions = (curriculumId: number) =>
+  createMutationOptions({
+    httpVerb: "put",
+    path: "/api/curriculums/{id}/approve",
+    pathParams: {
+      id: curriculumId,
+    },
+    mutationKey: queryKeys.update(curriculumId),
+    options: {
+      meta: { invalidateQueries: [queryKeys.all()] },
+      onSuccess: () => {
+        toast.success("Curriculum approved successfully");
+      },
+    },
+  });

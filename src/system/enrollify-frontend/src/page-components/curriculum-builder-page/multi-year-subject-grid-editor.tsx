@@ -1,6 +1,12 @@
-import { saveCurriculumContentOptions } from "@/api/collections/curriculum-collection";
+import {
+  approveCurriculumOptions,
+  saveCurriculumContentOptions,
+} from "@/api/collections/curriculum-collection";
 import { getAllSubjectsMinimalOptions } from "@/api/collections/subject-collection";
-import type { CurriculumWithSubjects } from "@/api/models/curriculum";
+import {
+  CurriculumStatusEnum,
+  type CurriculumWithSubjects,
+} from "@/api/models/curriculum";
 import {
   SearchableSelectWithCustomTrigger,
   type MultiSearchableSelectWithTriggerOption,
@@ -11,7 +17,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import { Check, Cloud, CloudOff, Loader2, Plus, Trash2 } from "lucide-react";
+import {
+  Check,
+  Cloud,
+  CloudOff,
+  Loader2,
+  Lock,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface SubjectInCurriculum {
@@ -127,6 +141,8 @@ export default function MultiYearSubjectGridEditor({
   const { academicCoreSettings } = useEnrollmentContext();
   const numberOfTerms = academicCoreSettings.academicTermSystem;
 
+  const isReadOnly = curriculum.status.value === CurriculumStatusEnum.Active;
+
   const [isDirty, setIsDirty] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [isAutoSaveEnabled, setIsAutoSaveEnabled] = useState(() =>
@@ -168,6 +184,9 @@ export default function MultiYearSubjectGridEditor({
   const [grid, setGrid] = useState<YearGrid>(initialState.grid);
   const { mutateAsync: saveCurriculumContentAsync } = useMutation(
     saveCurriculumContentOptions(curriculum.id),
+  );
+  const { mutateAsync: approveCurriculumAsync } = useMutation(
+    approveCurriculumOptions(curriculum.id),
   );
 
   const { data: availableSubjects } = useSuspenseQuery(
@@ -530,6 +549,17 @@ export default function MultiYearSubjectGridEditor({
 
   return (
     <>
+      {/* Read-only banner for Active curricula */}
+      {isReadOnly && (
+        <div className="flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
+          <Lock className="size-4 shrink-0" />
+          <span>
+            This curriculum is <strong>Active</strong> and its content cannot be
+            edited.
+          </span>
+        </div>
+      )}
+
       {/* Auto-save status indicator */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -566,18 +596,22 @@ export default function MultiYearSubjectGridEditor({
           ) : null}
         </div>
         <div className="flex items-center gap-2">
-          <label
-            htmlFor="auto-save-switch"
-            className="text-sm text-muted-foreground cursor-pointer select-none"
-          >
-            Auto-save
-          </label>
-          <Switch
-            id="auto-save-switch"
-            checked={isAutoSaveEnabled}
-            onCheckedChange={handleAutoSaveToggle}
-            size="sm"
-          />
+          {!isReadOnly && (
+            <>
+              <label
+                htmlFor="auto-save-switch"
+                className="text-sm text-muted-foreground cursor-pointer select-none"
+              >
+                Auto-save
+              </label>
+              <Switch
+                id="auto-save-switch"
+                checked={isAutoSaveEnabled}
+                onCheckedChange={handleAutoSaveToggle}
+                size="sm"
+              />
+            </>
+          )}
         </div>
       </div>
 
@@ -593,15 +627,17 @@ export default function MultiYearSubjectGridEditor({
                   Year {year}
                 </h2>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-destructive gap-2"
-                onClick={() => removeYear(year)}
-              >
-                <Trash2 className="size-4" />
-                Remove Year {year}
-              </Button>
+              {!isReadOnly && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-destructive gap-2"
+                  onClick={() => removeYear(year)}
+                >
+                  <Trash2 className="size-4" />
+                  Remove Year {year}
+                </Button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -652,6 +688,7 @@ export default function MultiYearSubjectGridEditor({
                                   step={0.5}
                                   placeholder={`Override (${subject.units})`}
                                   value={subject.unitsOverride ?? ""}
+                                  disabled={isReadOnly}
                                   onChange={(e) => {
                                     const raw = e.target.value;
                                     setUnitsOverride(
@@ -661,7 +698,7 @@ export default function MultiYearSubjectGridEditor({
                                       raw === "" ? null : Number(raw),
                                     );
                                   }}
-                                  className="w-20 text-[10px] h-5 px-1.5 rounded border border-dashed border-muted-foreground/40 bg-transparent focus:outline-none focus:border-accent placeholder:text-muted-foreground/50"
+                                  className="w-20 text-[10px] h-5 px-1.5 rounded border border-dashed border-muted-foreground/40 bg-transparent focus:outline-none focus:border-accent placeholder:text-muted-foreground/50 disabled:opacity-50 disabled:cursor-not-allowed"
                                 />
                               </div>
                               <p className="text-sm font-semibold truncate leading-tight">
@@ -677,88 +714,96 @@ export default function MultiYearSubjectGridEditor({
                                       className="text-[9px] px-1 h-5 border-dashed bg-accent/5 gap-1 group/badge"
                                     >
                                       Pre: {pre}
-                                      <button
-                                        type="button"
-                                        className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5 transition-colors"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          removePrerequisite(
-                                            year,
-                                            term,
-                                            subject.id,
-                                            pre,
-                                          );
-                                        }}
-                                      >
-                                        <Trash2 className="size-2.5 text-destructive" />
-                                      </button>
+                                      {!isReadOnly && (
+                                        <button
+                                          type="button"
+                                          className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5 transition-colors"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            removePrerequisite(
+                                              year,
+                                              term,
+                                              subject.id,
+                                              pre,
+                                            );
+                                          }}
+                                        >
+                                          <Trash2 className="size-2.5 text-destructive" />
+                                        </button>
+                                      )}
                                     </Badge>
                                   ))}
                                 </div>
                               )}
 
                               {/* Prerequisites Logic */}
-                              <SearchableSelectWithCustomTrigger
-                                options={getAvailableSubjectForPrerequisitesOptions(
-                                  year,
-                                  term,
-                                  subject.code,
-                                )}
-                                value={[]}
-                                onValueChange={(subjectCodes: string[]) => {
-                                  addPrerequisites(
+                              {!isReadOnly && (
+                                <SearchableSelectWithCustomTrigger
+                                  options={getAvailableSubjectForPrerequisitesOptions(
                                     year,
                                     term,
-                                    subject.id,
-                                    subjectCodes,
-                                  );
-                                }}
-                                searchPlaceholder="Search subjects..."
-                                emptyMessage="No subjects found"
-                                trigger={
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-auto p-0 text-[9px] text-muted-foreground italic hover:text-accent flex flex-wrap gap-1 justify-start"
-                                  >
-                                    <span>+ Add Prerequisite</span>
-                                  </Button>
-                                }
-                              />
+                                    subject.code,
+                                  )}
+                                  value={[]}
+                                  onValueChange={(subjectCodes: string[]) => {
+                                    addPrerequisites(
+                                      year,
+                                      term,
+                                      subject.id,
+                                      subjectCodes,
+                                    );
+                                  }}
+                                  searchPlaceholder="Search subjects..."
+                                  emptyMessage="No subjects found"
+                                  trigger={
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-auto p-0 text-[9px] text-muted-foreground italic hover:text-accent flex flex-wrap gap-1 justify-start"
+                                    >
+                                      <span>+ Add Prerequisite</span>
+                                    </Button>
+                                  }
+                                />
+                              )}
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="size-7 p-0 opacity-0 group-hover:opacity-100 text-destructive transition-opacity"
-                              onClick={() =>
-                                removeSubject(year, term, subject.id)
-                              }
-                            >
-                              <Trash2 className="size-3.5" />
-                            </Button>
+                            {!isReadOnly && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="size-7 p-0 opacity-0 group-hover:opacity-100 text-destructive transition-opacity"
+                                onClick={() =>
+                                  removeSubject(year, term, subject.id)
+                                }
+                              >
+                                <Trash2 className="size-3.5" />
+                              </Button>
+                            )}
                           </div>
                         ))}
                       </div>
-                      <SearchableSelectWithCustomTrigger
-                        options={getSubjectsOptionsForTerm()}
-                        value={[]}
-                        onValueChange={(values: string[]) => {
-                          values.forEach((val) =>
-                            addSubjectToGrid(year, term, Number(val)),
-                          );
-                        }}
-                        searchPlaceholder="Search subjects..."
-                        emptyMessage="No subjects found"
-                        trigger={
-                          <Button
-                            variant="outline"
-                            className="w-full h-9 border-dashed text-xs text-muted-foreground hover:bg-transparent hover:border-accent hover:text-accent transition-colors"
-                          >
-                            <Plus className="size-3 mr-2" />
-                            Add Subject to Term {term}
-                          </Button>
-                        }
-                      />
+                      {!isReadOnly && (
+                        <SearchableSelectWithCustomTrigger
+                          options={getSubjectsOptionsForTerm()}
+                          value={[]}
+                          onValueChange={(values: string[]) => {
+                            values.forEach((val) =>
+                              addSubjectToGrid(year, term, Number(val)),
+                            );
+                          }}
+                          searchPlaceholder="Search subjects..."
+                          emptyMessage="No subjects found"
+                          trigger={
+                            <Button
+                              variant="outline"
+                              className="w-full h-9 border-dashed text-xs text-muted-foreground hover:bg-transparent hover:border-accent hover:text-accent transition-colors"
+                            >
+                              <Plus className="size-3 mr-2" />
+                              Add Subject to Term {term}
+                            </Button>
+                          }
+                        />
+                      )}
                     </CardContent>
                   </Card>
                 ),
@@ -767,34 +812,41 @@ export default function MultiYearSubjectGridEditor({
           </div>
         ))}
 
-        <Button
-          variant="outline"
-          className="w-full py-8 border-dashed border-2 hover:border-primary hover:bg-primary/5 transition-all gap-2 bg-transparent"
-          onClick={addYear}
-        >
-          <Plus className="size-5" />
-          Add Academic Year{" "}
-          {activeYears.length > 0 ? Math.max(...activeYears) + 1 : 1}
-        </Button>
-      </div>
-
-      <div className="flex items-center justify-between gap-3 pt-8 border-t">
-        <div className="flex gap-3">
+        {!isReadOnly && (
           <Button
             variant="outline"
-            onClick={performSave}
-            disabled={saveStatus === "saving"}
+            className="w-full py-8 border-dashed border-2 hover:border-primary hover:bg-primary/5 transition-all gap-2 bg-transparent"
+            onClick={addYear}
           >
-            {saveStatus === "saving" ? (
-              <Loader2 className="size-4 mr-2 animate-spin" />
-            ) : null}
-            Save as Draft
+            <Plus className="size-5" />
+            Add Academic Year{" "}
+            {activeYears.length > 0 ? Math.max(...activeYears) + 1 : 1}
           </Button>
-          <Button className="bg-primary text-primary-foreground">
-            Finalize Curriculum
-          </Button>
-        </div>
+        )}
       </div>
+
+      {!isReadOnly && (
+        <div className="flex items-center justify-between gap-3 pt-8 border-t">
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={performSave}
+              disabled={saveStatus === "saving"}
+            >
+              {saveStatus === "saving" ? (
+                <Loader2 className="size-4 mr-2 animate-spin" />
+              ) : null}
+              Save as Draft
+            </Button>
+            <Button
+              className="bg-primary text-primary-foreground"
+              onClick={async () => await approveCurriculumAsync({})}
+            >
+              Finalize Curriculum
+            </Button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

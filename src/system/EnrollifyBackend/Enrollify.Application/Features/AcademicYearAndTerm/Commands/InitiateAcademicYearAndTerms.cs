@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
+using Enrollify.Application.Features.AcademicYearAndTerm.Events;
 using Enrollify.Application.Features.AcademicYearAndTerm.Models;
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Core;
@@ -22,15 +23,18 @@ public static class InitiateAcademicYearAndTerms
     {
         private readonly IAcademicYearAndTermRepository _academicYearAndTermRepository;
         private readonly IReadRepository<AcademicYear> _readRepository;
+        private readonly IMediator _mediator;
         private readonly ILogger<Handler> _logger;
 
         public Handler(
             IAcademicYearAndTermRepository academicYearAndTermRepository,
             IReadRepository<AcademicYear> readRepository,
+            IMediator mediator,
             ILogger<Handler> logger)
         {
             _academicYearAndTermRepository = academicYearAndTermRepository;
             _readRepository = readRepository;
+            _mediator = mediator;
             _logger = logger;
         }
 
@@ -67,6 +71,11 @@ public static class InitiateAcademicYearAndTerms
                 }
 
                 var result = await _academicYearAndTermRepository.Create(academicYear, cancellationToken);
+
+                if (result.IsSuccess)
+                {
+                    await _mediator.Publish(new AcademicYearCreatedEvent(result.Value), cancellationToken);
+                }
 
                 return result.Map(AcademicYearDto.FromEntity);
             }

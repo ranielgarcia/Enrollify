@@ -18,9 +18,9 @@ public class ListLatestActiveCurriculumsQueryHandler
 {
     public async ValueTask<Result<List<CurriculumDto>>> Handle(ListLatestActiveCurriculumsQuery query, CancellationToken cancellationToken)
     {
-        var result = await curriculumRepository.GetAllLatestActiveCurriculumPerCourse();
+        var result = await curriculumRepository.GetAllLatestActiveCurriculumPerCourse(cancellationToken);
 
-        var curriculumIds = result.IsSuccess ? result.Value.Select(c => c.Id).ToList() : new List<CurriculumId>();
+        var curriculumIds = result.Select(c => c.CurriculumId).ToList();
 
         var curriculums = await readRepository.ListAsync(new GetCurriculumsWithSubjectsByIdsSpec(curriculumIds), cancellationToken);
 

@@ -8,5 +8,5 @@ public interface ICurriculumRepository
 {
     Task<Result<CurriculumId>> CreateDraftCurriculum(Curriculum newCurriculum, CancellationToken cancellationToken);
     Task<Result<CurriculumId>> UpdateCurriculum(Curriculum newCurriculum, CancellationToken cancellationToken);
-    Task<Result<List<LatestActiveCurriculumPerCourseView>>> GetAllLatestActiveCurriculumPerCourse();
+    Task<List<LatestActiveCurriculumPerCourseView>> GetAllLatestActiveCurriculumPerCourse(CancellationToken cancellationToken);
 }

@@ -4,8 +4,8 @@ using Enrollify.Application.Features.ClassSections.Validators;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
-using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Moq;
@@ -16,7 +16,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
 {
     private readonly Mock<IReadRepository<Course>> _courseRepositoryMock = new();
     private readonly Mock<IReadRepository<AcademicYear>> _academicYearRepositoryMock = new();
-    private readonly Mock<IReadRepository<Curriculum>> _curriculumRepositoryMock = new();
+    private readonly Mock<IReadRepository<CourseCurriculumAssignment>> _curriculumAssignmentRepositoryMock = new();
     private readonly BulkInitializeClassSectionsForAcademicYearValidator _validator;
 
     public BulkInitializeClassSectionsForAcademicYearValidatorTests()
@@ -24,12 +24,12 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         _validator = new BulkInitializeClassSectionsForAcademicYearValidator(
             _courseRepositoryMock.Object,
             _academicYearRepositoryMock.Object,
-            _curriculumRepositoryMock.Object);
+            _curriculumAssignmentRepositoryMock.Object);
     }
 
     #region RequestPayload Collection Validation
 
-    [Fact(DisplayName = "Empty requestPayload - returns invalid result")]
+    [Fact(DisplayName = "Empty requestPayload - returns collection-level error")]
     public async Task ValidateAsync_EmptyRequestPayload_HasCollectionError()
     {
         var command = CreateCommand(payloadCount: 0);
@@ -48,31 +48,74 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         var command = CreateCommand();
         SetupCourses(command.requestPayload[0].courseId);
         SetupAcademicYears(command.academicTermId);
-        SetupCurricula();
+        SetupCurriculumAssignments(command.requestPayload[0].courseId);
 
         var result = await _validator.ValidateAsync(command);
 
-        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "requestPayload");
+        Assert.DoesNotContain(result.Errors, e =>
+            e.ErrorMessage.Contains("At least one payload entry is required"));
+    }
+
+    #endregion
+
+    #region Duplicate CourseId Validation
+
+    [Fact(DisplayName = "Duplicate courseIds in payload - returns duplicate error")]
+    public async Task ValidateAsync_DuplicateCourseIds_HasDuplicateError()
+    {
+        var courseId = CourseId.From(1);
+        var command = new BulkInitializeClassSectionsForAcademicYear.Command(
+            AcademicTermId.From(1),
+            YearLevel.From(1),
+            [new(courseId, 1), new(courseId, 2)]);
+        SetupCourses(courseId);
+        SetupAcademicYears(AcademicTermId.From(1));
+        SetupCurriculumAssignments(courseId);
+
+        var result = await _validator.ValidateAsync(command);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e =>
+            e.ErrorMessage.Contains("Duplicate course IDs are not allowed"));
+    }
+
+    [Fact(DisplayName = "Unique courseIds in payload - no duplicate error")]
+    public async Task ValidateAsync_UniqueCourseIds_NoDuplicateError()
+    {
+        var courseId1 = CourseId.From(1);
+        var courseId2 = CourseId.From(2);
+        var command = new BulkInitializeClassSectionsForAcademicYear.Command(
+            AcademicTermId.From(1),
+            YearLevel.From(1),
+            [new(courseId1, 1), new(courseId2, 1)]);
+        SetupCourses(courseId1, courseId2);
+        SetupAcademicYears(AcademicTermId.From(1));
+        SetupCurriculumAssignments(courseId1, courseId2);
+
+        var result = await _validator.ValidateAsync(command);
+
+        Assert.DoesNotContain(result.Errors, e =>
+            e.ErrorMessage.Contains("Duplicate course IDs"));
     }
 
     #endregion
 
     #region AcademicTermId Validation
 
-    [Fact(DisplayName = "AcademicTermId does not exist - returns error")]
-    public async Task ValidateAsync_AcademicTermDoesNotExist_HasAcademicTermError()
+    [Fact(DisplayName = "AcademicTermId does not exist - error targets academicTermId property with specific message")]
+    public async Task ValidateAsync_AcademicTermDoesNotExist_HasTargetedAcademicTermError()
     {
         var command = CreateCommand(academicTermId: AcademicTermId.From(99));
         SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(); // No matching academic term
-        SetupCurricula();
+        SetupAcademicYears(); // returns null — no matching term
+        SetupCurriculumAssignments();
 
         var result = await _validator.ValidateAsync(command);
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e =>
-            e.ErrorMessage.Contains("Academic term") ||
-            e.ErrorMessage.Contains("do not exist"));
+            e.PropertyName == nameof(BulkInitializeClassSectionsForAcademicYear.Command.academicTermId) &&
+            e.ErrorMessage.Contains("does not exist or is inactive"));
     }
 
     [Fact(DisplayName = "AcademicTermId exists - no academic term error")]
@@ -81,22 +124,19 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         var command = CreateCommand();
         SetupCourses(command.requestPayload[0].courseId);
         SetupAcademicYears(command.academicTermId);
-        SetupCurricula();
+        SetupCurriculumAssignments(command.requestPayload[0].courseId);
 
         var result = await _validator.ValidateAsync(command);
 
-        Assert.DoesNotContain(result.Errors, e => e.ErrorMessage.Contains("Academic term"));
+        Assert.DoesNotContain(result.Errors, e =>
+            e.ErrorMessage.Contains("does not exist or is inactive"));
     }
 
     #endregion
 
     #region YearLevel Validation
 
-    // Removed: YearLevel.From(0) throws Vogen exception before validator runs
-    // Vogen validates that year level must be between 1-6 at construction time
-
-    // Removed: YearLevel.From(7) throws Vogen exception before validator runs
-    // Vogen validates that year level must be between 1-6 at construction time
+    // YearLevel.From(0) and From(7) throw at construction time (Vogen validation), so no boundary tests here
 
     [Fact(DisplayName = "YearLevel is valid - no year level error")]
     public async Task ValidateAsync_YearLevelIsValid_NoYearLevelError()
@@ -104,7 +144,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         var command = CreateCommand(yearLevel: YearLevel.From(3));
         SetupCourses(command.requestPayload[0].courseId);
         SetupAcademicYears(command.academicTermId);
-        SetupCurricula();
+        SetupCurriculumAssignments(command.requestPayload[0].courseId);
 
         var result = await _validator.ValidateAsync(command);
 
@@ -113,176 +153,229 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
 
     #endregion
 
-    #region CourseId Validation
+    #region CourseId Zero Guard
 
-    [Fact(DisplayName = "CourseId does not exist - returns generic validation error")]
-    public async Task ValidateAsync_CourseDoesNotExist_HasValidationError()
+    [Fact(DisplayName = "CourseId is zero - returns explicit non-zero error instead of silently ignoring")]
+    public async Task ValidateAsync_CourseIdIsZero_HasNonZeroCourseIdError()
     {
-        var command = CreateCommand(courseId: CourseId.From(99));
+        var command = new BulkInitializeClassSectionsForAcademicYear.Command(
+            AcademicTermId.From(1),
+            YearLevel.From(1),
+            [new(CourseId.From(0), 1)]);
         SetupCourses();
-        SetupAcademicYears(command.academicTermId);
-        SetupCurricula();
+        SetupAcademicYears(AcademicTermId.From(1));
+        SetupCurriculumAssignments();
 
         var result = await _validator.ValidateAsync(command);
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e =>
-            e.ErrorMessage.Contains("One or more entries reference entities that do not exist"));
-    }
-
-    [Fact(DisplayName = "CourseId exists - no course error")]
-    public async Task ValidateAsync_CourseExists_NoCourseError()
-    {
-        var command = CreateCommand();
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurricula();
-
-        var result = await _validator.ValidateAsync(command);
-
-        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "requestPayload[0].courseId");
+            e.ErrorMessage.Contains("Course ID must be a valid non-zero value"));
     }
 
     #endregion
 
-    #region CurriculumId Validation
+    #region CourseId Existence Validation
 
-    [Fact(DisplayName = "CurriculumId provided but curriculum does not exist - returns generic validation error")]
-    public async Task ValidateAsync_CurriculumDoesNotExist_HasValidationError()
+    [Fact(DisplayName = "CourseId does not exist - error message names the missing course ID")]
+    public async Task ValidateAsync_CourseDoesNotExist_ErrorMessageContainsMissingId()
     {
-        var courseId = CourseId.From(1);
-        var command = CreateCommand(courseId: courseId, curriculumId: CurriculumId.From(99));
-        SetupCourses(courseId);
+        var command = CreateCommand(courseId: CourseId.From(99));
+        SetupCourses(); // returns empty — course 99 is missing
         SetupAcademicYears(command.academicTermId);
-        SetupCurricula();
+        SetupCurriculumAssignments();
 
         var result = await _validator.ValidateAsync(command);
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e =>
-            e.ErrorMessage.Contains("One or more entries reference entities that do not exist"));
+            e.ErrorMessage.Contains("course IDs do not exist") &&
+            e.ErrorMessage.Contains("99"));
     }
 
-    [Fact(DisplayName = "CurriculumId provided but curriculum belongs to different course - returns generic validation error")]
-    public async Task ValidateAsync_CurriculumBelongsToDifferentCourse_HasValidationError()
+    [Fact(DisplayName = "Multiple payloads - missing course in second entry - error lists the missing ID")]
+    public async Task ValidateAsync_MultiplePayloadsMissingCourseInSecondEntry_ErrorListsMissingId()
     {
-        var courseId = CourseId.From(1);
-        var differentCourseId = CourseId.From(2);
-        var curriculumId = CurriculumId.From(5);
-        var command = CreateCommand(courseId: courseId, curriculumId: curriculumId);
-        SetupCourses(courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurricula(CreateCurriculum(curriculumId, differentCourseId));
+        var courseId1 = CourseId.From(1);
+        var missingCourseId = CourseId.From(99);
+        var academicTermId = AcademicTermId.From(10);
+        var command = new BulkInitializeClassSectionsForAcademicYear.Command(
+            academicTermId,
+            YearLevel.From(1),
+            [new(courseId1, 1), new(missingCourseId, 1)]);
+        SetupCourses(courseId1);
+        SetupAcademicYears(academicTermId);
+        SetupCurriculumAssignments(courseId1);
 
         var result = await _validator.ValidateAsync(command);
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e =>
-            e.ErrorMessage.Contains("One or more entries reference entities that do not exist"));
+            e.ErrorMessage.Contains("course IDs do not exist") &&
+            e.ErrorMessage.Contains("99"));
     }
 
-    [Fact(DisplayName = "CurriculumId provided and belongs to the correct course - no curriculum error")]
-    public async Task ValidateAsync_CurriculumBelongsToCorrectCourse_NoCurriculumError()
+    [Fact(DisplayName = "CourseId exists - no course existence error")]
+    public async Task ValidateAsync_CourseExists_NoCourseExistenceError()
     {
-        var courseId = CourseId.From(1);
-        var curriculumId = CurriculumId.From(5);
-        var command = CreateCommand(courseId: courseId, curriculumId: curriculumId);
-        SetupCourses(courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurricula(CreateCurriculum(curriculumId, courseId));
-
-        var result = await _validator.ValidateAsync(command);
-
-        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "requestPayload[0].curriculumId");
-    }
-
-    [Fact(DisplayName = "CurriculumId is zero (not provided) - curriculum ListAsync is never called")]
-    public async Task ValidateAsync_CurriculumIdIsZero_CurriculumListAsyncNeverCalled()
-    {
-        var command = CreateCommand(curriculumId: CurriculumId.From(0));
+        var command = CreateCommand();
         SetupCourses(command.requestPayload[0].courseId);
         SetupAcademicYears(command.academicTermId);
+        SetupCurriculumAssignments(command.requestPayload[0].courseId);
 
         var result = await _validator.ValidateAsync(command);
 
-        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "requestPayload[0].curriculumId");
-        _curriculumRepositoryMock.Verify(
-            r => r.ListAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()),
-            Times.Never);
+        Assert.DoesNotContain(result.Errors, e =>
+            e.ErrorMessage.Contains("course IDs do not exist"));
     }
 
     #endregion
 
     #region NumberOfSections Validation
 
-    [Fact(DisplayName = "NumberOfSections is zero - returns invalid result")]
-    public async Task ValidateAsync_NumberOfSectionsIsZero_HasNumberOfSectionsError()
+    [Fact(DisplayName = "NumberOfSections is zero - returns lower bound error")]
+    public async Task ValidateAsync_NumberOfSectionsIsZero_HasLowerBoundError()
     {
         var command = CreateCommand(numberOfSections: 0);
         SetupCourses(command.requestPayload[0].courseId);
         SetupAcademicYears(command.academicTermId);
-        SetupCurricula();
+        SetupCurriculumAssignments(command.requestPayload[0].courseId);
 
         var result = await _validator.ValidateAsync(command);
 
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("Number of sections must be greater than zero"));
+        Assert.Contains(result.Errors, e =>
+            e.ErrorMessage.Contains("Number of sections must be greater than zero"));
     }
 
-    [Fact(DisplayName = "NumberOfSections is negative - returns invalid result")]
-    public async Task ValidateAsync_NumberOfSectionsIsNegative_HasNumberOfSectionsError()
+    [Fact(DisplayName = "NumberOfSections is negative - returns lower bound error")]
+    public async Task ValidateAsync_NumberOfSectionsIsNegative_HasLowerBoundError()
     {
         var command = CreateCommand(numberOfSections: -3);
         SetupCourses(command.requestPayload[0].courseId);
         SetupAcademicYears(command.academicTermId);
-        SetupCurricula();
+        SetupCurriculumAssignments(command.requestPayload[0].courseId);
 
         var result = await _validator.ValidateAsync(command);
 
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.ErrorMessage.Contains("Number of sections must be greater than zero"));
+        Assert.Contains(result.Errors, e =>
+            e.ErrorMessage.Contains("Number of sections must be greater than zero"));
     }
 
-    [Fact(DisplayName = "NumberOfSections is positive - no numberOfSections error")]
-    public async Task ValidateAsync_NumberOfSectionsIsPositive_NoNumberOfSectionsError()
+    [Fact(DisplayName = "NumberOfSections exceeds 26 - returns upper bound error")]
+    public async Task ValidateAsync_NumberOfSectionsExceeds26_HasUpperBoundError()
+    {
+        var command = CreateCommand(numberOfSections: 27);
+        SetupCourses(command.requestPayload[0].courseId);
+        SetupAcademicYears(command.academicTermId);
+        SetupCurriculumAssignments(command.requestPayload[0].courseId);
+
+        var result = await _validator.ValidateAsync(command);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e =>
+            e.ErrorMessage.Contains("cannot exceed 26"));
+    }
+
+    [Fact(DisplayName = "NumberOfSections is 26 (maximum allowed) - no upper bound error")]
+    public async Task ValidateAsync_NumberOfSectionsIs26_NoUpperBoundError()
+    {
+        var command = CreateCommand(numberOfSections: 26);
+        SetupCourses(command.requestPayload[0].courseId);
+        SetupAcademicYears(command.academicTermId);
+        SetupCurriculumAssignments(command.requestPayload[0].courseId);
+
+        var result = await _validator.ValidateAsync(command);
+
+        Assert.DoesNotContain(result.Errors, e =>
+            e.ErrorMessage.Contains("cannot exceed 26"));
+    }
+
+    [Fact(DisplayName = "NumberOfSections is positive and within range - no sections error")]
+    public async Task ValidateAsync_NumberOfSectionsIsPositiveAndWithinRange_NoSectionsError()
     {
         var command = CreateCommand(numberOfSections: 3);
         SetupCourses(command.requestPayload[0].courseId);
         SetupAcademicYears(command.academicTermId);
-        SetupCurricula();
+        SetupCurriculumAssignments(command.requestPayload[0].courseId);
 
         var result = await _validator.ValidateAsync(command);
 
-        Assert.DoesNotContain(result.Errors, e => e.ErrorMessage.Contains("Number of sections must be greater than zero"));
+        Assert.DoesNotContain(result.Errors, e =>
+            e.ErrorMessage.Contains("Number of sections must be greater than zero") ||
+            e.ErrorMessage.Contains("cannot exceed 26"));
+    }
+
+    #endregion
+
+    #region CourseCurriculumAssignment Validation
+
+    [Fact(DisplayName = "Course has no curriculum assignment - error names the unassigned course ID")]
+    public async Task ValidateAsync_CourseHasNoCurriculumAssignment_ErrorNamesUnassignedCourseId()
+    {
+        var courseId = CourseId.From(1);
+        var command = CreateCommand(courseId: courseId);
+        SetupCourses(courseId);
+        SetupAcademicYears(command.academicTermId);
+        SetupCurriculumAssignments(); // no assignments returned
+
+        var result = await _validator.ValidateAsync(command);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e =>
+            e.ErrorMessage.Contains("do not have a curriculum assignment") &&
+            e.ErrorMessage.Contains("1"));
+    }
+
+    [Fact(DisplayName = "All courses have curriculum assignments - no curriculum assignment error")]
+    public async Task ValidateAsync_AllCoursesHaveCurriculumAssignments_NoCurriculumAssignmentError()
+    {
+        var courseId = CourseId.From(1);
+        var command = CreateCommand(courseId: courseId);
+        SetupCourses(courseId);
+        SetupAcademicYears(command.academicTermId);
+        SetupCurriculumAssignments(courseId);
+
+        var result = await _validator.ValidateAsync(command);
+
+        Assert.DoesNotContain(result.Errors, e =>
+            e.ErrorMessage.Contains("do not have a curriculum assignment"));
+    }
+
+    [Fact(DisplayName = "Multiple payloads - one course has no curriculum assignment - error lists that course ID")]
+    public async Task ValidateAsync_MultiplePayloadsOneMissingCurriculumAssignment_ErrorListsCourseId()
+    {
+        var courseId1 = CourseId.From(1);
+        var courseId2 = CourseId.From(2);
+        var academicTermId = AcademicTermId.From(10);
+        var command = new BulkInitializeClassSectionsForAcademicYear.Command(
+            academicTermId,
+            YearLevel.From(1),
+            [new(courseId1, 1), new(courseId2, 1)]);
+        SetupCourses(courseId1, courseId2);
+        SetupAcademicYears(academicTermId);
+        SetupCurriculumAssignments(courseId1); // courseId2 has no assignment
+
+        var result = await _validator.ValidateAsync(command);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e =>
+            e.ErrorMessage.Contains("do not have a curriculum assignment") &&
+            e.ErrorMessage.Contains("2"));
     }
 
     #endregion
 
     #region Full Valid Command
 
-    [Fact(DisplayName = "All fields valid without curriculum - validation passes")]
-    public async Task ValidateAsync_AllFieldsValidWithoutCurriculum_IsValid()
+    [Fact(DisplayName = "All fields valid - validation passes with no errors")]
+    public async Task ValidateAsync_AllFieldsValid_IsValid()
     {
         var command = CreateCommand(numberOfSections: 2);
         SetupCourses(command.requestPayload[0].courseId);
         SetupAcademicYears(command.academicTermId);
-        SetupCurricula();
-
-        var result = await _validator.ValidateAsync(command);
-
-        Assert.True(result.IsValid);
-        Assert.Empty(result.Errors);
-    }
-
-    [Fact(DisplayName = "All fields valid with matching curriculum - validation passes")]
-    public async Task ValidateAsync_AllFieldsValidWithMatchingCurriculum_IsValid()
-    {
-        var courseId = CourseId.From(1);
-        var curriculumId = CurriculumId.From(5);
-        var command = CreateCommand(courseId: courseId, curriculumId: curriculumId, numberOfSections: 2);
-        SetupCourses(courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurricula(CreateCurriculum(curriculumId, courseId));
+        SetupCurriculumAssignments(command.requestPayload[0].courseId);
 
         var result = await _validator.ValidateAsync(command);
 
@@ -294,8 +387,8 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
 
     #region Bulk Validation (Multiple Payloads)
 
-    [Fact(DisplayName = "Multiple payloads all valid - validation passes with exactly one bulk DB call per entity type")]
-    public async Task ValidateAsync_MultiplePayloadsAllValid_IsValidAndUsesOneBulkCallPerEntityType()
+    [Fact(DisplayName = "Multiple payloads all valid - validation passes with exactly one bulk course DB call")]
+    public async Task ValidateAsync_MultiplePayloadsAllValid_IsValidAndUsesOneBulkCourseCall()
     {
         var courseId1 = CourseId.From(1);
         var courseId2 = CourseId.From(2);
@@ -303,74 +396,16 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         var command = new BulkInitializeClassSectionsForAcademicYear.Command(
             academicTermId,
             YearLevel.From(1),
-        [
-            new(courseId1, CurriculumId.From(0), 2),
-            new(courseId2, CurriculumId.From(0), 3),
-        ]);
+            [new(courseId1, 2), new(courseId2, 3)]);
         SetupCourses(courseId1, courseId2);
         SetupAcademicYears(academicTermId);
-        SetupCurricula();
+        SetupCurriculumAssignments(courseId1, courseId2);
 
         var result = await _validator.ValidateAsync(command);
 
         Assert.True(result.IsValid);
         _courseRepositoryMock.Verify(
             r => r.ListAsync(It.IsAny<ISpecification<Course>>(), It.IsAny<CancellationToken>()),
-            Times.Once);
-        _academicYearRepositoryMock.Verify(
-            r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-
-    [Fact(DisplayName = "Multiple payloads - missing course in second entry returns generic validation error")]
-    public async Task ValidateAsync_MultiplePayloadsMissingCourseInSecondEntry_HasValidationError()
-    {
-        var courseId1 = CourseId.From(1);
-        var missingCourseId = CourseId.From(99);
-        var academicTermId = AcademicTermId.From(10);
-        var command = new BulkInitializeClassSectionsForAcademicYear.Command(
-            academicTermId,
-            YearLevel.From(1),
-        [
-            new(courseId1, CurriculumId.From(0), 1),
-            new(missingCourseId, CurriculumId.From(0), 1),
-        ]);
-        SetupCourses(courseId1);
-        SetupAcademicYears(academicTermId);
-        SetupCurricula();
-
-        var result = await _validator.ValidateAsync(command);
-
-        Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e =>
-            e.ErrorMessage.Contains("One or more entries reference entities that do not exist"));
-    }
-
-    [Fact(DisplayName = "Multiple payloads with curricula - exactly one bulk DB call for curricula")]
-    public async Task ValidateAsync_MultiplePayloadsWithCurricula_UsesOneBulkCurriculumCall()
-    {
-        var courseId = CourseId.From(1);
-        var academicTermId = AcademicTermId.From(10);
-        var curriculumId1 = CurriculumId.From(5);
-        var curriculumId2 = CurriculumId.From(6);
-        var command = new BulkInitializeClassSectionsForAcademicYear.Command(
-            academicTermId,
-            YearLevel.From(1),
-        [
-            new(courseId, curriculumId1, 1),
-            new(courseId, curriculumId2, 2),
-        ]);
-        SetupCourses(courseId);
-        SetupAcademicYears(academicTermId);
-        SetupCurricula(
-            CreateCurriculum(curriculumId1, courseId),
-            CreateCurriculum(curriculumId2, courseId));
-
-        var result = await _validator.ValidateAsync(command);
-
-        Assert.True(result.IsValid);
-        _curriculumRepositoryMock.Verify(
-            r => r.ListAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -382,7 +417,6 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         AcademicTermId? academicTermId = null,
         YearLevel? yearLevel = null,
         CourseId? courseId = null,
-        CurriculumId? curriculumId = null,
         int numberOfSections = 1,
         int payloadCount = 1)
     {
@@ -391,7 +425,6 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
             : Enumerable.Range(0, payloadCount)
                 .Select(_ => new BulkInitializeClassSectionsForAcademicYear.Payload(
                     courseId ?? CourseId.From(1),
-                    curriculumId ?? CurriculumId.From(0),
                     numberOfSections))
                 .ToList();
 
@@ -424,44 +457,31 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     {
         if (existingTermIds.Length == 0)
         {
-            // No academic years - validator will fail
             _academicYearRepositoryMock
                 .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((AcademicYear?)null);
             return;
         }
 
-        // Create an academic year with terms matching the provided IDs
         var startDate = AcademicYearStartDate.From(new DateTime(2024, 8, 1));
         var endDate = AcademicYearEndDate.From(new DateTime(2025, 7, 31));
         var academicYear = new AcademicYear(startDate, endDate);
         SetEntityProperty(academicYear, "Id", AcademicYearId.From(1));
 
-        // Any call to FirstOrDefaultAsync for academic year will return this academic year
-        // (validator uses GetAcademicYearByAcademicTermIdSpec which fetches by term ID)
         _academicYearRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(academicYear);
     }
 
-    private void SetupCurricula(params Curriculum[] curricula)
+    private void SetupCurriculumAssignments(params CourseId[] assignedCourseIds)
     {
-        _curriculumRepositoryMock
-            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync([.. curricula]);
-    }
+        var assignments = assignedCourseIds
+            .Select(id => new CourseCurriculumAssignment(id, AcademicYearId.From(1), CurriculumId.From(1)))
+            .ToList();
 
-    private static Curriculum CreateCurriculum(CurriculumId curriculumId, CourseId courseId)
-    {
-        var curriculum = Curriculum.CreateDraftCurriculum(new DraftCurriculumForCreation
-        {
-            CourseId = courseId,
-            EffectiveYear = 2024,
-            Version = "2024-A",
-            Description = "Test curriculum"
-        });
-        SetEntityProperty(curriculum, "Id", curriculumId);
-        return curriculum;
+        _curriculumAssignmentRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<CourseCurriculumAssignment>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(assignments);
     }
 
     private static void SetEntityProperty<T>(T entity, string propertyName, object value) where T : class

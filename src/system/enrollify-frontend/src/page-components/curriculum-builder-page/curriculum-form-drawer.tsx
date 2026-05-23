@@ -127,7 +127,7 @@ export function CurriculumFormDrawer({
           Create New Curriculum
         </Button>
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className="data-[vaul-drawer-direction=right]:w-[480px] data-[vaul-drawer-direction=right]:sm:max-w-none">
         <AuthorizeView
           policy={isUpdating ? "canUpdateCurriculum" : "canCreateCurriculum"}
           unauthorized={

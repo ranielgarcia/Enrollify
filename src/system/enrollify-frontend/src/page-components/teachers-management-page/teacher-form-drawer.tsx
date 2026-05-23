@@ -218,7 +218,7 @@ export function TeacherFormDrawer({
             Add Teacher
           </Button>
         </DrawerTrigger>
-        <DrawerContent>
+        <DrawerContent className="data-[vaul-drawer-direction=right]:w-[480px] data-[vaul-drawer-direction=right]:sm:max-w-none">
           <AuthorizeView
             policy={isUpdatingTeacher ? "canUpdateTeacher" : "canCreateTeacher"}
             unauthorized={

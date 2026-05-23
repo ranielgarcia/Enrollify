@@ -31,6 +31,7 @@ import { getAcademicCoreSettingsQueryOptions } from "@/api/collections/academic-
 import { EnrollmentContextProvider } from "@/contexts/enrollment-context/enrollment-context-provider";
 import z from "zod";
 import { EnrollmentContextDialog } from "@/components/enrollment-context/enrollment-context-dialog";
+import EnrollmentContextActionRequired from "@/components/enrollment-context/enrollment-context-action-required";
 
 export const Route = createFileRoute("/portal")({
   validateSearch: z.object({
@@ -131,6 +132,15 @@ function RouteComponent() {
                   </div>
                 </div>
               </header>
+              <EnrollmentContextActionRequired
+                items={[
+                  {
+                    id: "test",
+                    title: "test",
+                    variant: "warning",
+                  },
+                ]}
+              />
               <Suspense
                 fallback={
                   <OverlayLoader

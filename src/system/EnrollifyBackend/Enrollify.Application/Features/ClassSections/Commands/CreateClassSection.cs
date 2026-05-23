@@ -3,13 +3,13 @@ using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Application.Features.ClassSections.Extensions;
 using Enrollify.Application.Features.ClassSections.Specifications;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings;
-using Enrollify.Application.Features.Curriculums.Specifications;
+using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
-using Enrollify.Core.Aggregates.CurriculumAggregate;
+using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
@@ -29,29 +29,26 @@ public static class CreateClassSection
 
     public sealed class Handler : ICommandHandler<Command, Result<ClassSectionId>>
     {
-        private readonly IReadRepository<Course> _courseReadRepository;
         private readonly IReadRepository<AcademicYear> _academicYearReadRepository;
         private readonly IReadRepository<ClassSection> _classSectionReadRepository;
-        private readonly IReadRepository<Curriculum> _curriculumReadRepository;
+        private readonly IReadRepository<CourseCurriculumAssignment> _courseCurriculumAssignmentReadRepository;
         private readonly IClassSectionRepository _classSectionRepository;
         private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<Handler> _logger;
 
         public Handler(
-            IReadRepository<Course> courseReadRepository,
             IReadRepository<AcademicYear> academicYearReadRepository,
             IReadRepository<ClassSection> classSectionReadRepository,
-            IReadRepository<Curriculum> curriculumReadRepository,
+            IReadRepository<CourseCurriculumAssignment> courseCurriculumAssignmentReadRepository,
             IClassSectionRepository classSectionRepository,
             IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
             IUnitOfWork unitOfWork,
             ILogger<Handler> logger)
         {
-            _courseReadRepository = courseReadRepository;
             _academicYearReadRepository = academicYearReadRepository;
             _classSectionReadRepository = classSectionReadRepository;
-            _curriculumReadRepository = curriculumReadRepository;
+            _courseCurriculumAssignmentReadRepository = courseCurriculumAssignmentReadRepository;
             _classSectionRepository = classSectionRepository;
             _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
             _unitOfWork = unitOfWork;
@@ -61,31 +58,28 @@ public static class CreateClassSection
         public async ValueTask<Result<ClassSectionId>> Handle(Command command, CancellationToken cancellationToken)
         {
             // Get validated entities (we know they exist because of validation)
-            var course = await _courseReadRepository.GetByIdAsync(command.courseId, cancellationToken);
             var academicYear = await _academicYearReadRepository
                 .FirstOrDefaultAsync(new GetAcademicYearByAcademicTermIdSpec(command.academicTermId), cancellationToken);
             var academicTerm = academicYear!.AcademicTerms.First(at => at.Id == command.academicTermId);
 
+            var courseCurriculumAssignment = await _courseCurriculumAssignmentReadRepository
+                .FirstOrDefaultAsync(new GetCourseCurriculumAssignmentByCourseAndAcademicYear(command.courseId, academicYear.Id), cancellationToken);
+
+            if (courseCurriculumAssignment == null)
+            {
+                _logger.LogWarning("No course-curriculum assignment found for course with an id of {CourseId} and academic year with an id of {AcademicYearId}.", command.courseId, command.academicTermId);
+                return Result.Error("No course-curriculum assignment found for course and academic year.");
+            }
+
+            var course = courseCurriculumAssignment?.Course;
+            var curriculum = courseCurriculumAssignment?.Curriculum;
+
             // Generate section code
             var sectionCode = await GetSectionCode(command, cancellationToken);
 
-            // Get curriculum for this class section
-            var latestActiveCurriculum = await GetCurriculum(
-                command.courseId,
-                command.yearLevel,
-                academicTerm.TermNumber,
-                cancellationToken);
-
-            if (!latestActiveCurriculum.IsSuccess || latestActiveCurriculum.Value == null)
-            {
-                return Result.Invalid(latestActiveCurriculum.ValidationErrors);
-            }
-
-            var curriculum = latestActiveCurriculum.Value;
-
             // Get subjects that should be offered for this class section
-            var curriculumSubjects = curriculum.GetSubjectsByYearAndTerm(command.yearLevel, academicTerm.TermNumber);
-            if (!curriculumSubjects.Any())
+            var curriculumSubjects = curriculum?.GetSubjectsByYearAndTerm(command.yearLevel, academicTerm.TermNumber);
+            if (curriculumSubjects == null || !curriculumSubjects.Any())
             {
                 _logger.LogWarning("No curriculum subjects found for course with an id of {CourseId}, year level of {YearLevel}, and term number of {TermNumber}.", command.courseId, command.yearLevel, academicTerm.TermNumber);
                 return Result.Error("No curriculum subjects found for the specified course, year level, and term.");
@@ -99,10 +93,10 @@ public static class CreateClassSection
                 // Create the class section
                 var newClassSection = new ClassSection(new ClassSectionForCreation
                 {
-                    Name = $"{course!.Code.Value}-{command.yearLevel}{sectionCode}",
+                    Name = course!.Code.Value,
                     YearLevel = command.yearLevel,
                     CourseId = command.courseId,
-                    CurriculumId = curriculum.Id,
+                    CurriculumId = curriculum!.Id,
                     AcademicTermId = command.academicTermId,
                     AdviserId = command.adviserId,
                     SectionCode = sectionCode,
@@ -119,7 +113,8 @@ public static class CreateClassSection
                 foreach (var curriculumSubject in curriculumSubjects)
                 {
                     var offeringResult = await _classSectionSubjectOfferingRepository.Create(
-                        new ClassSectionSubjectOffering(classSectionId, curriculumSubject.SubjectId),
+                        new ClassSectionSubjectOffering(classSectionId, curriculumSubject.SubjectId,
+                        maxNumberOfStudents: command.studentCapacity),
                         cancellationToken);
 
                     if (!offeringResult.IsSuccess)
@@ -159,20 +154,5 @@ public static class CreateClassSection
 
             return lastExistingClassSectionCode.GetNextSectionCode();
         }
-
-        private async Task<Result<Curriculum>> GetCurriculum(CourseId courseId, YearLevel yearLevel, TermNumber termNumber, CancellationToken ct)
-        {
-            var curriculum = await _curriculumReadRepository
-                .FirstOrDefaultAsync(new GetLatestActiveCurriculumWithSubjectsByCourseYearLevelAndTermSpec(courseId, yearLevel, termNumber), ct);
-
-            if (curriculum == null)
-            {
-                _logger.LogWarning("Curriculum for course with an id of {CourseId} and year level of {YearLevel} does not exist.", courseId, yearLevel);
-                return Result.Invalid(new ValidationError("No active curriculum found for the specified course and year level."));
-            }
-
-            return Result.Success(curriculum);
-        }
-
     }
 }

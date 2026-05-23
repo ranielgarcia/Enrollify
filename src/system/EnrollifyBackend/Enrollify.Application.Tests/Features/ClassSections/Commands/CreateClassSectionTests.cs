@@ -9,6 +9,7 @@ using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.Aggregates.SubjectAggregate;
@@ -25,10 +26,9 @@ namespace Enrollify.Application.Tests.Features.ClassSections.Commands;
 
 public class CreateClassSectionTests
 {
-    private readonly Mock<IReadRepository<Course>> _courseReadRepositoryMock = new();
     private readonly Mock<IReadRepository<AcademicYear>> _academicYearReadRepositoryMock = new();
     private readonly Mock<IReadRepository<ClassSection>> _classSectionReadRepositoryMock = new();
-    private readonly Mock<IReadRepository<Curriculum>> _curriculumReadRepositoryMock = new();
+    private readonly Mock<IReadRepository<CourseCurriculumAssignment>> _courseCurriculumAssignmentReadRepositoryMock = new();
     private readonly Mock<IClassSectionRepository> _classSectionRepositoryMock = new();
     private readonly Mock<IClassSectionSubjectOfferingRepository> _mockClassSectionSubjectOfferingRepository = new();
     private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
@@ -42,10 +42,9 @@ public class CreateClassSectionTests
             FakeLogCollector.Create(new FakeLogCollectorOptions()));
 
         _handler = new CreateClassSection.Handler(
-            _courseReadRepositoryMock.Object,
             _academicYearReadRepositoryMock.Object,
             _classSectionReadRepositoryMock.Object,
-            _curriculumReadRepositoryMock.Object,
+            _courseCurriculumAssignmentReadRepositoryMock.Object,
             _classSectionRepositoryMock.Object,
             _mockClassSectionSubjectOfferingRepository.Object,
             _unitOfWorkMock.Object,
@@ -59,29 +58,25 @@ public class CreateClassSectionTests
 
     #region Curriculum Scenarios
 
-    [Fact(DisplayName = "No active curriculum found for course, year level, and term")]
+    [Fact(DisplayName = "No course-curriculum assignment found for course and academic year")]
     public async Task Handle_NoActiveCurriculumFound_ReturnsInvalidResult()
     {
         // Arrange
         var command = CreateCommand();
         SetupHandlerPrerequisites(command);
 
-        _curriculumReadRepositoryMock
-            .Setup(r => r.FirstOrDefaultAsync(
-                It.IsAny<ISpecification<Curriculum>>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Curriculum?)null);
+        // _courseCurriculumAssignmentReadRepositoryMock not set up → returns null
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("No active curriculum found"));
+        Assert.Equal(ResultStatus.Error, result.Status);
+        Assert.Contains(result.Errors, e => e.Contains("No course-curriculum assignment found"));
     }
 
-    [Fact(DisplayName = "Curriculum found but no subjects for year level and term")]
+    [Fact(DisplayName = "Course-curriculum assignment found but no subjects for year level and term")]
     public async Task Handle_CurriculumWithNoSubjects_ReturnsError()
     {
         // Arrange
@@ -89,11 +84,13 @@ public class CreateClassSectionTests
         SetupHandlerPrerequisites(command);
 
         var curriculum = CreateCurriculum(command, hasSubjects: false);
-        _curriculumReadRepositoryMock
+        var course = CreateCourse(command.courseId);
+        var assignment = CreateCourseCurriculumAssignment(command.courseId, course, curriculum);
+        _courseCurriculumAssignmentReadRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(
-                It.IsAny<ISpecification<Curriculum>>(),
+                It.IsAny<ISpecification<CourseCurriculumAssignment>>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(curriculum);
+            .ReturnsAsync(assignment);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -138,9 +135,9 @@ public class CreateClassSectionTests
             Assert.True(result.IsSuccess, $"Expected success but got errors: {errors}");
         }
         Assert.True(result.IsSuccess);
-        _curriculumReadRepositoryMock.Verify(
+        _courseCurriculumAssignmentReadRepositoryMock.Verify(
             r => r.FirstOrDefaultAsync(
-                It.IsAny<ISpecification<Curriculum>>(),
+                It.IsAny<ISpecification<CourseCurriculumAssignment>>(),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -231,20 +228,16 @@ public class CreateClassSectionTests
         var command = CreateCommand();
         SetupHandlerPrerequisites(command);
 
-        // No curriculum found
-        _curriculumReadRepositoryMock
-            .Setup(r => r.FirstOrDefaultAsync(
-                It.IsAny<ISpecification<Curriculum>>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Curriculum?)null);
+        // No course-curriculum assignment found
+        // _courseCurriculumAssignmentReadRepositoryMock not set up → returns null
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Equal(ResultStatus.Invalid, result.Status);
-        Assert.Contains(result.ValidationErrors, e => e.ErrorMessage.Contains("No active curriculum found"));
+        Assert.Equal(ResultStatus.Error, result.Status);
+        Assert.Contains(result.Errors, e => e.Contains("No course-curriculum assignment found"));
         // Transaction should never be started for validation errors
         _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
         Assert.False(_fakeTransaction.IsCommitted);
@@ -260,11 +253,13 @@ public class CreateClassSectionTests
 
         // Curriculum found but no subjects
         var curriculum = CreateCurriculum(command, hasSubjects: false);
-        _curriculumReadRepositoryMock
+        var course = CreateCourse(command.courseId);
+        var assignment = CreateCourseCurriculumAssignment(command.courseId, course, curriculum);
+        _courseCurriculumAssignmentReadRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(
-                It.IsAny<ISpecification<Curriculum>>(),
+                It.IsAny<ISpecification<CourseCurriculumAssignment>>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(curriculum);
+            .ReturnsAsync(assignment);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -453,11 +448,13 @@ public class CreateClassSectionTests
         SetupHandlerPrerequisites(command);
 
         var curriculum = CreateCurriculum(command, hasSubjects: true, subjectCount: 3);
-        _curriculumReadRepositoryMock
+        var course = CreateCourse(command.courseId);
+        var assignment = CreateCourseCurriculumAssignment(command.courseId, course, curriculum);
+        _courseCurriculumAssignmentReadRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(
-                It.IsAny<ISpecification<Curriculum>>(),
+                It.IsAny<ISpecification<CourseCurriculumAssignment>>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(curriculum);
+            .ReturnsAsync(assignment);
 
         SetupSuccessfulClassSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
@@ -539,12 +536,7 @@ public class CreateClassSectionTests
         // Reset fake transaction state for each test
         _fakeTransaction.Reset();
         
-        var course = CreateCourse(command.courseId);
         var academicYear = CreateAcademicYear(command.academicTermId);
-
-        _courseReadRepositoryMock
-            .Setup(r => r.GetByIdAsync(command.courseId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(course);
 
         _academicYearReadRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(
@@ -562,11 +554,13 @@ public class CreateClassSectionTests
     private void SetupSuccessfulCurriculumRetrieval(CreateClassSection.Command command)
     {
         var curriculum = CreateCurriculum(command, hasSubjects: true);
-        _curriculumReadRepositoryMock
+        var course = CreateCourse(command.courseId);
+        var assignment = CreateCourseCurriculumAssignment(command.courseId, course, curriculum);
+        _courseCurriculumAssignmentReadRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(
-                It.IsAny<ISpecification<Curriculum>>(),
+                It.IsAny<ISpecification<CourseCurriculumAssignment>>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(curriculum);
+            .ReturnsAsync(assignment);
     }
 
     private void SetupSuccessfulClassSectionCreation()
@@ -621,7 +615,7 @@ public class CreateClassSectionTests
         var curriculum = Curriculum.CreateDraftCurriculum(new DraftCurriculumForCreation
         {
             CourseId = command.courseId,
-            EffectiveYear = 2024,
+            EffectiveYear = Year.From(2024),
             Version = "2024-A",
             Description = "Computer Science Curriculum 2024"
         });
@@ -665,6 +659,17 @@ public class CreateClassSectionTests
         });
         SetEntityProperty(classSection, "Id", ClassSectionId.From(1));
         return classSection;
+    }
+
+    private static CourseCurriculumAssignment CreateCourseCurriculumAssignment(
+        CourseId courseId,
+        Course course,
+        Curriculum curriculum)
+    {
+        var assignment = new CourseCurriculumAssignment(courseId, AcademicYearId.From(1), curriculum.Id);
+        SetEntityProperty(assignment, "Course", course);
+        SetEntityProperty(assignment, "Curriculum", curriculum);
+        return assignment;
     }
 
     private static void SetEntityProperty<T>(T entity, string propertyName, object value) where T : class

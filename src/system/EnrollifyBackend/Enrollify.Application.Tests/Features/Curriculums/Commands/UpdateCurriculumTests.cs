@@ -5,6 +5,7 @@ using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.Constants;
+using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Moq;
 using System.Reflection;
@@ -209,7 +210,7 @@ public class UpdateCurriculumTests
         var curriculum = Curriculum.CreateDraftCurriculum(new DraftCurriculumForCreation
         {
             CourseId = CourseId.From(1),
-            EffectiveYear = 2024,
+            EffectiveYear = Year.From(2024),
             Version = "2024-A",
             Description = "Test Curriculum"
         });

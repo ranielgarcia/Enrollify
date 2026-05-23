@@ -1,16 +1,17 @@
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Constants;
+using Enrollify.Core.ValueObjects;
 
 namespace Enrollify.Core.Models.Views;
 
 public class LatestActiveCurriculumPerCourseView
 {
-    public CurriculumId Id { get; set; }
+    public CurriculumId CurriculumId { get; set; }
 
     public CourseId CourseId { get; set; }
 
-    public int EffectiveYear { get; set; }
+    public Year EffectiveYear { get; set; }
 
     public string Version { get; set; } = null!;
 
