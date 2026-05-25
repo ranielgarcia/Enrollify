@@ -4,16 +4,15 @@ using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Curriculums.Commands;
 
 public static class CreateDraftCurriculum
 {
-    public sealed record Command(CourseId courseId, Year effectiveYear, string version, string? description) :
-        ICommand<Result<CurriculumId>>;
+    public sealed record Command(CourseId courseId, Year effectiveYear, string version, string? description) : IRequest<Result<CurriculumId>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<CurriculumId>>
+    public sealed class Handler : IRequestHandler<Command, Result<CurriculumId>>
     {
         private readonly ICurriculumRepository _curriculumRepository;
         private readonly IReadRepository<Course> _courseReadRepository;
@@ -24,7 +23,7 @@ public static class CreateDraftCurriculum
             _courseReadRepository = courseReadRepository;
         }
 
-        public async ValueTask<Result<CurriculumId>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<CurriculumId>> Handle(Command command, CancellationToken cancellationToken)
         {
             var course = await _courseReadRepository.GetByIdAsync(command.courseId, cancellationToken);
             if (course == null)

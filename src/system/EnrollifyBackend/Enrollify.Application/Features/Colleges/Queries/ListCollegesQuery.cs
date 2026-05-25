@@ -3,15 +3,15 @@ using Enrollify.Application.Features.Colleges.DTOs;
 using Enrollify.Application.Features.Colleges.Specifications;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Colleges.Queries;
 
-public class ListCollegesQuery : IQuery<Result<List<CollegeDto>>>
+public class ListCollegesQuery : IRequest<Result<List<CollegeDto>>>
 {
 }
 
-public class ListCollegesQueryHandler : IQueryHandler<ListCollegesQuery, Result<List<CollegeDto>>>
+public class ListCollegesQueryHandler : IRequestHandler<ListCollegesQuery, Result<List<CollegeDto>>>
 {
     private readonly IReadRepository<College> _collegeRepository;
 
@@ -19,7 +19,7 @@ public class ListCollegesQueryHandler : IQueryHandler<ListCollegesQuery, Result<
     {
         _collegeRepository = collegeRepository;
     }
-    public async ValueTask<Result<List<CollegeDto>>> Handle(ListCollegesQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<CollegeDto>>> Handle(ListCollegesQuery request, CancellationToken cancellationToken)
     {
         var spec = new ListCollegesOrderByNameSpec();
         var colleges = await _collegeRepository.ListAsync(spec, cancellationToken);

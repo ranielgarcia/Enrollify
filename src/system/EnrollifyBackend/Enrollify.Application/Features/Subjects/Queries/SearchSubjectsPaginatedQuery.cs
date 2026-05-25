@@ -3,13 +3,13 @@ using Enrollify.Application.Features.Subjects.DTOs;
 using Enrollify.Application.Features.Subjects.Specifications;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Subjects.Features;
 
-public record SearchSubjectsPaginatedQuery(string? searchTerm, int page = 1, int pageSize = 10) : IQuery<Result<PagedResult<SubjectDto>>>;
+public record SearchSubjectsPaginatedQuery(string? searchTerm, int page = 1, int pageSize = 10) : IRequest<Result<PagedResult<SubjectDto>>>;
 
-public class SearchSubjectsPaginatedQueryHandler : IQueryHandler<SearchSubjectsPaginatedQuery, Result<PagedResult<SubjectDto>>>
+public class SearchSubjectsPaginatedQueryHandler : IRequestHandler<SearchSubjectsPaginatedQuery, Result<PagedResult<SubjectDto>>>
 {
     private readonly IReadRepository<Subject> _readRepository;
 
@@ -18,7 +18,7 @@ public class SearchSubjectsPaginatedQueryHandler : IQueryHandler<SearchSubjectsP
         _readRepository = readRepository;
     }
 
-    public async ValueTask<Result<PagedResult<SubjectDto>>> Handle(SearchSubjectsPaginatedQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<SubjectDto>>> Handle(SearchSubjectsPaginatedQuery request, CancellationToken cancellationToken)
     {
         var spec = new SearchSubjectsPaginatedSpec(request.page, request.pageSize, request.searchTerm);
         var subjects = await _readRepository.ListAsync(spec, cancellationToken);

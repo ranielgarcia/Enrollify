@@ -7,7 +7,7 @@ using Enrollify.Core;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.DomainExceptions;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.AcademicYearAndTerm.Commands;
@@ -18,9 +18,9 @@ public static class UpdateAcademicYearAndTerms
         AcademicYearId id,
         AcademicYearStartDate academicYearStartDate,
         AcademicYearEndDate academicYearEndDate,
-        InitiateAcademicTerm[] academicTerms) : ICommand<Result<AcademicYearDto>>;
+        InitiateAcademicTerm[] academicTerms) : IRequest<Result<AcademicYearDto>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<AcademicYearDto>>
+    public sealed class Handler : IRequestHandler<Command, Result<AcademicYearDto>>
     {
         private readonly IAcademicYearAndTermRepository _academicYearAndTermRepository;
         private readonly IReadRepository<AcademicYear> _readRepository;
@@ -36,7 +36,7 @@ public static class UpdateAcademicYearAndTerms
             _logger = logger;
         }
 
-        public async ValueTask<Result<AcademicYearDto>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<AcademicYearDto>> Handle(Command command, CancellationToken cancellationToken)
         {
             var expectedTermCount = new AcademicCoreSettings().AcademicTermSystem;
 

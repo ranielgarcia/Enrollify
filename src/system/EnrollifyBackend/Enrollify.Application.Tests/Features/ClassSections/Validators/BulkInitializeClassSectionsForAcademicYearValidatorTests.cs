@@ -39,7 +39,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e =>
             e.PropertyName == "TargetCourses" &&
-            e.ErrorMessage.Contains("At least one payload entry is required"));
+            e.ErrorMessage.Contains("At least one course is required."));
     }
 
     [Fact(DisplayName = "Non-empty requestPayload - no collection-level error")]

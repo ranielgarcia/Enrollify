@@ -1,51 +1,37 @@
 using Enrollify.Application.Behaviors;
 using Enrollify.Application.Features.ClassSections.Validators;
 using Enrollify.Application.Features.Users.Queries;
-using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Infrastructure;
+using Enrollify.Infrastructure.Data;
 using Enrollify.SharedKernel;
 using FluentValidation;
+using MediatR;
 
 namespace Enrollify.WebAPI.Plumbing;
 
 public static class MediatorConfig
 {
     // Should be called from ServiceConfigs.cs, not Program.cs
-    public static IServiceCollection AddMediatorSourceGen(this IServiceCollection services,
+    public static IServiceCollection AddMediatR(this IServiceCollection services,
       Microsoft.Extensions.Logging.ILogger logger)
     {
-        logger.LogInformation("Registering Mediator SourceGen and Behaviors");
-        services.AddMediator(options =>
+        logger.LogInformation("Registering MediatR and Behaviors");
+
+        // Register MediatR from assemblies containing marker types
+        services.AddMediatR(cfg =>
         {
-            // Lifetime: Singleton is fastest per docs; Scoped/Transient also supported.
-            options.ServiceLifetime = ServiceLifetime.Scoped;
+            cfg.RegisterServicesFromAssemblyContaining<GetUserByEmailQuery>(); // Application
+            cfg.RegisterServicesFromAssemblyContaining<EnrollifyDbContext>(); // Infrastructure (non-static)
+            cfg.RegisterServicesFromAssemblyContaining<Program>(); // WebAPI (Program is non-static in .NET 6+)
 
-            // Supply any TYPE from each assembly you want scanned (the generator finds the assembly from the type)
-            options.Assemblies =
-            [
-                typeof(RoomType),                       // Core
-                typeof(GetUserByEmailQuery),         // Application
-                typeof(InfrastructureServiceExtensions), // Infrastructure
-                typeof(MediatorConfig)                  // Web
-            ];
-
-            // Register pipeline behaviors here (order matters)
-            options.PipelineBehaviors =
-            [
-              typeof(LoggingBehavior<,>),
-              typeof(ValidationBehavior<,>)
-            ];
-
-            // If you have stream behaviors:
-            // options.StreamPipelineBehaviors = [ typeof(YourStreamBehavior<,>) ];
+            // Register pipeline behaviors (order matters - they run in registration order)
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         });
 
-        // Alternative: register behaviors via DI yourself (useful if not doing AOT):
-        // services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-        // services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
-
         // Register all FluentValidation validators from the Application assembly
-        services.AddValidatorsFromAssemblyContaining<CreateClassSectionValidator>();
+        // Use Scoped lifetime to support validators with constructor dependencies (e.g., IReadRepository<T>)
+        services.AddValidatorsFromAssemblyContaining<CreateClassSectionValidator>(ServiceLifetime.Scoped);
 
         return services;
     }

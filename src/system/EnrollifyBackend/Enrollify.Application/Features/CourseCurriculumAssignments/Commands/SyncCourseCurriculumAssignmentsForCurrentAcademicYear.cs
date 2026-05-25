@@ -1,15 +1,15 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.Queries;
-using Mediator;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 
 public static class SyncCourseCurriculumAssignmentsForCurrentAcademicYear
 {
-    public record Command() : ICommand<Result>;
+    public record Command() : IRequest<Result>;
 
-    public class Handler : ICommandHandler<Command, Result>
+    public class Handler : IRequestHandler<Command, Result>
     {
         private readonly IMediator _mediator;
         private readonly ILogger<Handler> _logger;
@@ -20,7 +20,7 @@ public static class SyncCourseCurriculumAssignmentsForCurrentAcademicYear
             _logger = logger;
         }
 
-        public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
             var currentAcademicYear = await _mediator.Send(new GetCurrentAcademicYearQuery(), cancellationToken);
 

@@ -10,8 +10,8 @@ public class GetAcademicYearByStartDateYearSpec : Specification<AcademicYear>
     {
         Query
             .Include(x => x.AcademicTerms.Where(t => t.IsActive))
-            .Where(x => ((DateTime)x.StartDate).Year <= ((int)year.Value))
-            .OrderByDescending(x => x.StartYear)
+            .Where(x => ((DateTime)x.StartDate).Year <= ((int)year))
+            .OrderByDescending(x => (DateTime)x.StartDate)
             .Take(1);
     }
 }

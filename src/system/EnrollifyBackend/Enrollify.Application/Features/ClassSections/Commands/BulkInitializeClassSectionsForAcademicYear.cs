@@ -13,7 +13,7 @@ using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -23,9 +23,9 @@ public static class BulkInitializeClassSectionsForAcademicYear
 {
     public sealed record TargetCourse(CourseId CourseId, int NumberOfSections);
 
-    public sealed record Command(AcademicTermId AcademicTermId, YearLevel YearLevel, List<TargetCourse> TargetCourses) : ICommand<Result>;
+    public sealed record Command(AcademicTermId AcademicTermId, YearLevel YearLevel, List<TargetCourse> TargetCourses) : IRequest<Result>;
 
-    public sealed class Handler : ICommandHandler<Command, Result>
+    public sealed class Handler : IRequestHandler<Command, Result>
     {
         private readonly IReadRepository<AcademicYear> _academicYearRepository;
         private readonly IReadRepository<ClassSection> _classSectionReadRepository;
@@ -53,8 +53,8 @@ public static class BulkInitializeClassSectionsForAcademicYear
             _logger = logger;
         }
 
-        
-        public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
+
+        public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
             var targetCourseIds = command.TargetCourses.Select(p => p.CourseId).ToList();
 

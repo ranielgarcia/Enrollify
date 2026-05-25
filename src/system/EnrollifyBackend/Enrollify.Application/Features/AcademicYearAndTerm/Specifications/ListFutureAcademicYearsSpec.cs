@@ -10,7 +10,7 @@ public class ListFutureAcademicYearsSpec : Specification<AcademicYear>
         // Academic years that haven't started yet
         var query = Query.Include(ay => ay.AcademicTerms.Where(at => at.IsActive))
                          .Where(ay => (DateTime)ay.StartDate > dateReference)
-                         .OrderBy(ay => (DateTime)ay.StartDate);
+                         .OrderByDescending(ay => (DateTime)ay.StartDate);
 
         if (numberOfYears.HasValue)
             query.Take(numberOfYears.Value);

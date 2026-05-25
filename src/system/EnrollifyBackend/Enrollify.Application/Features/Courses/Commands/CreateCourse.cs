@@ -3,22 +3,22 @@ using Enrollify.Application.Features.Courses.Events;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Courses.Commands;
 
 public static class CreateCourse
 {
-    public sealed record Command(CourseCode code, string name, int durationYears, string description, CollegeId collegeId) 
-        : ICommand<Result<CourseId>>;
+    public sealed record Command(CourseCode code, string name, int durationYears, string description, CollegeId collegeId)
+        : IRequest<Result<CourseId>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<CourseId>>
+    public sealed class Handler : IRequestHandler<Command, Result<CourseId>>
     {
         private readonly ICourseRepository _courseRepository;
         private readonly IReadRepository<College> _collegeReadRepository;
         private readonly IMediator _mediator;
 
-        public Handler(ICourseRepository courseRepository, 
+        public Handler(ICourseRepository courseRepository,
             IReadRepository<College> collegeReadRepository,
             IMediator mediator)
         {
@@ -27,7 +27,7 @@ public static class CreateCourse
             _mediator = mediator;
         }
 
-        public async ValueTask<Result<CourseId>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<CourseId>> Handle(Command command, CancellationToken cancellationToken)
         {
             var college = await _collegeReadRepository.GetByIdAsync(command.collegeId, cancellationToken);
             if (college == null)

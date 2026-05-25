@@ -1,14 +1,14 @@
 using Ardalis.Result;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.RoomTypes.Commands;
 
 public static class CreateRoomType
 {
-    public sealed record Command(string name, string description) : ICommand<Result<RoomTypeId>>;
+    public sealed record Command(string name, string description) : IRequest<Result<RoomTypeId>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<RoomTypeId>>
+    public sealed class Handler : IRequestHandler<Command, Result<RoomTypeId>>
     {
         private readonly IRoomTypeRepository _roomTypeRepository;
 
@@ -16,7 +16,7 @@ public static class CreateRoomType
         {
             _roomTypeRepository = roomTypeRepository;
         }
-        public async ValueTask<Result<RoomTypeId>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<RoomTypeId>> Handle(Command command, CancellationToken cancellationToken)
         {
             var roomType = new RoomType(command.name, command.description);
             var result = await _roomTypeRepository.Create(roomType, cancellationToken);

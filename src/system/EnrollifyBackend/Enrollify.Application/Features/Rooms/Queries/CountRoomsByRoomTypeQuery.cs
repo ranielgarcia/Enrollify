@@ -3,19 +3,19 @@ using Enrollify.Application.Features.Rooms.Specifications;
 using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Rooms.Queries;
 
-public class CountRoomsByRoomTypeQuery : IQuery<Result<int>>
+public class CountRoomsByRoomTypeQuery : IRequest<Result<int>>
 {
     public RoomTypeId RoomTypeId { get; set; }
 }
 
-public class CountRoomsByRoomTypeQueryHandler (IReadRepository<Room> roomRepository) 
-    : IQueryHandler<CountRoomsByRoomTypeQuery, Result<int>>
+public class CountRoomsByRoomTypeQueryHandler (IReadRepository<Room> roomRepository)
+    : IRequestHandler<CountRoomsByRoomTypeQuery, Result<int>>
 {
-    public async ValueTask<Result<int>> Handle(CountRoomsByRoomTypeQuery query, CancellationToken cancellationToken)
+    public async Task<Result<int>> Handle(CountRoomsByRoomTypeQuery query, CancellationToken cancellationToken)
     {
         var spec = new ListRoomsByRoomTypeSpec(query.RoomTypeId);
         var count = await roomRepository.CountAsync(spec, cancellationToken);

@@ -1,18 +1,18 @@
 ﻿using Ardalis.Result;
 using Enrollify.Core.Authentication;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Authentication.GetContext;
 
-public record GetCurrentUserContextQuery() : IQuery<Result<UserContext>>;
+public record GetCurrentUserContextQuery() : IRequest<Result<UserContext>>;
 
 public class GetCurrentUserContextQueryHandler(ICurrentUserAccessor currentUserAccessor) :
-    IQueryHandler<GetCurrentUserContextQuery, Result<UserContext>>
+    IRequestHandler<GetCurrentUserContextQuery, Result<UserContext>>
 {
-    public ValueTask<Result<UserContext>> Handle(GetCurrentUserContextQuery query, CancellationToken cancellationToken)
+    public Task<Result<UserContext>> Handle(GetCurrentUserContextQuery query, CancellationToken cancellationToken)
     {
         var userContext = currentUserAccessor.GetCurrentUser();
-        if (userContext == null) return ValueTask.FromResult(Result<UserContext>.NotFound(""));
-        return ValueTask.FromResult(Result.Success(userContext));
+        if (userContext == null) return Task.FromResult(Result<UserContext>.NotFound(""));
+        return Task.FromResult(Result.Success(userContext));
     }
 }

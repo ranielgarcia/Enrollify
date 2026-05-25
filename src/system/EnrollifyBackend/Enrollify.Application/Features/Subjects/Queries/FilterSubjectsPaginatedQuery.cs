@@ -4,7 +4,7 @@ using Enrollify.Application.Features.Subjects.Specifications;
 using Enrollify.Application.Filtering;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Subjects.Queries;
 
@@ -14,9 +14,9 @@ public record FilterSubjectsPaginatedQuery(
     IEnumerable<FilterItem>? filters = null,
     IEnumerable<SortItem>? sorts = null,
     string? joinOperator = null
-    ) : IQuery<Result<PagedResult<SubjectDto>>>;
+    ) : IRequest<Result<PagedResult<SubjectDto>>>;
 
-public class FilterSubjectsPaginatedQueryHandler : IQueryHandler<FilterSubjectsPaginatedQuery, Result<PagedResult<SubjectDto>>>
+public class FilterSubjectsPaginatedQueryHandler : IRequestHandler<FilterSubjectsPaginatedQuery, Result<PagedResult<SubjectDto>>>
 {
     private readonly IReadRepository<Subject> _readRepository;
 
@@ -25,7 +25,7 @@ public class FilterSubjectsPaginatedQueryHandler : IQueryHandler<FilterSubjectsP
         _readRepository = readRepository;
     }
 
-    public async ValueTask<Result<PagedResult<SubjectDto>>> Handle(FilterSubjectsPaginatedQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<SubjectDto>>> Handle(FilterSubjectsPaginatedQuery request, CancellationToken cancellationToken)
     {
         JoinOperator joinOperator = Enum.TryParse<JoinOperator>(request.joinOperator, ignoreCase: true, out var parsed)
                 ? parsed : JoinOperator.Or;

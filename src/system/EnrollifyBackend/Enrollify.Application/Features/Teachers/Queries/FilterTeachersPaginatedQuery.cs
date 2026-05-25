@@ -6,7 +6,7 @@ using Enrollify.Application.Filtering;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Teachers.Queries;
 
@@ -16,9 +16,9 @@ public record FilterTeachersPaginatedQuery(
     IEnumerable<FilterItem>? filters = null,
     IEnumerable<SortItem>? sorts = null,
     string? joinOperator = null
-    ) : IQuery<Result<PagedResult<TeacherDto>>>;
+    ) : IRequest<Result<PagedResult<TeacherDto>>>;
 
-public class FilterTeachersPaginatedQueryHandler : IQueryHandler<FilterTeachersPaginatedQuery, Result<PagedResult<TeacherDto>>>
+public class FilterTeachersPaginatedQueryHandler : IRequestHandler<FilterTeachersPaginatedQuery, Result<PagedResult<TeacherDto>>>
 {
     private readonly IReadRepository<Teacher> _readRepository;
     private readonly IReadRepository<Subject> _subjectReadRepository;
@@ -28,7 +28,7 @@ public class FilterTeachersPaginatedQueryHandler : IQueryHandler<FilterTeachersP
         _readRepository = readRepository;
         _subjectReadRepository = subjectReadRepository;
     }
-    public async ValueTask<Result<PagedResult<TeacherDto>>> Handle(FilterTeachersPaginatedQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<TeacherDto>>> Handle(FilterTeachersPaginatedQuery request, CancellationToken cancellationToken)
     {
         JoinOperator joinOperator = Enum.TryParse<JoinOperator>(request.joinOperator, ignoreCase: true, out var parsed)
                 ? parsed : JoinOperator.Or;

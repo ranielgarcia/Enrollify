@@ -5,15 +5,15 @@ using Enrollify.Application.Features.Subjects.Specifications;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.SubjectEquivalences.Commands;
 
 public static class AddSubjectsToEquivalenceGroup
 {
-    public sealed record Command(SubjectEquivalenceGroupId groupId, List<SubjectCode> subjectCodes) : ICommand<Result<SubjectEquivalenceGroupDto>>;
+    public sealed record Command(SubjectEquivalenceGroupId groupId, List<SubjectCode> subjectCodes) : IRequest<Result<SubjectEquivalenceGroupDto>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<SubjectEquivalenceGroupDto>>
+    public sealed class Handler : IRequestHandler<Command, Result<SubjectEquivalenceGroupDto>>
     {
         private readonly ISubjectEquivalenceGroupRepository _repository;
         private readonly IReadRepository<SubjectEquivalenceGroup> _readRepository;
@@ -24,7 +24,7 @@ public static class AddSubjectsToEquivalenceGroup
             _readRepository = readRepository;
             _subjectReadRepository = subjectReadRepository;
         }
-        public async ValueTask<Result<SubjectEquivalenceGroupDto>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<SubjectEquivalenceGroupDto>> Handle(Command command, CancellationToken cancellationToken)
         {
             var groupToUpdate = await _readRepository.FirstOrDefaultAsync(new GetSubjectEquivalenceGroupByIdWithSubjectsSpec(command.groupId), cancellationToken);
             if (groupToUpdate is null)

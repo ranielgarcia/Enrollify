@@ -1,14 +1,14 @@
 using Enrollify.Application.Behaviors;
 using Enrollify.Application.Features.ClassSections.Validators;
 using Enrollify.Application.Features.Users.Queries;
-using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Authentication;
 using Enrollify.Infrastructure;
 using Enrollify.Infrastructure.Data;
 using Enrollify.IntegrationTests.Helpers;
 using Enrollify.SharedKernel;
 using FluentValidation;
-using Mediator;
+using FluentValidation.Internal;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,9 +33,26 @@ public class ApplicationTestFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        // FastEndpoints (used by WebApiTestFixture) sets ValidatorOptions.Global.PropertyNameResolver
+        // to camelCase when its middleware is initialized. Reset it to PascalCase here so that
+        // Application-layer validators produce PascalCase property names consistent with C# conventions.
+        ValidatorOptions.Global.PropertyNameResolver = (_, memberInfo, expression) =>
+        {
+            if (memberInfo is not null)
+                return memberInfo.Name;
+
+            if (expression is not null)
+            {
+                var chain = PropertyChain.FromExpression(expression);
+                if (chain.Count > 0) return chain.ToString();
+            }
+
+            return null;
+        };
+
         // Get shared testcontainers instance
         _containersManager = await TestContainersManager.GetInstanceAsync();
-        
+
         // Create a unique database for this test class
         _sqlConnectionString = await _containersManager.CreateDatabaseAsync();
 
@@ -70,27 +87,20 @@ public class ApplicationTestFixture : IAsyncLifetime
         // Register test-specific services
         services.AddSingleton<ICurrentUserAccessor, TestCurrentUserAccessor>();
 
-        // Add Mediator with behaviors (mirroring WebAPI setup)
-        services.AddMediator(options =>
+        // Add MediatR with behaviors
+        services.AddMediatR(cfg =>
         {
-            options.ServiceLifetime = ServiceLifetime.Scoped;
+            cfg.RegisterServicesFromAssemblyContaining<GetUserByEmailQuery>(); // Application
+            cfg.RegisterServicesFromAssemblyContaining<EnrollifyDbContext>(); // Infrastructure (non-static)
 
-            options.Assemblies =
-            [
-                typeof(RoomType),                       // Core
-                typeof(GetUserByEmailQuery),         // Application
-                typeof(InfrastructureServiceExtensions), // Infrastructure
-            ];
-
-            options.PipelineBehaviors =
-            [
-                typeof(LoggingBehavior<,>),
-                typeof(ValidationBehavior<,>)
-            ];
+            // Register pipeline behaviors (order matters - they run in registration order)
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         });
 
         // Register FluentValidation validators
-        services.AddValidatorsFromAssemblyContaining<CreateClassSectionValidator>();
+        // Use Scoped lifetime to support validators with constructor dependencies (e.g., IReadRepository<T>)
+        services.AddValidatorsFromAssemblyContaining<CreateClassSectionValidator>(ServiceLifetime.Scoped);
 
         // Build service provider
         _serviceProvider = services.BuildServiceProvider();
@@ -155,26 +165,14 @@ public class ApplicationTestFixture : IAsyncLifetime
     }
 
     /// <summary>
-    /// Sends a command via Mediator within a new scope.
+    /// Sends a request (command or query) via Mediator within a new scope.
     /// </summary>
-    public async Task<TResponse> SendAsync<TResponse>(ICommand<TResponse> command)
+    public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request)
     {
         return await ExecuteInScopeAsync(async sp =>
         {
             var mediator = sp.GetRequiredService<IMediator>();
-            return await mediator.Send(command);
-        });
-    }
-
-    /// <summary>
-    /// Sends a query via Mediator within a new scope.
-    /// </summary>
-    public async Task<TResponse> SendAsync<TResponse>(IQuery<TResponse> query)
-    {
-        return await ExecuteInScopeAsync(async sp =>
-        {
-            var mediator = sp.GetRequiredService<IMediator>();
-            return await mediator.Send(query);
+            return await mediator.Send(request);
         });
     }
 

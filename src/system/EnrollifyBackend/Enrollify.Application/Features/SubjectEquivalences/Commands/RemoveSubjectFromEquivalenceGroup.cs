@@ -3,15 +3,15 @@ using Enrollify.Application.Features.Subjects.Specifications;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.SubjectEquivalences.Commands;
 
 public static class RemoveSubjectFromEquivalenceGroup
 {
-    public sealed record Command (SubjectEquivalenceGroupId groupId, SubjectCode subjectCode) : ICommand<Result>;
+    public sealed record Command (SubjectEquivalenceGroupId groupId, SubjectCode subjectCode) : IRequest<Result>;
 
-    public sealed class Handler : ICommandHandler<Command, Result>
+    public sealed class Handler : IRequestHandler<Command, Result>
     {
         private readonly ISubjectEquivalenceGroupRepository _repository;
         private readonly IReadRepository<SubjectEquivalenceGroup> _readRepository;
@@ -22,7 +22,7 @@ public static class RemoveSubjectFromEquivalenceGroup
             _readRepository = readRepository;
             _subjectReadRepository = subjectReadRepository;
         }
-        public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
             var groupToUpdate = await _readRepository.GetByIdAsync(command.groupId, cancellationToken);
             if (groupToUpdate is null)

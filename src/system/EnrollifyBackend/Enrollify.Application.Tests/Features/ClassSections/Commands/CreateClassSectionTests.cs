@@ -17,7 +17,7 @@ using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
@@ -399,7 +399,7 @@ public class CreateClassSectionTests
         throwingTransactionMock
             .Setup(t => t.DisposeAsync())
             .Returns(ValueTask.CompletedTask);
-        
+
         _unitOfWorkMock
             .Setup(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(throwingTransactionMock.Object);
@@ -726,7 +726,7 @@ public class CreateClassSectionTests
     {
         // Reset fake transaction state for each test
         _fakeTransaction.Reset();
-        
+
         var academicYear = CreateAcademicYear(command.AcademicTermId);
 
         _academicYearReadRepositoryMock

@@ -8,7 +8,7 @@ using Enrollify.Application.Features.AcademicYearAndTerm.Models;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;

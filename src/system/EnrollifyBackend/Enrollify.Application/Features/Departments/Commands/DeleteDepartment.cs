@@ -1,14 +1,14 @@
 using Ardalis.Result;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Departments.Commands;
 
 public static class DeleteDepartment
 {
-    public sealed record Command(DepartmentId id) : ICommand<Result>;
+    public sealed record Command(DepartmentId id) : IRequest<Result>;
 
-    public sealed class Handler : ICommandHandler<Command, Result>
+    public sealed class Handler : IRequestHandler<Command, Result>
     {
         private readonly IDepartmentRepository _departmentRepository;
 
@@ -16,7 +16,7 @@ public static class DeleteDepartment
         {
             _departmentRepository = departmentRepository;
         }
-        public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
             // TODO: Add validations, check for related entities, etc.
 

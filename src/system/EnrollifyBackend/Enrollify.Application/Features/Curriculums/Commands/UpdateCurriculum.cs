@@ -3,16 +3,16 @@ using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Curriculums.Commands;
 
 public static class UpdateCurriculum
 {
     public sealed record Command(CurriculumId Id, CourseId courseId, int effectiveYear, string version, string? description) :
-        ICommand<Result<CurriculumId>>;
+        IRequest<Result<CurriculumId>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<CurriculumId>>
+    public sealed class Handler : IRequestHandler<Command, Result<CurriculumId>>
     {
         private readonly ICurriculumRepository _curriculumRepository;
         private readonly IReadRepository<Curriculum> _curriculumReadRepository;
@@ -28,7 +28,7 @@ public static class UpdateCurriculum
             _courseReadRepository = courseReadRepository;
         }
 
-        public async ValueTask<Result<CurriculumId>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<CurriculumId>> Handle(Command command, CancellationToken cancellationToken)
         {
             var course = await _courseReadRepository.GetByIdAsync(command.courseId, cancellationToken);
             if (course == null)

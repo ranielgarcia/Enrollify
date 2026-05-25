@@ -38,24 +38,24 @@ public class BulkInitializeClassSectionsForAcademicYearValidator : AbstractValid
 
         RuleFor(x => x.TargetCourses)
             .NotEmpty()
-            .WithMessage("At least one payload entry is required.");
+            .WithMessage("At least one course is required.");
 
         // E4: Reject duplicate courseIds in a single request
         RuleFor(x => x.TargetCourses)
-            .Must(payload => payload.Select(p => p.CourseId).Distinct().Count() == payload.Count)
+            .Must(targetCourse => targetCourse.Select(p => p.CourseId).Distinct().Count() == targetCourse.Count)
             .WithMessage("Duplicate course IDs are not allowed in the same bulk initialization request.")
             .When(x => x.TargetCourses is { Count: > 0 });
 
         RuleForEach(x => x.TargetCourses)
-            .ChildRules(payload =>
+            .ChildRules(targetCourse =>
             {
                 // E2: Explicit non-zero courseId guard replaces the silent sentinel filter
-                payload.RuleFor(x => x.CourseId)
+                targetCourse.RuleFor(x => x.CourseId)
                     .Must(id => id != CourseId.From(0))
                     .WithMessage("Course ID must be a valid non-zero value.");
 
                 // E3: Upper bound added — section codes are alphabetical (A–Z)
-                payload.RuleFor(x => x.NumberOfSections)
+                targetCourse.RuleFor(x => x.NumberOfSections)
                     .GreaterThan(0)
                     .WithMessage("Number of sections must be greater than zero.")
                     .LessThanOrEqualTo(26)

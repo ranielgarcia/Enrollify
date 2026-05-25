@@ -4,15 +4,15 @@ using Enrollify.Application.Features.Subjects;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Subjects.Commands;
 
 public static class DeleteSubject
 {
-    public sealed record Command(SubjectId id) : ICommand<Result>;
+    public sealed record Command(SubjectId id) : IRequest<Result>;
 
-    public sealed class Handler : ICommandHandler<Command, Result>
+    public sealed class Handler : IRequestHandler<Command, Result>
     {
         private readonly ISubjectRepository _subjectRepository;
         private readonly IReadRepository<Curriculum> _curriculumReadRepository;
@@ -22,7 +22,7 @@ public static class DeleteSubject
             _subjectRepository = subjectRepository;
             _curriculumReadRepository = curriculumReadRepository;
         }
-        public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
             var curriculums = await _curriculumReadRepository.ListAsync(new GetCurriculumBySubjectIdSpec(command.id), cancellationToken);
 

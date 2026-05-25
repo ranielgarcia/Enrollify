@@ -13,7 +13,7 @@ using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.ClassSections.Commands;
@@ -25,9 +25,9 @@ public static class CreateClassSection
         CourseId CourseId,
         AcademicTermId AcademicTermId,
         TeacherId AdviserId,
-        int StudentCapacity) : ICommand<Result<ClassSectionId>>;
+        int StudentCapacity) : IRequest<Result<ClassSectionId>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<ClassSectionId>>
+    public sealed class Handler : IRequestHandler<Command, Result<ClassSectionId>>
     {
         private readonly IReadRepository<AcademicYear> _academicYearReadRepository;
         private readonly IReadRepository<ClassSection> _classSectionReadRepository;
@@ -81,7 +81,7 @@ public static class CreateClassSection
         }
 
 
-        public async ValueTask<Result<ClassSectionId>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<ClassSectionId>> Handle(Command command, CancellationToken cancellationToken)
         {
             // Get validated entities (we know they exist because of validation)
             var academicYear = await _academicYearReadRepository

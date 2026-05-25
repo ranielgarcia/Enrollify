@@ -3,15 +3,15 @@ using Enrollify.Application.Features.Buildings.Specifications;
 using Enrollify.Application.Features.Buildings.DTOs;
 using Enrollify.Core.Aggregates.BuildingAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Buildings.Queries;
 
-public class ListBuildingsQuery : IQuery<Result<List<BuildingDto>>>
+public class ListBuildingsQuery : IRequest<Result<List<BuildingDto>>>
 {
 }
 
-public class ListBuildingsQueryHandler : IQueryHandler<ListBuildingsQuery, Result<List<BuildingDto>>>
+public class ListBuildingsQueryHandler : IRequestHandler<ListBuildingsQuery, Result<List<BuildingDto>>>
 {
     private readonly IReadRepository<Building> _buildingRepository;
 
@@ -20,7 +20,7 @@ public class ListBuildingsQueryHandler : IQueryHandler<ListBuildingsQuery, Resul
         _buildingRepository = buildingRepository;
     }
 
-    public async ValueTask<Result<List<BuildingDto>>> Handle (ListBuildingsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<BuildingDto>>> Handle (ListBuildingsQuery request, CancellationToken cancellationToken)
     {
         var spec = new ListBuildingsWithAllNavigationSpec();
         var buildings = await _buildingRepository.ListAsync(spec, cancellationToken);
