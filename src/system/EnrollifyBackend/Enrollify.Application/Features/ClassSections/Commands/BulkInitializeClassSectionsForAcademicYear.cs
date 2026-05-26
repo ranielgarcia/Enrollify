@@ -210,7 +210,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
             (List<CourseId> courseIds, Year cohortEntryYear, CancellationToken ct)
         {
             var academicYear = await _academicYearRepository
-                .FirstOrDefaultAsync(new GetAcademicYearByStartDateYearSpec(cohortEntryYear), CancellationToken.None);
+                .FirstOrDefaultAsync(new GetAcademicYearByStartDateYearSpec(cohortEntryYear), ct);
 
             // Limitation: Requires all historical curriculum data for the cohort's entry academic year.
             // If the academic year or curriculum assignments are missing, bulk initialization fails.

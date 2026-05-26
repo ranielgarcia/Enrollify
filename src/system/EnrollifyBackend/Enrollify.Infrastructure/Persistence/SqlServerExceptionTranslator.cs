@@ -1,4 +1,4 @@
-using Enrollify.Application.Command.Persistence;
+using Enrollify.Application.Common.Persistence;
 using Microsoft.Data.SqlClient;
 
 namespace Enrollify.Infrastructure.Persistence;

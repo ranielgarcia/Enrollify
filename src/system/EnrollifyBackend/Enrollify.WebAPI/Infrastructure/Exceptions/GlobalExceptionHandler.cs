@@ -75,7 +75,8 @@ public class GlobalExceptionHandler(IHostEnvironment env, ILogger<GlobalExceptio
             return new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(errors)
             {
                 Status = statusCode,
-                Title = "One or more validation errors occurred."
+                Title = "One or more validation errors occurred.",
+                Errors = errors
             };
         }
         var problemDetails = new ProblemDetails
@@ -104,7 +105,7 @@ public class GlobalExceptionHandler(IHostEnvironment env, ILogger<GlobalExceptio
     {
         try
         {
-            return JsonSerializer.Serialize(problemDetails, SerializerOptions);
+            return JsonSerializer.Serialize(problemDetails, problemDetails.GetType(), SerializerOptions);
         }
         catch (Exception ex)
         {
