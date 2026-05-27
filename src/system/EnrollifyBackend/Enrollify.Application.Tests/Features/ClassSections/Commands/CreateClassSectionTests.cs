@@ -12,7 +12,9 @@ using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
+using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate.Models;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
@@ -828,6 +830,16 @@ public class CreateClassSectionTests
                     null);
                 SetEntityProperty(subject, "Id", CurriculumSubjectId.From(i));
                 SetEntityProperty(subject, "IsActive", true);
+                var stubSubject = new Subject(new SubjectForCreation
+                {
+                    Code = SubjectCode.From($"SUBJ{i:D3}"),
+                    Title = $"Subject {i}",
+                    Units = 3m,
+                    Description = $"Description {i}",
+                    PreferRoomTypeId = RoomTypeId.From(1)
+                });
+                SetEntityProperty(stubSubject, "Id", SubjectId.From(i));
+                SetEntityProperty(subject, "Subject", stubSubject);
                 subjects.Add(subject);
             }
             SetEntityProperty(curriculum, "_curriculumSubjects", subjects);
@@ -957,6 +969,16 @@ public class CreateClassSectionTests
             var subject = new CurriculumSubject(id, SubjectId.From(i), yearLevel, term, false, null, null);
             SetEntityProperty(subject, "Id", CurriculumSubjectId.From(i));
             SetEntityProperty(subject, "IsActive", true);
+            var stubSubject = new Subject(new SubjectForCreation
+            {
+                Code = SubjectCode.From($"SUBJ{i:D3}"),
+                Title = $"Subject {i}",
+                Units = 3m,
+                Description = $"Description {i}",
+                PreferRoomTypeId = RoomTypeId.From(1)
+            });
+            SetEntityProperty(stubSubject, "Id", SubjectId.From(i));
+            SetEntityProperty(subject, "Subject", stubSubject);
             subjects.Add(subject);
         }
         SetEntityProperty(curriculum, "_curriculumSubjects", subjects);

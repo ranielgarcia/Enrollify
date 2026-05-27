@@ -12,7 +12,9 @@ using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
+using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate.Models;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Microsoft.Extensions.Logging;
@@ -690,6 +692,16 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
                     null);
                 SetEntityProperty(subject, "Id", CurriculumSubjectId.From(i));
                 SetEntityProperty(subject, "IsActive", true);
+                var stubSubject = new Subject(new SubjectForCreation
+                {
+                    Code = SubjectCode.From($"SUBJ{i:D3}"),
+                    Title = $"Subject {i}",
+                    Units = 3m,
+                    Description = $"Description {i}",
+                    PreferRoomTypeId = RoomTypeId.From(1)
+                });
+                SetEntityProperty(stubSubject, "Id", SubjectId.From(i));
+                SetEntityProperty(subject, "Subject", stubSubject);
                 return subject;
             })
             .ToList();

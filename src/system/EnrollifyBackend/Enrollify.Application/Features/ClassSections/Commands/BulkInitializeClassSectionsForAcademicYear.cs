@@ -9,6 +9,7 @@ using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.ValueObjects;
@@ -157,8 +158,20 @@ public static class BulkInitializeClassSectionsForAcademicYear
                         // Create subject offerings for this section
                         foreach (var curriculumSubject in curriculumSubjects)
                         {
+                            var newSubjectOffering = new ClassSectionSubjectOffering(new ClassSectionSubjectOfferingForCreation
+                            {
+                                SubjectId = curriculumSubject.SubjectId,
+                                ClassSectionId = classSectionId,
+                                CurriculumSubjectId = curriculumSubject.Id,
+                                SnapshotSubjectCode = curriculumSubject.Subject!.Code,
+                                SnapshotSubjectTitle = curriculumSubject.Subject!.Title,
+                                SnapshotUnits = curriculumSubject.SubjectUnitsOverride ?? curriculumSubject.Subject!.Units,
+                                SnapshotIsElective = curriculumSubject.IsElective,
+                                SnapshotElectiveGroupName = curriculumSubject.ElectiveGroupName
+                            });
+
                             var offeringResult = await _classSectionSubjectOfferingRepository.Create(
-                                new ClassSectionSubjectOffering(classSectionId, curriculumSubject.SubjectId),
+                                newSubjectOffering,
                                 cancellationToken);
 
                             if (!offeringResult.IsSuccess)

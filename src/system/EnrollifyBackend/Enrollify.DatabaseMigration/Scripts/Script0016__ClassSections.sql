@@ -74,6 +74,13 @@ CREATE TABLE ClassSectionSubjectOffering
 	HoursPerDay DECIMAL(3,1) NOT NULL DEFAULT 1,     -- 1.5, 2.0, 3.0, etc.
 	MaxNumberOfStudents INT NULL, -- Optional, soft rule, this to allow us to override the room student capacity
 
+    CurriculumSubjectId      INT NULL,          -- FK → CurriculumSubjects (audit reference)
+    SnapshotSubjectCode      VARCHAR(20) NOT NULL,  -- copied at section creation
+    SnapshotSubjectTitle     VARCHAR(100) NOT NULL, -- copied at section creation
+    SnapshotUnits            DECIMAL(3,1) NOT NULL, -- CurriculumSubject.Override ?? Subject.Units
+    SnapshotIsElective       BIT NOT NULL,          -- from CurriculumSubject.IsElective
+    SnapshotElectiveGroupName VARCHAR(100) NULL, -- from CurriculumSubject.ElectiveGroupName
+
 	CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
 	CreatedBy INT NOT NULL,
 	UpdatedAt DATETIMEOFFSET NULL,
@@ -87,7 +94,8 @@ CREATE TABLE ClassSectionSubjectOffering
 	CONSTRAINT FK_ClassSectionSubjectOffering_Room FOREIGN KEY (RoomId) REFERENCES Rooms(Id),
 	CONSTRAINT FK_ClassSectionSubjectOffering_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES Users(Id),
 	CONSTRAINT FK_ClassSectionSubjectOffering_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES Users(Id),
-	CONSTRAINT FK_ClassSectionSubjectOffering_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id)
+	CONSTRAINT FK_ClassSectionSubjectOffering_DeletedBy FOREIGN KEY (DeletedBy) REFERENCES Users(Id),
+    CONSTRAINT FK_ClassSectionSubjectOffering_CurriculumSubject FOREIGN KEY (CurriculumSubjectId) REFERENCES CurriculumSubjects(Id) ON DELETE SET NULL     -- if CurriculumSubject is soft-deleted, keep snapshot intact
 );
 GO;
 
