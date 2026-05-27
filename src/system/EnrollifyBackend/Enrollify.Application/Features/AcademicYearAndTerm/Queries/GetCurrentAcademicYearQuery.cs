@@ -3,13 +3,13 @@ using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.AcademicYearAndTerm.Queries;
 
-public class GetCurrentAcademicYearQuery : IQuery<Result<AcademicYearDto>>;
+public class GetCurrentAcademicYearQuery : IRequest<Result<AcademicYearDto>>;
 
-public sealed class GetCurrentAcademicYearQueryHandler : IQueryHandler<GetCurrentAcademicYearQuery, Result<AcademicYearDto>>
+public sealed class GetCurrentAcademicYearQueryHandler : IRequestHandler<GetCurrentAcademicYearQuery, Result<AcademicYearDto>>
 {
     private readonly IReadRepository<AcademicYear> _readRepository;
 
@@ -18,7 +18,7 @@ public sealed class GetCurrentAcademicYearQueryHandler : IQueryHandler<GetCurren
         _readRepository = readRepository;
     }
 
-    public async ValueTask<Result<AcademicYearDto>> Handle(GetCurrentAcademicYearQuery query, CancellationToken cancellationToken)
+    public async Task<Result<AcademicYearDto>> Handle(GetCurrentAcademicYearQuery query, CancellationToken cancellationToken)
     {
         var activeAcademicYear = await _readRepository.FirstOrDefaultAsync(new GetActiveAcademicYearSpec(), cancellationToken);
         if (activeAcademicYear is null)

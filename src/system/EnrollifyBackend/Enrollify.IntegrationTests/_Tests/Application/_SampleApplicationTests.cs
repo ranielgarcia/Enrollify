@@ -1,9 +1,15 @@
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
+using MediatR;
 using Enrollify.Infrastructure.Data;
+using MediatR;
 using Enrollify.IntegrationTests.Helpers;
+using MediatR;
 using Enrollify.IntegrationTests.Infrastructure;
-using Mediator;
+using MediatR;
+using MediatR;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using MediatR;
 
 namespace Enrollify.IntegrationTests._Tests.Application;
 

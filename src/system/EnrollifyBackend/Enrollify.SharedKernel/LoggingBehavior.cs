@@ -1,13 +1,12 @@
 ﻿using System.Diagnostics;
-using System.Reflection;
 using Ardalis.GuardClauses;
-using Mediator;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Enrollify.SharedKernel;
 
 /// <summary>
-/// Adds logging for all requests in Mediator pipeline.
+/// Adds logging for all requests in MediatR pipeline.
 /// Configure by adding the service with a scoped lifetime
 /// </summary>
 /// <typeparam name="TRequest"></typeparam>
@@ -18,13 +17,13 @@ public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TReque
 {
   private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger = logger;
 
-  public async ValueTask<TResponse> Handle(
+  public async Task<TResponse> Handle(
       TRequest request,
-      MessageHandlerDelegate<TRequest, TResponse> next,
+      RequestHandlerDelegate<TResponse> next,
       CancellationToken cancellationToken)
   {
     Guard.Against.Null(request);
-    
+
     if (_logger.IsEnabled(LogLevel.Information))
     {
       _logger.LogInformation("Handling {RequestName} with {@Request}", typeof(TRequest).Name, request);
@@ -32,16 +31,16 @@ public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TReque
 
     var sw = Stopwatch.StartNew();
 
-    var response = await next(request, cancellationToken);
+    var response = await next();
 
     sw.Stop();
-    
+
     if (_logger.IsEnabled(LogLevel.Information))
     {
-      _logger.LogInformation("Handled {RequestName} with {Response} in {ElapsedMilliseconds} ms", 
+      _logger.LogInformation("Handled {RequestName} with {Response} in {ElapsedMilliseconds} ms",
         typeof(TRequest).Name, response, sw.ElapsedMilliseconds);
     }
-    
+
     return response;
   }
 }

@@ -2,16 +2,16 @@ using Ardalis.Result;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Departments.Commands;
 
 public static class CreateDepartment
 {
-    public sealed record Command(DepartmentCode code, string name, string chairperson, string description, CollegeId collegeId) 
-        : ICommand<Result<DepartmentId>>;
+    public sealed record Command(DepartmentCode code, string name, string chairperson, string description, CollegeId collegeId)
+        : IRequest<Result<DepartmentId>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<DepartmentId>>
+    public sealed class Handler : IRequestHandler<Command, Result<DepartmentId>>
     {
         private readonly IReadRepository<College> _collegeReadRepository;
         private readonly IDepartmentRepository _departmentRepository;
@@ -22,7 +22,7 @@ public static class CreateDepartment
             _departmentRepository = departmentRepository;
         }
 
-        public async ValueTask<Result<DepartmentId>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<DepartmentId>> Handle(Command command, CancellationToken cancellationToken)
         {
             var college = await _collegeReadRepository.GetByIdAsync(command.collegeId, cancellationToken);
             if (college == null)

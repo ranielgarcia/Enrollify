@@ -3,15 +3,15 @@ using Enrollify.Application.Features.RoomTypes.DTOs;
 using Enrollify.Application.Features.RoomTypes.Specifications;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.RoomTypes.Queries;
 
-public class ListRoomTypesQuery : IQuery<Result<List<RoomTypeDto>>>
+public class ListRoomTypesQuery : IRequest<Result<List<RoomTypeDto>>>
 {
 }
 
-public class ListRoomTypesQueryHandler : IQueryHandler<ListRoomTypesQuery, Result<List<RoomTypeDto>>>
+public class ListRoomTypesQueryHandler : IRequestHandler<ListRoomTypesQuery, Result<List<RoomTypeDto>>>
 {
     private readonly IReadRepository<RoomType> _repository;
 
@@ -19,7 +19,7 @@ public class ListRoomTypesQueryHandler : IQueryHandler<ListRoomTypesQuery, Resul
     {
         _repository = repository;
     }
-    public async ValueTask<Result<List<RoomTypeDto>>> Handle(ListRoomTypesQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<RoomTypeDto>>> Handle(ListRoomTypesQuery request, CancellationToken cancellationToken)
     {
         var spec = new ListRoomTypesWithAllNavigationSpec();
         var roomTypes = await _repository.ListAsync(spec, cancellationToken);

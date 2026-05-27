@@ -2,16 +2,16 @@ using Ardalis.Result;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Courses.Commands;
 
 public static class UpdateCourse
 {
     public sealed record Command(CourseId id, CourseCode code, string name, int durationYears, string description, CollegeId collegeId)
-        : ICommand<Result<CourseId>>;
+        : IRequest<Result<CourseId>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<CourseId>>
+    public sealed class Handler : IRequestHandler<Command, Result<CourseId>>
     {
         private readonly ICourseRepository _courseRepository;
         private readonly IReadRepository<Course> _courseReadRepository;
@@ -27,7 +27,7 @@ public static class UpdateCourse
             _collegeReadRepository = collegeReadRepository;
         }
 
-        public async ValueTask<Result<CourseId>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<CourseId>> Handle(Command command, CancellationToken cancellationToken)
         {
             var college = await _collegeReadRepository.GetByIdAsync(command.collegeId, cancellationToken);
             if (college == null)

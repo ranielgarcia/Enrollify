@@ -1,6 +1,6 @@
 ﻿using Enrollify.Application.Authentication.GetContext;
 using Enrollify.Core.Authentication;
-using Mediator;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Enrollify.WebAPI.Authorization;

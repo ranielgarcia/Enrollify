@@ -5,13 +5,13 @@ using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Constants.AcademicBuiltInData;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Subjects.Commands;
 
 public static class UpdateSubject
 {
-    public class Command : ICommand<Result<SubjectId>>
+    public class Command : IRequest<Result<SubjectId>>
     {
         public SubjectId Id { get; set; }
         public SubjectCode Code { get; set; }
@@ -22,7 +22,7 @@ public static class UpdateSubject
 
     }
 
-    public sealed class Handler : ICommandHandler<Command, Result<SubjectId>>
+    public sealed class Handler : IRequestHandler<Command, Result<SubjectId>>
     {
         private readonly IReadRepository<Subject> _subjectReadRepository;
         private readonly ISubjectRepository _subjectRepository;
@@ -40,7 +40,7 @@ public static class UpdateSubject
             _roomTypeReadRepository = roomTypeReadRepository;
         }
 
-        public async ValueTask<Result<SubjectId>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<SubjectId>> Handle(Command command, CancellationToken cancellationToken)
         {
             if (command.Code == BuiltInSubjectsEnum.ElectivePlaceholder.Code)
                 return Result.Invalid(new ValidationError { ErrorMessage = $"The subject code '{BuiltInSubjectsEnum.ElectivePlaceholder.Code}' is reserved and cannot be used." });

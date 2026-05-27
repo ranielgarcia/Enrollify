@@ -3,17 +3,18 @@ using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.Core.Services;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 
 public static class SyncCourseCurriculumAssignmentsForAcademicYear
 {
-    public record Command(AcademicYearId AcademicYearId) : ICommand<Result>;
-    public class Handler : ICommandHandler<Command, Result>
+    public record Command(AcademicYearId AcademicYearId) : IRequest<Result>;
+    public class Handler : IRequestHandler<Command, Result>
     {
         private readonly ICourseCurriculumAssignmentRepository _repository;
         private readonly IReadRepository<CourseCurriculumAssignment> _readRepository;
@@ -40,7 +41,7 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
             _logger = logger;
         }
 
-        public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
             var academicYear = await _academicYearReadRepository.GetByIdAsync(command.AcademicYearId, cancellationToken);
             if (academicYear == null)
@@ -50,7 +51,8 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
             }
 
             var courses = await _courseReadRepository.ListAsync(cancellationToken);
-            var existingAssignments = await _readRepository.ListAsync(new GetAllCourseCurriculumAssignmentsByAcademicYearIdSpec(academicYear.Id), cancellationToken);
+            var courseIds = courses.Select(c => c.Id).ToList();
+            var existingAssignments = await _readRepository.ListAsync(new GetAllCourseCurriculumAssignmentsForCoursesByAcademicYearIdSpec(courseIds, academicYear.Id), cancellationToken);
 
             // Get the latest active curriculum for each course that is applicable to the academic year's start date/year
             var applicableCurriculums = await _applicableCurriculumQueryService.GetApplicableCurriculumsForAcademicYearStartDateAsync(academicYear.StartDate, cancellationToken);
@@ -63,6 +65,13 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
             foreach (var course in courses)
             {
                 var existing = existingAssignmentByCourseId.GetValueOrDefault(course.Id);
+
+                if (existing?.Curriculum?.StatusId == CurriculumStatusEnum.Active)
+                {
+                    _logger.LogInformation("Course {CourseName} already has an active curriculum assigned (CurriculumId: {CurriculumId}), skipping assignment.", course.Name, existing.CurriculumId);
+                    continue;
+                }
+
                 var curriculum = applicableCurriculumsByCourseId.GetValueOrDefault(course.Id);
 
                 if (curriculum == null)

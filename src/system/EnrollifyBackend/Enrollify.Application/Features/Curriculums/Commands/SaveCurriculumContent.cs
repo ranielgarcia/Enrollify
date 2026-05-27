@@ -7,7 +7,7 @@ using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 using Term = int;
 using Year = int;
 
@@ -22,9 +22,9 @@ public class SaveCurriculumContent
         public SubjectCode[] Prerequisites { get; set; } = [];
     }
 
-    public sealed record Command(CurriculumId CurriculumId, Dictionary<Year, Dictionary<Term, SubjectInCurriculum[]>> SubjectsGrid) : ICommand<Result<CurriculumDto>>;
+    public sealed record Command(CurriculumId CurriculumId, Dictionary<Year, Dictionary<Term, SubjectInCurriculum[]>> SubjectsGrid) : IRequest<Result<CurriculumDto>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<CurriculumDto>>
+    public sealed class Handler : IRequestHandler<Command, Result<CurriculumDto>>
     {
         private readonly IReadRepository<Curriculum> _readRepository;
         private readonly IReadRepository<Subject> _subjectReadRepository;
@@ -32,7 +32,7 @@ public class SaveCurriculumContent
         private readonly IUnitOfWork _unitOfWork;
 
         public Handler(
-            IReadRepository<Curriculum> readRepository, 
+            IReadRepository<Curriculum> readRepository,
             IReadRepository<Subject> subjectReadRepository,
             ICurriculumRepository curriculumRepository,
             IUnitOfWork unitOfWork)
@@ -43,7 +43,7 @@ public class SaveCurriculumContent
             _unitOfWork = unitOfWork;
         }
 
-        public async ValueTask<Result<CurriculumDto>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<CurriculumDto>> Handle(Command command, CancellationToken cancellationToken)
         {
             var spec = new GetCurriculumsWithSubjectsByIdsSpec([command.CurriculumId]);
             var curriculum = await _readRepository.FirstOrDefaultAsync(spec, cancellationToken);
@@ -92,7 +92,7 @@ public class SaveCurriculumContent
 
             // Validate prerequisites - build a lookup of subject code to (year, term)
             var subjectPositions = command.SubjectsGrid
-                .SelectMany(year => year.Value.SelectMany(term => 
+                .SelectMany(year => year.Value.SelectMany(term =>
                     term.Value.Select(subject => (Code: subject.Code, Year: year.Key, Term: term.Key))))
                 .ToDictionary(x => x.Code, x => (x.Year, x.Term));
 

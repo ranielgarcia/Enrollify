@@ -5,7 +5,7 @@ using Enrollify.Application.Features.Teachers.Storage;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.Teachers.Commands;
@@ -14,9 +14,9 @@ public static class RegisterNewTeacher
 {
     public record TeacherPhoto(byte[] Content, string ContentType, string FileName);
 
-    public sealed record Command (TeacherForRegistration teacher, TeacherPhoto? Photo) : ICommand<Result<TeacherId>>;
+    public sealed record Command (TeacherForRegistration teacher, TeacherPhoto? Photo) : IRequest<Result<TeacherId>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<TeacherId>>
+    public sealed class Handler : IRequestHandler<Command, Result<TeacherId>>
     {
         private readonly ITeacherRepository _teacherRepository;
         private readonly ITeacherPhotoStorageService _teacherPhotoStorageService;
@@ -37,7 +37,7 @@ public static class RegisterNewTeacher
             _logger = logger;
         }
 
-        public async ValueTask<Result<TeacherId>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<TeacherId>> Handle(Command command, CancellationToken cancellationToken)
         {
             var teacher = new Teacher(
                     command.teacher.FirstName,
@@ -84,7 +84,7 @@ public static class RegisterNewTeacher
 
             return result;
         }
-        
+
         private async Task ProcessPhoto (TeacherId teacherId, TeacherPhoto photo, CancellationToken ct)
         {
             var newlyCreatedTeacher = await _readRepository.GetByIdAsync(teacherId, ct);

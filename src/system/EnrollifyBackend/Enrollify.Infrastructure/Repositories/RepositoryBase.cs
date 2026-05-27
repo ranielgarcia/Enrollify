@@ -1,5 +1,5 @@
 using Ardalis.Result;
-using Enrollify.Application.Command.Persistence;
+using Enrollify.Application.Common.Persistence;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Persistence;
 

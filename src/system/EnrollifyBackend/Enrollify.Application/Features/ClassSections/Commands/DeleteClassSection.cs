@@ -3,16 +3,16 @@ using Enrollify.Application.Features.ClassSections.Extensions;
 using Enrollify.Application.Features.ClassSections.Specifications;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.ClassSections.Commands;
 
 public static class DeleteClassSection
 {
-    public sealed record Command(ClassSectionId Id, bool reOrderClassSectionCodes = false) : ICommand<Result>;
+    public sealed record Command(ClassSectionId Id, bool reOrderClassSectionCodes = false) : IRequest<Result>;
 
-    public sealed class Handler : ICommandHandler<Command, Result>
+    public sealed class Handler : IRequestHandler<Command, Result>
     {
         private readonly IClassSectionRepository _classSectionRepository;
         private readonly IReadRepository<ClassSection> _readRepository;
@@ -27,7 +27,7 @@ public static class DeleteClassSection
             _logger = logger;
         }
 
-        public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
             var classSectionToDelete = await _readRepository.GetByIdAsync(command.Id, cancellationToken);
 
@@ -41,7 +41,7 @@ public static class DeleteClassSection
             {
                 _logger.LogInformation("Re-ordering class section codes...");
                 var existingClassSections = await _readRepository.ListAsync(
-                    new GetExistingClassSectionsByCourseYearLevelAndTerm(classSectionToDelete.YearLevel, classSectionToDelete.CourseId, classSectionToDelete.AcademicTermId), cancellationToken);
+                    new GetExistingClassSectionsByCourseYearLevelAndTerm(classSectionToDelete.IntendedYearLevel, classSectionToDelete.CourseId, classSectionToDelete.AcademicTermId), cancellationToken);
 
                 var remainingClassSections = existingClassSections.Where(x => x.Id != classSectionToDelete.Id).OrderBy(x => x.SectionCode).ToList();
 

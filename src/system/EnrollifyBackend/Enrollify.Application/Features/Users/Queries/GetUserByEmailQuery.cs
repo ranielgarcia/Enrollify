@@ -2,16 +2,16 @@ using Ardalis.Result;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.Aggregates.UserAggregate.Specifications;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Users.Queries;
 
-public record GetUserByEmailQuery(UserEmail email) : IQuery<Result<UserDto>>;
+public record GetUserByEmailQuery(UserEmail email) : IRequest<Result<UserDto>>;
 
 public class GetUserByEmailQueryHandler(IReadRepository<User> _repository)
-    : IQueryHandler<GetUserByEmailQuery, Result<UserDto>>
+    : IRequestHandler<GetUserByEmailQuery, Result<UserDto>>
 {
-    public async ValueTask<Result<UserDto>> Handle(GetUserByEmailQuery query, CancellationToken cancellationToken)
+    public async Task<Result<UserDto>> Handle(GetUserByEmailQuery query, CancellationToken cancellationToken)
     {
         var spec = new UserByEmailSpec(query.email);
         var entity = await _repository.FirstOrDefaultAsync(spec, cancellationToken);

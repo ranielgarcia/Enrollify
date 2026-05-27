@@ -16,7 +16,7 @@ public class ClassSectionConfiguration : IEntityTypeConfiguration<ClassSection>
         builder.Ignore(x => x.FullName);
 
         builder.Property(e => e.Name).IsRequired();
-        builder.Property(e => e.YearLevel).IsRequired();
+        builder.Property(e => e.IntendedYearLevel).IsRequired();
 
         builder.HasOne(e => e.Course)
             .WithMany()
@@ -31,6 +31,11 @@ public class ClassSectionConfiguration : IEntityTypeConfiguration<ClassSection>
         builder.HasOne(e => e.AcademicTerm)
             .WithMany()
             .HasForeignKey(e => e.AcademicTermId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne(e => e.CohortAcademicYear)
+            .WithMany()
+            .HasForeignKey(e => e.CohortAcademicYearId)
             .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasOne(e => e.Adviser)

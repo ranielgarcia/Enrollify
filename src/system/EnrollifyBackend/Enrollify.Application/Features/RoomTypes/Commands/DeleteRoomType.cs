@@ -1,15 +1,15 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.Rooms.Queries;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.RoomTypes.Commands;
 
 public static class DeleteRoomType
 {
-    public sealed record Command(RoomTypeId id) : ICommand<Result>;
+    public sealed record Command(RoomTypeId id) : IRequest<Result>;
 
-    public sealed class Handler : ICommandHandler<Command, Result>
+    public sealed class Handler : IRequestHandler<Command, Result>
     {
         private readonly IRoomTypeRepository _roomTypeRepository;
         private readonly IMediator _mediator;
@@ -19,7 +19,7 @@ public static class DeleteRoomType
             _roomTypeRepository = roomTypeRepository;
             _mediator = mediator;
         }
-        public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
             var countRooms = await _mediator.Send(new CountRoomsByRoomTypeQuery { RoomTypeId = command.id }, cancellationToken);
             if (countRooms.Value > 0)

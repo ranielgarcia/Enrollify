@@ -4,22 +4,22 @@ using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate.Models;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Rooms.Commands;
 
 public static class CreateRoom
 {
     public sealed record Command(string roomNumber, int capacity, RoomTypeId roomTypeId, BuildingId buildingId)
-        : ICommand<Result<RoomId>>;
+        : IRequest<Result<RoomId>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<RoomId>>
+    public sealed class Handler : IRequestHandler<Command, Result<RoomId>>
     {
         private readonly IRoomRepository _roomRepository;
         private readonly IReadRepository<RoomType> _roomTypeReadRepository;
         private readonly IReadRepository<Building> _buildingReadRepository;
 
-        public Handler(IRoomRepository roomRepository, 
+        public Handler(IRoomRepository roomRepository,
             IReadRepository<RoomType> roomTypeReadRepository,
             IReadRepository<Building> buildingReadRepository)
         {
@@ -28,7 +28,7 @@ public static class CreateRoom
             _buildingReadRepository = buildingReadRepository;
         }
 
-        public async ValueTask<Result<RoomId>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<RoomId>> Handle(Command command, CancellationToken cancellationToken)
         {
             var roomType = await _roomTypeReadRepository.GetByIdAsync(command.roomTypeId, cancellationToken);
             var building = await _buildingReadRepository.GetByIdAsync(command.buildingId, cancellationToken);

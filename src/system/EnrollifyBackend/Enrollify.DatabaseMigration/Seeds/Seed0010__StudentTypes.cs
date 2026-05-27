@@ -22,13 +22,13 @@ public class Seed0010__StudentTypes : IScript
 
         foreach (var type in studentTypes)
         {
-            values.Add(string.Format("({0}, '{1}', '{2}', '{3}')", type.Value, type.Code, type.Name, type.Description));
+            values.Add(string.Format("({0}, '{1}', '{2}', '{3}', {4})", type.Value, type.Code, type.Name, type.Description, type.DisplayOrder));
         }
         scriptBuilder.Append(string.Join(", ", values.ToArray()));
-        scriptBuilder.Append(") AS [Source] ([Id], [Code], [Name], [Description])");
+        scriptBuilder.Append(") AS [Source] ([Id], [Code], [Name], [Description], [DisplayOrder])");
         scriptBuilder.Append(" ON [Target].[Id] = [Source].[Id]");
-        scriptBuilder.Append(" WHEN MATCHED THEN UPDATE SET [Target].[Code] = [Source].[Code], [Target].[Name] = [Source].[Name], [Target].[Description] = [Source].[Description], [Target].[UpdatedBy] = @InitialUserId");
-        scriptBuilder.Append(" WHEN NOT MATCHED THEN INSERT ([Id], [Code], [Name], [Description], [CreatedBy]) VALUES ([Source].[Id], [Source].[Code], [Source].[Name], [Source].[Description], @InitialUserId);");
+        scriptBuilder.Append(" WHEN MATCHED THEN UPDATE SET [Target].[Code] = [Source].[Code], [Target].[Name] = [Source].[Name], [Target].[Description] = [Source].[Description], [Target].[DisplayOrder] = [Source].[DisplayOrder], [Target].[UpdatedBy] = @InitialUserId");
+        scriptBuilder.Append(" WHEN NOT MATCHED THEN INSERT ([Id], [Code], [Name], [Description], [DisplayOrder], [CreatedBy]) VALUES ([Source].[Id], [Source].[Code], [Source].[Name], [Source].[Description], [Source].[DisplayOrder], @InitialUserId);");
 
         return scriptBuilder.ToString();
     }

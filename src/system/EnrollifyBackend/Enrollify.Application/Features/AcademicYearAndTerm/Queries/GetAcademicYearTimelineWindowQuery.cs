@@ -3,11 +3,11 @@ using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.AcademicYearAndTerm.Queries;
 
-public class GetAcademicYearTimelineWindowQuery : IQuery<Result<AcademicYearTimelineDto>>
+public class GetAcademicYearTimelineWindowQuery : IRequest<Result<AcademicYearTimelineDto>>
 {
     public bool IncludePastYears { get; set; }
     public int NumberOfPastYears { get; set; }
@@ -16,9 +16,9 @@ public class GetAcademicYearTimelineWindowQuery : IQuery<Result<AcademicYearTime
 }
 
 public sealed class GetAcademicYearTimelineWindowQueryHandler(IReadRepository<AcademicYear> repository)
-    : IQueryHandler<GetAcademicYearTimelineWindowQuery, Result<AcademicYearTimelineDto>>
+    : IRequestHandler<GetAcademicYearTimelineWindowQuery, Result<AcademicYearTimelineDto>>
 {
-    public async ValueTask<Result<AcademicYearTimelineDto>> Handle(
+    public async Task<Result<AcademicYearTimelineDto>> Handle(
         GetAcademicYearTimelineWindowQuery query, CancellationToken cancellationToken)
     {
         var today = DateTime.UtcNow.Date;

@@ -3,15 +3,15 @@ using Enrollify.Application.Features.Curriculums.Events;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Curriculums.Commands;
 
 public static class ApproveCurriculum
 {
-    public sealed record Command(CurriculumId Id) : ICommand<Result<CurriculumId>>;
+    public sealed record Command(CurriculumId Id) : IRequest<Result<CurriculumId>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<CurriculumId>>
+    public sealed class Handler : IRequestHandler<Command, Result<CurriculumId>>
     {
         private readonly ICurriculumRepository _curriculumRepository;
         private readonly IReadRepository<Curriculum> _curriculumReadRepository;
@@ -27,7 +27,7 @@ public static class ApproveCurriculum
             _mediator = mediator;
         }
 
-        public async ValueTask<Result<CurriculumId>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<CurriculumId>> Handle(Command command, CancellationToken cancellationToken)
         {
             var curriculum = await _curriculumReadRepository.GetByIdAsync(command.Id, cancellationToken);
             if (curriculum == null)

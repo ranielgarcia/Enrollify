@@ -38,17 +38,17 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e =>
-            e.PropertyName == "requestPayload" &&
-            e.ErrorMessage.Contains("At least one payload entry is required"));
+            e.PropertyName == "TargetCourses" &&
+            e.ErrorMessage.Contains("At least one course is required."));
     }
 
     [Fact(DisplayName = "Non-empty requestPayload - no collection-level error")]
     public async Task ValidateAsync_NonEmptyRequestPayload_NoCollectionError()
     {
         var command = CreateCommand();
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurriculumAssignments(command.requestPayload[0].courseId);
+        SetupCourses(command.TargetCourses[0].CourseId);
+        SetupAcademicYears(command.AcademicTermId);
+        SetupCurriculumAssignments(command.TargetCourses[0].CourseId);
 
         var result = await _validator.ValidateAsync(command);
 
@@ -106,7 +106,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     public async Task ValidateAsync_AcademicTermDoesNotExist_HasTargetedAcademicTermError()
     {
         var command = CreateCommand(academicTermId: AcademicTermId.From(99));
-        SetupCourses(command.requestPayload[0].courseId);
+        SetupCourses(command.TargetCourses[0].CourseId);
         SetupAcademicYears(); // returns null — no matching term
         SetupCurriculumAssignments();
 
@@ -114,7 +114,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e =>
-            e.PropertyName == nameof(BulkInitializeClassSectionsForAcademicYear.Command.academicTermId) &&
+            e.PropertyName == nameof(BulkInitializeClassSectionsForAcademicYear.Command.AcademicTermId) &&
             e.ErrorMessage.Contains("does not exist or is inactive"));
     }
 
@@ -122,9 +122,9 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     public async Task ValidateAsync_AcademicTermExists_NoAcademicTermError()
     {
         var command = CreateCommand();
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurriculumAssignments(command.requestPayload[0].courseId);
+        SetupCourses(command.TargetCourses[0].CourseId);
+        SetupAcademicYears(command.AcademicTermId);
+        SetupCurriculumAssignments(command.TargetCourses[0].CourseId);
 
         var result = await _validator.ValidateAsync(command);
 
@@ -142,9 +142,9 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     public async Task ValidateAsync_YearLevelIsValid_NoYearLevelError()
     {
         var command = CreateCommand(yearLevel: YearLevel.From(3));
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurriculumAssignments(command.requestPayload[0].courseId);
+        SetupCourses(command.TargetCourses[0].CourseId);
+        SetupAcademicYears(command.AcademicTermId);
+        SetupCurriculumAssignments(command.TargetCourses[0].CourseId);
 
         var result = await _validator.ValidateAsync(command);
 
@@ -182,7 +182,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     {
         var command = CreateCommand(courseId: CourseId.From(99));
         SetupCourses(); // returns empty — course 99 is missing
-        SetupAcademicYears(command.academicTermId);
+        SetupAcademicYears(command.AcademicTermId);
         SetupCurriculumAssignments();
 
         var result = await _validator.ValidateAsync(command);
@@ -219,9 +219,9 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     public async Task ValidateAsync_CourseExists_NoCourseExistenceError()
     {
         var command = CreateCommand();
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurriculumAssignments(command.requestPayload[0].courseId);
+        SetupCourses(command.TargetCourses[0].CourseId);
+        SetupAcademicYears(command.AcademicTermId);
+        SetupCurriculumAssignments(command.TargetCourses[0].CourseId);
 
         var result = await _validator.ValidateAsync(command);
 
@@ -237,9 +237,9 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     public async Task ValidateAsync_NumberOfSectionsIsZero_HasLowerBoundError()
     {
         var command = CreateCommand(numberOfSections: 0);
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurriculumAssignments(command.requestPayload[0].courseId);
+        SetupCourses(command.TargetCourses[0].CourseId);
+        SetupAcademicYears(command.AcademicTermId);
+        SetupCurriculumAssignments(command.TargetCourses[0].CourseId);
 
         var result = await _validator.ValidateAsync(command);
 
@@ -252,9 +252,9 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     public async Task ValidateAsync_NumberOfSectionsIsNegative_HasLowerBoundError()
     {
         var command = CreateCommand(numberOfSections: -3);
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurriculumAssignments(command.requestPayload[0].courseId);
+        SetupCourses(command.TargetCourses[0].CourseId);
+        SetupAcademicYears(command.AcademicTermId);
+        SetupCurriculumAssignments(command.TargetCourses[0].CourseId);
 
         var result = await _validator.ValidateAsync(command);
 
@@ -267,9 +267,9 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     public async Task ValidateAsync_NumberOfSectionsExceeds26_HasUpperBoundError()
     {
         var command = CreateCommand(numberOfSections: 27);
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurriculumAssignments(command.requestPayload[0].courseId);
+        SetupCourses(command.TargetCourses[0].CourseId);
+        SetupAcademicYears(command.AcademicTermId);
+        SetupCurriculumAssignments(command.TargetCourses[0].CourseId);
 
         var result = await _validator.ValidateAsync(command);
 
@@ -282,9 +282,9 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     public async Task ValidateAsync_NumberOfSectionsIs26_NoUpperBoundError()
     {
         var command = CreateCommand(numberOfSections: 26);
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurriculumAssignments(command.requestPayload[0].courseId);
+        SetupCourses(command.TargetCourses[0].CourseId);
+        SetupAcademicYears(command.AcademicTermId);
+        SetupCurriculumAssignments(command.TargetCourses[0].CourseId);
 
         var result = await _validator.ValidateAsync(command);
 
@@ -296,9 +296,9 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     public async Task ValidateAsync_NumberOfSectionsIsPositiveAndWithinRange_NoSectionsError()
     {
         var command = CreateCommand(numberOfSections: 3);
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurriculumAssignments(command.requestPayload[0].courseId);
+        SetupCourses(command.TargetCourses[0].CourseId);
+        SetupAcademicYears(command.AcademicTermId);
+        SetupCurriculumAssignments(command.TargetCourses[0].CourseId);
 
         var result = await _validator.ValidateAsync(command);
 
@@ -317,7 +317,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         var courseId = CourseId.From(1);
         var command = CreateCommand(courseId: courseId);
         SetupCourses(courseId);
-        SetupAcademicYears(command.academicTermId);
+        SetupAcademicYears(command.AcademicTermId);
         SetupCurriculumAssignments(); // no assignments returned
 
         var result = await _validator.ValidateAsync(command);
@@ -334,7 +334,7 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         var courseId = CourseId.From(1);
         var command = CreateCommand(courseId: courseId);
         SetupCourses(courseId);
-        SetupAcademicYears(command.academicTermId);
+        SetupAcademicYears(command.AcademicTermId);
         SetupCurriculumAssignments(courseId);
 
         var result = await _validator.ValidateAsync(command);
@@ -373,9 +373,9 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
     public async Task ValidateAsync_AllFieldsValid_IsValid()
     {
         var command = CreateCommand(numberOfSections: 2);
-        SetupCourses(command.requestPayload[0].courseId);
-        SetupAcademicYears(command.academicTermId);
-        SetupCurriculumAssignments(command.requestPayload[0].courseId);
+        SetupCourses(command.TargetCourses[0].CourseId);
+        SetupAcademicYears(command.AcademicTermId);
+        SetupCurriculumAssignments(command.TargetCourses[0].CourseId);
 
         var result = await _validator.ValidateAsync(command);
 
@@ -421,9 +421,9 @@ public class BulkInitializeClassSectionsForAcademicYearValidatorTests
         int payloadCount = 1)
     {
         var payloads = payloadCount == 0
-            ? new List<BulkInitializeClassSectionsForAcademicYear.Payload>()
+            ? new List<BulkInitializeClassSectionsForAcademicYear.TargetCourse>()
             : Enumerable.Range(0, payloadCount)
-                .Select(_ => new BulkInitializeClassSectionsForAcademicYear.Payload(
+                .Select(_ => new BulkInitializeClassSectionsForAcademicYear.TargetCourse(
                     courseId ?? CourseId.From(1),
                     numberOfSections))
                 .ToList();

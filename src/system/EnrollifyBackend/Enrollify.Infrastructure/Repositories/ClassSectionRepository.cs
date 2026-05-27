@@ -28,8 +28,8 @@ public class ClassSectionRepository : IClassSectionRepository
         }
         catch (DbUpdateException ex) when (IsInvalidYearLevel(ex))
         {
-            _logger.LogError(ex, "Invalid year level {YearLevel}, it must be between 1 and 6", newClassSection.YearLevel);
-            return Result.Conflict($"The year level '{newClassSection.YearLevel.Value.ToString()}' is invalid. It must be between 1 and 6.");
+            _logger.LogError(ex, "Invalid year level {YearLevel}, it must be between 1 and 6", newClassSection.IntendedYearLevel);
+            return Result.Conflict($"The year level '{newClassSection.IntendedYearLevel.Value.ToString()}' is invalid. It must be between 1 and 6.");
         }
         catch (Exception ex)
         {
@@ -68,8 +68,8 @@ public class ClassSectionRepository : IClassSectionRepository
         }
         catch (DbUpdateException ex) when (IsInvalidYearLevel(ex))
         {
-            _logger.LogError(ex, "Invalid year level {YearLevel}, it must be between 1 and 6", updatedClassSection.YearLevel.Value.ToString());
-            return Result.Conflict($"The year level '{updatedClassSection.YearLevel.Value.ToString()}' is invalid. It must be between 1 and 6.");
+            _logger.LogError(ex, "Invalid year level {YearLevel}, it must be between 1 and 6", updatedClassSection.IntendedYearLevel.Value.ToString());
+            return Result.Conflict($"The year level '{updatedClassSection.IntendedYearLevel.Value.ToString()}' is invalid. It must be between 1 and 6.");
         }
         catch (Exception ex)
         {

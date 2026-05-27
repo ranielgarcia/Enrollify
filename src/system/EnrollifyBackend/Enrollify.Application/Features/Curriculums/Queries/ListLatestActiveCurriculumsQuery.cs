@@ -4,19 +4,19 @@ using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Models.Views;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Curriculums.Queries;
 
-public class ListLatestActiveCurriculumsQuery : IQuery<Result<List<CurriculumDto>>>
+public class ListLatestActiveCurriculumsQuery : IRequest<Result<List<CurriculumDto>>>
 {
 }
 
 public class ListLatestActiveCurriculumsQueryHandler
     (ICurriculumRepository curriculumRepository, IReadRepository<Curriculum> readRepository)
-    : IQueryHandler<ListLatestActiveCurriculumsQuery, Result<List<CurriculumDto>>>
+    : IRequestHandler<ListLatestActiveCurriculumsQuery, Result<List<CurriculumDto>>>
 {
-    public async ValueTask<Result<List<CurriculumDto>>> Handle(ListLatestActiveCurriculumsQuery query, CancellationToken cancellationToken)
+    public async Task<Result<List<CurriculumDto>>> Handle(ListLatestActiveCurriculumsQuery query, CancellationToken cancellationToken)
     {
         var result = await curriculumRepository.GetAllLatestActiveCurriculumPerCourse(cancellationToken);
 

@@ -1,15 +1,15 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.Buildings.Queries;
 using Enrollify.Core.Aggregates.CollegeAggregate;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Colleges.Commands;
 
 public static class DeleteCollege
 {
-    public sealed record Command(CollegeId id) : ICommand<Result>;
+    public sealed record Command(CollegeId id) : IRequest<Result>;
 
-    public sealed class Handler : ICommandHandler<Command, Result>
+    public sealed class Handler : IRequestHandler<Command, Result>
     {
         private readonly ICollegeRepository _collegeRepository;
         private readonly IMediator _mediator;
@@ -19,7 +19,7 @@ public static class DeleteCollege
             _collegeRepository = collegeRepository;
             _mediator = mediator;
         }
-        public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
             var countBuildings = await _mediator.Send(new CountBuildingsByCollegeQuery { CollegeId = command.id}, cancellationToken);
             if (countBuildings.Value > 0)

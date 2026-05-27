@@ -13,18 +13,19 @@ using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 using Microsoft.Extensions.Logging;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Enrollify.Application.Features.ClassSections.Commands;
 
 public static class BulkInitializeClassSectionsForAcademicYear
 {
-    public sealed record Payload(CourseId courseId, int numberOfSections);
+    public sealed record TargetCourse(CourseId CourseId, int NumberOfSections);
 
-    public sealed record Command(AcademicTermId academicTermId, YearLevel yearLevel, List<Payload> requestPayload) : ICommand<Result>;
+    public sealed record Command(AcademicTermId AcademicTermId, YearLevel YearLevel, List<TargetCourse> TargetCourses) : IRequest<Result>;
 
-    public sealed class Handler : ICommandHandler<Command, Result>
+    public sealed class Handler : IRequestHandler<Command, Result>
     {
         private readonly IReadRepository<AcademicYear> _academicYearRepository;
         private readonly IReadRepository<ClassSection> _classSectionReadRepository;
@@ -52,36 +53,47 @@ public static class BulkInitializeClassSectionsForAcademicYear
             _logger = logger;
         }
 
-        public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
+
+        public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
+            var targetCourseIds = command.TargetCourses.Select(p => p.CourseId).ToList();
+
             // Get academic year and term (validated by validator)
             var academicYear = await _academicYearRepository
-                .FirstOrDefaultAsync(new GetAcademicYearByAcademicTermIdSpec(command.academicTermId), cancellationToken);
-            var academicTerm = academicYear!.AcademicTerms.First(at => at.Id == command.academicTermId);
+                .FirstOrDefaultAsync(new GetAcademicYearByAcademicTermIdSpec(command.AcademicTermId), cancellationToken);
+            var academicTerm = academicYear!.AcademicTerms.First(at => at.Id == command.AcademicTermId);
 
-            var courseCurriculumAssignments = await _courseCurriculumAssignmentsReadRepository.ListAsync(new GetAllCourseCurriculumAssignmentsByAcademicYearIdSpec(academicYear.Id), cancellationToken);
-            var courseCurriculumAssignmentsByCourseId = courseCurriculumAssignments.ToDictionary(x => x.CourseId, x => x);
+            var intendedCohortEntryYear = GetCohortEntryYear(academicYear, command.YearLevel);
 
-            var payloadCourseIds = command.requestPayload.Select(p => p.courseId).ToList();
+            var getCohortCourseCurriculumResult = await GetCohortCourseCurriculumAssignments(targetCourseIds, intendedCohortEntryYear, cancellationToken);
+            if (!getCohortCourseCurriculumResult.IsSuccess)
+            {
+                return Result.Error(string.Join("; ", getCohortCourseCurriculumResult.Errors));
+            }
+
+            var (cohortAcademicYear, cohortCourseCurriculumAssignments) = getCohortCourseCurriculumResult.Value;
+
+            var courseCurriculumAssignmentsByCourseId = cohortCourseCurriculumAssignments.ToDictionary(x => x.CourseId, x => x);
+
             var existingSections = await _classSectionReadRepository.ListAsync(
                 new GetExistingClassSectionsByCourseYearLevelAndTerm(
-                    new List<YearLevel> { command.yearLevel },
-                    payloadCourseIds,
-                    new List<AcademicTermId> { command.academicTermId }),
+                    new List<YearLevel> { command.YearLevel },
+                    targetCourseIds,
+                    new List<AcademicTermId> { command.AcademicTermId }),
                 cancellationToken);
             var existingSectionsByCourseId = existingSections.GroupBy(s => s.CourseId).ToDictionary(g => g.Key, g => g.ToList());
 
             // H5: Pre-validate that every course has subjects for the given year level and term before opening the transaction.
             // Fails fast without any DB writes if any course's curriculum has no subjects for this year/term.
-            foreach (var payload in command.requestPayload)
+            foreach (var targetCourse in command.TargetCourses)
             {
-                var assignment = courseCurriculumAssignmentsByCourseId[payload.courseId];
-                if (!assignment.Curriculum!.GetSubjectsByYearAndTerm(command.yearLevel, academicTerm.TermNumber).Any())
+                var assignment = courseCurriculumAssignmentsByCourseId[targetCourse.CourseId];
+                if (!assignment.Curriculum!.GetSubjectsByYearAndTerm(command.YearLevel, academicTerm.TermNumber).Any())
                 {
                     _logger.LogWarning(
                         "No curriculum subjects found for course {CourseId}, year level {YearLevel}, term {TermNumber}",
-                        payload.courseId, command.yearLevel, academicTerm.TermNumber);
-                    return Result.Error($"No curriculum subjects found for course '{assignment.Course!.Code.Value}', year level {command.yearLevel}, term {academicTerm.TermNumber}.");
+                        targetCourse.CourseId, command.YearLevel, academicTerm.TermNumber);
+                    return Result.Error($"No curriculum subjects found for course '{assignment.Course!.Code.Value}', year level {command.YearLevel}, term {academicTerm.TermNumber}.");
                 }
             }
 
@@ -92,29 +104,29 @@ public static class BulkInitializeClassSectionsForAcademicYear
             {
                 var totalSectionsCreated = 0;
 
-                foreach (var payload in command.requestPayload)
+                foreach (var targetCourse in command.TargetCourses)
                 {
                     // H3: Direct property access — validator guarantees assignment exists;
                     // dictionary indexer throws rather than returning null, so ?. operators are redundant.
-                    var courseCurriculumAssignment = courseCurriculumAssignmentsByCourseId[payload.courseId];
+                    var courseCurriculumAssignment = courseCurriculumAssignmentsByCourseId[targetCourse.CourseId];
                     var curriculum = courseCurriculumAssignment.Curriculum!;
                     var course = courseCurriculumAssignment.Course!;
 
                     // H4: Materialize once so .Count is a cheap property read and the inner foreach
                     // doesn't re-evaluate the IEnumerable on every iteration.
                     var curriculumSubjects = curriculum
-                        .GetSubjectsByYearAndTerm(command.yearLevel, academicTerm.TermNumber)
+                        .GetSubjectsByYearAndTerm(command.YearLevel, academicTerm.TermNumber)
                         .ToList();
 
                     // Get existing sections to determine starting section code
-                    var existingClassSections = existingSectionsByCourseId.GetValueOrDefault(payload.courseId);
+                    var existingClassSections = existingSectionsByCourseId.GetValueOrDefault(targetCourse.CourseId);
                     var lastExistingClassSectionCode = existingClassSections?
                         .OrderByDescending(cs => cs.SectionCode)
                         .FirstOrDefault()?
                         .SectionCode;
 
                     // Create the requested number of sections
-                    for (var i = 0; i < payload.numberOfSections; i++)
+                    for (var i = 0; i < targetCourse.NumberOfSections; i++)
                     {
                         // Generate next section code (A, B, C, etc.)
                         var sectionCode = lastExistingClassSectionCode.GetNextSectionCode();
@@ -124,12 +136,13 @@ public static class BulkInitializeClassSectionsForAcademicYear
                         var newClassSection = new ClassSection(new ClassSectionForCreation
                         {
                             Name = course.Code.Value,
-                            YearLevel = command.yearLevel,
-                            CourseId = payload.courseId,
+                            IntendedYearLevel = command.YearLevel,
+                            CourseId = targetCourse.CourseId,
                             CurriculumId = curriculum.Id,
-                            AcademicTermId = command.academicTermId,
+                            AcademicTermId = command.AcademicTermId,
                             AdviserId = null, // No adviser assigned during bulk initialization
                             SectionCode = sectionCode,
+                            CohortAcademicYearId = cohortAcademicYear.Id,
                         });
 
                         var createResult = await _classSectionRepository.Create(newClassSection, cancellationToken);
@@ -168,7 +181,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
 
                 _logger.LogInformation(
                     "Successfully bulk initialized {TotalSections} class sections for term {TermId}, year level {YearLevel}",
-                    totalSectionsCreated, command.academicTermId, command.yearLevel);
+                    totalSectionsCreated, command.AcademicTermId, command.YearLevel);
 
                 return Result.Success();
             }
@@ -180,6 +193,38 @@ public static class BulkInitializeClassSectionsForAcademicYear
             }
         }
 
+
+        //> Creating class sections for BSCS in AY 2025-2026:
+
+        //| Year Level | Entry AY     | Lookup in `CourseCurriculumAssignments`  |
+        //| ---------- | ------------ | ---------------------------------------- |
+        //| Year 1     | AY 2025-2026 | (BSCS, AY 2025-2026) → Curriculum 2025-A |
+        //| Year 2     | AY 2024-2025 | (BSCS, AY 2024-2025) → Curriculum 2024-A |
+        //| Year 3     | AY 2023-2024 | (BSCS, AY 2023-2024) → Curriculum 2023-X |
+        //| Year 4     | AY 2022-2023 | (BSCS, AY 2022-2023) → Curriculum 2023-X |
+
+        //The entry AY derivation lives in application code: find the AcademicYear with `StartDate.Year = currentAY.StartDate.Year - (YearLevel - 1)`.
+
+        private async Task<Result<(AcademicYear cohortAcademicYear, List<CourseCurriculumAssignment> cohortCourseCurriculumAssignments)>>
+            GetCohortCourseCurriculumAssignments
+            (List<CourseId> courseIds, Year cohortEntryYear, CancellationToken ct)
+        {
+            var academicYear = await _academicYearRepository
+                .FirstOrDefaultAsync(new GetAcademicYearByStartDateYearSpec(cohortEntryYear), ct);
+
+            // Limitation: Requires all historical curriculum data for the cohort's entry academic year.
+            // If the academic year or curriculum assignments are missing, bulk initialization fails.
+            // Admins must pre-populate all required historical data before creating sections for higher year levels.
+            if (academicYear == null) return Result.Error("Academic year for the given cohort entry year not found.");
+
+            var courseCurriculumAssignments = await _courseCurriculumAssignmentsReadRepository
+                .ListAsync(new GetAllCourseCurriculumAssignmentsForCoursesByAcademicYearIdSpec(courseIds, academicYear.Id), ct);
+
+            return Result.Success((academicYear, courseCurriculumAssignments));
+        }
+
+        private Year GetCohortEntryYear(AcademicYear classSectionAcademicYear, YearLevel yearLevel)
+            => Year.From(classSectionAcademicYear.StartDate.Value.Year - (yearLevel.Value - 1));
     }
 
 }

@@ -69,7 +69,7 @@ public class SaveCurriculumContentTests
         // Arrange
         var curriculumId = CurriculumId.From(1);
         var curriculum = CreateTestCurriculum(curriculumId);
-        
+
         // Set curriculum status to Active
         SetEntityProperty(curriculum, "StatusId", Enrollify.Core.Constants.CurriculumStatusEnum.Active);
 
@@ -359,10 +359,10 @@ public class SaveCurriculumContentTests
             [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
                 [2] = [
-                    new SaveCurriculumContent.SubjectInCurriculum 
-                    { 
-                        Code = mainSubjectCode, 
-                        Prerequisites = [prereqCode] 
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = mainSubjectCode,
+                        Prerequisites = [prereqCode]
                     }
                 ]
             }
@@ -538,9 +538,9 @@ public class SaveCurriculumContentTests
             [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
                 [1] = [
-                    new SaveCurriculumContent.SubjectInCurriculum 
-                    { 
-                        Code = subjectCode, 
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = subjectCode,
                         Prerequisites = [subjectCode] // Self-reference
                     }
                 ]
@@ -588,9 +588,9 @@ public class SaveCurriculumContentTests
                     new SaveCurriculumContent.SubjectInCurriculum { Code = prereqCode }
                 ],
                 [2] = [
-                    new SaveCurriculumContent.SubjectInCurriculum 
-                    { 
-                        Code = mainSubjectCode, 
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = mainSubjectCode,
                         Prerequisites = [prereqCode, prereqCode] // Duplicate
                     }
                 ]
@@ -635,9 +635,9 @@ public class SaveCurriculumContentTests
             [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
                 [1] = [
-                    new SaveCurriculumContent.SubjectInCurriculum 
-                    { 
-                        Code = firstYearSubjectCode, 
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = firstYearSubjectCode,
                         Prerequisites = [secondYearSubjectCode] // OOP is in year 2
                     }
                 ]
@@ -689,9 +689,9 @@ public class SaveCurriculumContentTests
             {
                 [1] = [
                     new SaveCurriculumContent.SubjectInCurriculum { Code = subjectACode },
-                    new SaveCurriculumContent.SubjectInCurriculum 
-                    { 
-                        Code = subjectBCode, 
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = subjectBCode,
                         Prerequisites = [subjectACode] // Same semester
                     }
                 ]
@@ -736,9 +736,9 @@ public class SaveCurriculumContentTests
             [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
                 [1] = [
-                    new SaveCurriculumContent.SubjectInCurriculum 
-                    { 
-                        Code = firstSemSubjectCode, 
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = firstSemSubjectCode,
                         Prerequisites = [secondSemSubjectCode] // CS102 is in sem 2
                     }
                 ],
@@ -792,9 +792,9 @@ public class SaveCurriculumContentTests
             [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
                 [1] = [
-                    new SaveCurriculumContent.SubjectInCurriculum 
-                    { 
-                        Code = secondYearSubjectCode, 
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = secondYearSubjectCode,
                         Prerequisites = [firstYearSubjectCode]
                     }
                 ]
@@ -858,9 +858,9 @@ public class SaveCurriculumContentTests
                     new SaveCurriculumContent.SubjectInCurriculum { Code = firstSemSubjectCode }
                 ],
                 [2] = [
-                    new SaveCurriculumContent.SubjectInCurriculum 
-                    { 
-                        Code = secondSemSubjectCode, 
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = secondSemSubjectCode,
                         Prerequisites = [firstSemSubjectCode]
                     }
                 ]
@@ -924,10 +924,10 @@ public class SaveCurriculumContentTests
                     new SaveCurriculumContent.SubjectInCurriculum { Code = prereqCode }
                 ],
                 [2] = [
-                    new SaveCurriculumContent.SubjectInCurriculum 
-                    { 
-                        Code = mainSubjectCode, 
-                        Prerequisites = [prereqCode] 
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = mainSubjectCode,
+                        Prerequisites = [prereqCode]
                     }
                 ]
             }
@@ -1059,9 +1059,9 @@ public class SaveCurriculumContentTests
     /// Adds a subject to the curriculum and simulates database-assigned Id and IsActive.
     /// </summary>
     private static CurriculumSubject AddSubjectToCurriculum(
-        Curriculum curriculum, 
+        Curriculum curriculum,
         SubjectId subjectId,
-        int yearLevel, 
+        int yearLevel,
         int semester,
         CurriculumSubjectId curriculumSubjectId,
         decimal? subjectUnitsOverride = null)
@@ -1092,7 +1092,7 @@ public class SaveCurriculumContentTests
             var value = valueField.GetValue(cs.Id);
             return value != null && Convert.ToInt32(value) == 0;
         }).ToList();
-        
+
         var idCounter = startingId;
         foreach (var cs in curriculumSubjects)
         {
@@ -1117,10 +1117,10 @@ public class SaveCurriculumContentTests
         {
             [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
-                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
-                { 
-                    Code = subjectCode, 
-                    UnitsOverride = unitsOverride 
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum
+                {
+                    Code = subjectCode,
+                    UnitsOverride = unitsOverride
                 }]
             }
         };
@@ -1172,10 +1172,10 @@ public class SaveCurriculumContentTests
         {
             [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
-                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
-                { 
-                    Code = subjectCode, 
-                    UnitsOverride = null 
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum
+                {
+                    Code = subjectCode,
+                    UnitsOverride = null
                 }]
             }
         };
@@ -1219,22 +1219,22 @@ public class SaveCurriculumContentTests
             [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
                 [1] = [
-                    new SaveCurriculumContent.SubjectInCurriculum 
-                    { 
-                        Code = SubjectCode.From("CS101"), 
-                        UnitsOverride = 2.0m 
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = SubjectCode.From("CS101"),
+                        UnitsOverride = 2.0m
                     },
-                    new SaveCurriculumContent.SubjectInCurriculum 
-                    { 
-                        Code = SubjectCode.From("MATH101"), 
-                        UnitsOverride = null 
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = SubjectCode.From("MATH101"),
+                        UnitsOverride = null
                     }
                 ],
                 [2] = [
-                    new SaveCurriculumContent.SubjectInCurriculum 
-                    { 
-                        Code = SubjectCode.From("CS102"), 
-                        UnitsOverride = 4.5m 
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = SubjectCode.From("CS102"),
+                        UnitsOverride = 4.5m
                     }
                 ]
             }
@@ -1258,7 +1258,7 @@ public class SaveCurriculumContentTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        
+
         var curriculumSubject1 = curriculum.GetCurriculumSubject(subject1.Id);
         Assert.NotNull(curriculumSubject1);
         Assert.Equal(2.0m, curriculumSubject1.SubjectUnitsOverride);
@@ -1342,8 +1342,8 @@ public class SaveCurriculumContentTests
         {
             [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
-                [2] = [new SaveCurriculumContent.SubjectInCurriculum 
-                { 
+                [2] = [new SaveCurriculumContent.SubjectInCurriculum
+                {
                     Code = subjectCode,
                     UnitsOverride = newUnitsOverride
                 }]
@@ -1395,8 +1395,8 @@ public class SaveCurriculumContentTests
         {
             [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
-                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
-                { 
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum
+                {
                     Code = subjectCode,
                     UnitsOverride = null
                 }]
@@ -1441,10 +1441,10 @@ public class SaveCurriculumContentTests
         {
             [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
-                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
-                { 
-                    Code = subjectCode, 
-                    UnitsOverride = zeroUnitsOverride 
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum
+                {
+                    Code = subjectCode,
+                    UnitsOverride = zeroUnitsOverride
                 }]
             }
         };
@@ -1486,18 +1486,18 @@ public class SaveCurriculumContentTests
         {
             [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
-                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
-                { 
-                    Code = SubjectCode.From("CS101"), 
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum
+                {
+                    Code = SubjectCode.From("CS101"),
                     UnitsOverride = 2.5m,
                     Prerequisites = []
                 }]
             },
             [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
-                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
-                { 
-                    Code = SubjectCode.From("CS201"), 
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum
+                {
+                    Code = SubjectCode.From("CS201"),
                     UnitsOverride = 3.0m,
                     Prerequisites = [SubjectCode.From("CS101")]
                 }]
@@ -1533,7 +1533,7 @@ public class SaveCurriculumContentTests
 
         // Assert - verify the command succeeds and UnitsOverride values are set correctly
         Assert.True(result.IsSuccess);
-        
+
         var curriculumSubject1 = curriculum.GetCurriculumSubject(subject1.Id);
         Assert.NotNull(curriculumSubject1);
         Assert.Equal(2.5m, curriculumSubject1.SubjectUnitsOverride);
@@ -1541,7 +1541,7 @@ public class SaveCurriculumContentTests
         var curriculumSubject2 = curriculum.GetCurriculumSubject(subject2.Id);
         Assert.NotNull(curriculumSubject2);
         Assert.Equal(3.0m, curriculumSubject2.SubjectUnitsOverride);
-        
+
         // Verify the command was called twice (once for subjects, once for prerequisites)
         _curriculumRepositoryMock.Verify(r => r.UpdateCurriculum(curriculum, It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
@@ -1745,8 +1745,8 @@ public class SaveCurriculumContentTests
         {
             [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
-                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
-                { 
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum
+                {
                     Code = subjectCode,
                     Prerequisites = [subjectCode] // Self-prerequisite (invalid)
                 }]
@@ -1833,7 +1833,7 @@ public class SaveCurriculumContentTests
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _handler.Handle(command, CancellationToken.None).AsTask());
+            () => _handler.Handle(command, CancellationToken.None));
 
         // Transaction should be disposed (which triggers automatic rollback if not committed)
         _transactionScopeMock.Verify(t => t.DisposeAsync(), Times.Once);
@@ -1855,24 +1855,24 @@ public class SaveCurriculumContentTests
         {
             [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
-                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
-                { 
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum
+                {
                     Code = SubjectCode.From("CS101"),
                     Prerequisites = []
                 }]
             },
             [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
-                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
-                { 
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum
+                {
                     Code = SubjectCode.From("CS201"),
                     Prerequisites = [SubjectCode.From("CS101")]
                 }]
             },
             [3] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
             {
-                [1] = [new SaveCurriculumContent.SubjectInCurriculum 
-                { 
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum
+                {
                     Code = SubjectCode.From("CS301"),
                     Prerequisites = [SubjectCode.From("CS201")]
                 }]

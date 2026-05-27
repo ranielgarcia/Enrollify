@@ -1,4 +1,4 @@
-namespace Enrollify.Application.Command.Persistence;
+namespace Enrollify.Application.Common.Persistence;
 
 public enum PersistenceErrorType
 {

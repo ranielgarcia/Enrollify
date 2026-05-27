@@ -17,7 +17,7 @@ using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
@@ -73,7 +73,7 @@ public class CreateClassSectionTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultStatus.Error, result.Status);
-        Assert.Contains(result.Errors, e => e.Contains("No course-curriculum assignment found"));
+        Assert.Contains(result.Errors, e => e.Contains("Course-Curriculum assignment for the given cohort not found"));
     }
 
     [Fact(DisplayName = "Course-curriculum assignment found but no subjects for year level and term")]
@@ -84,8 +84,8 @@ public class CreateClassSectionTests
         SetupHandlerPrerequisites(command);
 
         var curriculum = CreateCurriculum(command, hasSubjects: false);
-        var course = CreateCourse(command.courseId);
-        var assignment = CreateCourseCurriculumAssignment(command.courseId, course, curriculum);
+        var course = CreateCourse(command.CourseId);
+        var assignment = CreateCourseCurriculumAssignment(command.CourseId, course, curriculum);
         _courseCurriculumAssignmentReadRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(
                 It.IsAny<ISpecification<CourseCurriculumAssignment>>(),
@@ -140,6 +140,198 @@ public class CreateClassSectionTests
                 It.IsAny<ISpecification<CourseCurriculumAssignment>>(),
                 It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    #endregion
+
+    #region Multi-Curriculum Cohort Scenarios
+
+    [Fact(DisplayName = "Year 1 - uses curriculum from current academic year")]
+    public async Task Handle_Year1Command_UsesCurriculumFromCurrentAcademicYear()
+    {
+        // Arrange
+        // Current AY: 2025-2026 (StartDate.Year = 2025). Year 1 cohort entry year = 2025 - (1-1) = 2025.
+        var currentAY = CreateAcademicYearWithStartYear(2025, AcademicTermId.From(1));
+        var currentAYCurriculumId = CurriculumId.From(10);
+        var currentAYCurriculum = CreateCurriculumWithYear(CourseId.From(1), 2025, "2025-A", YearLevel.From(1), TermNumber.From(1), curriculumId: currentAYCurriculumId);
+        var course = CreateCourse(CourseId.From(1));
+        var assignment = CreateCourseCurriculumAssignment(CourseId.From(1), course, currentAYCurriculum);
+
+        var command = CreateCommand(yearLevel: YearLevel.From(1));
+        SetupCohortAcademicYears(currentAY, cohortAY: currentAY); // Year 1 → same AY
+        _courseCurriculumAssignmentReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<CourseCurriculumAssignment>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(assignment);
+        _classSectionReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<ClassSection>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ClassSection>());
+        SetupSuccessfulSubjectOfferingCreation();
+
+        ClassSection? capturedSection = null;
+        _classSectionRepositoryMock
+            .Setup(r => r.Create(It.IsAny<ClassSection>(), It.IsAny<CancellationToken>()))
+            .Callback<ClassSection, CancellationToken>((cs, _) => capturedSection = cs)
+            .ReturnsAsync(Result.Success(ClassSectionId.From(1)));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(capturedSection);
+        Assert.Equal(currentAYCurriculumId, capturedSection.CurriculumId);
+    }
+
+    [Fact(DisplayName = "Year 2 - uses curriculum from previous academic year (different from Year 1)")]
+    public async Task Handle_Year2Command_UsesCurriculumFromPreviousAcademicYear()
+    {
+        // Arrange
+        // Current AY: 2025-2026 (StartDate.Year = 2025). Year 2 cohort entry year = 2025 - (2-1) = 2024.
+        var currentAY = CreateAcademicYearWithStartYear(2025, AcademicTermId.From(1));
+        var previousAY = CreateAcademicYearWithStartYear(2024, academicYearId: AcademicYearId.From(2));
+        var previousAYCurriculumId = CurriculumId.From(20);
+        var previousAYCurriculum = CreateCurriculumWithYear(CourseId.From(1), 2024, "2024-A", YearLevel.From(2), TermNumber.From(1), curriculumId: previousAYCurriculumId);
+        var course = CreateCourse(CourseId.From(1));
+        var assignment = CreateCourseCurriculumAssignment(CourseId.From(1), course, previousAYCurriculum);
+
+        var command = CreateCommand(yearLevel: YearLevel.From(2));
+        SetupCohortAcademicYears(currentAY, cohortAY: previousAY);
+        _courseCurriculumAssignmentReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<CourseCurriculumAssignment>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(assignment);
+        _classSectionReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<ClassSection>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ClassSection>());
+        SetupSuccessfulSubjectOfferingCreation();
+
+        ClassSection? capturedSection = null;
+        _classSectionRepositoryMock
+            .Setup(r => r.Create(It.IsAny<ClassSection>(), It.IsAny<CancellationToken>()))
+            .Callback<ClassSection, CancellationToken>((cs, _) => capturedSection = cs)
+            .ReturnsAsync(Result.Success(ClassSectionId.From(1)));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(capturedSection);
+        Assert.Equal(previousAYCurriculumId, capturedSection.CurriculumId);
+    }
+
+    [Fact(DisplayName = "Year 3 - uses curriculum from academic year two years prior")]
+    public async Task Handle_Year3Command_UsesCurriculumFromTwoYearsAgo()
+    {
+        // Arrange
+        // Current AY: 2025-2026 (StartDate.Year = 2025). Year 3 cohort entry year = 2025 - (3-1) = 2023.
+        var currentAY = CreateAcademicYearWithStartYear(2025, AcademicTermId.From(1));
+        var twoYearsAgoAY = CreateAcademicYearWithStartYear(2023, academicYearId: AcademicYearId.From(3));
+        var twoYearsAgoCurriculumId = CurriculumId.From(30);
+        var twoYearsAgoCurriculum = CreateCurriculumWithYear(CourseId.From(1), 2023, "2023-X", YearLevel.From(3), TermNumber.From(1), curriculumId: twoYearsAgoCurriculumId);
+        var course = CreateCourse(CourseId.From(1));
+        var assignment = CreateCourseCurriculumAssignment(CourseId.From(1), course, twoYearsAgoCurriculum);
+
+        var command = CreateCommand(yearLevel: YearLevel.From(3));
+        SetupCohortAcademicYears(currentAY, cohortAY: twoYearsAgoAY);
+        _courseCurriculumAssignmentReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<CourseCurriculumAssignment>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(assignment);
+        _classSectionReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<ClassSection>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ClassSection>());
+        SetupSuccessfulSubjectOfferingCreation();
+
+        ClassSection? capturedSection = null;
+        _classSectionRepositoryMock
+            .Setup(r => r.Create(It.IsAny<ClassSection>(), It.IsAny<CancellationToken>()))
+            .Callback<ClassSection, CancellationToken>((cs, _) => capturedSection = cs)
+            .ReturnsAsync(Result.Success(ClassSectionId.From(1)));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(capturedSection);
+        Assert.Equal(twoYearsAgoCurriculumId, capturedSection.CurriculumId);
+    }
+
+    [Fact(DisplayName = "Year 1 and Year 2 in same AY - each picks a different curriculum")]
+    public async Task Handle_Year1AndYear2InSameAY_EachPickDifferentCurriculum()
+    {
+        // Demonstrates that two separate CreateClassSection commands issued within the same AY
+        // (Year 1 and Year 2) resolve to different cohort entry years and thus different curriculums.
+        // Current AY: 2025-2026 (StartDate.Year = 2025).
+        //   Year 1 cohort entry = 2025 → Curriculum 2025-A
+        //   Year 2 cohort entry = 2024 → Curriculum 2024-A (different)
+        var currentAY = CreateAcademicYearWithStartYear(2025, AcademicTermId.From(1));
+        var previousAY = CreateAcademicYearWithStartYear(2024, academicYearId: AcademicYearId.From(2));
+
+        var currentAYCurriculumId = CurriculumId.From(10);
+        var previousAYCurriculumId = CurriculumId.From(20);
+
+        var currentAYCurriculum = CreateCurriculumWithYear(CourseId.From(1), 2025, "2025-A", YearLevel.From(1), TermNumber.From(1), curriculumId: currentAYCurriculumId);
+        var previousAYCurriculum = CreateCurriculumWithYear(CourseId.From(1), 2024, "2024-A", YearLevel.From(2), TermNumber.From(1), curriculumId: previousAYCurriculumId);
+        var course = CreateCourse(CourseId.From(1));
+
+        // ── Year 1 command ──
+        var year1Command = CreateCommand(yearLevel: YearLevel.From(1));
+
+        _academicYearReadRepositoryMock.Reset();
+        _courseCurriculumAssignmentReadRepositoryMock.Reset();
+        _classSectionRepositoryMock.Reset();
+        _unitOfWorkMock.Setup(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(_fakeTransaction);
+
+        SetupCohortAcademicYears(currentAY, cohortAY: currentAY);
+        _courseCurriculumAssignmentReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<CourseCurriculumAssignment>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateCourseCurriculumAssignment(CourseId.From(1), course, currentAYCurriculum));
+        _classSectionReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<ClassSection>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ClassSection>());
+        SetupSuccessfulSubjectOfferingCreation();
+
+        ClassSection? capturedYear1Section = null;
+        _classSectionRepositoryMock
+            .Setup(r => r.Create(It.IsAny<ClassSection>(), It.IsAny<CancellationToken>()))
+            .Callback<ClassSection, CancellationToken>((cs, _) => capturedYear1Section = cs)
+            .ReturnsAsync(Result.Success(ClassSectionId.From(1)));
+
+        var year1Result = await _handler.Handle(year1Command, CancellationToken.None);
+
+        // ── Year 2 command ──
+        var year2Command = CreateCommand(yearLevel: YearLevel.From(2));
+
+        _academicYearReadRepositoryMock.Reset();
+        _courseCurriculumAssignmentReadRepositoryMock.Reset();
+        _classSectionRepositoryMock.Reset();
+        _unitOfWorkMock.Setup(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(_fakeTransaction);
+
+        SetupCohortAcademicYears(currentAY, cohortAY: previousAY);
+        _courseCurriculumAssignmentReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<CourseCurriculumAssignment>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateCourseCurriculumAssignment(CourseId.From(1), course, previousAYCurriculum));
+        _classSectionReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<ClassSection>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ClassSection>());
+        SetupSuccessfulSubjectOfferingCreation();
+
+        ClassSection? capturedYear2Section = null;
+        _classSectionRepositoryMock
+            .Setup(r => r.Create(It.IsAny<ClassSection>(), It.IsAny<CancellationToken>()))
+            .Callback<ClassSection, CancellationToken>((cs, _) => capturedYear2Section = cs)
+            .ReturnsAsync(Result.Success(ClassSectionId.From(1)));
+
+        var year2Result = await _handler.Handle(year2Command, CancellationToken.None);
+
+        // Assert
+        Assert.True(year1Result.IsSuccess);
+        Assert.True(year2Result.IsSuccess);
+        Assert.NotNull(capturedYear1Section);
+        Assert.NotNull(capturedYear2Section);
+        Assert.Equal(currentAYCurriculumId, capturedYear1Section.CurriculumId);
+        Assert.Equal(previousAYCurriculumId, capturedYear2Section.CurriculumId);
+        Assert.NotEqual(capturedYear1Section.CurriculumId, capturedYear2Section.CurriculumId);
     }
 
     #endregion
@@ -207,7 +399,7 @@ public class CreateClassSectionTests
         throwingTransactionMock
             .Setup(t => t.DisposeAsync())
             .Returns(ValueTask.CompletedTask);
-        
+
         _unitOfWorkMock
             .Setup(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(throwingTransactionMock.Object);
@@ -237,8 +429,7 @@ public class CreateClassSectionTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultStatus.Error, result.Status);
-        Assert.Contains(result.Errors, e => e.Contains("No course-curriculum assignment found"));
-        // Transaction should never be started for validation errors
+        Assert.Contains(result.Errors, e => e.Contains("Course-Curriculum assignment for the given cohort not found"));
         _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
         Assert.False(_fakeTransaction.IsCommitted);
         Assert.False(_fakeTransaction.IsRolledBack);
@@ -253,8 +444,8 @@ public class CreateClassSectionTests
 
         // Curriculum found but no subjects
         var curriculum = CreateCurriculum(command, hasSubjects: false);
-        var course = CreateCourse(command.courseId);
-        var assignment = CreateCourseCurriculumAssignment(command.courseId, course, curriculum);
+        var course = CreateCourse(command.CourseId);
+        var assignment = CreateCourseCurriculumAssignment(command.CourseId, course, curriculum);
         _courseCurriculumAssignmentReadRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(
                 It.IsAny<ISpecification<CourseCurriculumAssignment>>(),
@@ -448,8 +639,8 @@ public class CreateClassSectionTests
         SetupHandlerPrerequisites(command);
 
         var curriculum = CreateCurriculum(command, hasSubjects: true, subjectCount: 3);
-        var course = CreateCourse(command.courseId);
-        var assignment = CreateCourseCurriculumAssignment(command.courseId, course, curriculum);
+        var course = CreateCourse(command.CourseId);
+        var assignment = CreateCourseCurriculumAssignment(command.CourseId, course, curriculum);
         _courseCurriculumAssignmentReadRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(
                 It.IsAny<ISpecification<CourseCurriculumAssignment>>(),
@@ -535,8 +726,8 @@ public class CreateClassSectionTests
     {
         // Reset fake transaction state for each test
         _fakeTransaction.Reset();
-        
-        var academicYear = CreateAcademicYear(command.academicTermId);
+
+        var academicYear = CreateAcademicYear(command.AcademicTermId);
 
         _academicYearReadRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(
@@ -554,8 +745,8 @@ public class CreateClassSectionTests
     private void SetupSuccessfulCurriculumRetrieval(CreateClassSection.Command command)
     {
         var curriculum = CreateCurriculum(command, hasSubjects: true);
-        var course = CreateCourse(command.courseId);
-        var assignment = CreateCourseCurriculumAssignment(command.courseId, course, curriculum);
+        var course = CreateCourse(command.CourseId);
+        var assignment = CreateCourseCurriculumAssignment(command.CourseId, course, curriculum);
         _courseCurriculumAssignmentReadRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(
                 It.IsAny<ISpecification<CourseCurriculumAssignment>>(),
@@ -614,7 +805,7 @@ public class CreateClassSectionTests
     {
         var curriculum = Curriculum.CreateDraftCurriculum(new DraftCurriculumForCreation
         {
-            CourseId = command.courseId,
+            CourseId = command.CourseId,
             EffectiveYear = Year.From(2024),
             Version = "2024-A",
             Description = "Computer Science Curriculum 2024"
@@ -630,7 +821,7 @@ public class CreateClassSectionTests
                 var subject = new CurriculumSubject(
                     CurriculumId.From(1),
                     SubjectId.From(i),
-                    command.yearLevel,
+                    command.YearLevel,
                     TermNumber.From(1),
                     false,
                     null,
@@ -650,10 +841,11 @@ public class CreateClassSectionTests
         var classSection = new ClassSection(new ClassSectionForCreation
         {
             Name = $"BSCS-{YearLevel.From(1)}{sectionCode}",
-            YearLevel = YearLevel.From(1),
+            IntendedYearLevel = YearLevel.From(1),
             CourseId = CourseId.From(1),
             CurriculumId = CurriculumId.From(1),
             AcademicTermId = AcademicTermId.From(1),
+            CohortAcademicYearId = AcademicYearId.From(1),
             AdviserId = TeacherId.From(1),
             SectionCode = sectionCode
         });
@@ -685,6 +877,91 @@ public class CreateClassSectionTests
             var field = typeof(T).GetField(propertyName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             field?.SetValue(entity, value);
         }
+    }
+
+    /// <summary>
+    /// Builds an AcademicYear whose StartDate falls in <paramref name="startYear"/>.
+    /// If <paramref name="termId"/> is provided, a matching AcademicTerm is added to the year.
+    /// If <paramref name="academicYearId"/> is provided, that id is stamped onto the year; otherwise defaults to Id=1.
+    /// </summary>
+    private static AcademicYear CreateAcademicYearWithStartYear(
+        int startYear,
+        AcademicTermId? termId = null,
+        AcademicYearId? academicYearId = null)
+    {
+        var ayId = academicYearId ?? AcademicYearId.From(1);
+        var startDate = AcademicYearStartDate.From(new DateTime(startYear, 8, 1));
+        var endDate = AcademicYearEndDate.From(new DateTime(startYear + 1, 7, 31));
+        var academicYear = new AcademicYear(startDate, endDate);
+        SetEntityProperty(academicYear, "Id", ayId);
+
+        if (termId.HasValue)
+        {
+            var termStartDate = AcademicTermStartDate.From(new DateTime(startYear, 8, 1));
+            var termEndDate = AcademicTermEndDate.From(new DateTime(startYear, 12, 31));
+            var term = new AcademicTerm(TermNumber.From(1), ayId, termStartDate, termEndDate);
+            SetEntityProperty(term, "Id", termId.Value);
+            SetEntityProperty(academicYear, "_academicTerms", new List<AcademicTerm> { term });
+        }
+        else
+        {
+            SetEntityProperty(academicYear, "_academicTerms", new List<AcademicTerm>());
+        }
+
+        return academicYear;
+    }
+
+    /// <summary>
+    /// Configures the AY repository mock with a sequence so:
+    ///   1st call  → <paramref name="currentAY"/>  (GetAcademicYearByAcademicTermIdSpec)
+    ///   2nd call  → <paramref name="cohortAY"/>   (GetAcademicYearByStartDateYearSpec)
+    /// Also resets the fake transaction for the new test.
+    /// </summary>
+    private void SetupCohortAcademicYears(AcademicYear currentAY, AcademicYear cohortAY)
+    {
+        _fakeTransaction.Reset();
+        _academicYearReadRepositoryMock
+            .SetupSequence(r => r.FirstOrDefaultAsync(
+                It.IsAny<ISpecification<AcademicYear>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(currentAY)
+            .ReturnsAsync(cohortAY);
+    }
+
+    /// <summary>
+    /// Creates a curriculum with a distinct year/version/id carrying subjects for the given year level and term.
+    /// </summary>
+    private static Curriculum CreateCurriculumWithYear(
+        CourseId courseId,
+        int effectiveYear,
+        string version,
+        YearLevel yearLevel,
+        TermNumber term,
+        CurriculumId? curriculumId = null,
+        int subjectCount = 2)
+    {
+        var id = curriculumId ?? CurriculumId.From(1);
+        var curriculum = Curriculum.CreateDraftCurriculum(new DraftCurriculumForCreation
+        {
+            CourseId = courseId,
+            EffectiveYear = Year.From(effectiveYear),
+            Version = version,
+            Description = $"Curriculum {version}"
+        });
+        SetEntityProperty(curriculum, "Id", id);
+        SetEntityProperty(curriculum, "StatusId", CurriculumStatusEnum.Active);
+
+        var subjects = new List<CurriculumSubject>();
+        for (int i = 1; i <= subjectCount; i++)
+        {
+            var subject = new CurriculumSubject(id, SubjectId.From(i), yearLevel, term, false, null, null);
+            SetEntityProperty(subject, "Id", CurriculumSubjectId.From(i));
+            SetEntityProperty(subject, "IsActive", true);
+            subjects.Add(subject);
+        }
+        SetEntityProperty(curriculum, "_curriculumSubjects", subjects);
+
+        return curriculum;
     }
 
     #endregion

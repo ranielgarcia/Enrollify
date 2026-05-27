@@ -2,15 +2,15 @@ using Ardalis.Result;
 using Enrollify.Application.Features.Rooms;
 using Enrollify.Application.Features.Rooms.Queries;
 using Enrollify.Core.Aggregates.BuildingAggregate;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Buildings.Commands;
 
 public static class DeleteBuilding
 {
-    public sealed record Command(BuildingId id) : ICommand<Result>;
+    public sealed record Command(BuildingId id) : IRequest<Result>;
 
-    public sealed class Handler : ICommandHandler<Command, Result>
+    public sealed class Handler : IRequestHandler<Command, Result>
     {
         private readonly IBuildingRepository _buildingRepository;
         private readonly IMediator _mediator;
@@ -21,7 +21,7 @@ public static class DeleteBuilding
             _mediator = mediator;
         }
 
-        public async ValueTask<Result> Handle (Command command, CancellationToken cancellationToken)
+        public async Task<Result> Handle (Command command, CancellationToken cancellationToken)
         {
             var countRooms = await _mediator.Send(new CountRoomsByBuildingQuery { BuildingId = command.id }, cancellationToken);
 

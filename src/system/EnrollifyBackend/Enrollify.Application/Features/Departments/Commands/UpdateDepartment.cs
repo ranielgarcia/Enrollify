@@ -2,24 +2,24 @@ using Ardalis.Result;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Departments.Commands;
 
 public static class UpdateDepartment
 {
     public sealed record Command(DepartmentId id, DepartmentCode code, string name, string chairperson, string description, CollegeId collegeId)
-        : ICommand<Result<DepartmentId>>;
+        : IRequest<Result<DepartmentId>>;
 
-    public sealed class Handler : ICommandHandler<Command, Result<DepartmentId>>
+    public sealed class Handler : IRequestHandler<Command, Result<DepartmentId>>
     {
         private readonly IReadRepository<College> _collegeReadRepository;
         private readonly IDepartmentRepository _departmentRepository;
         private readonly IReadRepository<Department> _departmentReadRepository;
 
         public Handler(
-            IReadRepository<College> collegeReadRepository, 
-            IDepartmentRepository departmentRepository, 
+            IReadRepository<College> collegeReadRepository,
+            IDepartmentRepository departmentRepository,
             IReadRepository<Department> departmentReadRepository)
         {
             _collegeReadRepository = collegeReadRepository;
@@ -27,7 +27,7 @@ public static class UpdateDepartment
             _departmentReadRepository = departmentReadRepository;
         }
 
-        public async ValueTask<Result<DepartmentId>> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result<DepartmentId>> Handle(Command command, CancellationToken cancellationToken)
         {
             var college = await _collegeReadRepository.GetByIdAsync(command.collegeId, cancellationToken);
             if (college == null)

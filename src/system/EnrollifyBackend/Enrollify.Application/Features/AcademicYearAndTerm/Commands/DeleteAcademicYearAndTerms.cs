@@ -2,15 +2,15 @@ using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.AcademicYearAndTerm.Commands;
 
 public static class DeleteAcademicYearAndTerms
 {
-    public sealed record Command(AcademicYearId id) : ICommand<Result>;
+    public sealed record Command(AcademicYearId id) : IRequest<Result>;
 
-    public sealed class Handler : ICommandHandler<Command, Result>
+    public sealed class Handler : IRequestHandler<Command, Result>
     {
         private readonly IAcademicYearAndTermRepository _repository;
         private readonly IReadRepository<AcademicYear> _readRepository;
@@ -20,7 +20,7 @@ public static class DeleteAcademicYearAndTerms
             _repository = repository;
             _readRepository = readRepository;
         }
-        public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
             var existing = await _readRepository.FirstOrDefaultAsync(new GetAcademicYearByIdSpec(command.id), cancellationToken);
             if (existing is null)

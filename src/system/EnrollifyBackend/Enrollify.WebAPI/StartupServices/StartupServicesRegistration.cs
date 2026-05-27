@@ -1,3 +1,5 @@
+using Enrollify.WebAPI.BackgroundJobs;
+
 namespace Enrollify.WebAPI.StartupServices;
 
 public static class StartupServicesRegistration
@@ -9,6 +11,10 @@ public static class StartupServicesRegistration
 
         // Register individual startup services here
         services.AddScoped<IStartupService, FileStorageRegistration>();
+
+        // Register background jobs
+        services.AddHostedService<SyncCourseCurriculumAssignmentsJob>();
+
         return services;
     }
 }

@@ -6,6 +6,7 @@ using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
@@ -21,6 +22,7 @@ public class CreateClassSectionValidatorTests
     private readonly Mock<IReadRepository<AcademicYear>> _academicYearRepositoryMock = new();
     private readonly Mock<IReadRepository<Teacher>> _teacherRepositoryMock = new();
     private readonly Mock<IReadRepository<ClassSection>> _classSectionRepositoryMock = new();
+    private readonly Mock<IReadRepository<CourseCurriculumAssignment>> _courseCurriculumAssignmentRepositoryMock = new();
     private readonly CreateClassSectionValidator _validator;
 
     public CreateClassSectionValidatorTests()
@@ -29,7 +31,8 @@ public class CreateClassSectionValidatorTests
             _courseRepositoryMock.Object,
             _academicYearRepositoryMock.Object,
             _teacherRepositoryMock.Object,
-            _classSectionRepositoryMock.Object);
+            _classSectionRepositoryMock.Object,
+            _courseCurriculumAssignmentRepositoryMock.Object);
     }
 
     #region CourseId Validation
@@ -40,10 +43,10 @@ public class CreateClassSectionValidatorTests
         // Arrange
         var command = CreateCommand();
         _courseRepositoryMock
-            .Setup(r => r.GetByIdAsync(command.courseId, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetByIdAsync(command.CourseId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Course?)null);
 
-        SetupValidAcademicTerm(command.academicTermId);
+        SetupValidAcademicTerm(command.AcademicTermId);
         SetupNoExistingSections();
 
         // Act
@@ -51,7 +54,7 @@ public class CreateClassSectionValidatorTests
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.PropertyName == "courseId" && e.ErrorMessage.Contains("course does not exist"));
+        Assert.Contains(result.Errors, e => e.PropertyName == "CourseId" && e.ErrorMessage.Contains("course does not exist"));
     }
 
     [Fact(DisplayName = "CourseId exists - no course error")]
@@ -60,14 +63,15 @@ public class CreateClassSectionValidatorTests
         // Arrange
         var command = CreateCommand();
         SetupValidCourse(command);
-        SetupValidAcademicTerm(command.academicTermId);
+        SetupValidAcademicTerm(command.AcademicTermId);
         SetupNoExistingSections();
+        SetupValidCurriculumAssignment();
 
         // Act
         var result = await _validator.ValidateAsync(command);
 
         // Assert
-        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "courseId");
+        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "CourseId");
     }
 
     #endregion
@@ -90,7 +94,7 @@ public class CreateClassSectionValidatorTests
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.PropertyName == "academicTermId" && e.ErrorMessage.Contains("academic term does not exist"));
+        Assert.Contains(result.Errors, e => e.PropertyName == "AcademicTermId" && e.ErrorMessage.Contains("academic term does not exist"));
     }
 
     [Fact(DisplayName = "AcademicTermId - academic year found but term not in it - returns invalid result")]
@@ -112,7 +116,7 @@ public class CreateClassSectionValidatorTests
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.PropertyName == "academicTermId" && e.ErrorMessage.Contains("academic term does not exist"));
+        Assert.Contains(result.Errors, e => e.PropertyName == "AcademicTermId" && e.ErrorMessage.Contains("academic term does not exist"));
     }
 
     [Fact(DisplayName = "AcademicTermId exists in academic year - no academic term error")]
@@ -121,14 +125,15 @@ public class CreateClassSectionValidatorTests
         // Arrange
         var command = CreateCommand();
         SetupValidCourse(command);
-        SetupValidAcademicTerm(command.academicTermId);
+        SetupValidAcademicTerm(command.AcademicTermId);
         SetupNoExistingSections();
+        SetupValidCurriculumAssignment();
 
         // Act
         var result = await _validator.ValidateAsync(command);
 
         // Assert
-        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "academicTermId");
+        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "AcademicTermId");
     }
 
     #endregion
@@ -142,7 +147,7 @@ public class CreateClassSectionValidatorTests
         var adviserId = TeacherId.From(99);
         var command = CreateCommand(adviserId: adviserId);
         SetupValidCourse(command);
-        SetupValidAcademicTerm(command.academicTermId);
+        SetupValidAcademicTerm(command.AcademicTermId);
         SetupNoExistingSections();
         _teacherRepositoryMock
             .Setup(r => r.GetByIdAsync(adviserId, It.IsAny<CancellationToken>()))
@@ -153,7 +158,7 @@ public class CreateClassSectionValidatorTests
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.PropertyName == "adviserId" && e.ErrorMessage.Contains("adviser does not exist"));
+        Assert.Contains(result.Errors, e => e.PropertyName == "AdviserId" && e.ErrorMessage.Contains("adviser does not exist"));
     }
 
     [Fact(DisplayName = "AdviserId provided and teacher exists - no adviser error")]
@@ -163,8 +168,9 @@ public class CreateClassSectionValidatorTests
         var adviserId = TeacherId.From(1);
         var command = CreateCommand(adviserId: adviserId);
         SetupValidCourse(command);
-        SetupValidAcademicTerm(command.academicTermId);
+        SetupValidAcademicTerm(command.AcademicTermId);
         SetupNoExistingSections();
+        SetupValidCurriculumAssignment();
 
         var teacher = CreateTeacher(adviserId);
         _teacherRepositoryMock
@@ -175,7 +181,7 @@ public class CreateClassSectionValidatorTests
         var result = await _validator.ValidateAsync(command);
 
         // Assert
-        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "adviserId");
+        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "AdviserId");
     }
 
     #endregion
@@ -188,7 +194,7 @@ public class CreateClassSectionValidatorTests
         // Arrange
         var command = CreateCommand(studentCapacity: 0);
         SetupValidCourse(command);
-        SetupValidAcademicTerm(command.academicTermId);
+        SetupValidAcademicTerm(command.AcademicTermId);
         SetupNoExistingSections();
 
         // Act
@@ -196,7 +202,7 @@ public class CreateClassSectionValidatorTests
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.PropertyName == "studentCapacity" && e.ErrorMessage.Contains("greater than zero"));
+        Assert.Contains(result.Errors, e => e.PropertyName == "StudentCapacity" && e.ErrorMessage.Contains("greater than zero"));
     }
 
     [Fact(DisplayName = "StudentCapacity is negative - returns invalid result")]
@@ -205,7 +211,7 @@ public class CreateClassSectionValidatorTests
         // Arrange
         var command = CreateCommand(studentCapacity: -5);
         SetupValidCourse(command);
-        SetupValidAcademicTerm(command.academicTermId);
+        SetupValidAcademicTerm(command.AcademicTermId);
         SetupNoExistingSections();
 
         // Act
@@ -213,7 +219,7 @@ public class CreateClassSectionValidatorTests
 
         // Assert
         Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.PropertyName == "studentCapacity" && e.ErrorMessage.Contains("greater than zero"));
+        Assert.Contains(result.Errors, e => e.PropertyName == "StudentCapacity" && e.ErrorMessage.Contains("greater than zero"));
     }
 
     [Fact(DisplayName = "StudentCapacity is positive - no capacity error")]
@@ -222,14 +228,15 @@ public class CreateClassSectionValidatorTests
         // Arrange
         var command = CreateCommand(studentCapacity: 30);
         SetupValidCourse(command);
-        SetupValidAcademicTerm(command.academicTermId);
+        SetupValidAcademicTerm(command.AcademicTermId);
         SetupNoExistingSections();
+        SetupValidCurriculumAssignment();
 
         // Act
         var result = await _validator.ValidateAsync(command);
 
         // Assert
-        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "studentCapacity");
+        Assert.DoesNotContain(result.Errors, e => e.PropertyName == "StudentCapacity");
     }
 
     #endregion
@@ -242,7 +249,7 @@ public class CreateClassSectionValidatorTests
         // Arrange
         var command = CreateCommand();
         SetupValidCourse(command);
-        SetupValidAcademicTerm(command.academicTermId);
+        SetupValidAcademicTerm(command.AcademicTermId);
         SetupNoExistingSections();
 
         // Simulate a duplicate section already occupying the computed name
@@ -265,8 +272,9 @@ public class CreateClassSectionValidatorTests
         // Arrange
         var command = CreateCommand();
         SetupValidCourse(command);
-        SetupValidAcademicTerm(command.academicTermId);
+        SetupValidAcademicTerm(command.AcademicTermId);
         SetupNoExistingSections();
+        SetupValidCurriculumAssignment();
 
         _classSectionRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<ClassSection>>(), It.IsAny<CancellationToken>()))
@@ -281,6 +289,53 @@ public class CreateClassSectionValidatorTests
 
     #endregion
 
+    #region CourseCurriculumAssignment Validation
+
+    [Fact(DisplayName = "No curriculum assignment for cohort entry year - returns CourseId error")]
+    public async Task ValidateAsync_NoCurriculumAssignment_HasCurriculumAssignmentError()
+    {
+        // Arrange
+        var command = CreateCommand();
+        SetupValidCourse(command);
+        SetupValidAcademicTerm(command.AcademicTermId);
+        SetupNoExistingSections();
+        _courseCurriculumAssignmentRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<CourseCurriculumAssignment>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((CourseCurriculumAssignment?)null);
+
+        // Act
+        var result = await _validator.ValidateAsync(command);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e =>
+            e.PropertyName == "CourseId" &&
+            e.ErrorMessage.Contains("No curriculum assignment found"));
+    }
+
+    [Fact(DisplayName = "Curriculum assignment exists for cohort entry year - no curriculum assignment error")]
+    public async Task ValidateAsync_CurriculumAssignmentExists_NoCurriculumAssignmentError()
+    {
+        // Arrange
+        var command = CreateCommand();
+        SetupValidCourse(command);
+        SetupValidAcademicTerm(command.AcademicTermId);
+        SetupNoExistingSections();
+        SetupValidCurriculumAssignment();
+
+        _classSectionRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<ClassSection>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((ClassSection?)null);
+
+        // Act
+        var result = await _validator.ValidateAsync(command);
+
+        // Assert
+        Assert.DoesNotContain(result.Errors, e => e.ErrorMessage.Contains("No curriculum assignment found"));
+    }
+
+    #endregion
+
     #region Full Valid Command
 
     [Fact(DisplayName = "All fields valid - validation passes")]
@@ -291,8 +346,9 @@ public class CreateClassSectionValidatorTests
         var command = CreateCommand(adviserId: adviserId);
 
         SetupValidCourse(command);
-        SetupValidAcademicTerm(command.academicTermId);
+        SetupValidAcademicTerm(command.AcademicTermId);
         SetupNoExistingSections();
+        SetupValidCurriculumAssignment();
 
         _teacherRepositoryMock
             .Setup(r => r.GetByIdAsync(adviserId, It.IsAny<CancellationToken>()))
@@ -337,10 +393,10 @@ public class CreateClassSectionValidatorTests
             4,
             "Computer Science degree program",
             CollegeId.From(1));
-        SetEntityProperty(course, "Id", command.courseId);
+        SetEntityProperty(course, "Id", command.CourseId);
 
         _courseRepositoryMock
-            .Setup(r => r.GetByIdAsync(command.courseId, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetByIdAsync(command.CourseId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(course);
     }
 
@@ -350,6 +406,14 @@ public class CreateClassSectionValidatorTests
         _academicYearRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<AcademicYear>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(academicYear);
+    }
+
+    private void SetupValidCurriculumAssignment()
+    {
+        var assignment = new CourseCurriculumAssignment(CourseId.From(1), AcademicYearId.From(1), CurriculumId.From(1));
+        _courseCurriculumAssignmentRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<CourseCurriculumAssignment>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(assignment);
     }
 
     private void SetupNoExistingSections()
@@ -394,10 +458,11 @@ public class CreateClassSectionValidatorTests
         var classSection = new ClassSection(new ClassSectionForCreation
         {
             Name = $"BSCS-1{sectionCode}",
-            YearLevel = YearLevel.From(1),
+            IntendedYearLevel = YearLevel.From(1),
             CourseId = CourseId.From(1),
             CurriculumId = CurriculumId.From(1),
             AcademicTermId = AcademicTermId.From(1),
+            CohortAcademicYearId = AcademicYearId.From(1),
             AdviserId = null,
             SectionCode = sectionCode
         });

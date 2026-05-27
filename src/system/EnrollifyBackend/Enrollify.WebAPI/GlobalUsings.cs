@@ -1,6 +1,6 @@
 ﻿global using FluentValidation;
 global using FastEndpoints;
-global using Mediator;
+global using MediatR;
 global using Enrollify.WebAPI.Extensions;
 global using Enrollify.WebAPI.Authorization;
 global using Microsoft.AspNetCore.Authorization;

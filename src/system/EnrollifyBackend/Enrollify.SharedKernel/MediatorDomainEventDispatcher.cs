@@ -1,4 +1,4 @@
-﻿using Mediator;
+﻿using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Enrollify.SharedKernel;

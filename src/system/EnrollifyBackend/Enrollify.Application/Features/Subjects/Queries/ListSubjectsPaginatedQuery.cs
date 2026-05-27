@@ -3,13 +3,13 @@ using Enrollify.Application.Features.Subjects.DTOs;
 using Enrollify.Application.Features.Subjects.Specifications;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.SharedKernel;
-using Mediator;
+using MediatR;
 
 namespace Enrollify.Application.Features.Subjects.Queries;
 
-public record ListSubjectsPaginatedQuery(int page = 1, int pageSize = 10) : IQuery<Result<PagedResult<SubjectDto>>>;
+public record ListSubjectsPaginatedQuery(int page = 1, int pageSize = 10) : IRequest<Result<PagedResult<SubjectDto>>>;
 
-public class ListSubjectsPaginatedQueryHandler : IQueryHandler<ListSubjectsPaginatedQuery, Result<PagedResult<SubjectDto>>>
+public class ListSubjectsPaginatedQueryHandler : IRequestHandler<ListSubjectsPaginatedQuery, Result<PagedResult<SubjectDto>>>
 {
     private readonly IReadRepository<Subject> _readRepository;
 
@@ -18,7 +18,7 @@ public class ListSubjectsPaginatedQueryHandler : IQueryHandler<ListSubjectsPagin
         _readRepository = readRepository;
     }
 
-    public async ValueTask<Result<PagedResult<SubjectDto>>> Handle(ListSubjectsPaginatedQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<SubjectDto>>> Handle(ListSubjectsPaginatedQuery request, CancellationToken cancellationToken)
     {
         var spec = new ListSubjectsPaginatedSpec(request.page, request.pageSize);
         var subjects = await _readRepository.ListAsync(spec, cancellationToken);
