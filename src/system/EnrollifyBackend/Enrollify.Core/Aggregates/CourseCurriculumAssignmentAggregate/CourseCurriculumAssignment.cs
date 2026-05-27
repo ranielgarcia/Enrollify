@@ -34,7 +34,6 @@ public class CourseCurriculumAssignment : EntityBase<CourseCurriculumAssignment,
     public CurriculumId CurriculumId { get; private set; }
     public Curriculum? Curriculum { get; private set; }
 
-
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
     public User? CreatedByUser { get; private set; }

@@ -3,6 +3,7 @@ using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.Core.Services;
 using Enrollify.SharedKernel;
 using MediatR;
@@ -64,6 +65,13 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
             foreach (var course in courses)
             {
                 var existing = existingAssignmentByCourseId.GetValueOrDefault(course.Id);
+
+                if (existing?.Curriculum?.StatusId == CurriculumStatusEnum.Active)
+                {
+                    _logger.LogInformation("Course {CourseName} already has an active curriculum assigned (CurriculumId: {CurriculumId}), skipping assignment.", course.Name, existing.CurriculumId);
+                    continue;
+                }
+
                 var curriculum = applicableCurriculumsByCourseId.GetValueOrDefault(course.Id);
 
                 if (curriculum == null)
