@@ -612,6 +612,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/class-sections/filter/{page}/{pageSize}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesClassSectionsFilterClassSectionsPaginatedEndpoint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/class-sections/{id}/lock": {
         parameters: {
             query?: never;
@@ -1322,6 +1338,86 @@ export interface components {
             /** Format: int32 */
             studentCapacity?: number;
         };
+        EnrollifyApplicationPagedResultOfClassSectionDto: {
+            items?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionDto"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int32 */
+            totalCount?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
+        EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionDto: components["schemas"]["EnrollifyApplicationBaseDto"] & {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            name?: string;
+            sectionCode?: string;
+            /** Format: int32 */
+            intendedYearLevel?: number;
+            course?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionCourseDto"];
+            curriculum?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionCurriculumDto"];
+            academicTerm?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionAcademicTermDto"];
+            cohortAcademicYear?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionCohortYearDto"];
+            adviser?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionAdviserDto"] | null;
+            status?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionStatusDto"];
+        };
+        EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionCourseDto: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            code?: string;
+            name?: string;
+        };
+        EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionCurriculumDto: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            version?: string;
+        };
+        EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionAcademicTermDto: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            /** Format: int32 */
+            termNumber?: number;
+            termName?: string;
+        };
+        EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionCohortYearDto: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            academicYearTitle?: string;
+        };
+        EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionAdviserDto: {
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            id?: number;
+            firstName?: string;
+            lastName?: string;
+            email?: string;
+        };
+        EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionStatusDto: {
+            name?: string;
+            /** Format: int32 */
+            value?: number;
+            description?: string;
+        };
+        EnrollifyWebAPIFeaturesClassSectionsFilterClassSectionsPaginatedRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesClassSectionsLockClassSectionRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesClassSectionsOpenClassSectionRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesBuildingsCreateBuildingRequest: {
@@ -3402,6 +3498,57 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesClassSectionsFilterClassSectionsPaginatedEndpoint: {
+        parameters: {
+            query?: {
+                Filters?: string | null;
+                Sort?: string | null;
+                JoinOperator?: string | null;
+                AcademicTermIds?: string | null;
+            };
+            header?: never;
+            path: {
+                page: number;
+                pageSize: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationPagedResultOfClassSectionDto"];
+                };
+            };
             /** @description Bad Request */
             400: {
                 headers: {

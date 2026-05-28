@@ -134,7 +134,7 @@ export default function SectionDetailPage({
           )}
         </span>
       }
-      description={`${section.course.name} · ${section.academicTerm.name} · Year ${section.yearLevel}`}
+      description={`${section.course.name} · ${section.academicTerm.termName} · Year ${section.intendedYearLevel}`}
       icon={<ModuleIcons.sections />}
       createNewItemButton={transitionButtons}
     >

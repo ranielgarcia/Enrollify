@@ -1,13 +1,37 @@
+import type {
+  ExtendedColumnFilter,
+  ExtendedColumnSort,
+} from "@/types/data-table";
 import createMutationOptions from "@/hooks/create-mutation-options";
 import createQueryOptions from "@/hooks/create-query-options";
 import {
+  ClassSectionSchema,
   ClassSectionWithOfferingsSchema,
+  type ClassSection,
   type ClassSectionWithOfferings,
 } from "@/api/models/class-section";
+import { pagedResultSchema, type PagedResult } from "@/api/models/paged-result";
 import { toast } from "sonner";
 
 const queryKeys = {
   base: () => ["sections"],
+  filter: (
+    page: number,
+    pageSize: number,
+    academicTermIds: number[],
+    filters: ExtendedColumnFilter<ClassSection>[],
+    sort: ExtendedColumnSort<ClassSection>[],
+    joinOperator: string,
+  ) => [
+    ...queryKeys.base(),
+    "filter",
+    page,
+    pageSize,
+    academicTermIds,
+    filters,
+    sort,
+    joinOperator,
+  ],
   detail: (sectionId: number) => [...queryKeys.base(), "detail", sectionId],
   bulkInitializeSections: () => [...queryKeys.base(), "bulk-initialize"],
   create: () => [...queryKeys.base(), "create"],
@@ -19,6 +43,53 @@ const queryKeys = {
     action,
   ],
 };
+
+const pagedSectionsSchema = pagedResultSchema(ClassSectionSchema);
+
+export const filterClassSectionsPaginatedOptions = (
+  page: number,
+  pageSize: number,
+  academicTermIds: number[],
+  filters: ExtendedColumnFilter<ClassSection>[],
+  sort: ExtendedColumnSort<ClassSection>[],
+  joinOperator: string,
+) =>
+  createQueryOptions({
+    path: "/api/class-sections/filter/{page}/{pageSize}",
+    pathParams: { page, pageSize },
+    params: {
+      Filters: filters.length ? JSON.stringify(filters) : undefined,
+      Sort: sort.length ? JSON.stringify(sort) : undefined,
+      JoinOperator: joinOperator,
+      AcademicTermIds: academicTermIds.length
+        ? JSON.stringify(academicTermIds)
+        : undefined,
+    },
+    options: {
+      queryKey: queryKeys.filter(
+        page,
+        pageSize,
+        academicTermIds,
+        filters,
+        sort,
+        joinOperator,
+      ),
+      staleTime: 1000 * 60 * 2,
+      select: (pagedResults): PagedResult<ClassSection> => {
+        if (
+          !pagedResults ||
+          (typeof pagedResults === "string" && pagedResults === "")
+        ) {
+          return { items: [], page, pageSize, totalCount: 0, totalPages: 0 };
+        }
+        const data =
+          typeof pagedResults === "string"
+            ? JSON.parse(pagedResults)
+            : pagedResults;
+        return pagedSectionsSchema.parse(data);
+      },
+    },
+  });
 
 // @ts-ignore - path will be registered in api.ts when backend GET endpoint is implemented
 export const getSectionWithOfferingsOptions = (sectionId: number) =>

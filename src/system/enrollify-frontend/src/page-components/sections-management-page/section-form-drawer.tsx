@@ -92,8 +92,8 @@ export function SectionFormDrawer({
     : [];
 
   const defaultValues: SectionFormData = {
-    yearLevel: sectionToUpdate?.yearLevel ?? 1,
-    studentCapacity: sectionToUpdate?.studentCapacity ?? 40,
+    yearLevel: sectionToUpdate?.intendedYearLevel ?? 1,
+    studentCapacity: 40,
     courseId: sectionToUpdate?.course?.id ?? 0,
     academicTermId: sectionToUpdate?.academicTerm?.id ?? 0,
     adviserId: sectionToUpdate?.adviser?.id ?? 0,

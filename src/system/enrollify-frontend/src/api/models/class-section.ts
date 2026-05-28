@@ -11,13 +11,24 @@ const CourseSummarySchema = z.object({
 export const AcademicTermSummarySchema = z.object({
   id: z.number(),
   termNumber: z.number(),
-  name: z.string(),
+  termName: z.string(),
 });
 
-const TeacherSummarySchema = z.object({
+const CurriculumSummarySchema = z.object({
+  id: z.number(),
+  version: z.string(),
+});
+
+const CohortAcademicYearSchema = z.object({
+  id: z.number(),
+  academicYearTitle: z.string(),
+});
+
+const AdviserSummarySchema = z.object({
   id: z.number(),
   firstName: z.string(),
   lastName: z.string(),
+  email: z.string().optional(),
 });
 
 export const ClassSectionStatusEnum = {
@@ -51,11 +62,13 @@ export const ClassSectionSchema = z
   .object({
     id: z.number(),
     name: z.string(),
-    yearLevel: z.number().int().min(1).max(6),
-    studentCapacity: z.number().int().min(1),
+    sectionCode: z.string().max(1).optional(),
+    intendedYearLevel: z.number().int().min(1).max(6),
     course: CourseSummarySchema,
+    curriculum: CurriculumSummarySchema.optional().nullable(),
     academicTerm: AcademicTermSummarySchema,
-    adviser: TeacherSummarySchema,
+    cohortAcademicYear: CohortAcademicYearSchema.optional().nullable(),
+    adviser: AdviserSummarySchema.optional().nullable(),
     statusId: ClassSectionStatusSchema,
   })
   .extend(AuditInfoSchema.shape);

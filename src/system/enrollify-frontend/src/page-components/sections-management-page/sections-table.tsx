@@ -57,12 +57,23 @@ export function SectionsTable({
           <span className="font-semibold">{info.getValue()}</span>
         ),
       }),
+      columnHelper.accessor("sectionCode", {
+        id: "sectionCode",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Code" />
+        ),
+        meta: { label: "Section Code", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => (
+          <span className="font-mono text-sm">{info.getValue() ?? "-"}</span>
+        ),
+      }),
       columnHelper.accessor((row) => row.course?.name, {
-        id: "course",
+        id: "courseName",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Course / Program" />
         ),
-        meta: { label: "Course", variant: "text" },
+        meta: { label: "Course Name", variant: "text" },
         enableColumnFilter: true,
         cell: (info) => (
           <span>
@@ -73,8 +84,8 @@ export function SectionsTable({
           </span>
         ),
       }),
-      columnHelper.accessor("yearLevel", {
-        id: "yearLevel",
+      columnHelper.accessor("intendedYearLevel", {
+        id: "intendedYearLevel",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Year Level" />
         ),
@@ -86,13 +97,25 @@ export function SectionsTable({
           </Badge>
         ),
       }),
-      columnHelper.accessor((row) => row.academicTerm?.name, {
+      columnHelper.accessor((row) => row.curriculum?.version, {
+        id: "curriculumVersion",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Curriculum" />
+        ),
+        meta: { label: "Curriculum Version", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => (
+          <span className="text-sm text-muted-foreground">
+            {info.getValue() ?? "-"}
+          </span>
+        ),
+      }),
+      columnHelper.accessor((row) => row.academicTerm?.termName, {
         id: "academicTerm",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Academic Term" />
         ),
         meta: { label: "Academic Term", variant: "text" },
-        enableColumnFilter: true,
         cell: (info) => <span>{info.getValue() ?? "-"}</span>,
       }),
       columnHelper.accessor(
@@ -101,29 +124,31 @@ export function SectionsTable({
             ? `${row.adviser.firstName} ${row.adviser.lastName}`
             : "-",
         {
-          id: "adviser",
+          id: "adviserName",
           header: ({ column }) => (
             <DataTableColumnHeader column={column} label="Adviser" />
           ),
-          meta: { label: "Adviser", variant: "text" },
+          meta: { label: "Adviser Name", variant: "text" },
           enableColumnFilter: true,
-          cell: (info) => <span>{info.getValue()}</span>,
+          cell: (info) => (
+            <span>
+              <span>{info.getValue()}</span>
+              {info.row.original.adviser?.email && (
+                <span className="block text-xs text-muted-foreground">
+                  {info.row.original.adviser.email}
+                </span>
+              )}
+            </span>
+          ),
         },
       ),
-      columnHelper.accessor("studentCapacity", {
-        id: "studentCapacity",
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} label="Capacity" />
-        ),
-        meta: { label: "Capacity", variant: "number" },
-        cell: (info) => <span className="tabular-nums">{info.getValue()}</span>,
-      }),
       columnHelper.accessor("statusId", {
         id: "status",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Status" />
         ),
         meta: { label: "Status", variant: "text" },
+        enableColumnFilter: true,
         cell: (info) => <SectionStatusBadge status={info.getValue()} />,
       }),
       columnHelper.display({
