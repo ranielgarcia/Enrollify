@@ -20,6 +20,33 @@ const TeacherSummarySchema = z.object({
   lastName: z.string(),
 });
 
+export const ClassSectionStatusEnum = {
+  Draft: 1,
+  Open: 2,
+  Locked: 3,
+  Active: 4,
+  Completed: 5,
+  Cancelled: 6,
+} as const;
+
+export type ClassSectionStatusValue =
+  (typeof ClassSectionStatusEnum)[keyof typeof ClassSectionStatusEnum];
+
+const ClassSectionStatusSchema = z.object({
+  name: z.enum([
+    "Draft",
+    "Open",
+    "Locked",
+    "Active",
+    "Completed",
+    "Cancelled",
+  ]),
+  value: z.number(),
+  description: z.string().optional(),
+});
+
+export type ClassSectionStatus = z.infer<typeof ClassSectionStatusSchema>;
+
 export const ClassSectionSchema = z
   .object({
     id: z.number(),
@@ -29,6 +56,7 @@ export const ClassSectionSchema = z
     course: CourseSummarySchema,
     academicTerm: AcademicTermSummarySchema,
     adviser: TeacherSummarySchema,
+    statusId: ClassSectionStatusSchema,
   })
   .extend(AuditInfoSchema.shape);
 

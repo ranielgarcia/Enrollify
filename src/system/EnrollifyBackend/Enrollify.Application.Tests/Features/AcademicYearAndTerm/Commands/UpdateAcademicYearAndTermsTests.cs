@@ -5,6 +5,7 @@ using Enrollify.Application.Features.AcademicYearAndTerm.Commands;
 using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 using Enrollify.Application.Features.AcademicYearAndTerm.Models;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
+using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ public class UpdateAcademicYearAndTermsTests
 {
     private readonly Mock<IAcademicYearAndTermRepository> _repositoryMock = new();
     private readonly Mock<IReadRepository<AcademicYear>> _readRepositoryMock = new();
+    private readonly Mock<IReadRepository<ClassSection>> _classSectionReadRepositoryMock = new();
     private readonly FakeLogger<UpdateAcademicYearAndTerms.Handler> _logger;
     private readonly UpdateAcademicYearAndTerms.Handler _handler;
 
@@ -34,6 +36,7 @@ public class UpdateAcademicYearAndTermsTests
         _handler = new UpdateAcademicYearAndTerms.Handler(
             _repositoryMock.Object,
             _readRepositoryMock.Object,
+            _classSectionReadRepositoryMock.Object,
             _logger);
     }
 

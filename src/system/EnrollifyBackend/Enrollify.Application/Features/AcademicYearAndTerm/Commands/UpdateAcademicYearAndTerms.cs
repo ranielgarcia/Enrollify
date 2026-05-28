@@ -3,8 +3,11 @@ using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 using Enrollify.Application.Features.AcademicYearAndTerm.Models;
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
+using Enrollify.Application.Features.ClassSections.Specifications;
 using Enrollify.Core;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
+using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.Core.DomainExceptions;
 using Enrollify.SharedKernel;
 using MediatR;
@@ -24,15 +27,18 @@ public static class UpdateAcademicYearAndTerms
     {
         private readonly IAcademicYearAndTermRepository _academicYearAndTermRepository;
         private readonly IReadRepository<AcademicYear> _readRepository;
+        private readonly IReadRepository<ClassSection> _classSectionReadRepository;
         private readonly ILogger<Handler> _logger;
 
         public Handler(
             IAcademicYearAndTermRepository academicYearAndTermRepository,
             IReadRepository<AcademicYear> readRepository,
+            IReadRepository<ClassSection> classSectionReadRepository,
             ILogger<Handler> logger)
         {
             _academicYearAndTermRepository = academicYearAndTermRepository;
             _readRepository = readRepository;
+            _classSectionReadRepository = classSectionReadRepository;
             _logger = logger;
         }
 
@@ -68,6 +74,21 @@ public static class UpdateAcademicYearAndTerms
                 if (existing is null)
                     return Result.NotFound("The specified academic year was not found.");
 
+                // Block updates when there are Active or Completed sections for this academic year's terms
+                var termIds = existing.AcademicTerms.Select(t => t.Id).ToList();
+                if (termIds.Count > 0)
+                {
+                    var sections = await _classSectionReadRepository.ListAsync(
+                        new GetClassSectionsByAcademicTermIdsSpec(termIds), cancellationToken);
+                    var lockedSections = sections
+                        .Where(s => s.StatusId == ClassSectionStatusEnum.Active
+                                    || s.StatusId == ClassSectionStatusEnum.Completed)
+                        .ToList();
+                    if (lockedSections.Count > 0)
+                        return Result.Forbidden(
+                            $"Cannot update academic year — {lockedSections.Count} class section(s) are Active or Completed for its terms.");
+                }
+
                 existing.UpdateStartAndEndYear(command.academicYearStartDate, command.academicYearEndDate);
 
                 foreach (var term in command.academicTerms)
@@ -87,3 +108,4 @@ public static class UpdateAcademicYearAndTerms
         }
     }
 }
+

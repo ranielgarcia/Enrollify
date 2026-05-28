@@ -14,6 +14,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Edit2, Trash2, Eye } from "lucide-react";
 import { useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { SectionStatusBadge } from "./section-status-badge";
 
 interface SectionsTableProps {
   pagedSections: PagedResult<ClassSection>;
@@ -116,6 +117,14 @@ export function SectionsTable({
         ),
         meta: { label: "Capacity", variant: "number" },
         cell: (info) => <span className="tabular-nums">{info.getValue()}</span>,
+      }),
+      columnHelper.accessor("statusId", {
+        id: "status",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Status" />
+        ),
+        meta: { label: "Status", variant: "text" },
+        cell: (info) => <SectionStatusBadge status={info.getValue()} />,
       }),
       columnHelper.display({
         id: "actions",

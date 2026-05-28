@@ -8,6 +8,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useMutation } from "@tanstack/react-query";
 import {
   ChevronDown,
@@ -15,6 +20,7 @@ import {
   AlertCircle,
   Trash2,
   LayoutGrid,
+  AlertTriangle,
 } from "lucide-react";
 import { ScheduleRowList } from "./schedule-row-list";
 
@@ -32,6 +38,11 @@ export function OfferingCard({ offering }: OfferingCardProps) {
   const hasHardConflict = offering.conflicts?.some(
     (c) => c.severity === "error",
   );
+
+  const snapshotUnits = offering.snapshotUnits;
+  const liveUnits = offering.subject.units;
+  const hasDrift =
+    snapshotUnits !== undefined && snapshotUnits !== liveUnits;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -54,14 +65,32 @@ export function OfferingCard({ offering }: OfferingCardProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold text-sm">
-                {offering.subject.code}
+                {offering.snapshotSubjectCode ?? offering.subject.code}
               </span>
               <span className="text-sm text-muted-foreground truncate">
-                {offering.subject.title}
+                {offering.snapshotSubjectTitle ?? offering.subject.title}
               </span>
-              <Badge variant="secondary" className="text-xs">
-                {offering.subject.units} units
-              </Badge>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge
+                    variant={hasDrift ? "outline" : "secondary"}
+                    className={`text-xs cursor-default ${hasDrift ? "border-amber-400 text-amber-700 dark:text-amber-400" : ""}`}
+                  >
+                    {snapshotUnits ?? liveUnits} units
+                    {hasDrift && " (locked)"}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {hasDrift
+                    ? `Locked at ${snapshotUnits} units. Current subject units: ${liveUnits}`
+                    : `${liveUnits} units`}
+                </TooltipContent>
+              </Tooltip>
+              {offering.snapshotIsElective && (
+                <Badge variant="outline" className="text-xs">
+                  {offering.snapshotElectiveGroupName ?? "Elective"}
+                </Badge>
+              )}
             </div>
             <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
               <span>
@@ -85,6 +114,19 @@ export function OfferingCard({ offering }: OfferingCardProps) {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            {hasDrift && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-amber-500 cursor-default">
+                    <AlertTriangle className="size-4" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Units changed: locked at {snapshotUnits}, current subject is{" "}
+                  {liveUnits}
+                </TooltipContent>
+              </Tooltip>
+            )}
             {conflictCount > 0 && (
               <Badge
                 variant={hasHardConflict ? "destructive" : "secondary"}

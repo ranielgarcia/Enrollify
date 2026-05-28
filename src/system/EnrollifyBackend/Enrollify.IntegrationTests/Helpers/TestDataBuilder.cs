@@ -13,6 +13,28 @@ public static class TestDataBuilder
 {
     private static readonly Faker _faker = new();
 
+    // Shared atomic counters — all test classes across the Application collection share one DB,
+    // so all counters here must be shared to avoid duplicate-key violations.
+
+    /// <summary>
+    /// Provides a globally unique academic year start year (far-future, post-2100).
+    /// Increment once per AcademicYear insertion to avoid UQ_AcademicYears_StartEnd violations.
+    /// </summary>
+    private static int _ayYearCounter = 2100;
+    public static int NextAyStartYear() => System.Threading.Interlocked.Increment(ref _ayYearCounter);
+
+    /// <summary>
+    /// Provides a globally unique Philippine mobile number for Teacher inserts.
+    /// All generated numbers use the Smart 0912-xxxxxxx range and pass libphonenumber-csharp.
+    /// </summary>
+    private static int _phoneCounter = 0;
+    public static string NextPhoneNumber()
+    {
+        int suffix = System.Threading.Interlocked.Increment(ref _phoneCounter);
+        // Subscriber digits: 1000001, 1000002, … — always 7 digits within the 0912-xxxxxxx range.
+        return $"0912{(1000000 + suffix):D7}";
+    }
+
     /// <summary>
     /// Creates a test RoomType entity.
     /// </summary>

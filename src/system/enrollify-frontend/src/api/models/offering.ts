@@ -63,6 +63,11 @@ export const OfferingSchema = z
 export const OfferingWithSchedulesSchema = OfferingSchema.extend({
   schedules: z.array(ClassScheduleSchema),
   conflicts: z.array(ConflictResultSchema).optional(),
+  snapshotSubjectCode: z.string().optional(),
+  snapshotSubjectTitle: z.string().optional(),
+  snapshotUnits: z.number().optional(),
+  snapshotIsElective: z.boolean().optional(),
+  snapshotElectiveGroupName: z.string().nullable().optional(),
 });
 
 export type Offering = z.infer<typeof OfferingSchema>;

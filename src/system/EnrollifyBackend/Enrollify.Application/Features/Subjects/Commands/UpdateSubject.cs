@@ -1,5 +1,9 @@
 using Ardalis.Result;
+using Enrollify.Application.Features.ClassSectionSubjectOfferings.Specifications;
+using Enrollify.Application.Features.ClassSections.Specifications;
 using Enrollify.Application.Features.Subjects;
+using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
@@ -28,16 +32,22 @@ public static class UpdateSubject
         private readonly ISubjectRepository _subjectRepository;
         private readonly IReadRepository<Course> _courseReadRepository;
         private readonly IReadRepository<RoomType> _roomTypeReadRepository;
+        private readonly IReadRepository<ClassSectionSubjectOffering> _offeringReadRepository;
+        private readonly IReadRepository<ClassSection> _classSectionReadRepository;
 
         public Handler(IReadRepository<Subject> subjectReadRepository,
             ISubjectRepository subjectRepository,
             IReadRepository<Course> courseReadRepository,
-            IReadRepository<RoomType> roomTypeReadRepository)
+            IReadRepository<RoomType> roomTypeReadRepository,
+            IReadRepository<ClassSectionSubjectOffering> offeringReadRepository,
+            IReadRepository<ClassSection> classSectionReadRepository)
         {
             _subjectReadRepository = subjectReadRepository;
             _subjectRepository = subjectRepository;
             _courseReadRepository = courseReadRepository;
             _roomTypeReadRepository = roomTypeReadRepository;
+            _offeringReadRepository = offeringReadRepository;
+            _classSectionReadRepository = classSectionReadRepository;
         }
 
         public async Task<Result<SubjectId>> Handle(Command command, CancellationToken cancellationToken)
@@ -51,6 +61,19 @@ public static class UpdateSubject
                 return Result.NotFound($"Subject with an ID of {command.Id} not found.");
             }
 
+            // Block updates when the subject is referenced in any Open, Locked, Active, or Completed section
+            var offerings = await _offeringReadRepository.ListAsync(
+                new GetOfferingsBySubjectIdSpec(command.Id), cancellationToken);
+            if (offerings.Count > 0)
+            {
+                var sectionIds = offerings.Select(o => o.ClassSectionId).Distinct().ToList();
+                var activeSections = await _classSectionReadRepository.ListAsync(
+                    new GetClassSectionsByIdsInOpenOrHigherStatusSpec(sectionIds), cancellationToken);
+                if (activeSections.Count > 0)
+                    return Result.Forbidden(
+                        $"Cannot update subject — it is referenced in {activeSections.Count} open or active class section(s). " +
+                        "Cancel or complete those sections before modifying the subject.");
+            }
 
             var preferRoomType = await _roomTypeReadRepository.GetByIdAsync(command.PreferRoomTypeId, cancellationToken);
             if (preferRoomType == null) return Result.Invalid(new ValidationError { ErrorMessage = $"Room type with an ID of {command.PreferRoomTypeId} not found." });

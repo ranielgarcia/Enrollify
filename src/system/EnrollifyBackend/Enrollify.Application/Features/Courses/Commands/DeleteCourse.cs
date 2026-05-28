@@ -1,5 +1,8 @@
 using Ardalis.Result;
+using Enrollify.Application.Features.ClassSections.Specifications;
+using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.SharedKernel;
 using MediatR;
 
 namespace Enrollify.Application.Features.Courses.Commands;
@@ -11,13 +14,24 @@ public static class DeleteCourse
     public sealed class Handler : IRequestHandler<Command, Result>
     {
         private readonly ICourseRepository _courseRepository;
-        public Handler(ICourseRepository courseRepository)
+        private readonly IReadRepository<ClassSection> _classSectionReadRepository;
+
+        public Handler(
+            ICourseRepository courseRepository,
+            IReadRepository<ClassSection> classSectionReadRepository)
         {
             _courseRepository = courseRepository;
+            _classSectionReadRepository = classSectionReadRepository;
         }
 
         public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
+            var sections = await _classSectionReadRepository.ListAsync(
+                new GetClassSectionsByCourseIdSpec(command.id), cancellationToken);
+            if (sections.Count > 0)
+                return Result.Forbidden(
+                    $"Cannot delete course — {sections.Count} class section(s) reference it.");
+
             return await _courseRepository.Delete(command.id, cancellationToken);
         }
     }

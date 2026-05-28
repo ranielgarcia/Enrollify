@@ -532,6 +532,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/class-sections/{id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesClassSectionsActivateClassSectionEndpoint"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/class-sections/bulk-initialize": {
         parameters: {
             query?: never;
@@ -548,6 +564,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/class-sections/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesClassSectionsCancelClassSectionEndpoint"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/class-sections/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesClassSectionsCompleteClassSectionEndpoint"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/class-sections": {
         parameters: {
             query?: never;
@@ -558,6 +606,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["EnrollifyWebAPIFeaturesClassSectionsCreateClassSectionEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/class-sections/{id}/lock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesClassSectionsLockClassSectionEndpoint"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/class-sections/{id}/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesClassSectionsOpenClassSectionEndpoint"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1214,6 +1294,7 @@ export interface components {
             description?: string;
             dean: string;
         };
+        EnrollifyWebAPIFeaturesClassSectionsActivateClassSectionRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesClassSectionsBulkInitializeClassSectionsRequest: {
             /** Format: int32 */
             academicTermId: number;
@@ -1227,6 +1308,8 @@ export interface components {
             /** Format: int32 */
             numberOfSections?: number;
         };
+        EnrollifyWebAPIFeaturesClassSectionsCancelClassSectionRequest: Record<string, never>;
+        EnrollifyWebAPIFeaturesClassSectionsCompleteClassSectionRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesClassSectionsCreateClassSectionRequest: {
             /** Format: int32 */
             yearLevel?: number;
@@ -1239,6 +1322,8 @@ export interface components {
             /** Format: int32 */
             studentCapacity?: number;
         };
+        EnrollifyWebAPIFeaturesClassSectionsLockClassSectionRequest: Record<string, never>;
+        EnrollifyWebAPIFeaturesClassSectionsOpenClassSectionRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesBuildingsCreateBuildingRequest: {
             name: string;
             description: string;
@@ -3158,6 +3243,42 @@ export interface operations {
             };
         };
     };
+    EnrollifyWebAPIFeaturesClassSectionsActivateClassSectionEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     EnrollifyWebAPIFeaturesClassSectionsBulkInitializeClassSectionsEndpoint: {
         parameters: {
             query?: never;
@@ -3196,6 +3317,78 @@ export interface operations {
             };
         };
     };
+    EnrollifyWebAPIFeaturesClassSectionsCancelClassSectionEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesClassSectionsCompleteClassSectionEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     EnrollifyWebAPIFeaturesClassSectionsCreateClassSectionEndpoint: {
         parameters: {
             query?: never;
@@ -3208,6 +3401,78 @@ export interface operations {
                 "application/json": components["schemas"]["EnrollifyWebAPIFeaturesClassSectionsCreateClassSectionRequest"];
             };
         };
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesClassSectionsLockClassSectionEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesClassSectionsOpenClassSectionEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Bad Request */
             400: {

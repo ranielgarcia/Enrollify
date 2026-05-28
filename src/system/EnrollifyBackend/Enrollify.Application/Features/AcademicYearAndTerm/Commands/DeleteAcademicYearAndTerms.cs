@@ -1,6 +1,8 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
+using Enrollify.Application.Features.ClassSections.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
+using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.SharedKernel;
 using MediatR;
 
@@ -14,12 +16,18 @@ public static class DeleteAcademicYearAndTerms
     {
         private readonly IAcademicYearAndTermRepository _repository;
         private readonly IReadRepository<AcademicYear> _readRepository;
+        private readonly IReadRepository<ClassSection> _classSectionReadRepository;
 
-        public Handler(IAcademicYearAndTermRepository repository, IReadRepository<AcademicYear> readRepository)
+        public Handler(
+            IAcademicYearAndTermRepository repository,
+            IReadRepository<AcademicYear> readRepository,
+            IReadRepository<ClassSection> classSectionReadRepository)
         {
             _repository = repository;
             _readRepository = readRepository;
+            _classSectionReadRepository = classSectionReadRepository;
         }
+
         public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
             var existing = await _readRepository.FirstOrDefaultAsync(new GetAcademicYearByIdSpec(command.id), cancellationToken);
@@ -34,10 +42,15 @@ public static class DeleteAcademicYearAndTerms
                 return Result.Invalid(new ValidationError("Deleting past academic year is not allowed."));
             }
 
-            // TODO: Prevent deletion of academic year if
-            // - it has associated terms or other related entities.
-            // - its terms have associated enrollments or other related entities like class section
-            // GetClassSectionsByAcademicTermIdsSpec
+            var termIds = existing.AcademicTerms.Select(t => t.Id).ToList();
+            if (termIds.Count > 0)
+            {
+                var sections = await _classSectionReadRepository.ListAsync(
+                    new GetClassSectionsByAcademicTermIdsSpec(termIds), cancellationToken);
+                if (sections.Count > 0)
+                    return Result.Forbidden(
+                        $"Cannot delete academic year — {sections.Count} class section(s) are associated with its terms.");
+            }
 
             var result = await _repository.Delete(existing, cancellationToken);
             return result;

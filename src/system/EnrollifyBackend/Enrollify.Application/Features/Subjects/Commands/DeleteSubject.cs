@@ -1,6 +1,8 @@
 using Ardalis.Result;
+using Enrollify.Application.Features.ClassSectionSubjectOfferings.Specifications;
 using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Application.Features.Subjects;
+using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.SharedKernel;
@@ -16,12 +18,18 @@ public static class DeleteSubject
     {
         private readonly ISubjectRepository _subjectRepository;
         private readonly IReadRepository<Curriculum> _curriculumReadRepository;
+        private readonly IReadRepository<ClassSectionSubjectOffering> _offeringReadRepository;
 
-        public Handler(ISubjectRepository subjectRepository, IReadRepository<Curriculum> curriculumReadRepository)
+        public Handler(
+            ISubjectRepository subjectRepository,
+            IReadRepository<Curriculum> curriculumReadRepository,
+            IReadRepository<ClassSectionSubjectOffering> offeringReadRepository)
         {
             _subjectRepository = subjectRepository;
             _curriculumReadRepository = curriculumReadRepository;
+            _offeringReadRepository = offeringReadRepository;
         }
+
         public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
             var curriculums = await _curriculumReadRepository.ListAsync(new GetCurriculumBySubjectIdSpec(command.id), cancellationToken);
@@ -31,6 +39,12 @@ public static class DeleteSubject
                 var curriculumNames = string.Join(", ", curriculums.Select(c => $"{c.Description} ({c.Version})"));
                 return Result.Forbidden($"Cannot delete subject because it is associated with one or more curriculums. [{curriculumNames}]");
             }
+
+            var offerings = await _offeringReadRepository.ListAsync(
+                new GetOfferingsBySubjectIdSpec(command.id), cancellationToken);
+            if (offerings.Count > 0)
+                return Result.Forbidden(
+                    $"Cannot delete subject — it is referenced in {offerings.Count} class section offering(s).");
 
             return await _subjectRepository.Delete(command.id, cancellationToken);
         }
