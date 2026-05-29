@@ -340,6 +340,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/offerings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesOfferingsUpdateOfferingEndpoint"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/departments": {
         parameters: {
             query?: never;
@@ -653,6 +669,22 @@ export interface paths {
         };
         get?: never;
         put: operations["EnrollifyWebAPIFeaturesClassSectionsOpenClassSectionEndpoint"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/class-sections/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesClassSectionsUpdateClassSectionEndpoint"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1097,6 +1129,10 @@ export interface components {
             value?: number;
         };
         ArdalisSmartEnumSmartFlagEngineOfPermissionEnumAndInt32: Record<string, never>;
+        EnrollifyWebAPIFeaturesOfferingsUpdateOfferingRequest: {
+            /** Format: int32 */
+            maxNumberOfStudents?: number | null;
+        };
         EnrollifyWebAPIFeaturesDepartmentsCreateDepartmentRequest: {
             code: string;
             name: string;
@@ -1420,6 +1456,10 @@ export interface components {
         EnrollifyWebAPIFeaturesClassSectionsFilterClassSectionsPaginatedRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesClassSectionsLockClassSectionRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesClassSectionsOpenClassSectionRequest: Record<string, never>;
+        EnrollifyWebAPIFeaturesClassSectionsUpdateClassSectionRequest: {
+            /** Format: int32 */
+            adviserId?: number;
+        };
         EnrollifyWebAPIFeaturesBuildingsCreateBuildingRequest: {
             name: string;
             description: string;
@@ -2646,6 +2686,46 @@ export interface operations {
             };
         };
     };
+    EnrollifyWebAPIFeaturesOfferingsUpdateOfferingEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesOfferingsUpdateOfferingRequest"];
+            };
+        };
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     EnrollifyWebAPIFeaturesDepartmentsListDepartmentsEndpoint: {
         parameters: {
             query?: never;
@@ -3620,6 +3700,46 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesClassSectionsUpdateClassSectionEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesClassSectionsUpdateClassSectionRequest"];
+            };
+        };
         responses: {
             /** @description Bad Request */
             400: {

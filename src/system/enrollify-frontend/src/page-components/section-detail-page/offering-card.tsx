@@ -1,8 +1,12 @@
 import { useState } from "react";
-import { deleteOfferingOptions } from "@/api/collections/offering-collection";
+import {
+  deleteOfferingOptions,
+  updateOfferingOptions,
+} from "@/api/collections/offering-collection";
 import type { OfferingWithSchedules } from "@/api/models/offering";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Collapsible,
   CollapsibleContent,
@@ -18,9 +22,12 @@ import {
   ChevronDown,
   ChevronRight,
   AlertCircle,
+  Check,
+  Pencil,
   Trash2,
   LayoutGrid,
   AlertTriangle,
+  X,
 } from "lucide-react";
 import { ScheduleRowList } from "./schedule-row-list";
 
@@ -30,9 +37,27 @@ interface OfferingCardProps {
 
 export function OfferingCard({ offering }: OfferingCardProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditingCapacity, setIsEditingCapacity] = useState(false);
+  const [capacityInput, setCapacityInput] = useState(
+    offering.maxNumberOfStudents?.toString() ?? "",
+  );
+
   const { mutateAsync: deleteOffering } = useMutation(
     deleteOfferingOptions(offering.id),
   );
+  const { mutateAsync: updateOffering, isPending: isUpdatingCapacity } =
+    useMutation(updateOfferingOptions(offering.id));
+
+  const handleSaveCapacity = async () => {
+    const parsed = capacityInput.trim() === "" ? null : parseInt(capacityInput, 10);
+    await updateOffering({ maxNumberOfStudents: parsed } as any);
+    setIsEditingCapacity(false);
+  };
+
+  const handleCancelCapacity = () => {
+    setCapacityInput(offering.maxNumberOfStudents?.toString() ?? "");
+    setIsEditingCapacity(false);
+  };
 
   const conflictCount = offering.conflicts?.length ?? 0;
   const hasHardConflict = offering.conflicts?.some(
@@ -150,6 +175,64 @@ export function OfferingCard({ offering }: OfferingCardProps) {
 
         <CollapsibleContent>
           <div className="border-t px-4 py-3 bg-muted/20 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Max Students
+              </p>
+              {isEditingCapacity ? (
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    min={1}
+                    className="h-6 w-24 text-xs px-2"
+                    placeholder="No limit"
+                    value={capacityInput}
+                    onChange={(e) => setCapacityInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSaveCapacity();
+                      if (e.key === "Escape") handleCancelCapacity();
+                    }}
+                    autoFocus
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
+                    onClick={handleSaveCapacity}
+                    disabled={isUpdatingCapacity}
+                    title="Save"
+                  >
+                    <Check className="size-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={handleCancelCapacity}
+                    disabled={isUpdatingCapacity}
+                    title="Cancel"
+                  >
+                    <X className="size-3.5" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground">
+                    {offering.maxNumberOfStudents ?? "No limit"}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={() => setIsEditingCapacity(true)}
+                    title="Edit max students"
+                  >
+                    <Pencil className="size-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Schedule Rows
             </p>

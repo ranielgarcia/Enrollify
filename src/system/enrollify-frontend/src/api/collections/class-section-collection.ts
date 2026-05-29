@@ -125,6 +125,18 @@ export const createNewClassSectionsOptions = () =>
     },
   });
 
+export const updateClassSectionOptions = (id: number) =>
+  createMutationOptions({
+    httpVerb: "put",
+    path: "/api/class-sections/{id}",
+    pathParams: { id },
+    mutationKey: queryKeys.update(id),
+    options: {
+      meta: { invalidateQueries: [queryKeys.base()] },
+      onSuccess: () => toast.success("Class section updated successfully"),
+    },
+  });
+
 // Transition mutations — PUT /api/class-sections/{id}/[action]
 
 export const openClassSectionOptions = (sectionId: number) =>
