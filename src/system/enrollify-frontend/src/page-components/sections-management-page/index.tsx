@@ -8,7 +8,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useQueryStates } from "nuqs";
 import { SectionFormDrawer } from "./section-form-drawer";
 import { BulkInitializeSectionsDrawer } from "./bulk-initialize-sections-drawer";
-import { DeleteSectionAlertDialog } from "./delete-section-alert-dialog";
+import { CancelSectionAlertDialog } from "./cancel-section-alert-dialog";
 import { SectionsTable } from "./sections-table";
 import { searchParams } from "./searchParams";
 import { useState } from "react";
@@ -23,10 +23,11 @@ export default function SectionsManagementPage() {
   const {
     isFormOpen,
     entityToEdit: sectionToEdit,
-    entityToDelete: sectionToDelete,
+    entityToDelete: sectionToCancel,
     handleEdit,
     handleFormOpenChange,
-    handleDeleteDialogOpenChange,
+    handleDelete: handleCancel,
+    handleDeleteDialogOpenChange: handleCancelDialogOpenChange,
   } = useCrudState<ClassSection>();
 
   const [isBulkInitializeOpen, setIsBulkInitializeOpen] = useState(false);
@@ -76,13 +77,13 @@ export default function SectionsManagementPage() {
       <SectionsTable
         pagedSections={pagedSections}
         onEdit={handleEdit}
-        onDelete={handleDeleteDialogOpenChange}
+        onCancel={handleCancel}
       />
 
-      <DeleteSectionAlertDialog
-        sectionToDelete={sectionToDelete}
-        isOpen={!!sectionToDelete}
-        onOpenChange={handleDeleteDialogOpenChange}
+      <CancelSectionAlertDialog
+        sectionToCancel={sectionToCancel}
+        isOpen={!!sectionToCancel}
+        onOpenChange={handleCancelDialogOpenChange}
       />
     </ManagementPageLayout>
   );

@@ -89,11 +89,10 @@ export const filterClassSectionsPaginatedOptions = (
     },
   });
 
-// @ts-ignore - path will be registered in api.ts when backend GET endpoint is implemented
 export const getSectionWithOfferingsOptions = (sectionId: number) =>
   createQueryOptions({
-    path: "/api/class-sections/{id}" as any,
-    pathParams: { id: sectionId } as any,
+    path: "/api/class-sections/{id}",
+    pathParams: { id: sectionId },
     options: {
       queryKey: queryKeys.detail(sectionId),
       staleTime: 1000 * 60 * 2,
@@ -194,7 +193,7 @@ export const cancelClassSectionOptions = (sectionId: number) =>
     pathParams: { id: sectionId },
     mutationKey: queryKeys.transition(sectionId, "cancel"),
     options: {
-      meta: { invalidateQueries: [queryKeys.detail(sectionId)] },
+      meta: { invalidateQueries: [queryKeys.base()] },
       onSuccess: () => toast.success("Section cancelled"),
     },
   });

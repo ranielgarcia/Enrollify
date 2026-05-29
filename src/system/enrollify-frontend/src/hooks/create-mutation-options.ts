@@ -75,7 +75,7 @@ interface UseMutationParams<P extends ApiPath, V extends HttpVerb> {
  */
 const interpolatePath = <P extends ApiPath>(
   path: P,
-  pathParams: Record<string, string | number> | undefined
+  pathParams: Record<string, string | number> | undefined,
 ): string => {
   if (!pathParams) return path;
 
@@ -110,11 +110,10 @@ const createMutationOptions = <P extends ApiPath, V extends HttpVerb = "post">({
       return false;
     },
     retryDelay: (attemptIndex) =>
-      Math.min(1000 * Math.pow(2, attemptIndex), 30000) +
-      Math.random() * 1000,
+      Math.min(1000 * Math.pow(2, attemptIndex), 30000) + Math.random() * 1000,
     ...options,
     mutationFn: async (
-      formData: FormData | JsonRequestBodyForPathVerb<P, V>
+      formData: FormData | JsonRequestBodyForPathVerb<P, V>,
     ) => {
       const accessToken = await getCurrentAccessToken({
         msalInstance,
@@ -123,7 +122,7 @@ const createMutationOptions = <P extends ApiPath, V extends HttpVerb = "post">({
 
       const interpolatedPath = interpolatePath(
         path,
-        pathParams as Record<string, string | number> | undefined
+        pathParams as Record<string, string | number> | undefined,
       );
 
       if (isMultipart) {

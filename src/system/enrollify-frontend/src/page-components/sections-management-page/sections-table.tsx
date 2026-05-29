@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useDataTable } from "@/hooks/use-data-table";
 import { useTablePermissions } from "@/hooks/use-table-permissions";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Edit2, Trash2, Eye } from "lucide-react";
+import { Edit2, Ban, Eye } from "lucide-react";
 import { useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { SectionStatusBadge } from "./section-status-badge";
@@ -19,7 +19,7 @@ import { SectionStatusBadge } from "./section-status-badge";
 interface SectionsTableProps {
   pagedSections: PagedResult<ClassSection>;
   onEdit: (section: ClassSection) => void;
-  onDelete: (section: ClassSection) => void;
+  onCancel: (section: ClassSection) => void;
 }
 
 const columnHelper = createColumnHelper<ClassSection>();
@@ -36,10 +36,10 @@ const YEAR_LEVEL_LABELS: Record<number, string> = {
 export function SectionsTable({
   pagedSections,
   onEdit,
-  onDelete,
+  onCancel,
 }: SectionsTableProps) {
   const navigate = useNavigate();
-  const { canUpdate, canDelete } = useTablePermissions(
+  const { canUpdate } = useTablePermissions(
     "canUpdateClassSection",
     "canDeleteClassSection",
   );
@@ -193,19 +193,19 @@ export function SectionsTable({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onDelete(item)}
-                className="hover:bg-destructive/10 text-destructive hover:text-destructive"
-                disabled={!canDelete}
-                title="Delete"
+                onClick={() => onCancel(item)}
+                className="hover:bg-amber-500/10 text-amber-600 hover:text-amber-700"
+                disabled={!canUpdate}
+                title="Cancel section"
               >
-                <Trash2 className="size-4" />
+                <Ban className="size-4" />
               </Button>
             </div>
           );
         },
       }),
     ],
-    [canUpdate, canDelete, onEdit, onDelete, navigate],
+    [canUpdate, onEdit, onCancel, navigate],
   );
 
   const { table, shallow, debounceMs, throttleMs } = useDataTable({
