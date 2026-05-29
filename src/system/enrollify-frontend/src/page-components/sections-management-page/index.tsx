@@ -4,7 +4,6 @@ import type { ClassSection } from "@/api/models/class-section";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { ModuleIcons } from "@/config/module-icons";
 import { useCrudState } from "@/hooks/use-crud-state";
-import { useDebounce } from "@/hooks/use-debounce";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useQueryStates } from "nuqs";
 import { SectionFormDrawer } from "./section-form-drawer";
@@ -35,9 +34,6 @@ export default function SectionsManagementPage() {
   const currentPage = page ? Number(page) : 1;
   const currentPageSize = perPage ? Number(perPage) : 10;
 
-  const debouncedFilters = useDebounce(filters, 600);
-  const debouncedSort = useDebounce(sort, 600);
-
   const academicYearId = selectedAcademicYear?.id;
 
   const { data: pagedSections } = useSuspenseQuery(
@@ -45,8 +41,8 @@ export default function SectionsManagementPage() {
       currentPage,
       currentPageSize,
       academicYearId ?? 0,
-      debouncedFilters,
-      debouncedSort,
+      filters,
+      sort,
       joinOperator,
     ),
   );

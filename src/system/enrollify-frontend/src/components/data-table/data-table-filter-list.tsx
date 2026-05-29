@@ -54,8 +54,7 @@ import {
   SortableOverlay,
 } from "@/components/ui/sortable";
 import { dataTableConfig } from "@/config/data-table";
-import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
-import { getDefaultFilterOperator, getFilterOperators } from "@/lib/data-table";
+import { getDefaultFilterOperator, getFilterOperators, getValidFilters } from "@/lib/data-table";
 import { formatDate } from "@/lib/format";
 import { generateId } from "@/lib/id";
 import { getFiltersStateParser } from "@/lib/parsers";
@@ -83,7 +82,7 @@ interface DataTableFilterListProps<TData> extends React.ComponentProps<
 
 export function DataTableFilterList<TData>({
   table,
-  debounceMs = DEBOUNCE_MS,
+  debounceMs: _debounceMs = DEBOUNCE_MS,
   throttleMs = THROTTLE_MS,
   shallow = true,
   disabled,
@@ -94,6 +93,13 @@ export function DataTableFilterList<TData>({
   const descriptionId = React.useId();
   const [open, setOpen] = React.useState(false);
   const addButtonRef = React.useRef<HTMLButtonElement>(null);
+
+  // Staged local state — only committed to URL when "Apply filters" is clicked
+  const [localFilters, setLocalFilters] = React.useState<
+    ExtendedColumnFilter<TData>[]
+  >([]);
+  const [localJoinOperator, setLocalJoinOperator] =
+    React.useState<JoinOperator>("and");
 
   const columns = React.useMemo(() => {
     return table
@@ -116,7 +122,6 @@ export function DataTableFilterList<TData>({
         throttleMs,
       }),
   );
-  const debouncedSetFilters = useDebouncedCallback(setFilters, debounceMs);
 
   const [joinOperator, setJoinOperator] = useQueryState(
     table.options.meta?.queryKeys?.joinOperator ?? "",
@@ -126,13 +131,23 @@ export function DataTableFilterList<TData>({
     }),
   );
 
+  // Sync local draft state from URL when the popover opens
+  const handleOpenChange = React.useCallback(
+    (newOpen: boolean) => {
+      if (newOpen) {
+        setLocalFilters(filters);
+        setLocalJoinOperator((joinOperator as JoinOperator) ?? "and");
+      }
+      setOpen(newOpen);
+    },
+    [filters, joinOperator],
+  );
+
   const onFilterAdd = React.useCallback(() => {
     const column = columns[0];
-
     if (!column) return;
-
-    debouncedSetFilters([
-      ...filters,
+    setLocalFilters((prev) => [
+      ...prev,
       {
         id: column.id as Extract<keyof TData, string>,
         value: "",
@@ -143,46 +158,47 @@ export function DataTableFilterList<TData>({
         filterId: generateId({ length: 8 }),
       },
     ]);
-  }, [columns, filters, debouncedSetFilters]);
+  }, [columns]);
 
   const onFilterUpdate = React.useCallback(
     (
       filterId: string,
       updates: Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>,
     ) => {
-      void setPage(1);
-      debouncedSetFilters((prevFilters) => {
-        const updatedFilters = prevFilters.map((filter) => {
-          if (filter.filterId === filterId) {
-            return { ...filter, ...updates } as ExtendedColumnFilter<TData>;
-          }
-          return filter;
-        });
-        return updatedFilters;
-      });
+      setLocalFilters((prev) =>
+        prev.map((filter) =>
+          filter.filterId === filterId
+            ? ({ ...filter, ...updates } as ExtendedColumnFilter<TData>)
+            : filter,
+        ),
+      );
     },
-    [debouncedSetFilters, setPage],
+    [],
   );
 
-  const onFilterRemove = React.useCallback(
-    (filterId: string) => {
-      const updatedFilters = filters.filter(
-        (filter) => filter.filterId !== filterId,
-      );
-      void setPage(1);
-      void setFilters(updatedFilters);
-      requestAnimationFrame(() => {
-        addButtonRef.current?.focus();
-      });
-    },
-    [filters, setFilters, setPage],
-  );
+  const onFilterRemove = React.useCallback((filterId: string) => {
+    setLocalFilters((prev) => prev.filter((f) => f.filterId !== filterId));
+    requestAnimationFrame(() => {
+      addButtonRef.current?.focus();
+    });
+  }, []);
 
   const onFiltersReset = React.useCallback(() => {
+    setLocalFilters([]);
+    setLocalJoinOperator("and");
     void setPage(1);
     void setFilters(null);
     void setJoinOperator("and");
   }, [setFilters, setJoinOperator, setPage]);
+
+  // Writes valid local filters to the URL and closes the popover
+  const onApplyFilters = React.useCallback(() => {
+    const validFilters = getValidFilters(localFilters);
+    void setPage(1);
+    void setFilters(validFilters.length ? validFilters : null);
+    void setJoinOperator(localJoinOperator === "and" ? null : localJoinOperator);
+    setOpen(false);
+  }, [localFilters, localJoinOperator, setFilters, setJoinOperator, setPage]);
 
   React.useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -216,19 +232,23 @@ export function DataTableFilterList<TData>({
         filters.length > 0
       ) {
         event.preventDefault();
-        onFilterRemove(filters[filters.length - 1]?.filterId ?? "");
+        const updatedFilters = filters.filter(
+          (_, i) => i !== filters.length - 1,
+        );
+        void setPage(1);
+        void setFilters(updatedFilters.length ? updatedFilters : null);
       }
     },
-    [filters, onFilterRemove],
+    [filters, setFilters, setPage],
   );
 
   return (
     <Sortable
-      value={filters}
-      onValueChange={setFilters}
+      value={localFilters}
+      onValueChange={setLocalFilters}
       getItemValue={(item) => item.filterId}
     >
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
@@ -257,34 +277,34 @@ export function DataTableFilterList<TData>({
         >
           <div className="flex flex-col gap-1">
             <h4 id={labelId} className="font-medium leading-none">
-              {filters.length > 0 ? "Filters" : "No filters applied"}
+              {localFilters.length > 0 ? "Filters" : "No filters applied"}
             </h4>
             <p
               id={descriptionId}
               className={cn(
                 "text-muted-foreground text-sm",
-                filters.length > 0 && "sr-only",
+                localFilters.length > 0 && "sr-only",
               )}
             >
-              {filters.length > 0
+              {localFilters.length > 0
                 ? "Modify filters to refine your rows."
                 : "Add filters to refine your rows."}
             </p>
           </div>
-          {filters.length > 0 ? (
+          {localFilters.length > 0 ? (
             <SortableContent asChild>
               <div
                 role="list"
                 className="flex max-h-[300px] flex-col gap-2 overflow-y-auto p-1"
               >
-                {filters.map((filter, index) => (
+                {localFilters.map((filter, index) => (
                   <DataTableFilterItem<TData>
-                    key={filter.filterId}
+                    key={`${filter.filterId}-${filter.id}`}
                     filter={filter}
                     index={index}
                     filterItemId={`${id}-filter-${filter.filterId}`}
-                    joinOperator={joinOperator}
-                    setJoinOperator={setJoinOperator}
+                    joinOperator={localJoinOperator}
+                    setJoinOperator={setLocalJoinOperator}
                     columns={columns}
                     onFilterUpdate={onFilterUpdate}
                     onFilterRemove={onFilterRemove}
@@ -302,7 +322,7 @@ export function DataTableFilterList<TData>({
             >
               Add filter
             </Button>
-            {filters.length > 0 ? (
+            {localFilters.length > 0 ? (
               <Button
                 variant="outline"
                 size="sm"
@@ -312,6 +332,13 @@ export function DataTableFilterList<TData>({
                 Reset filters
               </Button>
             ) : null}
+            <Button
+              size="sm"
+              className="ml-auto rounded"
+              onClick={onApplyFilters}
+            >
+              Apply filters
+            </Button>
           </div>
         </PopoverContent>
       </Popover>
