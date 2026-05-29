@@ -1,10 +1,5 @@
 using Ardalis.Result;
-using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.Core.Aggregates.CourseAggregate;
-using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
-using Enrollify.Core.Constants;
-using Enrollify.Core.Services;
 using Enrollify.SharedKernel;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -13,120 +8,35 @@ namespace Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 
 public static class SyncCourseCurriculumAssignmentsForAcademicYear
 {
-    public record Command(AcademicYearId AcademicYearId) : IRequest<Result>;
-    public class Handler : IRequestHandler<Command, Result>
+  public record Command(AcademicYearId AcademicYearId) : IRequest<Result>;
+
+  public class Handler : IRequestHandler<Command, Result>
+  {
+    private readonly IReadRepository<AcademicYear> _academicYearReadRepository;
+    private readonly ILogger<Command> _logger;
+    private readonly IMediator _mediator;
+
+    public Handler(
+      IReadRepository<AcademicYear> academicYearReadRepository,
+      ILogger<Command> logger,
+      IMediator mediator)
     {
-        private readonly ICourseCurriculumAssignmentRepository _repository;
-        private readonly IReadRepository<CourseCurriculumAssignment> _readRepository;
-        private readonly IReadRepository<AcademicYear> _academicYearReadRepository;
-        private readonly IReadRepository<Course> _courseReadRepository;
-        private readonly IApplicableCurriculumQueryService _applicableCurriculumQueryService;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<Command> _logger;
-
-        public Handler(ICourseCurriculumAssignmentRepository repository,
-            IReadRepository<CourseCurriculumAssignment> readRepository,
-            IReadRepository<AcademicYear> academicYearReadRepository,
-            IReadRepository<Course> courseReadRepository,
-            IApplicableCurriculumQueryService applicableCurriculumQueryService,
-            IUnitOfWork unitOfWork,
-            ILogger<Command> logger)
-        {
-            _repository = repository;
-            _readRepository = readRepository;
-            _academicYearReadRepository = academicYearReadRepository;
-            _courseReadRepository = courseReadRepository;
-            _applicableCurriculumQueryService = applicableCurriculumQueryService;
-            _unitOfWork = unitOfWork;
-            _logger = logger;
-        }
-
-        public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
-        {
-            var academicYear = await _academicYearReadRepository.GetByIdAsync(command.AcademicYearId, cancellationToken);
-            if (academicYear == null)
-            {
-                _logger.LogError("Unable to find the academic year with an id of {AcademicYearId}", command.AcademicYearId);
-                return Result.Invalid(new ValidationError("Academic year not found."));
-            }
-
-            var courses = await _courseReadRepository.ListAsync(cancellationToken);
-            var courseIds = courses.Select(c => c.Id).ToList();
-            var existingAssignments = await _readRepository.ListAsync(new GetAllCourseCurriculumAssignmentsForCoursesByAcademicYearIdSpec(courseIds, academicYear.Id), cancellationToken);
-
-            // Get the latest active curriculum for each course that is applicable to the academic year's start date/year
-            var applicableCurriculums = await _applicableCurriculumQueryService.GetApplicableCurriculumsForAcademicYearStartDateAsync(academicYear.StartDate, cancellationToken);
-
-            var applicableCurriculumsByCourseId = applicableCurriculums.ToDictionary(c => c.CourseId, c => c);
-            var existingAssignmentByCourseId = existingAssignments.ToDictionary(c => c.CourseId, c => c);
-
-            var courseCurriculumAssignmentsToCreate = new List<CourseCurriculumAssignment>();
-            var courseCurriculumAssignmentsToUpdate = new List<CourseCurriculumAssignment>();
-            foreach (var course in courses)
-            {
-                var existing = existingAssignmentByCourseId.GetValueOrDefault(course.Id);
-
-                if (existing?.Curriculum?.StatusId == CurriculumStatusEnum.Active)
-                {
-                    _logger.LogInformation("Course {CourseName} already has an active curriculum assigned (CurriculumId: {CurriculumId}), skipping assignment.", course.Name, existing.CurriculumId);
-                    continue;
-                }
-
-                var curriculum = applicableCurriculumsByCourseId.GetValueOrDefault(course.Id);
-
-                if (curriculum == null)
-                {
-                    _logger.LogError("Unable to find an active curriculum for course {CourseName}", course.Name);
-                    return Result.Error($"Unable to find an active curriculum for course {course.Name}");
-                }
-
-                if (existing != null && existing.CurriculumId != curriculum.Id)
-                {
-                    _logger.LogInformation("Updated course-curriculum assignment, From CurriculumId {PreviousCurriculumId} To {CurriculumId}",
-                        existing.CurriculumId, curriculum.Id);
-                    existing.UpdateCurriculum(curriculum.Id);
-                    courseCurriculumAssignmentsToUpdate.Add(existing);
-                }
-
-                if (existing == null)
-                {
-                    var newAssignment = new CourseCurriculumAssignment(course.Id, command.AcademicYearId, curriculum.Id);
-                    //_logger.LogInformation("Added new course-curriculum assignment: {@newCourseCurriculumAssignment}", newAssignment);
-                    courseCurriculumAssignmentsToCreate.Add(newAssignment);
-                }
-            }
-
-            // Begin transaction to ensure all database operations succeed or fail together
-            await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
-
-            try
-            {
-                var bulkCreateResult = await _repository.BulkCreate(courseCurriculumAssignmentsToCreate, cancellationToken);
-                var bulkUpdateResult = await _repository.BulkUpdate(courseCurriculumAssignmentsToUpdate, cancellationToken);
-
-                if (!bulkCreateResult.IsSuccess)
-                {
-                    _logger.LogError("Bulk Create - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}", string.Join(", ", bulkCreateResult.Errors));
-                    await transaction.RollbackAsync(cancellationToken);
-                    return Result.Error("Failed to sync course-curriculum assignments.");
-                }
-
-
-                if (!bulkUpdateResult.IsSuccess)
-                {
-                    _logger.LogError("Bulk Update - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}", string.Join(", ", bulkCreateResult.Errors));
-                    await transaction.RollbackAsync(cancellationToken);
-                    return Result.Error("Failed to sync course-curriculum assignments.");
-                }
-
-                await transaction.CommitAsync(cancellationToken);
-
-                return Result.Success();
-            }catch(Exception ex)
-            {
-                _logger.LogError(ex, "Failed to sync course-curriculum assignments.");
-                return Result.Error("Failed to sync course-curriculum assignments.");
-            }
-        }
+      _academicYearReadRepository = academicYearReadRepository;
+      _logger = logger;
+      _mediator = mediator;
     }
+
+    public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
+    {
+      AcademicYear? academicYear =
+        await _academicYearReadRepository.GetByIdAsync(command.AcademicYearId, cancellationToken);
+      if (academicYear == null)
+      {
+        _logger.LogError("Unable to find the academic year with an id of {AcademicYearId}", command.AcademicYearId);
+        return Result.Invalid(new ValidationError("Academic year not found."));
+      }
+
+      return await _mediator.Send(new SyncCourseCurriculumAssignments.Command(academicYear), cancellationToken);
+    }
+  }
 }

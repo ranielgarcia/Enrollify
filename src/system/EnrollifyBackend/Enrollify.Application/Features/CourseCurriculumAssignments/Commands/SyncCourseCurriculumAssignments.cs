@@ -1,0 +1,136 @@
+using Ardalis.Result;
+using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
+using Enrollify.Core.Aggregates.AcademicYearAggregate;
+using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.Aggregates.CurriculumAggregate;
+using Enrollify.Core.Constants;
+using Enrollify.Core.Services;
+using Enrollify.SharedKernel;
+using MediatR;
+using Microsoft.Extensions.Logging;
+
+namespace Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
+
+public static class SyncCourseCurriculumAssignments
+{
+  public record Command(AcademicYear AcademicYear) : IRequest<Result>;
+
+  public class Handler : IRequestHandler<Command, Result>
+  {
+    private readonly ICourseCurriculumAssignmentRepository _repository;
+    private readonly IReadRepository<CourseCurriculumAssignment> _readRepository;
+    private readonly IReadRepository<Course> _courseReadRepository;
+    private readonly IApplicableCurriculumQueryService _applicableCurriculumQueryService;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<Command> _logger;
+
+    public Handler(
+      ICourseCurriculumAssignmentRepository repository,
+      IReadRepository<CourseCurriculumAssignment> readRepository,
+      IReadRepository<Course> courseReadRepository,
+      IApplicableCurriculumQueryService applicableCurriculumQueryService,
+      IUnitOfWork unitOfWork,
+      ILogger<Command> logger)
+    {
+      _repository = repository;
+      _readRepository = readRepository;
+      _courseReadRepository = courseReadRepository;
+      _applicableCurriculumQueryService = applicableCurriculumQueryService;
+      _unitOfWork = unitOfWork;
+      _logger = logger;
+    }
+
+    public async Task<Result> Handle(Command request, CancellationToken cancellationToken)
+    {
+      AcademicYear academicYear = request.AcademicYear;
+      List<Course> courses = await _courseReadRepository.ListAsync(cancellationToken);
+      var courseIds = courses.Select(c => c.Id).ToList();
+      List<CourseCurriculumAssignment> existingAssignments = await _readRepository.ListAsync(
+        new GetAllCourseCurriculumAssignmentsForCoursesByAcademicYearIdSpec(courseIds, academicYear.Id),
+        cancellationToken);
+
+      // Get the latest active curriculum for each course that is applicable to the academic year's start date/year
+      IReadOnlyList<Curriculum> applicableCurriculums =
+        await _applicableCurriculumQueryService.GetApplicableCurriculumsForAcademicYearStartDateAsync(
+          academicYear.StartDate, cancellationToken);
+
+      var applicableCurriculumsByCourseId = applicableCurriculums.ToDictionary(c => c.CourseId, c => c);
+      var existingAssignmentByCourseId = existingAssignments.ToDictionary(c => c.CourseId, c => c);
+
+      var courseCurriculumAssignmentsToCreate = new List<CourseCurriculumAssignment>();
+      var courseCurriculumAssignmentsToUpdate = new List<CourseCurriculumAssignment>();
+      foreach (Course course in courses)
+      {
+        CourseCurriculumAssignment? existing = existingAssignmentByCourseId.GetValueOrDefault(course.Id);
+
+        if (existing?.Curriculum?.StatusId == CurriculumStatusEnum.Active)
+        {
+          _logger.LogInformation(
+            "Course {CourseName} already has an active curriculum assigned (CurriculumId: {CurriculumId}), skipping assignment.",
+            course.Name, existing.CurriculumId);
+          continue;
+        }
+
+        Curriculum? curriculum = applicableCurriculumsByCourseId.GetValueOrDefault(course.Id);
+
+        if (curriculum == null)
+        {
+          _logger.LogError("Unable to find an active curriculum for course {CourseName}", course.Name);
+          return Result.Error($"Unable to find an active curriculum for course {course.Name}");
+        }
+
+        if (existing != null && existing.CurriculumId != curriculum.Id)
+        {
+          _logger.LogInformation(
+            "Updated course-curriculum assignment, From CurriculumId {PreviousCurriculumId} To {CurriculumId}",
+            existing.CurriculumId, curriculum.Id);
+          existing.UpdateCurriculum(curriculum.Id);
+          courseCurriculumAssignmentsToUpdate.Add(existing);
+        }
+
+        if (existing == null)
+        {
+          var newAssignment = new CourseCurriculumAssignment(course.Id, academicYear.Id, curriculum.Id);
+          //_logger.LogInformation("Added new course-curriculum assignment: {@newCourseCurriculumAssignment}", newAssignment);
+          courseCurriculumAssignmentsToCreate.Add(newAssignment);
+        }
+      }
+
+      // Begin transaction to ensure all database operations succeed or fail together
+      await using ITransactionScope transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
+      try
+      {
+        Result bulkCreateResult = await _repository.BulkCreate(courseCurriculumAssignmentsToCreate, cancellationToken);
+        Result bulkUpdateResult = await _repository.BulkUpdate(courseCurriculumAssignmentsToUpdate, cancellationToken);
+
+        if (!bulkCreateResult.IsSuccess)
+        {
+          _logger.LogError("Bulk Create - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}",
+            string.Join(", ", bulkCreateResult.Errors));
+          await transaction.RollbackAsync(cancellationToken);
+          return Result.Error("Failed to sync course-curriculum assignments.");
+        }
+
+
+        if (!bulkUpdateResult.IsSuccess)
+        {
+          _logger.LogError("Bulk Update - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}",
+            string.Join(", ", bulkCreateResult.Errors));
+          await transaction.RollbackAsync(cancellationToken);
+          return Result.Error("Failed to sync course-curriculum assignments.");
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+
+        return Result.Success();
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "Failed to sync course-curriculum assignments.");
+        return Result.Error("Failed to sync course-curriculum assignments.");
+      }
+    }
+  }
+}
