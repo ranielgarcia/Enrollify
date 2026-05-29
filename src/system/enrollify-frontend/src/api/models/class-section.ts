@@ -44,14 +44,7 @@ export type ClassSectionStatusValue =
   (typeof ClassSectionStatusEnum)[keyof typeof ClassSectionStatusEnum];
 
 const ClassSectionStatusSchema = z.object({
-  name: z.enum([
-    "Draft",
-    "Open",
-    "Locked",
-    "Active",
-    "Completed",
-    "Cancelled",
-  ]),
+  name: z.enum(["Draft", "Open", "Locked", "Active", "Completed", "Cancelled"]),
   value: z.number(),
   description: z.string().optional(),
 });
@@ -69,7 +62,7 @@ export const ClassSectionSchema = z
     academicTerm: AcademicTermSummarySchema,
     cohortAcademicYear: CohortAcademicYearSchema.optional().nullable(),
     adviser: AdviserSummarySchema.optional().nullable(),
-    statusId: ClassSectionStatusSchema,
+    status: ClassSectionStatusSchema,
   })
   .extend(AuditInfoSchema.shape);
 

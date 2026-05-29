@@ -67,7 +67,7 @@ export default function SectionDetailPage({
     (c) => c.severity === "error",
   ).length;
 
-  const statusValue = section.statusId?.value;
+  const statusValue = section.status?.value;
 
   const transitionButtons = (
     <div className="flex gap-2 flex-wrap">
@@ -129,9 +129,7 @@ export default function SectionDetailPage({
       title={
         <span className="flex items-center gap-2">
           {section.name}
-          {section.statusId && (
-            <SectionStatusBadge status={section.statusId} />
-          )}
+          {section.status && <SectionStatusBadge status={section.status} />}
         </span>
       }
       description={`${section.course.name} · ${section.academicTerm.termName} · Year ${section.intendedYearLevel}`}

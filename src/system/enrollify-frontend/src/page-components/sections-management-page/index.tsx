@@ -38,14 +38,13 @@ export default function SectionsManagementPage() {
   const debouncedFilters = useDebounce(filters, 600);
   const debouncedSort = useDebounce(sort, 600);
 
-  const academicTermIds =
-    selectedAcademicYear?.academicTerms?.map((t) => t.id) ?? [];
+  const academicYearId = selectedAcademicYear?.id;
 
   const { data: pagedSections } = useSuspenseQuery(
     filterClassSectionsPaginatedOptions(
       currentPage,
       currentPageSize,
-      academicTermIds,
+      academicYearId ?? 0,
       debouncedFilters,
       debouncedSort,
       joinOperator,

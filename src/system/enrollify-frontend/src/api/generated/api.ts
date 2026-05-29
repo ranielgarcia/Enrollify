@@ -3529,7 +3529,7 @@ export interface operations {
                 Filters?: string | null;
                 Sort?: string | null;
                 JoinOperator?: string | null;
-                AcademicTermIds?: string | null;
+                AcademicYearId?: number | null;
             };
             header?: never;
             path: {

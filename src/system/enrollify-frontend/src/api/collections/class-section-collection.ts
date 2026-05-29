@@ -18,7 +18,7 @@ const queryKeys = {
   filter: (
     page: number,
     pageSize: number,
-    academicTermIds: number[],
+    academicYearId: number,
     filters: ExtendedColumnFilter<ClassSection>[],
     sort: ExtendedColumnSort<ClassSection>[],
     joinOperator: string,
@@ -27,7 +27,7 @@ const queryKeys = {
     "filter",
     page,
     pageSize,
-    academicTermIds,
+    academicYearId,
     filters,
     sort,
     joinOperator,
@@ -49,7 +49,7 @@ const pagedSectionsSchema = pagedResultSchema(ClassSectionSchema);
 export const filterClassSectionsPaginatedOptions = (
   page: number,
   pageSize: number,
-  academicTermIds: number[],
+  academicYearId: number,
   filters: ExtendedColumnFilter<ClassSection>[],
   sort: ExtendedColumnSort<ClassSection>[],
   joinOperator: string,
@@ -61,15 +61,13 @@ export const filterClassSectionsPaginatedOptions = (
       Filters: filters.length ? JSON.stringify(filters) : undefined,
       Sort: sort.length ? JSON.stringify(sort) : undefined,
       JoinOperator: joinOperator,
-      AcademicTermIds: academicTermIds.length
-        ? JSON.stringify(academicTermIds)
-        : undefined,
+      AcademicYearId: academicYearId,
     },
     options: {
       queryKey: queryKeys.filter(
         page,
         pageSize,
-        academicTermIds,
+        academicYearId,
         filters,
         sort,
         joinOperator,

@@ -1,5 +1,8 @@
 import { Badge } from "@/components/ui/badge";
-import { ClassSectionStatusEnum, type ClassSectionStatus } from "@/api/models/class-section";
+import {
+  ClassSectionStatusEnum,
+  type ClassSectionStatus,
+} from "@/api/models/class-section";
 import { cn } from "@/lib/utils";
 
 interface SectionStatusBadgeProps {
@@ -18,11 +21,13 @@ const STATUS_STYLES: Record<number, string> = {
     "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
   [ClassSectionStatusEnum.Completed]:
     "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
-  [ClassSectionStatusEnum.Cancelled]:
-    "bg-destructive/15 text-destructive",
+  [ClassSectionStatusEnum.Cancelled]: "bg-destructive/15 text-destructive",
 };
 
-export function SectionStatusBadge({ status, className }: SectionStatusBadgeProps) {
+export function SectionStatusBadge({
+  status,
+  className,
+}: SectionStatusBadgeProps) {
   return (
     <Badge
       variant="secondary"

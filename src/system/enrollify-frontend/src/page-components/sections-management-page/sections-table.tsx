@@ -68,6 +68,19 @@ export function SectionsTable({
           <span className="font-mono text-sm">{info.getValue() ?? "-"}</span>
         ),
       }),
+      columnHelper.accessor((row) => row.course?.code, {
+        id: "courseCode",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Course Code" />
+        ),
+        meta: { label: "Course Code", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => (
+          <span className="font-mono text-xs text-muted-foreground mr-1.5">
+            {info.getValue() ?? "-"}
+          </span>
+        ),
+      }),
       columnHelper.accessor((row) => row.course?.name, {
         id: "courseName",
         header: ({ column }) => (
@@ -75,14 +88,7 @@ export function SectionsTable({
         ),
         meta: { label: "Course Name", variant: "text" },
         enableColumnFilter: true,
-        cell: (info) => (
-          <span>
-            <span className="font-mono text-xs text-muted-foreground mr-1.5">
-              {info.row.original.course?.code}
-            </span>
-            {info.getValue() ?? "-"}
-          </span>
-        ),
+        cell: (info) => <span>{info.getValue() ?? "-"}</span>,
       }),
       columnHelper.accessor("intendedYearLevel", {
         id: "intendedYearLevel",
@@ -142,7 +148,7 @@ export function SectionsTable({
           ),
         },
       ),
-      columnHelper.accessor("statusId", {
+      columnHelper.accessor("status", {
         id: "status",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Status" />
