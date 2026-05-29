@@ -1,5 +1,4 @@
 using Ardalis.Result;
-using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.SharedKernel;
@@ -10,6 +9,8 @@ namespace Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 
 public static class SyncCourseCurriculumAssignmentsForCurrentAndFutureAcademicYears
 {
+  private const int MaxFutureAcademicYearsToSync = 2;
+
   public record Command() : IRequest<Result>;
 
   public class Handler : IRequestHandler<Command, Result>
@@ -32,34 +33,45 @@ public static class SyncCourseCurriculumAssignmentsForCurrentAndFutureAcademicYe
       AcademicYear? currentAcademicYear =
         await _academicYearReadRepository.FirstOrDefaultAsync(new GetActiveAcademicYearSpec(), cancellationToken);
       var futureAcademicYears = (await _academicYearReadRepository.ListAsync(
-        new ListFutureAcademicYearsSpec(today, 2), cancellationToken)).ToList();
+        new ListFutureAcademicYearsSpec(today, MaxFutureAcademicYearsToSync), cancellationToken)).ToList();
+
+      var errors = new List<string>();
 
       if (currentAcademicYear is not null)
       {
         Result syncResult =
           await _mediator.Send(
-            new SyncCourseCurriculumAssignments.Command(currentAcademicYear),
+            new SyncCourseCurriculumAssignments.Command(currentAcademicYear.Id),
             cancellationToken);
         if (!syncResult.IsSuccess)
+        {
           _logger.LogError(
             "Failed to sync course curriculum assignments for current academic year with id {AcademicYearId}. Error: {Error}",
             currentAcademicYear.Id, syncResult.Errors.FirstOrDefault());
+          errors.Add($"AcademicYear {currentAcademicYear.Id}: {syncResult.Errors.FirstOrDefault()}");
+        }
+      }
+      else
+      {
+        _logger.LogWarning("No current academic year found. Skipping synchronization for current academic year.");
       }
 
-      if (futureAcademicYears.Count > 0)
-        foreach (AcademicYear futureAcademicYear in futureAcademicYears)
+      foreach (AcademicYear futureAcademicYear in futureAcademicYears)
+      {
+        Result syncResult =
+          await _mediator.Send(
+            new SyncCourseCurriculumAssignments.Command(futureAcademicYear.Id),
+            cancellationToken);
+        if (!syncResult.IsSuccess)
         {
-          Result syncResult =
-            await _mediator.Send(
-              new SyncCourseCurriculumAssignments.Command(futureAcademicYear),
-              cancellationToken);
-          if (!syncResult.IsSuccess)
-            _logger.LogError(
-              "Failed to sync course curriculum assignments for current academic year with id {AcademicYearId}. Error: {Error}",
-              futureAcademicYear.Id, syncResult.Errors.FirstOrDefault());
+          _logger.LogError(
+            "Failed to sync course curriculum assignments for future academic year with id {AcademicYearId}. Error: {Error}",
+            futureAcademicYear.Id, syncResult.Errors.FirstOrDefault());
+          errors.Add($"AcademicYear {futureAcademicYear.Id}: {syncResult.Errors.FirstOrDefault()}");
         }
+      }
 
-      return Result.Success();
+      return errors.Count > 0 ? Result.Error(string.Join("; ", errors)) : Result.Success();
     }
   }
 }

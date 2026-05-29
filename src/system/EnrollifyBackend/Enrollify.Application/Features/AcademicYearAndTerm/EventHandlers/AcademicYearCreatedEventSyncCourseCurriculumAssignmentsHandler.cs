@@ -8,6 +8,6 @@ public class AcademicYearCreatedEventSyncCourseCurriculumAssignmentsHandler (IMe
 {
     public async Task Handle(AcademicYearCreatedEvent notification, CancellationToken cancellationToken)
     {
-        await mediator.Send(new SyncCourseCurriculumAssignmentsForAcademicYear.Command(notification.AcademicYear.Id), cancellationToken);
+        await mediator.Send(new SyncCourseCurriculumAssignments.Command(notification.AcademicYear.Id), cancellationToken);
     }
 }

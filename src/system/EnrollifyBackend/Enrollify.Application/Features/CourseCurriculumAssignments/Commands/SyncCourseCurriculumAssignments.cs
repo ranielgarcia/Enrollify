@@ -14,28 +14,31 @@ namespace Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 
 public static class SyncCourseCurriculumAssignments
 {
-  public record Command(AcademicYear AcademicYear) : IRequest<Result>;
+  public record Command(AcademicYearId AcademicYearId) : IRequest<Result>;
 
   public class Handler : IRequestHandler<Command, Result>
   {
     private readonly ICourseCurriculumAssignmentRepository _repository;
     private readonly IReadRepository<CourseCurriculumAssignment> _readRepository;
     private readonly IReadRepository<Course> _courseReadRepository;
+    private readonly IReadRepository<AcademicYear> _academicYearReadRepository;
     private readonly IApplicableCurriculumQueryService _applicableCurriculumQueryService;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<Command> _logger;
+    private readonly ILogger<Handler> _logger;
 
     public Handler(
       ICourseCurriculumAssignmentRepository repository,
       IReadRepository<CourseCurriculumAssignment> readRepository,
       IReadRepository<Course> courseReadRepository,
+      IReadRepository<AcademicYear> academicYearReadRepository,
       IApplicableCurriculumQueryService applicableCurriculumQueryService,
       IUnitOfWork unitOfWork,
-      ILogger<Command> logger)
+      ILogger<Handler> logger)
     {
       _repository = repository;
       _readRepository = readRepository;
       _courseReadRepository = courseReadRepository;
+      _academicYearReadRepository = academicYearReadRepository;
       _applicableCurriculumQueryService = applicableCurriculumQueryService;
       _unitOfWork = unitOfWork;
       _logger = logger;
@@ -43,7 +46,13 @@ public static class SyncCourseCurriculumAssignments
 
     public async Task<Result> Handle(Command request, CancellationToken cancellationToken)
     {
-      AcademicYear academicYear = request.AcademicYear;
+      AcademicYear? academicYear = await _academicYearReadRepository.GetByIdAsync(request.AcademicYearId, cancellationToken);
+      if (academicYear is null)
+      {
+        _logger.LogError("Unable to find the academic year with an id of {AcademicYearId}", request.AcademicYearId);
+        return Result.NotFound("Academic year not found.");
+      }
+
       List<Course> courses = await _courseReadRepository.ListAsync(cancellationToken);
       var courseIds = courses.Select(c => c.Id).ToList();
       List<CourseCurriculumAssignment> existingAssignments = await _readRepository.ListAsync(
@@ -92,7 +101,6 @@ public static class SyncCourseCurriculumAssignments
         if (existing == null)
         {
           var newAssignment = new CourseCurriculumAssignment(course.Id, academicYear.Id, curriculum.Id);
-          //_logger.LogInformation("Added new course-curriculum assignment: {@newCourseCurriculumAssignment}", newAssignment);
           courseCurriculumAssignmentsToCreate.Add(newAssignment);
         }
       }
@@ -117,7 +125,7 @@ public static class SyncCourseCurriculumAssignments
         if (!bulkUpdateResult.IsSuccess)
         {
           _logger.LogError("Bulk Update - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}",
-            string.Join(", ", bulkCreateResult.Errors));
+            string.Join(", ", bulkUpdateResult.Errors));
           await transaction.RollbackAsync(cancellationToken);
           return Result.Error("Failed to sync course-curriculum assignments.");
         }
