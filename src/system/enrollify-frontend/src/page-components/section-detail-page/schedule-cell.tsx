@@ -21,9 +21,11 @@ function timeToMinutes(time: string): number {
 export function ScheduleCell({ day, timeSlot, offerings }: ScheduleCellProps) {
   const slotMinutes = timeToMinutes(timeSlot);
 
+  console.log(offerings);
+
   const matching = offerings.filter((o) =>
-    o.schedules.some((s) => {
-      if (s.dayOfWeek !== day) return false;
+    o.schedules?.some((s) => {
+      if (s.dayOfWeekAbbreviation !== day) return false;
       const start = timeToMinutes(s.startTime);
       const end = timeToMinutes(s.endTime);
       return slotMinutes >= start && slotMinutes < end;
@@ -35,8 +37,10 @@ export function ScheduleCell({ day, timeSlot, offerings }: ScheduleCellProps) {
   }
 
   const isStartSlot = (o: OfferingWithSchedules) =>
-    o.schedules.some(
-      (s) => s.dayOfWeek === day && timeToMinutes(s.startTime) === slotMinutes,
+    o.schedules?.some(
+      (s) =>
+        s.dayOfWeekAbbreviation === day &&
+        timeToMinutes(s.startTime) === slotMinutes,
     );
 
   const hasConflict = matching.some(
@@ -61,18 +65,18 @@ export function ScheduleCell({ day, timeSlot, offerings }: ScheduleCellProps) {
                   : "bg-primary/20 border border-primary/30 text-primary-foreground dark:text-primary",
               )}
             >
-              <span className="font-semibold">{o.subject.code}</span>
+              <span className="font-semibold">{o.snapshotSubjectCode}</span>
               <span className="text-muted-foreground ml-1">
-                {o.teacher.lastName}
+                {o.teacher?.lastName}
               </span>
             </div>
           </TooltipTrigger>
           <TooltipContent side="top" className="text-xs max-w-[200px]">
-            <p className="font-semibold">{o.subject.title}</p>
+            <p className="font-semibold">{o.snapshotSubjectTitle}</p>
             <p>
-              {o.teacher.firstName} {o.teacher.lastName}
+              {o.teacher?.firstName} {o.teacher?.lastName}
             </p>
-            <p>{o.room.roomNumber}</p>
+            <p>{o.room?.roomNumber}</p>
             {hasConflict && (
               <p className="text-destructive mt-1">⚠ Conflict detected</p>
             )}

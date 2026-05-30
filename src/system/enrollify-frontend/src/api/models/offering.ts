@@ -64,3 +64,4 @@ export const OfferingSchema = z
   .extend(AuditInfoSchema.shape);
 
 export type Offering = z.infer<typeof OfferingSchema>;
+export type OfferingWithSchedules = Offering;
