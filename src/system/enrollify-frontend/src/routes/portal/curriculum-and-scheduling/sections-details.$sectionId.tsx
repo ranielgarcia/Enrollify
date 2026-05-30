@@ -8,7 +8,7 @@ const sectionParamsSchema = z.object({
 });
 
 export const Route = createFileRoute(
-  "/portal/curriculum-and-scheduling/sections/$sectionId",
+  "/portal/curriculum-and-scheduling/sections-details/$sectionId",
 )({
   params: {
     parse: (params) => sectionParamsSchema.parse(params),

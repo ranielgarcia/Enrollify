@@ -12,10 +12,10 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { z } from "zod";
-import { getAllTeachersOptions } from "@/api/collections/teacher-collection";
+import type { Teacher } from "@/api/models/teacher";
 
 const DAY_PATTERNS = [
   { value: "MW", label: "Mon / Wed (MW)" },
@@ -67,7 +67,8 @@ export function AssignOfferingDrawer({
     createOfferingOptions(sectionId),
   );
 
-  const { data: teachers } = useSuspenseQuery(getAllTeachersOptions());
+  // const { data: teachers } = useSuspenseQuery(getAllTeachersOptions());
+  const teachers: Teacher[] = [];
 
   const subjectOptions = MOCK_SUBJECTS.map((s) => ({
     value: s.id.toString(),
@@ -99,7 +100,7 @@ export function AssignOfferingDrawer({
       onSubmit: assignOfferingSchema,
     },
     onSubmit: async ({ value }) => {
-      await createOffering({ ...value, sectionId } as any);
+      await createOffering({ ...value, sectionId });
       setIsOpen(false);
       form.reset();
       onSuccess?.();
@@ -113,7 +114,12 @@ export function AssignOfferingDrawer({
         Assign Subject Offering
       </Button>
 
-      <Drawer open={isOpen} onOpenChange={setIsOpen} direction="right" dismissible={false}>
+      <Drawer
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        direction="right"
+        dismissible={false}
+      >
         <DrawerContent className="h-full w-full max-w-md overflow-y-auto">
           <DrawerHeader className="border-b pb-4">
             <DrawerTitle>Assign Subject Offering</DrawerTitle>

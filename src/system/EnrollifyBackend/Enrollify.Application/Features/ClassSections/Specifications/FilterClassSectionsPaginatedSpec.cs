@@ -44,6 +44,7 @@ public class FilterClassSectionsPaginatedSpec : Specification<ClassSection>
   {
     Query
       .AsNoTracking()
+      .AsSplitQuery()
       .Include(cs => cs.Course)
       .Include(cs => cs.Curriculum)
       .Include(cs => cs.Adviser)

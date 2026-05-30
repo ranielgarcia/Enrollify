@@ -15,6 +15,7 @@ import { Edit2, Ban, Eye } from "lucide-react";
 import { useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { SectionStatusBadge } from "./section-status-badge";
+import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 interface SectionsTableProps {
   pagedSections: PagedResult<ClassSection>;
@@ -43,6 +44,7 @@ export function SectionsTable({
     "canUpdateClassSection",
     "canDeleteClassSection",
   );
+  const { selectedAcademicYearSlug } = useEnrollmentContext();
 
   const columns = useMemo(
     () => [
@@ -171,8 +173,9 @@ export function SectionsTable({
                 size="sm"
                 onClick={() =>
                   navigate({
-                    to: "/portal/curriculum-and-scheduling/sections/$sectionId",
+                    to: "/portal/curriculum-and-scheduling/sections-details/$sectionId",
                     params: { sectionId: String(item.id) },
+                    search: { academicYear: selectedAcademicYearSlug },
                   })
                 }
                 className="hover:bg-primary/10 text-primary hover:text-primary"
@@ -205,7 +208,7 @@ export function SectionsTable({
         },
       }),
     ],
-    [canUpdate, onEdit, onCancel, navigate],
+    [canUpdate, onEdit, onCancel, navigate, selectedAcademicYearSlug],
   );
 
   const { table, shallow, debounceMs, throttleMs } = useDataTable({
