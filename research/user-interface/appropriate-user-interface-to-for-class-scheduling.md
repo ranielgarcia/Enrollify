@@ -1027,7 +1027,7 @@ export const PolicyNames = {
 
 ## 13. Backend API Contracts (Frontend Expectations)
 
-Since no backend exists yet, the following API endpoints are what the frontend will expect. These should be built following the same FastEndpoints + paginated filter pattern as teachers/subjects.[^22]
+Since no backend exists yet, the following API endpoints are what the frontend will expect. These should be built following the same FastEndpoints + paginated filter `pattern as teachers/subjects.[^22]
 
 ### Class Sections
 | Method | Endpoint | Description |

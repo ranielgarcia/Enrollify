@@ -1,20 +1,24 @@
 using Ardalis.Result;
+using Enrollify.Application.Features.ClassSectionSubjectOfferings.Specifications;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Aggregates.RoomAggregate;
+using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.SharedKernel;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.ClassSectionSubjectOfferings.Commands;
 
-public static class UpdateClassSectionSubjectOfferingMaxStudents
+public static class UpdateClassSectionSubjectOffering
 {
-    /// <summary>
-    /// Updates the MaxNumberOfStudents cap on a class section subject offering.
-    /// Pass null to remove the cap (unlimited).
-    /// </summary>
     public sealed record Command(
         ClassSectionSubjectOfferingId Id,
-        int? MaxNumberOfStudents) : IRequest<Result<ClassSectionSubjectOfferingId>>;
+        TeacherId? TeacherId,
+        RoomId? RoomId,
+        int DaysPerWeek,
+        double HoursPerDay,
+        int? MaxNumberOfStudents,
+        decimal? SubjectUnitsOverride) : IRequest<Result<ClassSectionSubjectOfferingId>>;
 
     public sealed class Handler : IRequestHandler<Command, Result<ClassSectionSubjectOfferingId>>
     {
@@ -34,25 +38,36 @@ public static class UpdateClassSectionSubjectOfferingMaxStudents
 
         public async Task<Result<ClassSectionSubjectOfferingId>> Handle(Command command, CancellationToken cancellationToken)
         {
-            var offering = await _offeringReadRepository.GetByIdAsync(command.Id, cancellationToken);
+            ClassSectionSubjectOffering? offering = await _offeringReadRepository.FirstOrDefaultAsync(
+                new GetClassSectionSubjectOfferingWithSchedulesByIdSpec(command.Id), cancellationToken);
+
             if (offering is null)
             {
                 _logger.LogWarning("Subject offering with ID {OfferingId} not found for update", command.Id.Value);
-                return Result.NotFound($"Subject offering with ID {command.Id.Value} not found.");
+                return Result.NotFound($"Subject offering with ID {command.Id.Value} was not found.");
             }
 
-            offering.UpdateMaxNumberOfStudents(command.MaxNumberOfStudents);
+            if (command.TeacherId is not null)
+                offering.UpdateTeacher(command.TeacherId.Value);
 
-            var updateResult = await _offeringRepository.Update(offering, cancellationToken);
-            if (!updateResult.IsSuccess)
+            if (command.RoomId is not null)
+                offering.UpdateRoom(command.RoomId.Value);
+
+            offering.UpdateSchedule(command.DaysPerWeek, command.HoursPerDay);
+            offering.UpdateMaxNumberOfStudents(command.MaxNumberOfStudents);
+            offering.UpdateSubjectUnitsOverride(command.SubjectUnitsOverride);
+
+            Result<ClassSectionSubjectOfferingId> result = await _offeringRepository.Update(offering, cancellationToken);
+
+            if (!result.IsSuccess)
             {
                 _logger.LogError("Failed to update offering {OfferingId}: {Errors}",
-                    command.Id.Value, string.Join(", ", updateResult.Errors));
+                    command.Id.Value, string.Join(", ", result.Errors));
                 return Result.Error("Unable to update the subject offering.");
             }
 
-            _logger.LogInformation("Successfully updated MaxNumberOfStudents for offering {OfferingId}", command.Id.Value);
-            return Result.Success(offering.Id);
+            _logger.LogInformation("Updated subject offering {OfferingId}", command.Id.Value);
+            return result;
         }
     }
 }
