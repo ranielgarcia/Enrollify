@@ -3,7 +3,7 @@ import {
   deleteOfferingOptions,
   updateOfferingOptions,
 } from "@/api/collections/offering-collection";
-import type { OfferingWithSchedules } from "@/api/models/offering";
+import type { Offering } from "@/api/models/offering";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,7 @@ import {
 import { ScheduleRowList } from "./schedule-row-list";
 
 interface OfferingCardProps {
-  offering: OfferingWithSchedules;
+  offering: Offering;
 }
 
 export function OfferingCard({ offering }: OfferingCardProps) {
@@ -49,8 +49,9 @@ export function OfferingCard({ offering }: OfferingCardProps) {
     useMutation(updateOfferingOptions(offering.id));
 
   const handleSaveCapacity = async () => {
-    const parsed = capacityInput.trim() === "" ? null : parseInt(capacityInput, 10);
-    await updateOffering({ maxNumberOfStudents: parsed } as any);
+    const parsed =
+      capacityInput.trim() === "" ? null : parseInt(capacityInput, 10);
+    await updateOffering({ maxNumberOfStudents: parsed });
     setIsEditingCapacity(false);
   };
 
@@ -64,10 +65,8 @@ export function OfferingCard({ offering }: OfferingCardProps) {
     (c) => c.severity === "error",
   );
 
-  const snapshotUnits = offering.snapshotUnits;
-  const liveUnits = offering.subject.units;
-  const hasDrift =
-    snapshotUnits !== undefined && snapshotUnits !== liveUnits;
+  const displayUnits = offering.effectiveUnits ?? offering.snapshotUnits;
+  const hasOverride = offering.subjectUnitsOverride != null;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -90,25 +89,25 @@ export function OfferingCard({ offering }: OfferingCardProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold text-sm">
-                {offering.snapshotSubjectCode ?? offering.subject.code}
+                {offering.snapshotSubjectCode}
               </span>
               <span className="text-sm text-muted-foreground truncate">
-                {offering.snapshotSubjectTitle ?? offering.subject.title}
+                {offering.snapshotSubjectTitle}
               </span>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Badge
-                    variant={hasDrift ? "outline" : "secondary"}
-                    className={`text-xs cursor-default ${hasDrift ? "border-amber-400 text-amber-700 dark:text-amber-400" : ""}`}
+                    variant={hasOverride ? "outline" : "secondary"}
+                    className={`text-xs cursor-default ${hasOverride ? "border-amber-400 text-amber-700 dark:text-amber-400" : ""}`}
                   >
-                    {snapshotUnits ?? liveUnits} units
-                    {hasDrift && " (locked)"}
+                    {displayUnits} units
+                    {hasOverride && " (override)"}
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {hasDrift
-                    ? `Locked at ${snapshotUnits} units. Current subject units: ${liveUnits}`
-                    : `${liveUnits} units`}
+                  {hasOverride
+                    ? `Override: ${offering.subjectUnitsOverride} units (snapshot: ${offering.snapshotUnits})`
+                    : `${displayUnits} units`}
                 </TooltipContent>
               </Tooltip>
               {offering.snapshotIsElective && (
@@ -119,27 +118,23 @@ export function OfferingCard({ offering }: OfferingCardProps) {
             </div>
             <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
               <span>
-                {offering.teacher.firstName} {offering.teacher.lastName}
+                {offering.teacher
+                  ? `${offering.teacher.firstName} ${offering.teacher.lastName}`
+                  : "Unassigned"}
               </span>
               <span>·</span>
-              <span>{offering.room.roomNumber}</span>
-              {offering.dayPattern && (
+              <span>{offering.room?.roomNumber ?? "No room"}</span>
+              {(offering.schedules?.length ?? 0) > 0 && (
                 <>
                   <span>·</span>
-                  <span className="font-mono">{offering.dayPattern}</span>
-                </>
-              )}
-              {offering.schedules.length > 0 && (
-                <>
-                  <span>·</span>
-                  <span>{offering.schedules.length} schedule row(s)</span>
+                  <span>{offering.schedules!.length} schedule row(s)</span>
                 </>
               )}
             </div>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {hasDrift && (
+            {hasOverride && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="text-amber-500 cursor-default">
@@ -147,8 +142,8 @@ export function OfferingCard({ offering }: OfferingCardProps) {
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  Units changed: locked at {snapshotUnits}, current subject is{" "}
-                  {liveUnits}
+                  Units overridden to {offering.subjectUnitsOverride} (snapshot:{" "}
+                  {offering.snapshotUnits})
                 </TooltipContent>
               </Tooltip>
             )}
@@ -165,7 +160,7 @@ export function OfferingCard({ offering }: OfferingCardProps) {
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0 hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => deleteOffering(undefined as any)}
+              onClick={() => deleteOffering({})}
               title="Remove offering"
             >
               <Trash2 className="size-3.5" />
@@ -238,7 +233,7 @@ export function OfferingCard({ offering }: OfferingCardProps) {
             </p>
             <ScheduleRowList
               offeringId={offering.id}
-              schedules={offering.schedules}
+              schedules={offering.schedules ?? []}
             />
           </div>
         </CollapsibleContent>

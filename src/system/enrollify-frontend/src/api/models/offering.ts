@@ -2,23 +2,16 @@ import { z } from "zod";
 import { AuditInfoSchema } from "@/api/models/audit-info";
 import { ClassScheduleSchema } from "./class-schedule";
 
-const SubjectSummarySchema = z.object({
-  id: z.number(),
-  code: z.string(),
-  title: z.string(),
-  units: z.number(),
-});
-
 const TeacherSummarySchema = z.object({
   id: z.number(),
   firstName: z.string(),
   lastName: z.string(),
+  email: z.string().optional(),
 });
 
 const RoomSummarySchema = z.object({
   id: z.number(),
   roomNumber: z.string(),
-  building: z.object({ id: z.number(), name: z.string() }),
 });
 
 export const ConflictResultSchema = z.object({
@@ -50,25 +43,24 @@ export type ConflictResult = z.infer<typeof ConflictResultSchema>;
 export const OfferingSchema = z
   .object({
     id: z.number(),
-    subject: SubjectSummarySchema,
-    teacher: TeacherSummarySchema,
-    room: RoomSummarySchema,
-    dayPattern: z.string().nullable(),
-    daysPerWeek: z.number().nullable(),
-    hoursPerDay: z.number().nullable(),
-    maxNumberOfStudents: z.number().nullable(),
+    classSectionId: z.number(),
+    subjectId: z.number(),
+    snapshotSubjectCode: z.string().optional(),
+    snapshotSubjectTitle: z.string().optional(),
+    snapshotUnits: z.number().optional(),
+    snapshotIsElective: z.boolean().optional(),
+    snapshotElectiveGroupName: z.string().nullable().optional(),
+    subjectUnitsOverride: z.number().nullable().optional(),
+    effectiveUnits: z.number().optional(),
+    daysPerWeek: z.number().optional(),
+    hoursPerDay: z.number().optional(),
+    maxNumberOfStudents: z.number().nullable().optional(),
+    isFullyScheduled: z.boolean().optional(),
+    teacher: TeacherSummarySchema.nullable().optional(),
+    room: RoomSummarySchema.nullable().optional(),
+    schedules: z.array(ClassScheduleSchema).optional(),
+    conflicts: z.array(ConflictResultSchema).optional(),
   })
   .extend(AuditInfoSchema.shape);
 
-export const OfferingWithSchedulesSchema = OfferingSchema.extend({
-  schedules: z.array(ClassScheduleSchema),
-  conflicts: z.array(ConflictResultSchema).optional(),
-  snapshotSubjectCode: z.string().optional(),
-  snapshotSubjectTitle: z.string().optional(),
-  snapshotUnits: z.number().optional(),
-  snapshotIsElective: z.boolean().optional(),
-  snapshotElectiveGroupName: z.string().nullable().optional(),
-});
-
 export type Offering = z.infer<typeof OfferingSchema>;
-export type OfferingWithSchedules = z.infer<typeof OfferingWithSchedulesSchema>;

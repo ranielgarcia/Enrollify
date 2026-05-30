@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { AuditInfoSchema } from "@/api/models/audit-info";
-import { OfferingWithSchedulesSchema } from "./offering";
+import { OfferingSchema } from "./offering";
 
 const CourseSummarySchema = z.object({
   id: z.number(),
@@ -67,7 +67,7 @@ export const ClassSectionSchema = z
   .extend(AuditInfoSchema.shape);
 
 export const ClassSectionWithOfferingsSchema = ClassSectionSchema.extend({
-  offerings: z.array(OfferingWithSchedulesSchema),
+  offerings: z.array(OfferingSchema),
 });
 
 export type ClassSection = z.infer<typeof ClassSectionSchema>;

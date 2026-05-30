@@ -128,7 +128,7 @@ export default function SectionDetailPage({
     <ManagementPageLayout
       title={
         <span className="flex items-center gap-2">
-          {section.name}
+          {`${section.name}-${section.intendedYearLevel}${section.sectionCode ?? ""}`}
           {section.status && <SectionStatusBadge status={section.status} />}
         </span>
       }

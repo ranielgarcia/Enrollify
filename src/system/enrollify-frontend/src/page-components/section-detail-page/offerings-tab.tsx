@@ -1,11 +1,11 @@
-import type { OfferingWithSchedules } from "@/api/models/offering";
+import type { Offering } from "@/api/models/offering";
 import { AssignOfferingDrawer } from "./assign-offering-drawer";
 import { OfferingCard } from "./offering-card";
 import { LayoutGrid } from "lucide-react";
 
 interface OfferingsTabProps {
   sectionId: number;
-  offerings: OfferingWithSchedules[];
+  offerings: Offering[];
 }
 
 export function OfferingsTab({ sectionId, offerings }: OfferingsTabProps) {
