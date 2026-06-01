@@ -73,7 +73,10 @@ export function OfferingCard({
               <span className="text-sm text-muted-foreground truncate">
                 {offering.snapshotSubjectTitle}
               </span>
-              <Badge variant="secondary" className="text-xs cursor-default">
+              <Badge
+                variant="secondary"
+                className="text-xs cursor-default text-[11px] px-2 py-0.5 font-semibold bg-muted text-muted-foreground border hover:bg-muted"
+              >
                 {displayUnits} units
               </Badge>
               {offering.snapshotIsElective && (
@@ -121,7 +124,11 @@ export function OfferingCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 px-2 cursor-pointer hover:bg-transparent"
+                className={
+                  hasHardConflict
+                    ? "text-[11px] px-2 py-0.5 font-semibold bg-red-500/15 text-red-600 border border-red-500/25 hover:bg-red-500/15 gap-1"
+                    : "text-[11px] px-2 py-0.5 font-semibold bg-amber-500/15 text-amber-600 border border-amber-500/25 hover:bg-amber-500/15 gap-1"
+                }
                 onClick={() => setIsConflictsDrawerOpen(true)}
               >
                 <Badge

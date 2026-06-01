@@ -86,28 +86,42 @@ export default function CurriculumPage() {
           }}
         />
       ) : (
-        <div className="flex flex-col items-center justify-center py-32 bg-muted/20 rounded-xl border-2 border-dashed">
+        <div className="flex flex-col items-center justify-center py-24 gap-5 text-center">
           {curriculumId && !isLoadingCurriculum ? (
             <>
-              <OctagonAlert className="size-16 text-muted-foreground/20 mb-4" />
-              <h2 className="text-xl font-semibold text-foreground">
-                Curriculum Not Found
-              </h2>
-              <p className="text-muted-foreground max-w-sm text-center mt-2">
-                Click the button above to start designing a new academic
-                curriculum.
-              </p>
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/60 border border-dashed">
+                <OctagonAlert className="h-9 w-9 text-muted-foreground/60" />
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-base font-semibold tracking-tight">
+                  Curriculum Not Found
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  The selected curriculum could not be found. Use the{" "}
+                  <strong className="text-foreground font-medium">
+                    New Curriculum
+                  </strong>{" "}
+                  button to create one.
+                </p>
+              </div>
             </>
           ) : (
             <>
-              <BookOpen className="size-16 text-muted-foreground/20 mb-4" />
-              <h2 className="text-xl font-semibold text-foreground">
-                No Curriculum Started
-              </h2>
-              <p className="text-muted-foreground max-w-sm text-center mt-2">
-                Click the button above to start designing a new academic
-                curriculum.
-              </p>
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/60 border border-dashed">
+                <BookOpen className="h-9 w-9 text-muted-foreground/60" />
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-base font-semibold tracking-tight">
+                  No Curriculum Started
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  There are no curricula yet. Use the{" "}
+                  <strong className="text-foreground font-medium">
+                    New Curriculum
+                  </strong>{" "}
+                  button above to design a new academic curriculum.
+                </p>
+              </div>
             </>
           )}
         </div>
