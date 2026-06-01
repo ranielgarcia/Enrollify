@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAcademicYearTimeLineWindowOptions } from "@/api/collections/academic-year-collection";
 import { getAllCoursesOptions } from "@/api/collections/course-collection";
-import { getMeQueryOptions } from "@/api/collections/me-collection";
+import { useAuthenticationContext } from "@/infrastructure/authentication/authentication-context";
 import { ModuleIcons } from "@/config/module-icons";
 import { Link } from "@tanstack/react-router";
 import {
@@ -40,14 +40,14 @@ function QuickLink({ href, label, description, icon: Icon }: QuickLinkProps) {
 }
 
 export default function HomePage() {
-  const { data: me } = useQuery(getMeQueryOptions());
+  const { user } = useAuthenticationContext();
   const { data: timeline } = useQuery(
     getAcademicYearTimeLineWindowOptions({ IncludeFutureYears: true }),
   );
   const { data: courses } = useQuery(getAllCoursesOptions());
 
   const currentAY = timeline?.current;
-  const displayName = (me as any)?.displayName ?? (me as any)?.username ?? null;
+  const displayName = user?.fullName ?? user?.email ?? null;
 
   const quickLinks: QuickLinkProps[] = [
     {
