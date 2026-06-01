@@ -63,7 +63,7 @@ public class ClassSectionSubjectOfferingDto : BaseDto
         {
           Id = offering.Room.Id.Value,
           RoomNumber = offering.Room.RoomNumber,
-          BuildingName = offering.Room.Building.Name
+          Building = new OfferingRoomBuildingDto { Name = offering.Room?.Building?.Name }
         }
         : null,
 
@@ -93,5 +93,10 @@ public class OfferingRoomDto
 {
   public int Id { get; set; }
   public string RoomNumber { get; set; } = null!;
-  public string BuildingName { get; set; } = null!;
+  public OfferingRoomBuildingDto Building { get; set; } = null!;
+}
+
+public class OfferingRoomBuildingDto
+{
+  public string? Name { get; set; }
 }

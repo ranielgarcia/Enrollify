@@ -1,7 +1,5 @@
 import { useState } from "react";
-import {
-  deleteOfferingOptions,
-} from "@/api/collections/offering-collection";
+import { deleteOfferingOptions } from "@/api/collections/offering-collection";
 import type { Offering } from "@/api/models/offering";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -102,7 +100,7 @@ export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
                   : "Unassigned"}
               </span>
               <span>·</span>
-            <span>{offering.room?.roomNumber ?? "No room"}</span>
+              <span>{offering.room?.roomNumber ?? "No room"}</span>
               {(offering.schedules?.length ?? 0) > 0 && (
                 <>
                   <span>·</span>
@@ -150,7 +148,7 @@ export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
 
         <CollapsibleContent>
           <div className="border-t px-4 py-3 bg-muted/20 space-y-3">
-            <div className="grid grid-cols-3 gap-4 text-xs">
+            <div className="grid grid-cols-5 gap-4 text-xs">
               <div>
                 <p className="font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">
                   Max Students
@@ -169,7 +167,7 @@ export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
                 </p>
                 <p>{offering.hoursPerDay ?? "—"}</p>
               </div>
-            </div>
+            </div>~
 
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Schedule Rows

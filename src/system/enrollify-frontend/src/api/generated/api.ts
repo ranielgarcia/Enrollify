@@ -1121,7 +1121,10 @@ export interface components {
             /** Format: int32 */
             id?: number;
             roomNumber?: string;
-            buildingName?: string;
+            building?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsOfferingRoomBuildingDto"];
+        };
+        EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsOfferingRoomBuildingDto: {
+            name?: string | null;
         };
         EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsClassScheduleDto: {
             /** Format: int32 */

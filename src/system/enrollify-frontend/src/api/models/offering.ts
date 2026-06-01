@@ -12,6 +12,9 @@ const TeacherSummarySchema = z.object({
 const RoomSummarySchema = z.object({
   id: z.number(),
   roomNumber: z.string(),
+  building: z.object({
+    name: z.string(),
+  }),
 });
 
 export const ConflictResultSchema = z.object({

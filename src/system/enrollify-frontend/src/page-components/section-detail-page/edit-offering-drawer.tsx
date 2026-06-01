@@ -33,6 +33,8 @@ const editOfferingSchema = z.object({
   maxNumberOfStudents: z.number().int().positive().nullable().optional(),
 });
 
+type EditOffering = z.infer<typeof editOfferingSchema>;
+
 interface EditOfferingDrawerProps {
   offering: Offering;
   sectionId: number;
@@ -50,11 +52,11 @@ export function EditOfferingDrawer({
 
   const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(
-    offering.room ?? null,
+    offering.room ? ({ ...offering.room } as Room) : null,
   );
   const [isTeacherDialogOpen, setIsTeacherDialogOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(
-    offering.teacher ?? null,
+    offering.teacher ? ({ ...offering.teacher } as Teacher) : null,
   );
 
   const form = useForm({
@@ -65,7 +67,7 @@ export function EditOfferingDrawer({
       hoursPerDay: offering.hoursPerDay ?? 1.5,
       subjectUnitsOverride: offering.subjectUnitsOverride ?? null,
       maxNumberOfStudents: offering.maxNumberOfStudents ?? null,
-    },
+    } as EditOffering,
     validators: {
       onSubmit: editOfferingSchema,
     },
@@ -86,8 +88,10 @@ export function EditOfferingDrawer({
   const handleClose = () => {
     setIsOpen(false);
     form.reset();
-    setSelectedRoom(offering.room ?? null);
-    setSelectedTeacher(offering.teacher ?? null);
+    setSelectedRoom(offering.room ? ({ ...offering.room } as Room) : null);
+    setSelectedTeacher(
+      offering.teacher ? ({ ...offering.teacher } as Teacher) : null,
+    );
   };
 
   return (
