@@ -22,9 +22,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { z } from "zod";
 
-const timeSchema = z
-  .string()
-  .regex(/^\d{2}:\d{2}:\d{2}$/, "Select a time");
+const timeSchema = z.string().regex(/^\d{2}:\d{2}:\d{2}$/, "Select a time");
 
 const ALL_DAYS: { key: DayOfWeek; label: string }[] = [
   { key: "MON", label: "Mon" },
@@ -57,7 +55,24 @@ const defaultPerDayTimes = (): Record<DayOfWeek, PerDayTime> =>
 function computeDurationHours(startTime: string, endTime: string): number {
   const [sh, sm, ss] = startTime.split(":").map(Number);
   const [eh, em, es] = endTime.split(":").map(Number);
-  return (eh + em / 60 + es / 3600) - (sh + sm / 60 + ss / 3600);
+  return eh + em / 60 + es / 3600 - (sh + sm / 60 + ss / 3600);
+}
+
+/**
+ * Returns the shared start/end time if ALL existing schedules have the exact
+ * same time range, otherwise returns null.
+ */
+function getSharedExistingTime(
+  schedules: ClassSchedule[],
+): { startTime: string; endTime: string } | null {
+  if (schedules.length === 0) return null;
+  const first = schedules[0];
+  const allSame = schedules.every(
+    (s) => s.startTime === first.startTime && s.endTime === first.endTime,
+  );
+  return allSame
+    ? { startTime: first.startTime, endTime: first.endTime }
+    : null;
 }
 
 interface ScheduleRowFormDrawerProps {
@@ -94,12 +109,16 @@ export function ScheduleRowFormDrawer({
     daysPerWeek != null ? daysPerWeek - existingSchedules.length : null;
   const isMaxDaysReached = remainingSlots != null && remainingSlots <= 0;
 
+  // Detect if all existing schedules share the same time range.
+  const sharedExistingTime = getSharedExistingTime(existingSchedules);
+  const isTimeLockedByExisting = sharedExistingTime != null;
+
   const form = useForm<BulkScheduleFormValues>({
     defaultValues: {
       selectedDays: [],
       sameTime: true,
-      sharedStartTime: "",
-      sharedEndTime: "",
+      sharedStartTime: sharedExistingTime?.startTime ?? "",
+      sharedEndTime: sharedExistingTime?.endTime ?? "",
       perDayTimes: defaultPerDayTimes(),
     },
     onSubmit: async ({ value }) => {
@@ -159,6 +178,41 @@ export function ScheduleRowFormDrawer({
     form.reset();
   };
 
+  /**
+   * Builds the duration validator for a time field.
+   * Uses onChangeListenTo so TanStack Form re-runs each field's own validator
+   * whenever the sibling changes — no manual validateField calls, no recursion.
+   */
+  function makeDurationValidator(
+    getSiblingValue: () => string,
+    role: "start" | "end",
+  ) {
+    return ({ value }: { value: string }) => {
+      // Validate the field's own time format first.
+      const parsed = timeSchema.safeParse(value);
+      if (!parsed.success) return "Select a time";
+
+      if (!hoursPerDay) return;
+
+      const sibling = getSiblingValue();
+      if (!sibling || !timeSchema.safeParse(sibling).success) return;
+
+      const startTime = role === "start" ? value : sibling;
+      const endTime = role === "end" ? value : sibling;
+      const duration = computeDurationHours(startTime, endTime);
+
+      if (duration <= 0) {
+        return role === "start"
+          ? "Start time must be before end time"
+          : "End time must be after start time";
+      }
+
+      if (Math.abs(duration - hoursPerDay) > 0.01) {
+        return `Duration must be exactly ${hoursPerDay} hour(s)`;
+      }
+    };
+  }
+
   return (
     <>
       <Button
@@ -166,14 +220,23 @@ export function ScheduleRowFormDrawer({
         size="sm"
         className="gap-2"
         disabled={isMaxDaysReached}
-        title={isMaxDaysReached ? `Maximum of ${daysPerWeek} schedule row(s) reached` : "Add Schedule Row"}
+        title={
+          isMaxDaysReached
+            ? `Maximum of ${daysPerWeek} schedule row(s) reached`
+            : "Add Schedule Row"
+        }
         onClick={handleOpen}
       >
         <Plus className="size-4" />
         {isMaxDaysReached ? "Max Rows Reached" : "Add Schedule Row"}
       </Button>
 
-      <Drawer open={isOpen} onOpenChange={setIsOpen} direction="right" dismissible={false}>
+      <Drawer
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        direction="right"
+        dismissible={false}
+      >
         <DrawerContent className="data-[vaul-drawer-direction=right]:w-[520px] data-[vaul-drawer-direction=right]:sm:max-w-none h-full w-full overflow-y-auto">
           <DrawerHeader className="border-b pb-4">
             <DrawerTitle>Add Schedule Rows</DrawerTitle>
@@ -189,7 +252,9 @@ export function ScheduleRowFormDrawer({
                 {(field) => {
                   const errorMessage = field.state.meta.errors
                     .map((e) =>
-                      typeof e === "string" ? e : (e as { message: string })?.message,
+                      typeof e === "string"
+                        ? e
+                        : (e as { message: string })?.message,
                     )
                     .join(", ");
                   return (
@@ -198,6 +263,7 @@ export function ScheduleRowFormDrawer({
                         {ALL_DAYS.map((d) => {
                           const isAssigned = assignedDays.has(d.key);
                           const isSelected = field.state.value.includes(d.key);
+                          // Cannot select more than remainingSlots new days.
                           const atMaxSlots =
                             remainingSlots != null &&
                             !isSelected &&
@@ -241,7 +307,8 @@ export function ScheduleRowFormDrawer({
                       </div>
                       {daysPerWeek != null && (
                         <p className="text-xs text-muted-foreground">
-                          {existingSchedules.length} of {daysPerWeek} day(s) scheduled
+                          {existingSchedules.length} of {daysPerWeek} day(s)
+                          scheduled
                           {field.state.value.length > 0 && (
                             <> · {field.state.value.length} selected</>
                           )}
@@ -265,9 +332,7 @@ export function ScheduleRowFormDrawer({
                   <Switch
                     id="sameTime"
                     checked={field.state.value}
-                    onCheckedChange={(checked) =>
-                      field.handleChange(checked)
-                    }
+                    onCheckedChange={(checked) => field.handleChange(checked)}
                   />
                   <Label htmlFor="sameTime" className="text-sm cursor-pointer">
                     Same time for all selected days
@@ -280,20 +345,22 @@ export function ScheduleRowFormDrawer({
             <form.Subscribe selector={(s) => s.values.sameTime}>
               {(sameTime) =>
                 sameTime ? (
-                  <FormSection title="Time (All Days)">
+                  <FormSection
+                    title="Time (All Days)"
+                    description={
+                      isTimeLockedByExisting
+                        ? "Time is fixed to match existing schedules."
+                        : undefined
+                    }
+                  >
                     <form.Field
                       name="sharedStartTime"
                       validators={{
-                        onBlur: timeSchema,
-                        onChange: ({ value }) => {
-                          if (!hoursPerDay || !value) return;
-                          const endTime = form.getFieldValue("sharedEndTime");
-                          if (!endTime) return;
-                          const duration = computeDurationHours(value, endTime);
-                          if (Math.abs(duration - hoursPerDay) > 0.01) {
-                            return `Duration must be exactly ${hoursPerDay} hour(s)`;
-                          }
-                        },
+                        onChangeListenTo: ["sharedEndTime"],
+                        onChange: makeDurationValidator(
+                          () => form.getFieldValue("sharedEndTime"),
+                          "start",
+                        ),
                         onSubmit: timeSchema,
                       }}
                     >
@@ -302,22 +369,18 @@ export function ScheduleRowFormDrawer({
                           field={field}
                           label="Start Time"
                           required
+                          disabled={isTimeLockedByExisting}
                         />
                       )}
                     </form.Field>
                     <form.Field
                       name="sharedEndTime"
                       validators={{
-                        onBlur: timeSchema,
-                        onChange: ({ value }) => {
-                          if (!hoursPerDay || !value) return;
-                          const startTime = form.getFieldValue("sharedStartTime");
-                          if (!startTime) return;
-                          const duration = computeDurationHours(startTime, value);
-                          if (Math.abs(duration - hoursPerDay) > 0.01) {
-                            return `Duration must be exactly ${hoursPerDay} hour(s)`;
-                          }
-                        },
+                        onChangeListenTo: ["sharedStartTime"],
+                        onChange: makeDurationValidator(
+                          () => form.getFieldValue("sharedStartTime"),
+                          "end",
+                        ),
                         onSubmit: timeSchema,
                       }}
                     >
@@ -326,6 +389,7 @@ export function ScheduleRowFormDrawer({
                           field={field}
                           label="End Time"
                           required
+                          disabled={isTimeLockedByExisting}
                         />
                       )}
                     </form.Field>
@@ -352,18 +416,16 @@ export function ScheduleRowFormDrawer({
                           <form.Field
                             name={`perDayTimes.${day}.startTime`}
                             validators={{
-                              onBlur: timeSchema,
-                              onChange: ({ value }) => {
-                                if (!hoursPerDay || !value) return;
-                                const endTime = form.getFieldValue(
-                                  `perDayTimes.${day}.endTime`,
-                                );
-                                if (!endTime) return;
-                                const duration = computeDurationHours(value, endTime);
-                                if (Math.abs(duration - hoursPerDay) > 0.01) {
-                                  return `Duration must be exactly ${hoursPerDay} hour(s)`;
-                                }
-                              },
+                              onChangeListenTo: [
+                                `perDayTimes.${day}.endTime`,
+                              ],
+                              onChange: makeDurationValidator(
+                                () =>
+                                  form.getFieldValue(
+                                    `perDayTimes.${day}.endTime`,
+                                  ),
+                                "start",
+                              ),
                               onSubmit: timeSchema,
                             }}
                           >
@@ -378,18 +440,16 @@ export function ScheduleRowFormDrawer({
                           <form.Field
                             name={`perDayTimes.${day}.endTime`}
                             validators={{
-                              onBlur: timeSchema,
-                              onChange: ({ value }) => {
-                                if (!hoursPerDay || !value) return;
-                                const startTime = form.getFieldValue(
-                                  `perDayTimes.${day}.startTime`,
-                                );
-                                if (!startTime) return;
-                                const duration = computeDurationHours(startTime, value);
-                                if (Math.abs(duration - hoursPerDay) > 0.01) {
-                                  return `Duration must be exactly ${hoursPerDay} hour(s)`;
-                                }
-                              },
+                              onChangeListenTo: [
+                                `perDayTimes.${day}.startTime`,
+                              ],
+                              onChange: makeDurationValidator(
+                                () =>
+                                  form.getFieldValue(
+                                    `perDayTimes.${day}.startTime`,
+                                  ),
+                                "end",
+                              ),
                               onSubmit: timeSchema,
                             }}
                           >
