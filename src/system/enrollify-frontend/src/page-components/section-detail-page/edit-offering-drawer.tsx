@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { updateOfferingOptions } from "@/api/collections/offering-collection";
-import { getAllRooms } from "@/api/collections/room-collection";
-import { searchTeachersPaginatedOptions } from "@/api/collections/teacher-collection";
 import type { Offering } from "@/api/models/offering";
+import type { Room } from "@/api/models/room";
+import type { Teacher } from "@/api/models/teacher";
 import type { components } from "@/api/generated/api";
 
 type UpdateOfferingRequest =
   components["schemas"]["EnrollifyWebAPIFeaturesSubjectOfferingsUpdateSubjectOfferingRequest"];
 import { FormSection } from "@/components/form/form-section";
 import { FormField } from "@/components/form/form-field";
-import { SearchableSelect } from "@/components/form/searchable-select";
+import { SearchRoomsDialog } from "@/components/shared/search-rooms-dialog";
+import { SearchTeachersDialog } from "@/components/shared/search-teachers-dialog";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,8 +20,8 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Pencil } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { Pencil, X } from "lucide-react";
 import { z } from "zod";
 
 const editOfferingSchema = z.object({
@@ -47,25 +48,14 @@ export function EditOfferingDrawer({
     updateOfferingOptions(offering.id, sectionId),
   );
 
-  const { data: rooms = [] } = useQuery({
-    ...getAllRooms(),
-    enabled: isOpen,
-  });
-
-  const { data: teachersPage } = useQuery({
-    ...searchTeachersPaginatedOptions(1, 200, undefined, isOpen),
-  });
-  const teachers = teachersPage?.items ?? [];
-
-  const teacherOptions = teachers.map((t) => ({
-    value: String(t.id),
-    label: `${t.firstName} ${t.lastName}`,
-  }));
-
-  const roomOptions = rooms.map((r) => ({
-    value: String(r.id),
-    label: `${r.roomNumber} (${r.building?.name ?? ""})`,
-  }));
+  const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(
+    offering.room ?? null,
+  );
+  const [isTeacherDialogOpen, setIsTeacherDialogOpen] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(
+    offering.teacher ?? null,
+  );
 
   const form = useForm({
     defaultValues: {
@@ -96,6 +86,8 @@ export function EditOfferingDrawer({
   const handleClose = () => {
     setIsOpen(false);
     form.reset();
+    setSelectedRoom(offering.room ?? null);
+    setSelectedTeacher(offering.teacher ?? null);
   };
 
   return (
@@ -136,19 +128,45 @@ export function EditOfferingDrawer({
                 {(field) => (
                   <div className="grid w-full items-center gap-1.5">
                     <Label>Teacher</Label>
-                    <SearchableSelect
-                      options={teacherOptions}
-                      value={
-                        field.state.value != null
-                          ? String(field.state.value)
-                          : ""
-                      }
-                      onValueChange={(val) =>
-                        field.handleChange(val ? Number(val) : null)
-                      }
-                      placeholder="Unassigned"
-                      searchPlaceholder="Search teachers..."
-                      emptyMessage="No teachers found."
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="flex-1 justify-start font-normal"
+                        onClick={() => setIsTeacherDialogOpen(true)}
+                      >
+                        {selectedTeacher
+                          ? `${selectedTeacher.firstName} ${selectedTeacher.lastName}`
+                          : "Unassigned"}
+                      </Button>
+                      {field.state.value != null && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="size-9 shrink-0"
+                          onClick={() => {
+                            field.handleChange(null);
+                            setSelectedTeacher(null);
+                          }}
+                        >
+                          <X className="size-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <SearchTeachersDialog
+                      isOpen={isTeacherDialogOpen}
+                      onOpenChange={setIsTeacherDialogOpen}
+                      title="Select Teacher"
+                      description="Choose a teacher for this offering."
+                      maxSelections={1}
+                      onSubmit={async (teachers) => {
+                        const teacher = teachers[0];
+                        if (teacher) {
+                          field.handleChange(teacher.id);
+                          setSelectedTeacher(teacher);
+                        }
+                      }}
                     />
                   </div>
                 )}
@@ -161,19 +179,45 @@ export function EditOfferingDrawer({
                 {(field) => (
                   <div className="grid w-full items-center gap-1.5">
                     <Label>Room</Label>
-                    <SearchableSelect
-                      options={roomOptions}
-                      value={
-                        field.state.value != null
-                          ? String(field.state.value)
-                          : ""
-                      }
-                      onValueChange={(val) =>
-                        field.handleChange(val ? Number(val) : null)
-                      }
-                      placeholder="No room assigned"
-                      searchPlaceholder="Search rooms..."
-                      emptyMessage="No rooms found."
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="flex-1 justify-start font-normal"
+                        onClick={() => setIsRoomDialogOpen(true)}
+                      >
+                        {selectedRoom
+                          ? `${selectedRoom.roomNumber} (${selectedRoom.building.name})`
+                          : "No room assigned"}
+                      </Button>
+                      {field.state.value != null && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="size-9 shrink-0"
+                          onClick={() => {
+                            field.handleChange(null);
+                            setSelectedRoom(null);
+                          }}
+                        >
+                          <X className="size-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <SearchRoomsDialog
+                      isOpen={isRoomDialogOpen}
+                      onOpenChange={setIsRoomDialogOpen}
+                      title="Select Room"
+                      description="Choose a room for this offering."
+                      maxSelections={1}
+                      onSubmit={async (rooms) => {
+                        const room = rooms[0];
+                        if (room) {
+                          field.handleChange(room.id);
+                          setSelectedRoom(room);
+                        }
+                      }}
                     />
                   </div>
                 )}

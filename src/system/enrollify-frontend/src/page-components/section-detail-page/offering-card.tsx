@@ -102,7 +102,7 @@ export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
                   : "Unassigned"}
               </span>
               <span>·</span>
-              <span>{offering.room?.roomNumber ?? "No room"}</span>
+            <span>{offering.room?.roomNumber ?? "No room"}</span>
               {(offering.schedules?.length ?? 0) > 0 && (
                 <>
                   <span>·</span>
@@ -178,6 +178,8 @@ export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
               offeringId={offering.id}
               sectionId={sectionId}
               schedules={offering.schedules ?? []}
+              hoursPerDay={offering.hoursPerDay}
+              daysPerWeek={offering.daysPerWeek}
             />
           </div>
         </CollapsibleContent>

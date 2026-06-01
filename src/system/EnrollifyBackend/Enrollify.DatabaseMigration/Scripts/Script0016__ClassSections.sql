@@ -153,12 +153,18 @@ CREATE TABLE ClassSchedules
 
   CONSTRAINT CHK_ClassSchedules_Time_Valid
     CHECK (StartTime < EndTime),
-
-  -- Prevent duplicate schedules for same offering
-  CONSTRAINT UQ_ClassSchedules_Offering_Day
-    UNIQUE (ClassSectionSubjectOfferingId, DayOfWeek),
 );
 GO;
+
+  -- Prevent duplicate schedules for same offering
+CREATE UNIQUE NONCLUSTERED INDEX UIdx_ClassSchedules_Offering_Day_IsActive
+ON ClassSchedules
+(
+    ClassSectionSubjectOfferingId,
+    DayOfWeek
+)
+WHERE IsActive = 1;
+
 -- **Example Data:**
 
 -- **ClassSectionSubjectOffering:**
@@ -171,4 +177,3 @@ GO;
 -- |----|------------------------------|-----------|-----------|---------|
 -- | 1  | 1                            | MON       | 09:00:00  | 10:30:00|
 -- | 2  | 1                            | WED       | 09:00:00  | 10:30:00|
-

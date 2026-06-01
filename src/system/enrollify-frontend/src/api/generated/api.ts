@@ -1121,6 +1121,7 @@ export interface components {
             /** Format: int32 */
             id?: number;
             roomNumber?: string;
+            buildingName?: string;
         };
         EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsClassScheduleDto: {
             /** Format: int32 */

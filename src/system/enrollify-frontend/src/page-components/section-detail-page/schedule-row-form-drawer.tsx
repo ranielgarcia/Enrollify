@@ -3,6 +3,7 @@ import { createScheduleRowOptions } from "@/api/collections/offering-collection"
 import type { ClassSchedule, DayOfWeek } from "@/api/models/class-schedule";
 import type { components } from "@/api/generated/api";
 import { FormTimeSelect } from "@/components/form/form-time-select";
+import { toast } from "sonner";
 
 type AddScheduleRequest =
   components["schemas"]["EnrollifyWebAPIFeaturesSubjectOfferingsAddScheduleToOfferingRequest"];
@@ -53,10 +54,18 @@ const defaultPerDayTimes = (): Record<DayOfWeek, PerDayTime> =>
     ALL_DAYS.map((d) => [d.key, { startTime: "", endTime: "" }]),
   ) as Record<DayOfWeek, PerDayTime>;
 
+function computeDurationHours(startTime: string, endTime: string): number {
+  const [sh, sm, ss] = startTime.split(":").map(Number);
+  const [eh, em, es] = endTime.split(":").map(Number);
+  return (eh + em / 60 + es / 3600) - (sh + sm / 60 + ss / 3600);
+}
+
 interface ScheduleRowFormDrawerProps {
   offeringId: number;
   sectionId: number;
   existingSchedules: ClassSchedule[];
+  hoursPerDay?: number;
+  daysPerWeek?: number;
   onSuccess?: () => void;
 }
 
@@ -64,17 +73,26 @@ export function ScheduleRowFormDrawer({
   offeringId,
   sectionId,
   existingSchedules,
+  hoursPerDay,
+  daysPerWeek,
   onSuccess,
 }: ScheduleRowFormDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
-  const { mutateAsync: createScheduleRow } = useMutation(
-    createScheduleRowOptions(offeringId, sectionId),
-  );
+  const { mutateAsync: createScheduleRow } = useMutation({
+    ...createScheduleRowOptions(offeringId, sectionId),
+    onError: () => {
+      toast.error("Failed to add schedule row. Check the offering limits.");
+    },
+  });
 
   const assignedDays = new Set(
     existingSchedules.map((s) => s.dayOfWeekAbbreviation),
   );
+  const remainingSlots =
+    daysPerWeek != null ? daysPerWeek - existingSchedules.length : null;
+  const isMaxDaysReached = remainingSlots != null && remainingSlots <= 0;
 
   const form = useForm<BulkScheduleFormValues>({
     defaultValues: {
@@ -85,6 +103,30 @@ export function ScheduleRowFormDrawer({
       perDayTimes: defaultPerDayTimes(),
     },
     onSubmit: async ({ value }) => {
+      setFormError(null);
+
+      if (hoursPerDay != null) {
+        for (const day of value.selectedDays) {
+          const startTime = value.sameTime
+            ? value.sharedStartTime
+            : value.perDayTimes[day].startTime;
+          const endTime = value.sameTime
+            ? value.sharedEndTime
+            : value.perDayTimes[day].endTime;
+          if (!startTime || !endTime) {
+            setFormError("All selected days must have start and end times.");
+            return;
+          }
+          const duration = computeDurationHours(startTime, endTime);
+          if (Math.abs(duration - hoursPerDay) > 0.01) {
+            setFormError(
+              `Each schedule must be exactly ${hoursPerDay} hour(s). Duration for ${ALL_DAYS.find((d) => d.key === day)?.label ?? day} is ${duration.toFixed(2)} hour(s).`,
+            );
+            return;
+          }
+        }
+      }
+
       const rows = value.selectedDays.map((day) => {
         const startTime = value.sameTime
           ? value.sharedStartTime
@@ -100,13 +142,20 @@ export function ScheduleRowFormDrawer({
       );
 
       setIsOpen(false);
+      setFormError(null);
       form.reset();
       onSuccess?.();
     },
   });
 
+  const handleOpen = () => {
+    setFormError(null);
+    setIsOpen(true);
+  };
+
   const handleClose = () => {
     setIsOpen(false);
+    setFormError(null);
     form.reset();
   };
 
@@ -116,10 +165,12 @@ export function ScheduleRowFormDrawer({
         variant="outline"
         size="sm"
         className="gap-2"
-        onClick={() => setIsOpen(true)}
+        disabled={isMaxDaysReached}
+        title={isMaxDaysReached ? `Maximum of ${daysPerWeek} schedule row(s) reached` : "Add Schedule Row"}
+        onClick={handleOpen}
       >
         <Plus className="size-4" />
-        Add Schedule Row
+        {isMaxDaysReached ? "Max Rows Reached" : "Add Schedule Row"}
       </Button>
 
       <Drawer open={isOpen} onOpenChange={setIsOpen} direction="right" dismissible={false}>
@@ -147,13 +198,25 @@ export function ScheduleRowFormDrawer({
                         {ALL_DAYS.map((d) => {
                           const isAssigned = assignedDays.has(d.key);
                           const isSelected = field.state.value.includes(d.key);
+                          const atMaxSlots =
+                            remainingSlots != null &&
+                            !isSelected &&
+                            field.state.value.length >= remainingSlots;
                           return (
                             <button
                               key={d.key}
                               type="button"
-                              disabled={isAssigned}
+                              disabled={isAssigned || atMaxSlots}
+                              title={
+                                atMaxSlots
+                                  ? `Maximum ${remainingSlots} new day(s) allowed (${daysPerWeek} day/week limit)`
+                                  : isAssigned
+                                    ? "Already scheduled"
+                                    : d.label
+                              }
                               onClick={() => {
                                 const current = field.state.value;
+                                if (!isSelected && atMaxSlots) return;
                                 field.handleChange(
                                   isSelected
                                     ? current.filter((x) => x !== d.key)
@@ -161,7 +224,7 @@ export function ScheduleRowFormDrawer({
                                 );
                               }}
                               className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
-                                isAssigned
+                                isAssigned || atMaxSlots
                                   ? "opacity-40 cursor-not-allowed bg-muted border-border"
                                   : isSelected
                                     ? "bg-primary text-primary-foreground border-primary"
@@ -176,6 +239,14 @@ export function ScheduleRowFormDrawer({
                           );
                         })}
                       </div>
+                      {daysPerWeek != null && (
+                        <p className="text-xs text-muted-foreground">
+                          {existingSchedules.length} of {daysPerWeek} day(s) scheduled
+                          {field.state.value.length > 0 && (
+                            <> · {field.state.value.length} selected</>
+                          )}
+                        </p>
+                      )}
                       {errorMessage && (
                         <p className="text-xs text-destructive">
                           {errorMessage}
@@ -214,6 +285,15 @@ export function ScheduleRowFormDrawer({
                       name="sharedStartTime"
                       validators={{
                         onBlur: timeSchema,
+                        onChange: ({ value }) => {
+                          if (!hoursPerDay || !value) return;
+                          const endTime = form.getFieldValue("sharedEndTime");
+                          if (!endTime) return;
+                          const duration = computeDurationHours(value, endTime);
+                          if (Math.abs(duration - hoursPerDay) > 0.01) {
+                            return `Duration must be exactly ${hoursPerDay} hour(s)`;
+                          }
+                        },
                         onSubmit: timeSchema,
                       }}
                     >
@@ -229,6 +309,15 @@ export function ScheduleRowFormDrawer({
                       name="sharedEndTime"
                       validators={{
                         onBlur: timeSchema,
+                        onChange: ({ value }) => {
+                          if (!hoursPerDay || !value) return;
+                          const startTime = form.getFieldValue("sharedStartTime");
+                          if (!startTime) return;
+                          const duration = computeDurationHours(startTime, value);
+                          if (Math.abs(duration - hoursPerDay) > 0.01) {
+                            return `Duration must be exactly ${hoursPerDay} hour(s)`;
+                          }
+                        },
                         onSubmit: timeSchema,
                       }}
                     >
@@ -264,6 +353,17 @@ export function ScheduleRowFormDrawer({
                             name={`perDayTimes.${day}.startTime`}
                             validators={{
                               onBlur: timeSchema,
+                              onChange: ({ value }) => {
+                                if (!hoursPerDay || !value) return;
+                                const endTime = form.getFieldValue(
+                                  `perDayTimes.${day}.endTime`,
+                                );
+                                if (!endTime) return;
+                                const duration = computeDurationHours(value, endTime);
+                                if (Math.abs(duration - hoursPerDay) > 0.01) {
+                                  return `Duration must be exactly ${hoursPerDay} hour(s)`;
+                                }
+                              },
                               onSubmit: timeSchema,
                             }}
                           >
@@ -279,6 +379,17 @@ export function ScheduleRowFormDrawer({
                             name={`perDayTimes.${day}.endTime`}
                             validators={{
                               onBlur: timeSchema,
+                              onChange: ({ value }) => {
+                                if (!hoursPerDay || !value) return;
+                                const startTime = form.getFieldValue(
+                                  `perDayTimes.${day}.startTime`,
+                                );
+                                if (!startTime) return;
+                                const duration = computeDurationHours(startTime, value);
+                                if (Math.abs(duration - hoursPerDay) > 0.01) {
+                                  return `Duration must be exactly ${hoursPerDay} hour(s)`;
+                                }
+                              },
                               onSubmit: timeSchema,
                             }}
                           >
@@ -306,14 +417,19 @@ export function ScheduleRowFormDrawer({
               }
             >
               {([isSubmitting, dayCount]) => (
-                <Button
-                  disabled={dayCount === 0 || isSubmitting}
-                  onClick={() => form.handleSubmit()}
-                >
-                  {isSubmitting
-                    ? "Adding..."
-                    : `Add ${dayCount > 0 ? `${dayCount} ` : ""}Schedule Row${dayCount !== 1 ? "s" : ""}`}
-                </Button>
+                <>
+                  {formError && (
+                    <p className="text-xs text-destructive">{formError}</p>
+                  )}
+                  <Button
+                    disabled={dayCount === 0 || isSubmitting}
+                    onClick={() => form.handleSubmit()}
+                  >
+                    {isSubmitting
+                      ? "Adding..."
+                      : `Add ${dayCount > 0 ? `${dayCount} ` : ""}Schedule Row${dayCount !== 1 ? "s" : ""}`}
+                  </Button>
+                </>
               )}
             </form.Subscribe>
             <Button variant="outline" onClick={handleClose}>

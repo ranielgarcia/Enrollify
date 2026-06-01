@@ -10,6 +10,8 @@ interface ScheduleRowListProps {
   offeringId: number;
   sectionId: number;
   schedules: ClassSchedule[];
+  hoursPerDay?: number;
+  daysPerWeek?: number;
 }
 
 const DAY_LABELS: Record<string, string> = {
@@ -69,6 +71,8 @@ export function ScheduleRowList({
   offeringId,
   sectionId,
   schedules,
+  hoursPerDay,
+  daysPerWeek,
 }: ScheduleRowListProps) {
   return (
     <div className="space-y-2">
@@ -93,6 +97,8 @@ export function ScheduleRowList({
         offeringId={offeringId}
         sectionId={sectionId}
         existingSchedules={schedules}
+        hoursPerDay={hoursPerDay}
+        daysPerWeek={daysPerWeek}
       />
     </div>
   );
