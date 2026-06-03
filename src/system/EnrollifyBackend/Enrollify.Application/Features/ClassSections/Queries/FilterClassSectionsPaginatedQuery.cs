@@ -5,6 +5,8 @@ using Enrollify.Application.Features.ClassSections.Specifications;
 using Enrollify.Application.Filtering;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Models;
+using Enrollify.Core.Services.ClassSectionOpenForEnrollmentEligibilityValidation;
 using Enrollify.SharedKernel;
 using MediatR;
 
@@ -25,12 +27,17 @@ public class FilterClassSectionsPaginatedQueryHandler
   private readonly IReadRepository<ClassSection> _readRepository;
   private readonly IReadRepository<AcademicYear> _academicYearRepository;
 
+  private readonly ClassSectionOpenForEnrollmentEligibilityValidationPipeline
+    _openForEnrollmentEligibilityValidationPipeline;
+
   public FilterClassSectionsPaginatedQueryHandler(
     IReadRepository<ClassSection> readRepository,
-    IReadRepository<AcademicYear> academicYearRepository)
+    IReadRepository<AcademicYear> academicYearRepository,
+    ClassSectionOpenForEnrollmentEligibilityValidationPipeline openForEnrollmentEligibilityValidationPipeline)
   {
     _readRepository = readRepository;
     _academicYearRepository = academicYearRepository;
+    _openForEnrollmentEligibilityValidationPipeline = openForEnrollmentEligibilityValidationPipeline;
   }
 
   public async Task<Result<PagedResult<ClassSectionDto>>> Handle(
@@ -66,7 +73,7 @@ public class FilterClassSectionsPaginatedQueryHandler
     int totalCount = await _readRepository.CountAsync(spec, cancellationToken);
 
     var items = sections
-      .Select(ClassSectionDto.FromEntity)
+      .Select(section => ClassSectionDto.FromEntity(section, Validate(section)))
       .ToList();
 
     return new PagedResult<ClassSectionDto>(
@@ -74,5 +81,14 @@ public class FilterClassSectionsPaginatedQueryHandler
       request.page,
       request.pageSize,
       totalCount);
+  }
+
+  private List<DomainValidationMessage> Validate(ClassSection classSection)
+  {
+    ClassSectionOpenForEnrollmentEligibilityValidationContext validationContext =
+      _openForEnrollmentEligibilityValidationPipeline.Validate(
+        new ClassSectionOpenForEnrollmentEligibilityValidationContext(classSection, []));
+
+    return validationContext.ValidationErrors;
   }
 }

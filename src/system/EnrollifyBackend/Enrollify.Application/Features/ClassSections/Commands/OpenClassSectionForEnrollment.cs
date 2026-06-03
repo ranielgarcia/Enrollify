@@ -2,6 +2,7 @@ using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings.Specifications;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Services.ClassSectionOpenForEnrollmentEligibilityValidation;
 using Enrollify.SharedKernel;
 using MediatR;
 
@@ -17,14 +18,19 @@ public static class OpenClassSectionForEnrollment
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IReadRepository<ClassSectionSubjectOffering> _offeringReadRepository;
 
+    private readonly ClassSectionOpenForEnrollmentEligibilityValidationPipeline
+      _openForEnrollmentEligibilityValidationPipeline;
+
     public Handler(
       IReadRepository<ClassSection> classSectionReadRepository,
       IClassSectionRepository classSectionRepository,
-      IReadRepository<ClassSectionSubjectOffering> offeringReadRepository)
+      IReadRepository<ClassSectionSubjectOffering> offeringReadRepository,
+      ClassSectionOpenForEnrollmentEligibilityValidationPipeline openForEnrollmentEligibilityValidationPipeline)
     {
       _classSectionReadRepository = classSectionReadRepository;
       _classSectionRepository = classSectionRepository;
       _offeringReadRepository = offeringReadRepository;
+      _openForEnrollmentEligibilityValidationPipeline = openForEnrollmentEligibilityValidationPipeline;
     }
 
     public async Task<Result<ClassSectionId>> Handle(Command command, CancellationToken cancellationToken)
@@ -42,6 +48,23 @@ public static class OpenClassSectionForEnrollment
 
       try
       {
+        ClassSectionOpenForEnrollmentEligibilityValidationContext validationContext =
+          _openForEnrollmentEligibilityValidationPipeline.Validate(
+            new ClassSectionOpenForEnrollmentEligibilityValidationContext(section, offerings));
+
+        if (!validationContext.IsEligible)
+          // var offeringValidationErrors = new List<ValidationError>();
+          //
+          // foreach (KeyValuePair<ClassSectionSubjectOfferingId, List<string>> validationContextOfferingValidationError in
+          //          validationContext.OfferingValidationErrors)
+          //   offeringValidationErrors.Add(new ValidationError(
+          //     validationContextOfferingValidationError.Key.Value.ToString(),
+          //     string.Join("; ", validationContextOfferingValidationError.Value)));
+          //
+          // var allValidationErrors = validationContext.ValidationErrors
+          //   .Select(e => new ValidationError("ClassSection", e)).ToList().Concat(offeringValidationErrors).ToList();
+          return Result.Invalid(new ValidationError("This class section is not eligible for enrollment."));
+
         section.OpenForEnrollment();
       }
       catch (ArgumentException ex)

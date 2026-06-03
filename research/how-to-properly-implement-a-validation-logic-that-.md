@@ -469,30 +469,7 @@ CREATE INDEX IX_ClassSectionSubjectOffering_RoomId
 
 ---
 
-## 7. Academic Year vs. Academic Term Scoping
-
-The conflict spec[^10] states: "All conflict checks **must be scoped to the same `AcademicTermId`**."
-
-**Important: `ClassSection` has no direct `AcademicYearId` field for the scheduling year.**[^11] It only has:
-- `AcademicTermId` (the term the section is being taught in)
-- `CohortAcademicYearId` (the year the student cohort enrolled — NOT the current scheduling year)
-
-To scope by academic year, resolve the term IDs first:
-
-```csharp
-// AcademicTerm.AcademicYearId → get all term IDs for the target year
-var termIds = await _dbContext.Set<AcademicTerm>()
-    .Where(t => t.AcademicYearId == targetAcademicYearId && t.IsActive)
-    .Select(t => t.Id)
-    .ToListAsync(ct);
-// Then: WHERE ClassSection.AcademicTermId IN @termIds
-```
-
-The user's requirement "validate class sections under one academic year" means: collect all `AcademicTermId` values belonging to that year, then scope all conflict queries by those term IDs.
-
----
-
-## 8. TOCTOU Concurrency
+## 7. TOCTOU Concurrency
 
 There is a real race condition between checking for a conflict and inserting the schedule:
 
@@ -524,7 +501,7 @@ await _dbContext.Database.ExecuteInSerializableTransactionAsync(async () =>
 
 ---
 
-## 9. Algorithmic Complexity
+## 8. Algorithmic Complexity
 
 ### Per-save (targeted queries): O(1) in practice
 
@@ -552,7 +529,7 @@ var byTeacherDay = schedules.GroupBy(s => (s.TeacherId, s.DayOfWeek));
 
 ---
 
-## 10. Conflict Taxonomy Reference
+## 9. Conflict Taxonomy Reference
 
 All 17 conflict types from `research/scheduling/class-scheduling-conflicts.md`[^12]:
 
@@ -594,7 +571,7 @@ All 17 conflict types from `research/scheduling/class-scheduling-conflicts.md`[^
 
 ---
 
-## 11. Confidence Assessment
+## 10. Confidence Assessment
 
 | Claim | Confidence | Basis |
 |---|---|---|

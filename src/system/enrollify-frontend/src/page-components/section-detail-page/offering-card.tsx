@@ -30,6 +30,73 @@ interface OfferingCardProps {
   sectionId: number;
 }
 
+function parseTimeToHours(time: string): number {
+  const [hours, minutes, seconds] = time.split(":").map(Number);
+  return hours + minutes / 60 + seconds / 3600;
+}
+
+function computeScheduleMetrics(schedules: Offering["schedules"]) {
+  if (!schedules || schedules.length === 0) {
+    return { actualDaysPerWeek: 0, actualHoursPerDay: 0 };
+  }
+
+  const uniqueDays = new Set(schedules.map((s) => s.dayOfWeekAbbreviation));
+  const actualDaysPerWeek = uniqueDays.size;
+
+  const totalHours = schedules.reduce((sum, s) => {
+    const start = parseTimeToHours(s.startTime);
+    const end = parseTimeToHours(s.endTime);
+    return sum + (end - start);
+  }, 0);
+
+  const actualHoursPerDay =
+    schedules.length > 0 ? totalHours / schedules.length : 0;
+
+  return { actualDaysPerWeek, actualHoursPerDay };
+}
+
+function validateScheduleMetrics(
+  offering: Offering,
+  actualDaysPerWeek: number,
+  actualHoursPerDay: number,
+) {
+  const issues: { type: "warning" | "error"; message: string }[] = [];
+
+  const expectedDays = offering.daysPerWeek;
+  const expectedHours = offering.hoursPerDay;
+
+  if (expectedDays != null) {
+    if (Math.abs(expectedDays - actualDaysPerWeek) > 0.5) {
+      issues.push({
+        type: "error",
+        message: `Days/Week mismatch: expected ${expectedDays}, actual ${actualDaysPerWeek}`,
+      });
+    } else if (expectedDays !== actualDaysPerWeek) {
+      issues.push({
+        type: "warning",
+        message: `Days/Week slight mismatch: expected ${expectedDays}, actual ${actualDaysPerWeek}`,
+      });
+    }
+  }
+
+  if (expectedHours != null) {
+    const diff = Math.abs(expectedHours - actualHoursPerDay);
+    if (diff > 0.5) {
+      issues.push({
+        type: "error",
+        message: `Hrs/Day mismatch: expected ${expectedHours}, actual ${actualHoursPerDay.toFixed(1)}`,
+      });
+    } else if (diff > 0.01) {
+      issues.push({
+        type: "warning",
+        message: `Hrs/Day slight mismatch: expected ${expectedHours}, actual ${actualHoursPerDay.toFixed(1)}`,
+      });
+    }
+  }
+
+  return issues;
+}
+
 export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -44,6 +111,17 @@ export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
 
   const displayUnits = offering.effectiveUnits ?? offering.snapshotUnits;
   const hasOverride = offering.subjectUnitsOverride != null;
+
+  const { actualDaysPerWeek, actualHoursPerDay } = computeScheduleMetrics(
+    offering.schedules,
+  );
+  const scheduleIssues = validateScheduleMetrics(
+    offering,
+    actualDaysPerWeek,
+    actualHoursPerDay,
+  );
+  const hasScheduleError = scheduleIssues.some((i) => i.type === "error");
+  const hasScheduleWarning = scheduleIssues.some((i) => i.type === "warning");
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -83,7 +161,7 @@ export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
                 </TooltipTrigger>
                 <TooltipContent>
                   {hasOverride
-                    ? `Override: ${offering.subjectUnitsOverride} units (snapshot: ${offering.snapshotUnits})`
+                    ? `Override: ${offering.subjectUnitsOverride} units (curriculum default: ${offering.snapshotUnits})`
                     : `${displayUnits} units`}
                 </TooltipContent>
               </Tooltip>
@@ -119,8 +197,35 @@ export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  Units overridden to {offering.subjectUnitsOverride} (snapshot:{" "}
-                  {offering.snapshotUnits})
+                  Units overridden to {offering.subjectUnitsOverride}{" "}
+                  (curriculum default: {offering.snapshotUnits})
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {(hasScheduleError || hasScheduleWarning) && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge
+                    variant={hasScheduleError ? "destructive" : "outline"}
+                    className={`gap-1 text-xs ${
+                      hasScheduleWarning
+                        ? "border-amber-400 text-amber-700 dark:text-amber-400"
+                        : ""
+                    }`}
+                  >
+                    <AlertTriangle className="size-3" />
+                    {scheduleIssues.length} issue
+                    {scheduleIssues.length > 1 ? "s" : ""}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="space-y-1">
+                    {scheduleIssues.map((issue, i) => (
+                      <p key={i} className="text-xs">
+                        {issue.message}
+                      </p>
+                    ))}
+                  </div>
                 </TooltipContent>
               </Tooltip>
             )}
@@ -148,7 +253,7 @@ export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
 
         <CollapsibleContent>
           <div className="border-t px-4 py-3 bg-muted/20 space-y-3">
-            <div className="grid grid-cols-5 gap-4 text-xs">
+            <div className="grid grid-cols-7 gap-4 text-xs">
               <div>
                 <p className="font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">
                   Max Students
@@ -167,8 +272,7 @@ export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
                 </p>
                 <p>{offering.hoursPerDay ?? "—"}</p>
               </div>
-            </div>~
-
+            </div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Schedule Rows
             </p>
