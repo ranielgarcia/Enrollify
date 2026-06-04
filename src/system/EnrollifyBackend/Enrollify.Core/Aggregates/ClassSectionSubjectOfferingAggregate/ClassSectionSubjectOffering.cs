@@ -204,14 +204,11 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
     if (existingSchedule is null)
       throw new InvalidClassScheduleException($"Class schedule with ID {classScheduleId.Value} not found.");
 
-    // Check if the new times are different
     if (existingSchedule.StartTime == newStartTime && existingSchedule.EndTime == newEndTime) return this;
 
-    // Validate end time is after start time
     Guard.Against.InvalidInput(newEndTime, nameof(newEndTime), e => e > newStartTime,
       "End time must be after start time.");
 
-    // Calculate new total hours after update
     double newScheduleDuration = (newEndTime - newStartTime).TotalHours;
     double totalHoursAfterUpdate = _classSchedules
       .Where(cs => cs.Id != classScheduleId)
@@ -223,7 +220,6 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
       throw new InvalidClassScheduleException(
         $"Total hours after update ({totalHoursAfterUpdate:F2}) must not exceed days per week ({DaysPerWeek}) × hours per day ({HoursPerDay}) = {expectedTotalHours:F2} hours.");
 
-    // Remove old schedule and add updated one
     _classSchedules.Remove(existingSchedule);
     var updatedSchedule = new ClassSchedule(
       Id,
@@ -232,7 +228,6 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
       newEndTime
     );
     _classSchedules.Add(updatedSchedule);
-
     return this;
   }
 

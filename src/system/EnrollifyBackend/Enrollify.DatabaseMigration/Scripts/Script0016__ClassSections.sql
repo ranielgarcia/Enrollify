@@ -177,3 +177,4 @@ CREATE UNIQUE NONCLUSTERED INDEX UIdx_ClassSchedules_Offering_Day_IsActive
 -- |----|------------------------------|-----------|-----------|---------|
 -- | 1  | 1                            | MON       | 09:00:00  | 10:30:00|
 -- | 2  | 1                            | WED       | 09:00:00  | 10:30:00|
+

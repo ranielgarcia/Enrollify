@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings.Specifications;
+using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
@@ -24,15 +25,18 @@ public static class UpdateClassSectionSubjectOffering
     {
         private readonly IReadRepository<ClassSectionSubjectOffering> _offeringReadRepository;
         private readonly IClassSectionSubjectOfferingRepository _offeringRepository;
+        private readonly IPublisher _publisher;
         private readonly ILogger<Handler> _logger;
 
         public Handler(
             IReadRepository<ClassSectionSubjectOffering> offeringReadRepository,
             IClassSectionSubjectOfferingRepository offeringRepository,
+            IPublisher publisher,
             ILogger<Handler> logger)
         {
             _offeringReadRepository = offeringReadRepository;
             _offeringRepository = offeringRepository;
+            _publisher = publisher;
             _logger = logger;
         }
 
@@ -65,6 +69,8 @@ public static class UpdateClassSectionSubjectOffering
                     command.Id.Value, string.Join(", ", result.Errors));
                 return Result.Error("Unable to update the subject offering.");
             }
+
+            await _publisher.Publish(new ClassSectionEligibilityRecomputeRequestedEvent(offering.ClassSectionId), cancellationToken);
 
             _logger.LogInformation("Updated subject offering {OfferingId}", command.Id.Value);
             return result;

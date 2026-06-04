@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.SharedKernel;
 using MediatR;
@@ -21,15 +22,18 @@ public static class UpdateClassSection
     {
         private readonly IReadRepository<ClassSection> _classSectionReadRepository;
         private readonly IClassSectionRepository _classSectionRepository;
+        private readonly IPublisher _publisher;
         private readonly ILogger<Handler> _logger;
 
         public Handler(
             IReadRepository<ClassSection> classSectionReadRepository,
             IClassSectionRepository classSectionRepository,
+            IPublisher publisher,
             ILogger<Handler> logger)
         {
             _classSectionReadRepository = classSectionReadRepository;
             _classSectionRepository = classSectionRepository;
+            _publisher = publisher;
             _logger = logger;
         }
 
@@ -58,6 +62,8 @@ public static class UpdateClassSection
                     command.Id.Value, string.Join(", ", updateResult.Errors));
                 return Result.Error("Unable to update the class section.");
             }
+
+            await _publisher.Publish(new ClassSectionEligibilityRecomputeRequestedEvent(section.Id), cancellationToken);
 
             _logger.LogInformation("Successfully updated class section {ClassSectionId}", command.Id.Value);
             return Result.Success(section.Id);

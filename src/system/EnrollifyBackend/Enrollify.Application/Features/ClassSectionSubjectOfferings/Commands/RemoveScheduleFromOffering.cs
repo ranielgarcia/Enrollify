@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings.Specifications;
+using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.DomainExceptions;
 using Enrollify.SharedKernel;
@@ -18,15 +19,18 @@ public static class RemoveScheduleFromOffering
     {
         private readonly IReadRepository<ClassSectionSubjectOffering> _offeringReadRepository;
         private readonly IClassSectionSubjectOfferingRepository _offeringRepository;
+        private readonly IPublisher _publisher;
         private readonly ILogger<Handler> _logger;
 
         public Handler(
             IReadRepository<ClassSectionSubjectOffering> offeringReadRepository,
             IClassSectionSubjectOfferingRepository offeringRepository,
+            IPublisher publisher,
             ILogger<Handler> logger)
         {
             _offeringReadRepository = offeringReadRepository;
             _offeringRepository = offeringRepository;
+            _publisher = publisher;
             _logger = logger;
         }
 
@@ -61,6 +65,8 @@ public static class RemoveScheduleFromOffering
                     command.OfferingId.Value, string.Join(", ", saveResult.Errors));
                 return Result.Error("Unable to remove schedule from offering.");
             }
+
+            await _publisher.Publish(new ClassSectionEligibilityRecomputeRequestedEvent(offering.ClassSectionId), cancellationToken);
 
             _logger.LogInformation("Removed schedule {ScheduleId} from offering {OfferingId}",
                 command.ScheduleId.Value, command.OfferingId.Value);

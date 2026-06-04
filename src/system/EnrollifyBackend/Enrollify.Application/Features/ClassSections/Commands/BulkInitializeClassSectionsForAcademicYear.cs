@@ -7,6 +7,7 @@ using Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
@@ -36,6 +37,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPublisher _publisher;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -45,6 +47,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
       IClassSectionRepository classSectionRepository,
       IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
       IUnitOfWork unitOfWork,
+      IPublisher publisher,
       ILogger<Handler> logger)
     {
       _academicYearRepository = academicYearRepository;
@@ -53,6 +56,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
       _classSectionRepository = classSectionRepository;
       _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
       _unitOfWork = unitOfWork;
+      _publisher = publisher;
       _logger = logger;
     }
 
@@ -110,6 +114,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
       try
       {
         int totalSectionsCreated = 0;
+        var createdSectionIds = new List<ClassSectionId>();
 
         foreach (TargetCourse targetCourse in command.TargetCourses)
         {
@@ -196,6 +201,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
               }
             }
 
+            createdSectionIds.Add(classSectionId);
             totalSectionsCreated++;
             _logger.LogInformation(
               "Created class section {SectionName} (ID: {ClassSectionId}) with {SubjectCount} subject offerings",
@@ -204,6 +210,10 @@ public static class BulkInitializeClassSectionsForAcademicYear
         }
 
         await transaction.CommitAsync(cancellationToken);
+
+        // Publish after commit — one event per section so each gets its own recompute
+        foreach (ClassSectionId sectionId in createdSectionIds)
+          await _publisher.Publish(new ClassSectionCreatedEvent(sectionId), cancellationToken);
 
         _logger.LogInformation(
           "Successfully bulk initialized {TotalSections} class sections for term {TermId}, year level {YearLevel}",

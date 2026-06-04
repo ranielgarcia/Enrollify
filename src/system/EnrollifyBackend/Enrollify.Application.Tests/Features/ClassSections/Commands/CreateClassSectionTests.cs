@@ -34,6 +34,7 @@ public class CreateClassSectionTests
     private readonly Mock<IClassSectionRepository> _classSectionRepositoryMock = new();
     private readonly Mock<IClassSectionSubjectOfferingRepository> _mockClassSectionSubjectOfferingRepository = new();
     private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
+    private readonly Mock<IPublisher> _publisherMock = new();
     private readonly FakeTransactionScope _fakeTransaction = new();
     private readonly FakeLogger<CreateClassSection.Handler> _logger;
     private readonly CreateClassSection.Handler _handler;
@@ -50,6 +51,7 @@ public class CreateClassSectionTests
             _classSectionRepositoryMock.Object,
             _mockClassSectionSubjectOfferingRepository.Object,
             _unitOfWorkMock.Object,
+            _publisherMock.Object,
             _logger);
 
         // Default setup for transaction - use fake implementation

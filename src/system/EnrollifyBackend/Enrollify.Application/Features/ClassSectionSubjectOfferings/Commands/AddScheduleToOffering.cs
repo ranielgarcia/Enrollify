@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings.Specifications;
+using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.Core.DomainExceptions;
@@ -21,15 +22,18 @@ public static class AddScheduleToOffering
     {
         private readonly IReadRepository<ClassSectionSubjectOffering> _offeringReadRepository;
         private readonly IClassSectionSubjectOfferingRepository _offeringRepository;
+        private readonly IPublisher _publisher;
         private readonly ILogger<Handler> _logger;
 
         public Handler(
             IReadRepository<ClassSectionSubjectOffering> offeringReadRepository,
             IClassSectionSubjectOfferingRepository offeringRepository,
+            IPublisher publisher,
             ILogger<Handler> logger)
         {
             _offeringReadRepository = offeringReadRepository;
             _offeringRepository = offeringRepository;
+            _publisher = publisher;
             _logger = logger;
         }
 
@@ -79,6 +83,8 @@ public static class AddScheduleToOffering
 
             if (addedId is null)
                 return Result.Error("Schedule was added but ID could not be retrieved.");
+
+            await _publisher.Publish(new ClassSectionEligibilityRecomputeRequestedEvent(offering.ClassSectionId), cancellationToken);
 
             _logger.LogInformation("Added schedule {ScheduleId} to offering {OfferingId}", addedId.Value.Value, command.OfferingId.Value);
             return Result.Success(addedId.Value);

@@ -6,6 +6,7 @@ using Enrollify.Application.Features.ClassSectionSubjectOfferings;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
@@ -37,6 +38,7 @@ public static class CreateClassSection
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPublisher _publisher;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -46,6 +48,7 @@ public static class CreateClassSection
       IClassSectionRepository classSectionRepository,
       IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
       IUnitOfWork unitOfWork,
+      IPublisher publisher,
       ILogger<Handler> logger)
     {
       _academicYearReadRepository = academicYearReadRepository;
@@ -54,6 +57,7 @@ public static class CreateClassSection
       _classSectionRepository = classSectionRepository;
       _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
       _unitOfWork = unitOfWork;
+      _publisher = publisher;
       _logger = logger;
     }
 
@@ -188,6 +192,9 @@ public static class CreateClassSection
         }
 
         await transaction.CommitAsync(cancellationToken);
+
+        // Publish after commit so the event handler reads fully-committed data
+        await _publisher.Publish(new ClassSectionCreatedEvent(classSectionId), cancellationToken);
 
         _logger.LogInformation(
           "Successfully created class section {ClassSectionId} with {SubjectCount} subject offerings",
