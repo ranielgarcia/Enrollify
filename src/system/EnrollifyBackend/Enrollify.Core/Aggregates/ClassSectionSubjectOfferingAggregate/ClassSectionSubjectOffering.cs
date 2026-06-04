@@ -56,7 +56,7 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
   public Room? Room { get; private set; }
 
   public int DaysPerWeek { get; private set; }
-  public double HoursPerDay { get; private set; }
+  public decimal HoursPerDay { get; private set; }
   public int? MaxNumberOfStudents { get; private set; }
 
 
@@ -103,7 +103,7 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
     return this;
   }
 
-  public ClassSectionSubjectOffering UpdateSchedule(int newDaysPerWeek, double newHoursPerDay)
+  public ClassSectionSubjectOffering UpdateSchedule(int newDaysPerWeek, decimal newHoursPerDay)
   {
     if (newDaysPerWeek == DaysPerWeek && newHoursPerDay == HoursPerDay) return this;
     DaysPerWeek = Guard.Against.NegativeOrZero(newDaysPerWeek, nameof(newDaysPerWeek));
@@ -169,11 +169,12 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
   {
     Guard.Against.Null(classSchedule, nameof(classSchedule));
 
-    double numberOfHours = (classSchedule.EndTime - classSchedule.StartTime).TotalHours;
-    double totalHoursAfterAdding =
-      _classSchedules.Sum(cs => (cs.EndTime - cs.StartTime).TotalHours) + numberOfHours;
-    double expectedTotalHours = (double)(DaysPerWeek * HoursPerDay);
-    if (_classSchedules.Count + 1 == DaysPerWeek && Math.Abs(totalHoursAfterAdding - expectedTotalHours) > 0.01)
+    // Use decimal for hours to match HoursPerDay (decimal) and avoid implicit double/decimal mixing
+    decimal numberOfHours = (decimal)(classSchedule.EndTime - classSchedule.StartTime).TotalHours;
+    decimal totalHoursAfterAdding =
+      _classSchedules.Sum(cs => (decimal)(cs.EndTime - cs.StartTime).TotalHours) + numberOfHours;
+    decimal expectedTotalHours = DaysPerWeek * HoursPerDay;
+    if (_classSchedules.Count + 1 == DaysPerWeek && Math.Abs(totalHoursAfterAdding - expectedTotalHours) > 0.01m)
       throw new InvalidClassScheduleException(
         $"Total hours ({totalHoursAfterAdding:F2}) must equal days per week ({DaysPerWeek}) × hours per day ({HoursPerDay}) = {expectedTotalHours:F2} hours.");
 
@@ -181,11 +182,11 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
       throw new InvalidClassScheduleException(
         $"Cannot add more than {DaysPerWeek} schedule(s) per week. Current count: {_classSchedules.Count}.");
 
-    if (numberOfHours - HoursPerDay > 0.01)
+    if (numberOfHours - HoursPerDay > 0.01m)
       throw new InvalidClassScheduleException(
         $"Schedule hours ({numberOfHours:F2}) must not exceed ({HoursPerDay}) × hours per day.");
 
-    if (HoursPerDay - numberOfHours > 0.01)
+    if (HoursPerDay - numberOfHours > 0.01m)
       throw new InvalidClassScheduleException(
         $"Schedule hours ({numberOfHours:F2}) must not be less than ({HoursPerDay}) × hours per day.");
 
@@ -209,14 +210,15 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
     Guard.Against.InvalidInput(newEndTime, nameof(newEndTime), e => e > newStartTime,
       "End time must be after start time.");
 
-    double newScheduleDuration = (newEndTime - newStartTime).TotalHours;
-    double totalHoursAfterUpdate = _classSchedules
+    // Use decimal for durations to match HoursPerDay (decimal)
+    decimal newScheduleDuration = (decimal)(newEndTime - newStartTime).TotalHours;
+    decimal totalHoursAfterUpdate = _classSchedules
       .Where(cs => cs.Id != classScheduleId)
-      .Sum(cs => (cs.EndTime - cs.StartTime).TotalHours) + newScheduleDuration;
+      .Sum(cs => (decimal)(cs.EndTime - cs.StartTime).TotalHours) + newScheduleDuration;
 
-    double expectedTotalHours = (double)(DaysPerWeek * HoursPerDay);
+    decimal expectedTotalHours = DaysPerWeek * HoursPerDay;
 
-    if (totalHoursAfterUpdate - expectedTotalHours > 0.01)
+    if (totalHoursAfterUpdate - expectedTotalHours > 0.01m)
       throw new InvalidClassScheduleException(
         $"Total hours after update ({totalHoursAfterUpdate:F2}) must not exceed days per week ({DaysPerWeek}) × hours per day ({HoursPerDay}) = {expectedTotalHours:F2} hours.");
 

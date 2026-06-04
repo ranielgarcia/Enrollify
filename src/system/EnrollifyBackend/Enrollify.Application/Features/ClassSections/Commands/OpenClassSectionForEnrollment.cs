@@ -18,19 +18,14 @@ public static class OpenClassSectionForEnrollment
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IReadRepository<ClassSectionSubjectOffering> _offeringReadRepository;
 
-    private readonly ClassSectionOpenForEnrollmentEligibilityValidationPipeline
-      _openForEnrollmentEligibilityValidationPipeline;
-
     public Handler(
       IReadRepository<ClassSection> classSectionReadRepository,
       IClassSectionRepository classSectionRepository,
-      IReadRepository<ClassSectionSubjectOffering> offeringReadRepository,
-      ClassSectionOpenForEnrollmentEligibilityValidationPipeline openForEnrollmentEligibilityValidationPipeline)
+      IReadRepository<ClassSectionSubjectOffering> offeringReadRepository)
     {
       _classSectionReadRepository = classSectionReadRepository;
       _classSectionRepository = classSectionRepository;
       _offeringReadRepository = offeringReadRepository;
-      _openForEnrollmentEligibilityValidationPipeline = openForEnrollmentEligibilityValidationPipeline;
     }
 
     public async Task<Result<ClassSectionId>> Handle(Command command, CancellationToken cancellationToken)
@@ -49,20 +44,9 @@ public static class OpenClassSectionForEnrollment
       try
       {
         ClassSectionOpenForEnrollmentEligibilityValidationContext validationContext =
-          _openForEnrollmentEligibilityValidationPipeline.Validate(
-            new ClassSectionOpenForEnrollmentEligibilityValidationContext(section, offerings));
+          ClassSectionEnrollmentEligibilityValidator.Validate(section, offerings);
 
         if (!validationContext.IsEligible)
-          // var offeringValidationErrors = new List<ValidationError>();
-          //
-          // foreach (KeyValuePair<ClassSectionSubjectOfferingId, List<string>> validationContextOfferingValidationError in
-          //          validationContext.OfferingValidationErrors)
-          //   offeringValidationErrors.Add(new ValidationError(
-          //     validationContextOfferingValidationError.Key.Value.ToString(),
-          //     string.Join("; ", validationContextOfferingValidationError.Value)));
-          //
-          // var allValidationErrors = validationContext.ValidationErrors
-          //   .Select(e => new ValidationError("ClassSection", e)).ToList().Concat(offeringValidationErrors).ToList();
           return Result.Invalid(new ValidationError("This class section is not eligible for enrollment."));
 
         section.OpenForEnrollment();

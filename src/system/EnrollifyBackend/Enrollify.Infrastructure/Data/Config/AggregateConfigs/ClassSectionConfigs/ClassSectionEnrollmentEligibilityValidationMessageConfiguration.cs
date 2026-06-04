@@ -14,6 +14,13 @@ public class ClassSectionEnrollmentEligibilityValidationMessageConfiguration
       .UseIdentityColumn()
       .IsRequired();
 
+    builder.Property(e => e.Severity)
+      .HasConversion(
+        v => v.Value,
+        v => Core.Constants.DomainValidationErrorSeverityEnum.FromValue(v))
+      .HasColumnType("int")
+      .IsRequired();
+
     builder.Property(e => e.ClassSectionId)
       .IsRequired();
 
@@ -34,5 +41,3 @@ public class ClassSectionEnrollmentEligibilityValidationMessageConfiguration
       .OnDelete(DeleteBehavior.Cascade);
   }
 }
-
-

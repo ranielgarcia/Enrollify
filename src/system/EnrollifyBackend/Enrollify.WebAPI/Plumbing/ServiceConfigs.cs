@@ -1,4 +1,3 @@
-using Enrollify.Core.Services.ClassSectionOpenForEnrollmentEligibilityValidation;
 using Enrollify.Infrastructure;
 
 namespace Enrollify.WebAPI.Plumbing;
@@ -12,8 +11,6 @@ public static class ServiceConfigs
   {
     services.AddInfrastructureServices(builder.Configuration, logger, builder.Environment.IsDevelopment())
       .AddMediatR(logger);
-
-    services.RegisterClassSectionOpenForEnrollmentEligibilityValidationServices();
 
     return services;
   }

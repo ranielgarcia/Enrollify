@@ -20,10 +20,12 @@ public class ClassSectionDetailDto : BaseDto
   public ClassSectionStatusDto Status { get; set; } = null!;
 
   public IReadOnlyList<ClassSectionSubjectOfferingDto> Offerings { get; set; } = [];
+  public List<ClassSectionEnrollmentEligibilityValidationMessageDto> ValidationMessages { get; init; } = new();
 
   public static ClassSectionDetailDto FromEntities(
     ClassSection section,
-    IEnumerable<ClassSectionSubjectOffering> offerings)
+    IEnumerable<ClassSectionSubjectOffering> offerings,
+    List<ClassSectionEnrollmentEligibilityValidationMessageDto> validationMessages)
   {
     return new ClassSectionDetailDto
     {
@@ -32,6 +34,7 @@ public class ClassSectionDetailDto : BaseDto
       SectionCode = (char)section.SectionCode,
       IntendedYearLevel = (int)section.IntendedYearLevel,
       FullName = section.FullName,
+      ValidationMessages = validationMessages,
 
       Course = section.Course is not null
         ? new ClassSectionCourseDto

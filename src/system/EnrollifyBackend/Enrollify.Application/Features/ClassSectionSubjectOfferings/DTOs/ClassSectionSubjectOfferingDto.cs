@@ -18,7 +18,7 @@ public class ClassSectionSubjectOfferingDto : BaseDto
   public decimal EffectiveUnits { get; set; }
 
   public int DaysPerWeek { get; set; }
-  public double HoursPerDay { get; set; }
+  public decimal HoursPerDay { get; set; }
   public int? MaxNumberOfStudents { get; set; }
   public bool IsFullyScheduled { get; set; }
 

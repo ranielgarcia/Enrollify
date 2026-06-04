@@ -1,8 +1,9 @@
 CREATE TABLE ClassSectionEnrollmentEligibilityValidationMessages
 (
   Id             INT            NOT NULL IDENTITY (1,1) PRIMARY KEY,
+  Severity       INT            NOT NULL, -- e.g. 1 = Info, 2 = Warning, 3 = Error
   ClassSectionId INT            NOT NULL,
-  OfferingId     INT NULL,
+  OfferingId     INT            NULL,
   Code           VARCHAR(50)    NOT NULL, -- e.g. "CLASS_SECTION_ADVISER_REQUIRED"
   Message        VARCHAR(255)   NOT NULL, -- Human-readable description
   ComputedAt     DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET(),
@@ -14,7 +15,7 @@ CREATE TABLE ClassSectionEnrollmentEligibilityValidationMessages
 GO
 
 CREATE
-NONCLUSTERED INDEX IX_ClassSectionEligibilityMessages_ClassSectionId
+  NONCLUSTERED INDEX IX_ClassSectionEligibilityMessages_ClassSectionId
   ON ClassSectionEnrollmentEligibilityValidationMessages (ClassSectionId);
 GO
 

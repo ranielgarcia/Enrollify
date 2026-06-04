@@ -22,10 +22,11 @@ public class ClassSectionDto : BaseDto
   public ClassSectionAdviserDto? Adviser { get; set; }
   public ClassSectionStatusDto Status { get; set; } = null!;
 
-  public List<DomainValidationMessage> ValidationErrors { get; init; } = [];
-  public bool IsEligibleForOpenEnrollment => ValidationErrors.Any();
+  public List<ClassSectionEnrollmentEligibilityValidationMessageDto> ValidationMessages { get; init; } = new();
+  public bool IsEligibleForOpenEnrollment => ValidationMessages.Any();
 
-  public static ClassSectionDto FromEntity(ClassSection section, List<DomainValidationMessage> validationErrors)
+  public static ClassSectionDto FromEntity(ClassSection section,
+    List<ClassSectionEnrollmentEligibilityValidationMessageDto> validationMessages)
   {
     return new ClassSectionDto
     {
@@ -33,7 +34,7 @@ public class ClassSectionDto : BaseDto
       Name = section.Name,
       SectionCode = (char)section.SectionCode,
       IntendedYearLevel = (int)section.IntendedYearLevel,
-      ValidationErrors = validationErrors,
+      ValidationMessages = validationMessages,
 
       Course = section.Course is not null
         ? new ClassSectionCourseDto

@@ -13,12 +13,12 @@ using MediatR;
 namespace Enrollify.Application.Features.ClassSections.Queries;
 
 public record FilterClassSectionsPaginatedQuery(
-  int page = 1,
-  int pageSize = 10,
-  int? academicYearId = null,
-  IEnumerable<FilterItem>? filters = null,
-  IEnumerable<SortItem>? sorts = null,
-  string? joinOperator = null
+  int Page = 1,
+  int PageSize = 10,
+  int? AcademicYearId = null,
+  IEnumerable<FilterItem>? Filters = null,
+  IEnumerable<SortItem>? Sorts = null,
+  string? JoinOperator = null
 ) : IRequest<Result<PagedResult<ClassSectionDto>>>;
 
 public class FilterClassSectionsPaginatedQueryHandler
@@ -26,69 +26,71 @@ public class FilterClassSectionsPaginatedQueryHandler
 {
   private readonly IReadRepository<ClassSection> _readRepository;
   private readonly IReadRepository<AcademicYear> _academicYearRepository;
-
-  private readonly ClassSectionOpenForEnrollmentEligibilityValidationPipeline
-    _openForEnrollmentEligibilityValidationPipeline;
+  private readonly IReadRepository<ClassSectionEnrollmentEligibilityValidationMessage> _validationMessageRepository;
 
   public FilterClassSectionsPaginatedQueryHandler(
     IReadRepository<ClassSection> readRepository,
     IReadRepository<AcademicYear> academicYearRepository,
-    ClassSectionOpenForEnrollmentEligibilityValidationPipeline openForEnrollmentEligibilityValidationPipeline)
+    IReadRepository<ClassSectionEnrollmentEligibilityValidationMessage> validationMessageRepository)
   {
     _readRepository = readRepository;
     _academicYearRepository = academicYearRepository;
-    _openForEnrollmentEligibilityValidationPipeline = openForEnrollmentEligibilityValidationPipeline;
+    _validationMessageRepository = validationMessageRepository;
   }
 
   public async Task<Result<PagedResult<ClassSectionDto>>> Handle(
     FilterClassSectionsPaginatedQuery request,
     CancellationToken cancellationToken)
   {
-    JoinOperator joinOperator = Enum.TryParse<JoinOperator>(request.joinOperator, true, out JoinOperator parsed)
+    JoinOperator joinOperator = Enum.TryParse<JoinOperator>(request.JoinOperator, true, out JoinOperator parsed)
       ? parsed
       : JoinOperator.Or;
 
     IEnumerable<int>? academicTermIds = null;
-    if (request.academicYearId.HasValue)
+    if (request.AcademicYearId.HasValue)
     {
-      var academicYearId = AcademicYearId.From(request.academicYearId.Value);
+      var academicYearId = AcademicYearId.From(request.AcademicYearId.Value);
       AcademicYear? academicYear = await _academicYearRepository.FirstOrDefaultAsync(
         new GetAcademicYearByIdSpec(academicYearId), cancellationToken);
 
       if (academicYear is null)
-        return Result.NotFound($"Academic year with id {request.academicYearId} was not found.");
+        return Result.NotFound($"Academic year with id {request.AcademicYearId} was not found.");
 
       academicTermIds = academicYear.AcademicTerms.Select(t => t.Id.Value);
     }
 
     var spec = new FilterClassSectionsPaginatedSpec(
-      request.page,
-      request.pageSize,
+      request.Page,
+      request.PageSize,
       academicTermIds,
-      request.filters,
-      request.sorts,
+      request.Filters,
+      request.Sorts,
       joinOperator);
 
     List<ClassSection> sections = await _readRepository.ListAsync(spec, cancellationToken);
     int totalCount = await _readRepository.CountAsync(spec, cancellationToken);
 
+    var sectionIds = sections.Select(s => s.Id).Distinct().ToList();
+
+    List<ClassSectionEnrollmentEligibilityValidationMessage> validationMessagesPerSection =
+      await _validationMessageRepository
+        .ListAsync(new GetClassSectionEnrollmentEligibilityValidationMessagesSpec(sectionIds), cancellationToken);
+
+    var validationMessagesPerSectionKeyValue = validationMessagesPerSection.GroupBy(m => m.ClassSectionId)
+      .ToDictionary(g => g.Key, g => g.ToList());
+
     var items = sections
-      .Select(section => ClassSectionDto.FromEntity(section, Validate(section)))
+      .Select(section => ClassSectionDto.FromEntity(section,
+        validationMessagesPerSectionKeyValue.ContainsKey(section.Id)
+          ? validationMessagesPerSectionKeyValue[section.Id]
+            .Select(ClassSectionEnrollmentEligibilityValidationMessageDto.FromEntity).ToList()
+          : new List<ClassSectionEnrollmentEligibilityValidationMessageDto>()))
       .ToList();
 
     return new PagedResult<ClassSectionDto>(
       items.AsReadOnly(),
-      request.page,
-      request.pageSize,
+      request.Page,
+      request.PageSize,
       totalCount);
-  }
-
-  private List<DomainValidationMessage> Validate(ClassSection classSection)
-  {
-    ClassSectionOpenForEnrollmentEligibilityValidationContext validationContext =
-      _openForEnrollmentEligibilityValidationPipeline.Validate(
-        new ClassSectionOpenForEnrollmentEligibilityValidationContext(classSection, []));
-
-    return validationContext.ValidationErrors;
   }
 }

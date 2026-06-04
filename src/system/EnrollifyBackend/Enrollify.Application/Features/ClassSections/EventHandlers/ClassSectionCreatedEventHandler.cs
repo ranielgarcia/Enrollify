@@ -16,7 +16,6 @@ namespace Enrollify.Application.Features.ClassSections.EventHandlers;
 public sealed class ClassSectionCreatedEventHandler(
   IReadRepository<ClassSection> classSectionReadRepository,
   IReadRepository<ClassSectionSubjectOffering> offeringReadRepository,
-  ClassSectionOpenForEnrollmentEligibilityValidationPipeline pipeline,
   IClassSectionEligibilityValidationMessageRepository messageRepository,
   ILogger<ClassSectionCreatedEventHandler> logger)
   : IDomainEventHandler<ClassSectionCreatedEvent>
@@ -41,34 +40,26 @@ public sealed class ClassSectionCreatedEventHandler(
       new GetClassSectionSubjectOfferingsByClassSectionIdSpec(classSectionId), cancellationToken);
 
     ClassSectionOpenForEnrollmentEligibilityValidationContext context =
-      pipeline.Validate(new ClassSectionOpenForEnrollmentEligibilityValidationContext(section, offerings));
+      ClassSectionEnrollmentEligibilityValidator.Validate(section, offerings);
 
-    var classSectionValidationErrors = context.ValidationErrors
-      .Select(e => new ClassSectionEnrollmentEligibilityValidationMessage(classSectionId, null, e.Code, e.Message))
+    var classSectionValidationErrors = context.ClassSectionValidationMessages
+      .Select(e =>
+        new ClassSectionEnrollmentEligibilityValidationMessage(e.Severity, classSectionId, null, e.Code, e.Message))
       .ToList();
 
-    var offeringValidationErrors = context.OfferingValidationErrors
+    var offeringValidationErrors = context.OfferingValidationMessages
       .SelectMany(kvp => kvp.Value.Select(e => new ClassSectionEnrollmentEligibilityValidationMessage(
-        classSectionId, kvp.Key, e.Code, e.Message)))
-      .ToList();
-
-    var informationalMessages = context.InformationalMessages
-      .Select(e => new ClassSectionEnrollmentEligibilityValidationMessage(classSectionId, null, e.Code, e.Message))
-      .ToList();
-
-    var softRuleMessages = context.SoftRulesMessages
-      .Select(e => new ClassSectionEnrollmentEligibilityValidationMessage(classSectionId, null, e.Code, e.Message))
+        e.Severity, classSectionId, kvp.Key, e.Code, e.Message)))
       .ToList();
 
     var messages =
-      classSectionValidationErrors.Concat(offeringValidationErrors).Concat(informationalMessages)
-        .Concat(softRuleMessages)
+      classSectionValidationErrors.Concat(offeringValidationErrors)
         .ToList();
 
     await messageRepository.ReplaceAllForSectionAsync(classSectionId, messages, cancellationToken);
 
     logger.LogInformation(
       "Eligibility recomputed for ClassSection {ClassSectionId}: {ErrorCount} error(s)",
-      classSectionId.Value, context.ValidationErrors.Count);
+      classSectionId.Value, messages.Count);
   }
 }

@@ -1,6 +1,7 @@
 using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.Core.DomainExceptions;
 using Enrollify.Core.Models;
 
@@ -25,35 +26,31 @@ public sealed class ClassSectionOpenForEnrollmentEligibilityValidationContext
     ClassSectionSubjectOfferings = classSectionSubjectOfferings.ToList();
   }
 
-  public List<DomainValidationMessage> ValidationErrors { get; private set; } = [];
-  public List<DomainValidationMessage> InformationalMessages { get; private set; } = [];
-  public List<DomainValidationMessage> SoftRulesMessages { get; private set; } = [];
+  public List<DomainValidationMessage> ClassSectionValidationMessages { get; private set; } = [];
 
   public Dictionary<ClassSectionSubjectOfferingId, List<DomainValidationMessage>>
-    OfferingValidationErrors { get; set; } = new();
+    OfferingValidationMessages { get; set; } = new();
 
-  public bool IsEligible => ValidationErrors.Count == 0;
+  public bool IsEligible => ClassSectionValidationMessages.Count == 0 &&
+                            OfferingValidationMessages.All(kv => kv.Value.Count == 0);
 
-  public void Invalidate(string errorCode, string message)
+  public void AddClassSectionValidationMessage(DomainValidationErrorSeverityEnum severity, string errorCode,
+    string message)
+
   {
-    ValidationErrors.Add(new DomainValidationMessage(errorCode, message));
+    ClassSectionValidationMessages.Add(new DomainValidationMessage(severity, errorCode,
+      message));
   }
 
-  public void InvalidateOffering(ClassSectionSubjectOfferingId offeringId, string errorCode, string message)
+  public void AddOfferingValidationMessage(DomainValidationErrorSeverityEnum severity,
+    ClassSectionSubjectOfferingId offeringId,
+    string errorCode, string message)
   {
-    if (!OfferingValidationErrors.ContainsKey(offeringId))
-      OfferingValidationErrors.Add(offeringId, new List<DomainValidationMessage> { new(errorCode, message) });
+    if (!OfferingValidationMessages.ContainsKey(offeringId))
+      OfferingValidationMessages.Add(offeringId,
+        new List<DomainValidationMessage> { new(severity, errorCode, message) });
     else
-      OfferingValidationErrors[offeringId].Add(new DomainValidationMessage(errorCode, message));
-  }
-
-  public void AddInformationalMessage(string errorCode, string message)
-  {
-    InformationalMessages.Add(new DomainValidationMessage(errorCode, message));
-  }
-
-  public void AddSoftRuleMessage(string errorCode, string message)
-  {
-    SoftRulesMessages.Add(new DomainValidationMessage(errorCode, message));
+      OfferingValidationMessages[offeringId]
+        .Add(new DomainValidationMessage(severity, errorCode, message));
   }
 }
