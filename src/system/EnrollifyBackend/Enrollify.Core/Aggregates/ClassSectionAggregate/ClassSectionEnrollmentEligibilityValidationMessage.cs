@@ -1,4 +1,5 @@
 using Ardalis.GuardClauses;
+using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.Aggregates.ClassSectionAggregate;
@@ -18,16 +19,20 @@ public class ClassSectionEnrollmentEligibilityValidationMessage
 
   public ClassSectionEnrollmentEligibilityValidationMessage(
     ClassSectionId classSectionId,
+    ClassSectionSubjectOfferingId? offeringId,
     string code,
     string message)
   {
     ClassSectionId = Guard.Against.Null(classSectionId, nameof(classSectionId));
+    OfferingId = offeringId;
     Code = Guard.Against.NullOrEmpty(code, nameof(code));
     Message = Guard.Against.NullOrEmpty(message, nameof(message));
     ComputedAt = DateTimeOffset.UtcNow;
   }
 
   public ClassSectionId ClassSectionId { get; private set; }
+
+  public ClassSectionSubjectOfferingId? OfferingId { get; set; }
 
   /// <summary>Validation error code, e.g. "CLASS_SECTION_ADVISER_REQUIRED".</summary>
   public string Code { get; private set; } = null!;
@@ -37,4 +42,3 @@ public class ClassSectionEnrollmentEligibilityValidationMessage
 
   public DateTimeOffset ComputedAt { get; private set; }
 }
-

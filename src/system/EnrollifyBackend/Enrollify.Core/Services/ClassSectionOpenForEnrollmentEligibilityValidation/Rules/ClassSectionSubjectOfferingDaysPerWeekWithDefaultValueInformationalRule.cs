@@ -2,16 +2,18 @@ using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 
 namespace Enrollify.Core.Services.ClassSectionOpenForEnrollmentEligibilityValidation.Rules;
 
-public class ClassSectionSubjectOfferingTeacherIsRequiredRule : IClassSectionOpenForEnrollmentEligibilityValidationRule
+public class
+  ClassSectionSubjectOfferingDaysPerWeekWithDefaultValueInformationalRule :
+  IClassSectionOpenForEnrollmentEligibilityValidationRule
 {
-  public int Order => 2;
+  public int Order => 3;
 
   public void Validate(ClassSectionOpenForEnrollmentEligibilityValidationContext context)
   {
     if (!context.ClassSectionSubjectOfferings.Any()) return;
     foreach (ClassSectionSubjectOffering offering in context.ClassSectionSubjectOfferings)
-      if (offering.TeacherId is null)
-        context.InvalidateOffering(offering.Id, "SUBJECT_OFFERING_TEACHER_REQUIRED",
-          "Subject offering must have a teacher assigned.");
+      if (offering.DaysPerWeek == 1)
+        context.AddInformationalMessage("SUBJECT_OFFERING_DAYS_PER_WEEK_DEFAULT_VALUE",
+          "Days per week is set to the default value of 1.");
   }
 }

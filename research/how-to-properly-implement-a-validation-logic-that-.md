@@ -469,7 +469,30 @@ CREATE INDEX IX_ClassSectionSubjectOffering_RoomId
 
 ---
 
-## 7. TOCTOU Concurrency
+## 7. Academic Year vs. Academic Term Scoping
+
+The conflict spec[^10] states: "All conflict checks **must be scoped to the same `AcademicTermId`**."
+
+**Important: `ClassSection` has no direct `AcademicYearId` field for the scheduling year.**[^11] It only has:
+- `AcademicTermId` (the term the section is being taught in)
+- `CohortAcademicYearId` (the year the student cohort enrolled — NOT the current scheduling year)
+
+To scope by academic year, resolve the term IDs first:
+
+```csharp
+// AcademicTerm.AcademicYearId → get all term IDs for the target year
+var termIds = await _dbContext.Set<AcademicTerm>()
+    .Where(t => t.AcademicYearId == targetAcademicYearId && t.IsActive)
+    .Select(t => t.Id)
+    .ToListAsync(ct);
+// Then: WHERE ClassSection.AcademicTermId IN @termIds
+```
+
+The user's requirement "validate class sections under one academic year" means: collect all `AcademicTermId` values belonging to that year, then scope all conflict queries by those term IDs.
+
+---
+
+## 8. TOCTOU Concurrency
 
 There is a real race condition between checking for a conflict and inserting the schedule:
 

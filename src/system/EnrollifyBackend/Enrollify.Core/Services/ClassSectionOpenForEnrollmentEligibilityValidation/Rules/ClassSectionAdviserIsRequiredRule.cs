@@ -6,7 +6,7 @@ public class ClassSectionAdviserIsRequiredRule : IClassSectionOpenForEnrollmentE
 
   public void Validate(ClassSectionOpenForEnrollmentEligibilityValidationContext context)
   {
-    if (context.ClassSection.AdviserId is null || context.ClassSection.Adviser is null)
+    if (context.ClassSection.AdviserId is null)
       context.Invalidate("CLASS_SECTION_ADVISER_REQUIRED", "Class section must have an adviser assigned.");
   }
 }

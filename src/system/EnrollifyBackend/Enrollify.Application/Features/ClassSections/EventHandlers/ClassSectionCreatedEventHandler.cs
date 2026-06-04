@@ -43,8 +43,27 @@ public sealed class ClassSectionCreatedEventHandler(
     ClassSectionOpenForEnrollmentEligibilityValidationContext context =
       pipeline.Validate(new ClassSectionOpenForEnrollmentEligibilityValidationContext(section, offerings));
 
-    IEnumerable<ClassSectionEnrollmentEligibilityValidationMessage> messages = context.ValidationErrors
-      .Select(e => new ClassSectionEnrollmentEligibilityValidationMessage(classSectionId, e.Code, e.Message));
+    var classSectionValidationErrors = context.ValidationErrors
+      .Select(e => new ClassSectionEnrollmentEligibilityValidationMessage(classSectionId, null, e.Code, e.Message))
+      .ToList();
+
+    var offeringValidationErrors = context.OfferingValidationErrors
+      .SelectMany(kvp => kvp.Value.Select(e => new ClassSectionEnrollmentEligibilityValidationMessage(
+        classSectionId, kvp.Key, e.Code, e.Message)))
+      .ToList();
+
+    var informationalMessages = context.InformationalMessages
+      .Select(e => new ClassSectionEnrollmentEligibilityValidationMessage(classSectionId, null, e.Code, e.Message))
+      .ToList();
+
+    var softRuleMessages = context.SoftRulesMessages
+      .Select(e => new ClassSectionEnrollmentEligibilityValidationMessage(classSectionId, null, e.Code, e.Message))
+      .ToList();
+
+    var messages =
+      classSectionValidationErrors.Concat(offeringValidationErrors).Concat(informationalMessages)
+        .Concat(softRuleMessages)
+        .ToList();
 
     await messageRepository.ReplaceAllForSectionAsync(classSectionId, messages, cancellationToken);
 
@@ -53,4 +72,3 @@ public sealed class ClassSectionCreatedEventHandler(
       classSectionId.Value, context.ValidationErrors.Count);
   }
 }
-
