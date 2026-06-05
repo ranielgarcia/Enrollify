@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-The correct approach for Enrollify's scheduling conflict validation is **validate-on-save with targeted database queries**, not in-memory bulk loads. Every production scheduling system examined follows the same pattern: when a schedule row is added or mutated, three narrow `AnyAsync` queries check for teacher double-booking, room double-booking, and section overlap against the same `AcademicTermId` — before the insert is committed. Full in-memory loads of the entire academic year's schedules are perfectly feasible (the worst-case memory footprint is ~13 MB) and are appropriate for the admin "view all conflicts" batch scan, but they are architecturally wrong for per-save validation because of TOCTOU race conditions. Conflicts should **never** be recomputed on every frontend read — that is prohibitively expensive and architecturally unsound. The frontend already has the correct mental model (`OfferingWithSchedules.conflicts[]` embedded in the section detail response[^1]); the backend needs to compute those conflicts in a focused query when the section detail is loaded, and block hard conflicts at the point of write.
+The correct approach for Enrollify's scheduling conflict validation is **validate-on-save with targeted database queries**, not in-memory bulk loads. Every production scheduling system examined follows the same pattern: when a schedule row is added or mutated, three narrow `AnyAsync` queries check for teacher double-booking, room double-booking, and section overlap **against the single `AcademicTermId` of the offering** — before the insert is committed. This term-scoped validation is fast, simple, and free of TOCTOU race conditions when wrapped in a `SERIALIZABLE` transaction. Conflicts should **never** be recomputed on every frontend read — that is prohibitively expensive and architecturally unsound. The frontend already has the correct mental model (`OfferingWithSchedules.conflicts[]` embedded in the section detail response[^1]); the backend needs to compute those conflicts in a focused query when the section detail is loaded, and block hard conflicts at the point of write.
 
 ---
 
@@ -20,7 +20,7 @@ The correct approach for Enrollify's scheduling conflict validation is **validat
 4. [The Three Validation Paths](#4-the-three-validation-paths)
 5. [Implementation Plan](#5-implementation-plan)
 6. [Database Index Requirements](#6-database-index-requirements)
-7. [Academic Year vs. Academic Term Scoping](#7-academic-year-vs-academic-term-scoping)
+7. [Academic Term Scoping](#7-academic-term-scoping)
 8. [TOCTOU Concurrency](#8-toctou-concurrency)
 9. [Algorithmic Complexity](#9-algorithmic-complexity)
 10. [Conflict Taxonomy Reference](#10-conflict-taxonomy-reference)
@@ -153,14 +153,14 @@ FROM ClassSchedules cs
 JOIN ClassSectionSubjectOffering o ON o.Id = cs.ClassSectionSubjectOfferingId
 JOIN ClassSections sec ON sec.Id = o.ClassSectionId
 WHERE o.TeacherId = @teacherId
-  AND sec.AcademicTermId IN @termIds   -- all terms in the target AcademicYearId
-  AND cs.DayOfWeek = @dayOfWeekValue   -- e.g. 'MON'
+  AND sec.AcademicTermId = @academicTermId   -- scope to this term only
+  AND cs.DayOfWeek = @dayOfWeekValue         -- e.g. 'MON'
   AND cs.StartTime < @newEndTime
   AND cs.EndTime   > @newStartTime
   AND o.IsActive = 1 AND cs.IsActive = 1
-  AND o.Id <> @excludeOfferingId       -- exclude when updating
+  AND o.Id <> @excludeOfferingId             -- exclude when updating
 
-// HC-02: Room double-booked  (same as HC-01 with o.RoomId = @roomId)
+// HC-02: Room double-booked  (same pattern as HC-01 with o.RoomId = @roomId and scope to @academicTermId)
 
 // HC-03: Section overlap
 SELECT TOP 1 cs.Id
@@ -189,7 +189,7 @@ var section = await LoadSectionWithOfferingsAndSchedules(id);
 var teacherIds = section.Offerings.Where(o => o.TeacherId != null).Select(o => o.TeacherId).ToHashSet();
 var roomIds    = section.Offerings.Where(o => o.RoomId != null).Select(o => o.RoomId).ToHashSet();
 
-// Load all other offerings that share teachers or rooms in the same term
+// Load all other offerings that share teachers or rooms in the SAME TERM ONLY
 var relatedOfferings = await LoadOfferingsWithSchedulesByTeacherOrRoomIds(
     teacherIds, roomIds, section.AcademicTermId, excludeSectionId: section.Id);
 
@@ -204,10 +204,13 @@ var conflicts = ConflictDetector.Detect(allSchedules, sectionId: section.Id);
 return MapToResponse(section.Offerings, conflicts);
 ```
 
-### Path 3: Admin Conflict Report (full academic year)
+### Path 3: Admin Conflict Report (optional — full academic year scope for batch scanning)
+
+This is an optional feature for admins to view all conflicts across a year at once. **Core validation (Paths 1 & 2) is always term-scoped.** For the batch report:
 
 ```csharp
 // Load ALL flat ScheduleDTO rows for the academic year in one efficient query
+// (This is optional and separate from the core validation logic)
 var allSchedules = await _dbContext.Set<ClassSchedule>()
     .Where(cs => cs.IsActive)
     .Join(_dbContext.ClassSectionSubjectOfferings.Where(o => o.IsActive), ...)
@@ -255,7 +258,7 @@ Extend `IClassSectionSubjectOfferingRepository`[^7] with three new async methods
 // In Application/Features/ClassSectionSubjectOfferings/IClassSectionSubjectOfferingRepository.cs
 Task<bool> HasTeacherScheduleConflictAsync(
     TeacherId teacherId,
-    IEnumerable<AcademicTermId> academicTermIds,  // all terms in the target AY
+    AcademicTermId academicTermId,  // scope to this term only
     DayOfWeekEnum dayOfWeek,
     TimeOnly newStartTime,
     TimeOnly newEndTime,
@@ -264,7 +267,7 @@ Task<bool> HasTeacherScheduleConflictAsync(
 
 Task<bool> HasRoomScheduleConflictAsync(
     RoomId roomId,
-    IEnumerable<AcademicTermId> academicTermIds,
+    AcademicTermId academicTermId,  // scope to this term only
     DayOfWeekEnum dayOfWeek,
     TimeOnly newStartTime,
     TimeOnly newEndTime,
@@ -284,13 +287,13 @@ Task<bool> HasSectionScheduleOverlapAsync(
 
 ```csharp
 public async Task<bool> HasTeacherScheduleConflictAsync(
-    TeacherId teacherId, IEnumerable<AcademicTermId> academicTermIds,
+    TeacherId teacherId, AcademicTermId academicTermId,
     DayOfWeekEnum dayOfWeek, TimeOnly newStartTime, TimeOnly newEndTime,
     ClassSectionSubjectOfferingId? excludeOfferingId, CancellationToken ct)
 {
-    var termIdValues = academicTermIds.Select(t => (int)t).ToList();
     var dayStr = dayOfWeek.Value; // e.g. "MON"
     var teacherIdValue = (int)teacherId;
+    var termIdValue = (int)academicTermId;
     int? excludeId = excludeOfferingId.HasValue ? (int)excludeOfferingId.Value : null;
 
     return await _dbContext.Set<ClassSchedule>()
@@ -302,7 +305,7 @@ public async Task<bool> HasTeacherScheduleConflictAsync(
               (x, s) => new { x.cs, x.o, s })
         .AnyAsync(x =>
             x.o.TeacherId == teacherIdValue
-            && termIdValues.Contains((int)x.s.AcademicTermId)
+            && (int)x.s.AcademicTermId == termIdValue  // scope to this term only
             && x.cs.DayOfWeek == dayStr
             && x.cs.StartTime < newEndTime
             && x.cs.EndTime > newStartTime
@@ -330,9 +333,9 @@ public class AddClassScheduleValidator : AbstractValidator<AddClassScheduleComma
             {
                 var offering = await readRepo.GetByIdAsync(cmd.OfferingId, ct);
                 if (offering?.TeacherId == null) return true; // no teacher assigned
-                var termIds = await ResolveTermIdsForAcademicYear(cmd.AcademicYearId, termRepo, ct);
+                var section = await readRepo.GetClassSectionAsync(offering.ClassSectionId, ct);
                 return !await offeringRepo.HasTeacherScheduleConflictAsync(
-                    offering.TeacherId.Value, termIds,
+                    offering.TeacherId.Value, section.AcademicTermId,
                     cmd.DayOfWeek, cmd.StartTime, cmd.EndTime,
                     excludeOfferingId: null, ct);
             })
@@ -345,9 +348,9 @@ public class AddClassScheduleValidator : AbstractValidator<AddClassScheduleComma
             {
                 var offering = await readRepo.GetByIdAsync(cmd.OfferingId, ct);
                 if (offering?.RoomId == null) return true;
-                var termIds = await ResolveTermIdsForAcademicYear(cmd.AcademicYearId, termRepo, ct);
+                var section = await readRepo.GetClassSectionAsync(offering.ClassSectionId, ct);
                 return !await offeringRepo.HasRoomScheduleConflictAsync(
-                    offering.RoomId.Value, termIds,
+                    offering.RoomId.Value, section.AcademicTermId,
                     cmd.DayOfWeek, cmd.StartTime, cmd.EndTime,
                     excludeOfferingId: null, ct);
             })
@@ -379,7 +382,7 @@ public static class AddClassSchedule
 {
     public record Command(
         ClassSectionSubjectOfferingId OfferingId,
-        AcademicYearId AcademicYearId,   // passed from frontend for scoping
+        AcademicTermId AcademicTermId,   // term of the offering being scheduled
         DayOfWeekEnum DayOfWeek,
         TimeOnly StartTime,
         TimeOnly EndTime
@@ -469,26 +472,35 @@ CREATE INDEX IX_ClassSectionSubjectOffering_RoomId
 
 ---
 
-## 7. Academic Year vs. Academic Term Scoping
+## 7. Academic Term Scoping
 
 The conflict spec[^10] states: "All conflict checks **must be scoped to the same `AcademicTermId`**."
 
-**Important: `ClassSection` has no direct `AcademicYearId` field for the scheduling year.**[^11] It only has:
-- `AcademicTermId` (the term the section is being taught in)
-- `CohortAcademicYearId` (the year the student cohort enrolled — NOT the current scheduling year)
+This is straightforward: **validate schedules only against other schedules in the same `AcademicTermId`.** No year-to-term resolution is needed because each `ClassSection` belongs to exactly one `AcademicTermId`[^11]. When an admin schedules a class:
 
-To scope by academic year, resolve the term IDs first:
+1. Load the `ClassSectionSubjectOffering` being scheduled
+2. Extract its `ClassSection.AcademicTermId`
+3. Use that term ID directly in all three conflict queries (HC-01, HC-02, HC-03)
 
+Example:
 ```csharp
-// AcademicTerm.AcademicYearId → get all term IDs for the target year
-var termIds = await _dbContext.Set<AcademicTerm>()
-    .Where(t => t.AcademicYearId == targetAcademicYearId && t.IsActive)
-    .Select(t => t.Id)
-    .ToListAsync(ct);
-// Then: WHERE ClassSection.AcademicTermId IN @termIds
+// Get the section's term (no resolution step needed)
+var offering = await _readRepo.GetByIdAsync(cmd.OfferingId, ct);
+var section = await _readRepo.GetClassSectionAsync(offering.ClassSectionId, ct);
+var academicTermId = section.AcademicTermId;
+
+// Conflict check scoped to this one term
+var hasConflict = await _offeringRepo.HasTeacherScheduleConflictAsync(
+    offering.TeacherId.Value,
+    academicTermId,  // ← single term, not a collection
+    cmd.DayOfWeek,
+    cmd.StartTime,
+    cmd.EndTime,
+    excludeOfferingId: null,
+    ct);
 ```
 
-The user's requirement "validate class sections under one academic year" means: collect all `AcademicTermId` values belonging to that year, then scope all conflict queries by those term IDs.
+**Why not year-scoped:** The frontend schedules one term at a time, and teachers/rooms within a term can conflict. Checking across multiple terms would create false conflicts (a teacher can legitimately teach the same class in different terms).
 
 ---
 
