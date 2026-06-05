@@ -18,8 +18,7 @@ public static class UpdateClassSectionSubjectOffering
     RoomId? RoomId,
     int DaysPerWeek,
     decimal HoursPerDay,
-    int? MaxNumberOfStudents,
-    decimal? SubjectUnitsOverride) : IRequest<Result<ClassSectionSubjectOfferingId>>;
+    int? MaxNumberOfStudents) : IRequest<Result<ClassSectionSubjectOfferingId>>;
 
   public sealed class Handler : IRequestHandler<Command, Result<ClassSectionSubjectOfferingId>>
   {
@@ -60,7 +59,6 @@ public static class UpdateClassSectionSubjectOffering
 
       offering.UpdateSchedule(command.DaysPerWeek, command.HoursPerDay);
       offering.UpdateMaxNumberOfStudents(command.MaxNumberOfStudents);
-      offering.UpdateSubjectUnitsOverride(command.SubjectUnitsOverride);
 
       Result<ClassSectionSubjectOfferingId> result = await _offeringRepository.Update(offering, cancellationToken);
 

@@ -10,7 +10,6 @@ public class ClassSectionSubjectOfferingForCreation
 {
   public required ClassSectionId ClassSectionId { get; set; }
   public required SubjectId SubjectId { get; set; }
-  public decimal? SubjectUnitsOverride { get; set; }
   public TeacherId? TeacherId { get; set; }
   public RoomId? RoomId { get; set; }
 

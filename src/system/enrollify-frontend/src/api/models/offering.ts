@@ -53,8 +53,6 @@ export const OfferingSchema = z
     snapshotUnits: z.number().optional(),
     snapshotIsElective: z.boolean().optional(),
     snapshotElectiveGroupName: z.string().nullable().optional(),
-    subjectUnitsOverride: z.number().nullable().optional(),
-    effectiveUnits: z.number().optional(),
     daysPerWeek: z.number().optional(),
     hoursPerDay: z.number().optional(),
     maxNumberOfStudents: z.number().nullable().optional(),

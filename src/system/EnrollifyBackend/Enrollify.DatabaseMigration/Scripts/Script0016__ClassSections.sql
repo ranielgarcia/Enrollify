@@ -70,7 +70,6 @@ CREATE TABLE ClassSectionSubjectOffering
 (
   Id                        INT            NOT NULL IDENTITY (1,1) PRIMARY KEY,
   SubjectId                 INT            NOT NULL,                                                                                                  -- Belongs to a Subject
-  SubjectUnitsOverride      DECIMAL(3, 1)  NULL,                                                                                                      -- Optional override for subject units at this level, for scenarios that require less or more units than the default subject units or curriculum-level override, e.g. a 3-unit subject offered as a 1.5-unit elective
   TeacherId                 INT            NULL,                                                                                                      -- Assigned to a Teacher,
   ClassSectionId            INT            NOT NULL,                                                                                                  -- Belongs to a ClassSection
   RoomId                    INT            NULL,

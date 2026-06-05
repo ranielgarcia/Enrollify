@@ -29,7 +29,6 @@ const editOfferingSchema = z.object({
   roomId: z.number().nullable().optional(),
   daysPerWeek: z.number().int().min(1).max(7),
   hoursPerDay: z.number().min(0.5).max(24),
-  subjectUnitsOverride: z.number().positive().nullable().optional(),
   maxNumberOfStudents: z.number().int().positive().nullable().optional(),
 });
 
@@ -65,7 +64,6 @@ export function EditOfferingDrawer({
       roomId: offering.room?.id ?? null,
       daysPerWeek: offering.daysPerWeek ?? 3,
       hoursPerDay: offering.hoursPerDay ?? 1.5,
-      subjectUnitsOverride: offering.subjectUnitsOverride ?? null,
       maxNumberOfStudents: offering.maxNumberOfStudents ?? null,
     } as EditOffering,
     validators: {
@@ -77,7 +75,6 @@ export function EditOfferingDrawer({
         roomId: value.roomId ?? undefined,
         daysPerWeek: value.daysPerWeek,
         hoursPerDay: value.hoursPerDay,
-        subjectUnitsOverride: value.subjectUnitsOverride ?? undefined,
         maxNumberOfStudents: value.maxNumberOfStudents ?? undefined,
       };
       await updateOffering(payload);
@@ -278,44 +275,6 @@ export function EditOfferingDrawer({
                       )
                     }
                   />
-                )}
-              </form.Field>
-            </FormSection>
-
-            {/* Units Override */}
-            <FormSection title="Subject Units">
-              <form.Field name="subjectUnitsOverride">
-                {(field) => (
-                  <div className="grid w-full items-center gap-1.5">
-                    <Label htmlFor={field.name}>
-                      Units Override{" "}
-                      <span className="text-xs text-muted-foreground">
-                        (leave empty to use curriculum default:{" "}
-                        {offering.snapshotUnits})
-                      </span>
-                    </Label>
-                    <input
-                      id={field.name}
-                      type="number"
-                      min={0.5}
-                      step={0.5}
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                      placeholder="e.g. 3"
-                      value={
-                        field.state.value != null
-                          ? String(field.state.value)
-                          : ""
-                      }
-                      onChange={(e) =>
-                        field.handleChange(
-                          e.target.value === ""
-                            ? null
-                            : parseFloat(e.target.value),
-                        )
-                      }
-                      onBlur={field.handleBlur}
-                    />
-                  </div>
                 )}
               </form.Field>
             </FormSection>

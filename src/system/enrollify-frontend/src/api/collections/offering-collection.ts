@@ -89,23 +89,6 @@ export const updateOfferingOptions = (id: number, sectionId: number) =>
     },
   });
 
-export const deleteOfferingOptions = (id: number, sectionId: number) =>
-  createMutationOptions({
-    httpVerb: "delete",
-    path: "/api/subject-offerings/{id}",
-    pathParams: { id },
-    mutationKey: queryKeys.delete(id),
-    options: {
-      meta: {
-        invalidateQueries: [
-          queryKeys.base(),
-          sectionDetailKey(sectionId),
-        ],
-      },
-      onSuccess: () => toast.success("Offering removed successfully"),
-    },
-  });
-
 export const createScheduleRowOptions = (
   offeringId: number,
   sectionId: number,

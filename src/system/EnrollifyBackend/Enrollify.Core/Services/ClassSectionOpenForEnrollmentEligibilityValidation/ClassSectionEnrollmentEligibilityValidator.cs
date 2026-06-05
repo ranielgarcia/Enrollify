@@ -28,11 +28,6 @@ public static class ClassSectionEnrollmentEligibilityValidator
 
     foreach (ClassSectionSubjectOffering offering in offerings)
     {
-      if (offering.SubjectUnitsOverride is null)
-        context.AddOfferingValidationMessage(DomainValidationErrorSeverityEnum.Info, offering.Id,
-          "SUBJECT_OFFERING_UNITS_CAN_BE_OVERRIDEN",
-          "Subject units can be overridden for this offering.");
-
       if (offering.TeacherId is null)
         context.AddOfferingValidationMessage(DomainValidationErrorSeverityEnum.Error, offering.Id,
           "SUBJECT_OFFERING_TEACHER_REQUIRED",

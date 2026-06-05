@@ -14,9 +14,6 @@ public class ClassSectionSubjectOfferingDto : BaseDto
   public bool SnapshotIsElective { get; set; }
   public string? SnapshotElectiveGroupName { get; set; }
 
-  public decimal? SubjectUnitsOverride { get; set; }
-  public decimal EffectiveUnits { get; set; }
-
   public int DaysPerWeek { get; set; }
   public decimal HoursPerDay { get; set; }
   public int? MaxNumberOfStudents { get; set; }
@@ -39,9 +36,6 @@ public class ClassSectionSubjectOfferingDto : BaseDto
       SnapshotUnits = offering.SnapshotUnits,
       SnapshotIsElective = offering.SnapshotIsElective,
       SnapshotElectiveGroupName = offering.SnapshotElectiveGroupName,
-
-      SubjectUnitsOverride = offering.SubjectUnitsOverride,
-      EffectiveUnits = offering.EffectiveUnits ?? offering.SnapshotUnits,
 
       DaysPerWeek = offering.DaysPerWeek,
       HoursPerDay = offering.HoursPerDay,

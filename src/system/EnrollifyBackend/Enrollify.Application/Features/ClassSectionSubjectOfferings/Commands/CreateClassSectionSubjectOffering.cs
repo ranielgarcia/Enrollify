@@ -21,8 +21,7 @@ public static class CreateClassSectionSubjectOffering
     RoomId? RoomId,
     int DaysPerWeek,
     decimal HoursPerDay,
-    int? MaxNumberOfStudents,
-    decimal? SubjectUnitsOverride) : IRequest<Result<ClassSectionSubjectOfferingId>>;
+    int? MaxNumberOfStudents) : IRequest<Result<ClassSectionSubjectOfferingId>>;
 
   public sealed class Handler : IRequestHandler<Command, Result<ClassSectionSubjectOfferingId>>
   {
@@ -93,7 +92,6 @@ public static class CreateClassSectionSubjectOffering
         DaysPerWeek = command.DaysPerWeek,
         HoursPerDay = command.HoursPerDay,
         MaxNumberOfStudents = command.MaxNumberOfStudents,
-        SubjectUnitsOverride = command.SubjectUnitsOverride,
         SnapshotSubjectCode = curriculumSubject.Subject.Code,
         SnapshotSubjectTitle = curriculumSubject.Subject.Title,
         SnapshotUnits = snapshotUnits,

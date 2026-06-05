@@ -17,9 +17,6 @@ public class ClassSectionSubjectOfferingConfiguration : IEntityTypeConfiguration
         builder.Property(e => e.SubjectId)
             .IsRequired();
 
-        builder.Property(e => e.SubjectUnitsOverride)
-            .HasColumnType("decimal(3,1)");
-
         builder.Property(e => e.TeacherId)
             .IsRequired(false);
 

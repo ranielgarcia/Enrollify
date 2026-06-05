@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { deleteOfferingOptions } from "@/api/collections/offering-collection";
 import type { Offering } from "@/api/models/offering";
 import type { OfferingValidationMessage } from "@/api/models/class-section";
 import { Badge } from "@/components/ui/badge";
@@ -10,16 +9,9 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useMutation } from "@tanstack/react-query";
-import {
   ChevronDown,
   ChevronRight,
   AlertCircle,
-  Trash2,
   LayoutGrid,
   AlertTriangle,
 } from "lucide-react";
@@ -41,17 +33,12 @@ export function OfferingCard({
   const [isOpen, setIsOpen] = useState(false);
   const [isValidationDrawerOpen, setIsValidationDrawerOpen] = useState(false);
 
-  const { mutateAsync: deleteOffering } = useMutation(
-    deleteOfferingOptions(offering.id, sectionId),
-  );
-
   const conflictCount = offering.conflicts?.length ?? 0;
   const hasHardConflict = offering.conflicts?.some(
     (c) => c.severity === "error",
   );
 
-  const displayUnits = offering.effectiveUnits ?? offering.snapshotUnits;
-  const hasOverride = offering.subjectUnitsOverride != null;
+  const displayUnits = offering.snapshotUnits;
 
   const hasValidationMessages = validationMessages.length > 0;
   const hasValidationError = validationMessages.some(
@@ -84,22 +71,9 @@ export function OfferingCard({
               <span className="text-sm text-muted-foreground truncate">
                 {offering.snapshotSubjectTitle}
               </span>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Badge
-                    variant={hasOverride ? "outline" : "secondary"}
-                    className={`text-xs cursor-default ${hasOverride ? "border-amber-400 text-amber-700 dark:text-amber-400" : ""}`}
-                  >
-                    {displayUnits} units
-                    {hasOverride && " (override)"}
-                  </Badge>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {hasOverride
-                    ? `Override: ${offering.subjectUnitsOverride} units (curriculum default: ${offering.snapshotUnits})`
-                    : `${displayUnits} units`}
-                </TooltipContent>
-              </Tooltip>
+              <Badge variant="secondary" className="text-xs cursor-default">
+                {displayUnits} units
+              </Badge>
               {offering.snapshotIsElective && (
                 <Badge variant="outline" className="text-xs">
                   {offering.snapshotElectiveGroupName ?? "Elective"}
@@ -124,19 +98,6 @@ export function OfferingCard({
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
-            {hasOverride && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="text-amber-500 cursor-default">
-                    <AlertTriangle className="size-4" />
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Units overridden to {offering.subjectUnitsOverride}{" "}
-                  (curriculum default: {offering.snapshotUnits})
-                </TooltipContent>
-              </Tooltip>
-            )}
             {hasValidationMessages && (
               <Button
                 variant="ghost"
@@ -164,15 +125,6 @@ export function OfferingCard({
               </Badge>
             )}
             <EditOfferingDrawer offering={offering} sectionId={sectionId} />
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => deleteOffering({})}
-              title="Remove offering"
-            >
-              <Trash2 className="size-3.5" />
-            </Button>
           </div>
         </div>
 

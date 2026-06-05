@@ -14,7 +14,6 @@ public class UpdateSubjectOfferingRequest
   public int DaysPerWeek { get; set; }
   public decimal HoursPerDay { get; set; }
   public int? MaxNumberOfStudents { get; set; }
-  public decimal? SubjectUnitsOverride { get; set; }
 }
 
 public class UpdateSubjectOfferingRequestValidator : Validator<UpdateSubjectOfferingRequest>
@@ -35,10 +34,6 @@ public class UpdateSubjectOfferingRequestValidator : Validator<UpdateSubjectOffe
     RuleFor(x => x.MaxNumberOfStudents)
       .GreaterThan(0).WithMessage("Max students must be greater than 0 when provided.")
       .When(x => x.MaxNumberOfStudents.HasValue);
-
-    RuleFor(x => x.SubjectUnitsOverride)
-      .GreaterThan(0).WithMessage("Subject units override must be greater than 0 when provided.")
-      .When(x => x.SubjectUnitsOverride.HasValue);
   }
 }
 
@@ -64,8 +59,7 @@ public class UpdateSubjectOfferingEndpoint : Endpoint<UpdateSubjectOfferingReque
         request.RoomId.HasValue ? RoomId.From(request.RoomId.Value) : null,
         request.DaysPerWeek,
         request.HoursPerDay,
-        request.MaxNumberOfStudents,
-        request.SubjectUnitsOverride),
+        request.MaxNumberOfStudents),
       cancellationToken);
 
     return result.ToUpdateResult(id => id.Value);

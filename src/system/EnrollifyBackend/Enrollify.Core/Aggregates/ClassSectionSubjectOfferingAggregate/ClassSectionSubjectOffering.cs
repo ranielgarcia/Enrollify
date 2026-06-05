@@ -24,7 +24,6 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
   public ClassSectionSubjectOffering(ClassSectionSubjectOfferingForCreation forCreation)
   {
     SubjectId = Guard.Against.Null(forCreation.SubjectId, nameof(forCreation.SubjectId));
-    SubjectUnitsOverride = forCreation.SubjectUnitsOverride;
     TeacherId = forCreation.TeacherId;
     ClassSectionId = Guard.Against.Null(forCreation.ClassSectionId, nameof(forCreation.ClassSectionId));
     RoomId = forCreation.RoomId; // RoomId is optional - no guard check needed
@@ -47,8 +46,6 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
   public SubjectId SubjectId { get; private set; }
   public Subject? Subject { get; private set; }
 
-  public decimal? SubjectUnitsOverride { get; private set; }
-
   public TeacherId? TeacherId { get; private set; }
   public Teacher? Teacher { get; private set; }
 
@@ -68,8 +65,6 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
   public bool SnapshotIsElective { get; private set; }
   public string? SnapshotElectiveGroupName { get; private set; }
 
-  public decimal? EffectiveUnits => SubjectUnitsOverride ?? SnapshotUnits;
-
   public IReadOnlyCollection<ClassSchedule> ClassSchedules => _classSchedules.AsReadOnly();
 
   public DateTimeOffset CreatedAt { get; private set; }
@@ -82,13 +77,6 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
   public UserId? DeletedBy { get; private set; }
   public User? DeletedByUser { get; private set; }
   public bool IsActive { get; private set; }
-
-  public ClassSectionSubjectOffering UpdateSubjectUnitsOverride(decimal? unitsOverride)
-  {
-    if (unitsOverride == SubjectUnitsOverride) return this;
-    SubjectUnitsOverride = unitsOverride;
-    return this;
-  }
 
   public ClassSectionSubjectOffering UpdateTeacher(TeacherId newTeacherId)
   {
