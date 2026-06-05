@@ -20,6 +20,7 @@ using Enrollify.Application.Features.Teachers;
 using Enrollify.Application.Features.Teachers.Storage;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
+using Enrollify.Core.Services.ScheduleConflictDetection;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
 using Enrollify.Infrastructure.Data.Queries;
@@ -106,6 +107,9 @@ public static class InfrastructureServiceExtensions
 
 
         services.AddScoped<IApplicableCurriculumQueryService, ApplicableCurriculumQueryService>();
+        
+        // Domain services
+        services.AddScoped<ScheduleConflictDetector>();
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 

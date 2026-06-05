@@ -1,3 +1,4 @@
+using Enrollify.Application.Features.ClassSchedules.Models;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings.Commands;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 
@@ -14,6 +15,12 @@ public class AddMultipleSchedulesToOfferingRequest
 {
     public int Id { get; set; }
     public List<ScheduleItem> Schedules { get; set; } = new();
+}
+
+public class AddMultipleSchedulesToOfferingResponse
+{
+    public List<int> ScheduleIds { get; set; } = new();
+    public List<ConflictResultDto> Conflicts { get; set; } = new();
 }
 
 public class ScheduleItemValidator : Validator<ScheduleItem>
@@ -46,7 +53,7 @@ public class AddMultipleSchedulesToOfferingRequestValidator : Validator<AddMulti
 [HttpPost("{id:int}/schedules")]
 [Group<SubjectOfferingsEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateSubjectOfferingPermission)]
-public class AddMultipleSchedulesToOfferingEndpoint : Endpoint<AddMultipleSchedulesToOfferingRequest, CreatedApiResult<List<int>>>
+public class AddMultipleSchedulesToOfferingEndpoint : Endpoint<AddMultipleSchedulesToOfferingRequest, CreatedApiResult<AddMultipleSchedulesToOfferingResponse>>
 {
     private readonly IMediator _mediator;
 
@@ -55,7 +62,7 @@ public class AddMultipleSchedulesToOfferingEndpoint : Endpoint<AddMultipleSchedu
         _mediator = mediator;
     }
 
-    public override async Task<CreatedApiResult<List<int>>> ExecuteAsync(
+    public override async Task<CreatedApiResult<AddMultipleSchedulesToOfferingResponse>> ExecuteAsync(
         AddMultipleSchedulesToOfferingRequest request, CancellationToken cancellationToken)
     {
         var schedules = request.Schedules.Select(s => 
@@ -71,7 +78,11 @@ public class AddMultipleSchedulesToOfferingEndpoint : Endpoint<AddMultipleSchedu
             cancellationToken);
 
         return result.ToCreatedResult(
-            scheduleIds => $"/subject-offerings/{request.Id}/schedules",
-            scheduleIds => scheduleIds.Select(id => id.Value).ToList());
+            response => $"/subject-offerings/{request.Id}/schedules",
+            response => new AddMultipleSchedulesToOfferingResponse
+            {
+                ScheduleIds = response.AddedScheduleIds.Select(id => id.Value).ToList(),
+                Conflicts = response.Conflicts
+            });
     }
 }
