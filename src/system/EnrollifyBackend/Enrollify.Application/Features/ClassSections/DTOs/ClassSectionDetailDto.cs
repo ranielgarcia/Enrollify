@@ -1,6 +1,7 @@
 using Enrollify.Application.Features.ClassSectionSubjectOfferings.DTOs;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Constants;
 
 namespace Enrollify.Application.Features.ClassSections.DTOs;
 
@@ -20,13 +21,25 @@ public class ClassSectionDetailDto : BaseDto
   public ClassSectionStatusDto Status { get; set; } = null!;
 
   public IReadOnlyList<ClassSectionSubjectOfferingDto> Offerings { get; set; } = [];
-  public List<ClassSectionEnrollmentEligibilityValidationMessageDto> ValidationMessages { get; init; } = new();
+  public ClassSectionEnrollmentEligibilityValidationMessagesDto ValidationMessages { get; init; } = new();
+  public int UnresolvedErrorsCount { get; set; }
+
+  public bool IsEligibleForOpenEnrollment { get; set; }
 
   public static ClassSectionDetailDto FromEntities(
     ClassSection section,
     IEnumerable<ClassSectionSubjectOffering> offerings,
-    List<ClassSectionEnrollmentEligibilityValidationMessageDto> validationMessages)
+    List<ClassSectionEnrollmentEligibilityValidationMessage> allValidationMessages)
   {
+    var subjectOfferingsValidationMessages = allValidationMessages.Where(x => x.OfferingId != null)
+      .Select(ClassSectionSubjectOfferingValidationMessageDto.FromEntity).ToList();
+    var sectionValidationMessages = allValidationMessages.Where(x => x.OfferingId == null)
+      .Select(ClassSectionEnrollmentEligibilityValidationMessageDto.FromEntity)
+      .ToList();
+
+    var validationMessages = ClassSectionEnrollmentEligibilityValidationMessagesDto.FromEntities(section.Id,
+      sectionValidationMessages, subjectOfferingsValidationMessages);
+
     return new ClassSectionDetailDto
     {
       Id = section.Id,
@@ -35,6 +48,9 @@ public class ClassSectionDetailDto : BaseDto
       IntendedYearLevel = (int)section.IntendedYearLevel,
       FullName = section.FullName,
       ValidationMessages = validationMessages,
+      UnresolvedErrorsCount = allValidationMessages.Count(x => x.Severity == DomainValidationErrorSeverityEnum.Error),
+      IsEligibleForOpenEnrollment = allValidationMessages.All(m =>
+        m.Severity != DomainValidationErrorSeverityEnum.Error),
 
       Course = section.Course is not null
         ? new ClassSectionCourseDto

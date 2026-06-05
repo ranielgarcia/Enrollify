@@ -41,15 +41,11 @@ public class GetClassSectionByIdQueryHandler
     List<ClassSectionSubjectOffering> offerings = await _offeringReadRepository.ListAsync(
       new GetClassSectionSubjectOfferingsWithFullDetailsByClassSectionIdSpec(request.Id), cancellationToken);
 
-
-    List<ClassSectionEnrollmentEligibilityValidationMessage> validationMessagesPerSection =
+    List<ClassSectionEnrollmentEligibilityValidationMessage> allValidationMessagesForSection =
       await _validationMessageRepository
         .ListAsync(new GetClassSectionEnrollmentEligibilityValidationMessagesSpec(section.Id), cancellationToken);
 
-    var validationMessages = validationMessagesPerSection
-      .Select(ClassSectionEnrollmentEligibilityValidationMessageDto.FromEntity).ToList();
-
     return Result.Success(ClassSectionDetailDto.FromEntities(section, offerings,
-      validationMessages));
+      allValidationMessagesForSection));
   }
 }

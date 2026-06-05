@@ -74,21 +74,25 @@ public class FilterClassSectionsPaginatedQueryHandler
 
     List<ClassSectionEnrollmentEligibilityValidationMessage> validationMessagesPerSection =
       await _validationMessageRepository
-        .ListAsync(new GetClassSectionEnrollmentEligibilityValidationMessagesSpec(sectionIds), cancellationToken);
+        .ListAsync(new GetClassSectionEnrollmentEligibilityValidationErrorsSpec(sectionIds), cancellationToken);
 
-    var validationMessagesPerSectionKeyValue = validationMessagesPerSection.GroupBy(m => m.ClassSectionId)
+    var validationMessagesPerSectionLookup = validationMessagesPerSection.GroupBy(m => m.ClassSectionId)
       .ToDictionary(g => g.Key, g => g.ToList());
 
-    var items = sections
-      .Select(section => ClassSectionDto.FromEntity(section,
-        validationMessagesPerSectionKeyValue.ContainsKey(section.Id)
-          ? validationMessagesPerSectionKeyValue[section.Id]
-            .Select(ClassSectionEnrollmentEligibilityValidationMessageDto.FromEntity).ToList()
-          : new List<ClassSectionEnrollmentEligibilityValidationMessageDto>()))
-      .ToList();
+    var sectionsToReturn = new List<ClassSectionDto>();
+    foreach (ClassSection section in sections)
+    {
+      List<ClassSectionEnrollmentEligibilityValidationMessage> allValidationMessagesForCurrentSection =
+        validationMessagesPerSectionLookup.ContainsKey(section.Id)
+          ? validationMessagesPerSectionLookup[section.Id]
+          : new List<ClassSectionEnrollmentEligibilityValidationMessage>();
+
+      var sectionDto = ClassSectionDto.FromEntity(section, allValidationMessagesForCurrentSection.Count);
+      sectionsToReturn.Add(sectionDto);
+    }
 
     return new PagedResult<ClassSectionDto>(
-      items.AsReadOnly(),
+      sectionsToReturn.AsReadOnly(),
       request.Page,
       request.PageSize,
       totalCount);

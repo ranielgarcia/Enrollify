@@ -63,9 +63,13 @@ export const ClassSectionSchema = z
     cohortAcademicYear: CohortAcademicYearSchema.optional().nullable(),
     adviser: AdviserSummarySchema.optional().nullable(),
     status: ClassSectionStatusSchema,
+    unresolvedErrorsCount: z.number().int().min(0),
+    isEligibleForOpenEnrollment: z.boolean(),
   })
   .extend(AuditInfoSchema.shape);
 
+
+  
 export const ClassSectionWithOfferingsSchema = ClassSectionSchema.extend({
   offerings: z.array(OfferingSchema),
 });

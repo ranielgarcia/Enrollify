@@ -1074,7 +1074,7 @@ export interface components {
             roomId?: number | null;
             /** Format: int32 */
             daysPerWeek?: number;
-            /** Format: double */
+            /** Format: decimal */
             hoursPerDay?: number;
             /** Format: int32 */
             maxNumberOfStudents?: number | null;
@@ -1101,7 +1101,7 @@ export interface components {
             effectiveUnits?: number;
             /** Format: int32 */
             daysPerWeek?: number;
-            /** Format: double */
+            /** Format: decimal */
             hoursPerDay?: number;
             /** Format: int32 */
             maxNumberOfStudents?: number | null;
@@ -1145,7 +1145,7 @@ export interface components {
             roomId?: number | null;
             /** Format: int32 */
             daysPerWeek?: number;
-            /** Format: double */
+            /** Format: decimal */
             hoursPerDay?: number;
             /** Format: int32 */
             maxNumberOfStudents?: number | null;
@@ -1544,6 +1544,9 @@ export interface components {
             cohortAcademicYear?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionCohortYearDto"];
             adviser?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionAdviserDto"] | null;
             status?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionStatusDto"];
+            /** Format: int32 */
+            unresolvedErrorsCount?: number;
+            isEligibleForOpenEnrollment?: boolean;
         };
         EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionCourseDto: {
             /**
