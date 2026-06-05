@@ -89,7 +89,7 @@ export const updateOfferingOptions = (id: number, sectionId: number) =>
     },
   });
 
-export const createScheduleRowOptions = (
+export const createScheduleRowsOptions = (
   offeringId: number,
   sectionId: number,
 ) =>
@@ -105,7 +105,7 @@ export const createScheduleRowOptions = (
           sectionDetailKey(sectionId),
         ],
       },
-      onSuccess: () => toast.success("Schedule row added successfully"),
+      onSuccess: () => toast.success("Schedule row(s) added successfully"),
     },
   });
 

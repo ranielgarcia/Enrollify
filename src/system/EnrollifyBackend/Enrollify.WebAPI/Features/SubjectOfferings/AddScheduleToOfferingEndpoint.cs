@@ -3,21 +3,23 @@ using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 
 namespace Enrollify.WebAPI.Features.SubjectOfferings;
 
-public class AddScheduleToOfferingRequest
+public class ScheduleItem
 {
-    public int Id { get; set; }
     public string DayOfWeek { get; set; } = null!;
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
 }
 
-public class AddScheduleToOfferingRequestValidator : Validator<AddScheduleToOfferingRequest>
+public class AddMultipleSchedulesToOfferingRequest
 {
-    public AddScheduleToOfferingRequestValidator()
-    {
-        RuleFor(x => x.Id)
-            .GreaterThan(0).WithMessage("A valid offering ID is required.");
+    public int Id { get; set; }
+    public List<ScheduleItem> Schedules { get; set; } = new();
+}
 
+public class ScheduleItemValidator : Validator<ScheduleItem>
+{
+    public ScheduleItemValidator()
+    {
         RuleFor(x => x.DayOfWeek)
             .NotEmpty().WithMessage("Day of week is required.");
 
@@ -26,31 +28,50 @@ public class AddScheduleToOfferingRequestValidator : Validator<AddScheduleToOffe
     }
 }
 
+public class AddMultipleSchedulesToOfferingRequestValidator : Validator<AddMultipleSchedulesToOfferingRequest>
+{
+    public AddMultipleSchedulesToOfferingRequestValidator()
+    {
+        RuleFor(x => x.Id)
+            .GreaterThan(0).WithMessage("A valid offering ID is required.");
+
+        RuleFor(x => x.Schedules)
+            .NotEmpty().WithMessage("At least one schedule is required.");
+
+        RuleForEach(x => x.Schedules)
+            .SetValidator(new ScheduleItemValidator());
+    }
+}
+
 [HttpPost("{id:int}/schedules")]
 [Group<SubjectOfferingsEndpointGroup>]
 [Authorize(Policy = PolicyName.HasUpdateSubjectOfferingPermission)]
-public class AddScheduleToOfferingEndpoint : Endpoint<AddScheduleToOfferingRequest, CreatedApiResult<int>>
+public class AddMultipleSchedulesToOfferingEndpoint : Endpoint<AddMultipleSchedulesToOfferingRequest, CreatedApiResult<List<int>>>
 {
     private readonly IMediator _mediator;
 
-    public AddScheduleToOfferingEndpoint(IMediator mediator)
+    public AddMultipleSchedulesToOfferingEndpoint(IMediator mediator)
     {
         _mediator = mediator;
     }
 
-    public override async Task<CreatedApiResult<int>> ExecuteAsync(
-        AddScheduleToOfferingRequest request, CancellationToken cancellationToken)
+    public override async Task<CreatedApiResult<List<int>>> ExecuteAsync(
+        AddMultipleSchedulesToOfferingRequest request, CancellationToken cancellationToken)
     {
+        var schedules = request.Schedules.Select(s => 
+            new AddMultipleSchedulesToOffering.ScheduleToAdd(
+                s.DayOfWeek,
+                s.StartTime,
+                s.EndTime)).ToList();
+
         var result = await _mediator.Send(
-            new AddScheduleToOffering.Command(
+            new AddMultipleSchedulesToOffering.Command(
                 ClassSectionSubjectOfferingId.From(request.Id),
-                request.DayOfWeek,
-                request.StartTime,
-                request.EndTime),
+                schedules),
             cancellationToken);
 
         return result.ToCreatedResult(
-            scheduleId => $"/subject-offerings/{request.Id}/schedules/{scheduleId.Value}",
-            scheduleId => scheduleId.Value);
+            scheduleIds => $"/subject-offerings/{request.Id}/schedules",
+            scheduleIds => scheduleIds.Select(id => id.Value).ToList());
     }
 }

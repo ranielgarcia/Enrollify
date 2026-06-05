@@ -189,7 +189,7 @@ export interface paths {
         };
         get: operations["EnrollifyWebAPIFeaturesSubjectOfferingsGetSchedulesByOfferingIdEndpoint"];
         put?: never;
-        post: operations["EnrollifyWebAPIFeaturesSubjectOfferingsAddScheduleToOfferingEndpoint"];
+        post: operations["EnrollifyWebAPIFeaturesSubjectOfferingsAddMultipleSchedulesToOfferingEndpoint"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1056,7 +1056,10 @@ export interface components {
             /** Format: int32 */
             preferRoomTypeId: number;
         };
-        EnrollifyWebAPIFeaturesSubjectOfferingsAddScheduleToOfferingRequest: {
+        EnrollifyWebAPIFeaturesSubjectOfferingsAddMultipleSchedulesToOfferingRequest: {
+            schedules: components["schemas"]["EnrollifyWebAPIFeaturesSubjectOfferingsScheduleItem"][];
+        };
+        EnrollifyWebAPIFeaturesSubjectOfferingsScheduleItem: {
             dayOfWeek: string;
             /** Format: time */
             startTime?: string;
@@ -1076,10 +1079,6 @@ export interface components {
             snapshotUnits?: number;
             snapshotIsElective?: boolean;
             snapshotElectiveGroupName?: string | null;
-            /** Format: decimal */
-            subjectUnitsOverride?: number | null;
-            /** Format: decimal */
-            effectiveUnits?: number;
             /** Format: int32 */
             daysPerWeek?: number;
             /** Format: decimal */
@@ -1130,8 +1129,6 @@ export interface components {
             hoursPerDay?: number;
             /** Format: int32 */
             maxNumberOfStudents?: number | null;
-            /** Format: decimal */
-            subjectUnitsOverride?: number | null;
         };
         EnrollifyWebAPIFeaturesSubjectEquivalencesAddSubjectsToEquivalenceGroupRequest: {
             subjectCodes: string[];
@@ -2255,7 +2252,7 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesSubjectOfferingsAddScheduleToOfferingEndpoint: {
+    EnrollifyWebAPIFeaturesSubjectOfferingsAddMultipleSchedulesToOfferingEndpoint: {
         parameters: {
             query?: never;
             header?: never;
@@ -2266,7 +2263,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesSubjectOfferingsAddScheduleToOfferingRequest"];
+                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesSubjectOfferingsAddMultipleSchedulesToOfferingRequest"];
             };
         };
         responses: {

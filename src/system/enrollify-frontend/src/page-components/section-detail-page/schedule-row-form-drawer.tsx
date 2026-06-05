@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { createScheduleRowOptions } from "@/api/collections/offering-collection";
+import { createScheduleRowsOptions } from "@/api/collections/offering-collection";
 import type { ClassSchedule, DayOfWeek } from "@/api/models/class-schedule";
 import type { components } from "@/api/generated/api";
 import { FormTimeSelect } from "@/components/form/form-time-select";
 import { toast } from "sonner";
 
-type AddScheduleRequest =
-  components["schemas"]["EnrollifyWebAPIFeaturesSubjectOfferingsAddScheduleToOfferingRequest"];
+type AddMultipleSchedulesRequest =
+  components["schemas"]["EnrollifyWebAPIFeaturesSubjectOfferingsAddMultipleSchedulesToOfferingRequest"];
 import { FormSection } from "@/components/form/form-section";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -95,10 +95,10 @@ export function ScheduleRowFormDrawer({
   const [isOpen, setIsOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const { mutateAsync: createScheduleRow } = useMutation({
-    ...createScheduleRowOptions(offeringId, sectionId),
+  const { mutateAsync: createScheduleRows } = useMutation({
+    ...createScheduleRowsOptions(offeringId, sectionId),
     onError: () => {
-      toast.error("Failed to add schedule row. Check the offering limits.");
+      toast.error("Failed to add schedule row(s). Check the offering limits.");
     },
   });
 
@@ -146,7 +146,7 @@ export function ScheduleRowFormDrawer({
         }
       }
 
-      const rows = value.selectedDays.map((day) => {
+      const schedules = value.selectedDays.map((day) => {
         const startTime = value.sameTime
           ? value.sharedStartTime
           : value.perDayTimes[day].startTime;
@@ -156,9 +156,10 @@ export function ScheduleRowFormDrawer({
         return { dayOfWeek: day, startTime, endTime };
       });
 
-      await Promise.all(
-        rows.map((row) => createScheduleRow(row as AddScheduleRequest)),
-      );
+      // Submit all schedules in a single batch request to avoid race conditions
+      await createScheduleRows({
+        schedules,
+      } as AddMultipleSchedulesRequest);
 
       setIsOpen(false);
       setFormError(null);
