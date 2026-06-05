@@ -1,13 +1,19 @@
 import type { Offering } from "@/api/models/offering";
+import type { ValidationMessages } from "@/api/models/class-section";
 import { OfferingCard } from "./offering-card";
 import { LayoutGrid } from "lucide-react";
 
 interface OfferingsTabProps {
   sectionId: number;
   offerings: Offering[];
+  validationMessages?: ValidationMessages;
 }
 
-export function OfferingsTab({ sectionId, offerings }: OfferingsTabProps) {
+export function OfferingsTab({
+  sectionId,
+  offerings,
+  validationMessages,
+}: OfferingsTabProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -34,7 +40,16 @@ export function OfferingsTab({ sectionId, offerings }: OfferingsTabProps) {
       ) : (
         <div className="space-y-3">
           {offerings.map((o) => (
-            <OfferingCard key={o.id} offering={o} sectionId={sectionId} />
+            <OfferingCard
+              key={o.id}
+              offering={o}
+              sectionId={sectionId}
+              validationMessages={
+                validationMessages?.offeringsValidationMessages[
+                  String(o.id)
+                ] ?? []
+              }
+            />
           ))}
         </div>
       )}

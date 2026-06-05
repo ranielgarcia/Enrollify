@@ -28,6 +28,10 @@ const OfferingValidationMessageSchema = ValidationMessageSchema.extend({
   offeringId: z.number(),
 });
 
+export type OfferingValidationMessage = z.infer<
+  typeof OfferingValidationMessageSchema
+>;
+
 const ValidationMessagesSchema = z.object({
   classSectionId: z.number(),
   classSectionValidationMessages: z.array(ValidationMessageSchema),

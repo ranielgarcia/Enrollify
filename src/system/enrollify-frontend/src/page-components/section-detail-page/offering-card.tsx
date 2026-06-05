@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { deleteOfferingOptions } from "@/api/collections/offering-collection";
 import type { Offering } from "@/api/models/offering";
+import type { OfferingValidationMessage } from "@/api/models/class-section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,81 +25,23 @@ import {
 } from "lucide-react";
 import { ScheduleRowList } from "./schedule-row-list";
 import { EditOfferingDrawer } from "./edit-offering-drawer";
+import { OfferingValidationMessagesDrawer } from "./offering-validation-messages-drawer";
 
 interface OfferingCardProps {
   offering: Offering;
   sectionId: number;
+  validationMessages?: OfferingValidationMessage[];
 }
 
-function parseTimeToHours(time: string): number {
-  const [hours, minutes, seconds] = time.split(":").map(Number);
-  return hours + minutes / 60 + seconds / 3600;
-}
 
-function computeScheduleMetrics(schedules: Offering["schedules"]) {
-  if (!schedules || schedules.length === 0) {
-    return { actualDaysPerWeek: 0, actualHoursPerDay: 0 };
-  }
 
-  const uniqueDays = new Set(schedules.map((s) => s.dayOfWeekAbbreviation));
-  const actualDaysPerWeek = uniqueDays.size;
-
-  const totalHours = schedules.reduce((sum, s) => {
-    const start = parseTimeToHours(s.startTime);
-    const end = parseTimeToHours(s.endTime);
-    return sum + (end - start);
-  }, 0);
-
-  const actualHoursPerDay =
-    schedules.length > 0 ? totalHours / schedules.length : 0;
-
-  return { actualDaysPerWeek, actualHoursPerDay };
-}
-
-function validateScheduleMetrics(
-  offering: Offering,
-  actualDaysPerWeek: number,
-  actualHoursPerDay: number,
-) {
-  const issues: { type: "warning" | "error"; message: string }[] = [];
-
-  const expectedDays = offering.daysPerWeek;
-  const expectedHours = offering.hoursPerDay;
-
-  if (expectedDays != null) {
-    if (Math.abs(expectedDays - actualDaysPerWeek) > 0.5) {
-      issues.push({
-        type: "error",
-        message: `Days/Week mismatch: expected ${expectedDays}, actual ${actualDaysPerWeek}`,
-      });
-    } else if (expectedDays !== actualDaysPerWeek) {
-      issues.push({
-        type: "warning",
-        message: `Days/Week slight mismatch: expected ${expectedDays}, actual ${actualDaysPerWeek}`,
-      });
-    }
-  }
-
-  if (expectedHours != null) {
-    const diff = Math.abs(expectedHours - actualHoursPerDay);
-    if (diff > 0.5) {
-      issues.push({
-        type: "error",
-        message: `Hrs/Day mismatch: expected ${expectedHours}, actual ${actualHoursPerDay.toFixed(1)}`,
-      });
-    } else if (diff > 0.01) {
-      issues.push({
-        type: "warning",
-        message: `Hrs/Day slight mismatch: expected ${expectedHours}, actual ${actualHoursPerDay.toFixed(1)}`,
-      });
-    }
-  }
-
-  return issues;
-}
-
-export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
+export function OfferingCard({
+  offering,
+  sectionId,
+  validationMessages = [],
+}: OfferingCardProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isValidationDrawerOpen, setIsValidationDrawerOpen] = useState(false);
 
   const { mutateAsync: deleteOffering } = useMutation(
     deleteOfferingOptions(offering.id, sectionId),
@@ -112,16 +55,10 @@ export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
   const displayUnits = offering.effectiveUnits ?? offering.snapshotUnits;
   const hasOverride = offering.subjectUnitsOverride != null;
 
-  const { actualDaysPerWeek, actualHoursPerDay } = computeScheduleMetrics(
-    offering.schedules,
+  const hasValidationMessages = validationMessages.length > 0;
+  const hasValidationError = validationMessages.some(
+    (msg) => msg.severity.name === "Error",
   );
-  const scheduleIssues = validateScheduleMetrics(
-    offering,
-    actualDaysPerWeek,
-    actualHoursPerDay,
-  );
-  const hasScheduleError = scheduleIssues.some((i) => i.type === "error");
-  const hasScheduleWarning = scheduleIssues.some((i) => i.type === "warning");
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -202,32 +139,22 @@ export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
                 </TooltipContent>
               </Tooltip>
             )}
-            {(hasScheduleError || hasScheduleWarning) && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Badge
-                    variant={hasScheduleError ? "destructive" : "outline"}
-                    className={`gap-1 text-xs ${
-                      hasScheduleWarning
-                        ? "border-amber-400 text-amber-700 dark:text-amber-400"
-                        : ""
-                    }`}
-                  >
-                    <AlertTriangle className="size-3" />
-                    {scheduleIssues.length} issue
-                    {scheduleIssues.length > 1 ? "s" : ""}
-                  </Badge>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <div className="space-y-1">
-                    {scheduleIssues.map((issue, i) => (
-                      <p key={i} className="text-xs">
-                        {issue.message}
-                      </p>
-                    ))}
-                  </div>
-                </TooltipContent>
-              </Tooltip>
+            {hasValidationMessages && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 cursor-pointer hover:bg-transparent"
+                onClick={() => setIsValidationDrawerOpen(true)}
+              >
+                <Badge
+                  variant={hasValidationError ? "destructive" : "secondary"}
+                  className="gap-1 text-xs"
+                >
+                  <AlertTriangle className="size-3" />
+                  {validationMessages.length} issue
+                  {validationMessages.length > 1 ? "s" : ""}
+                </Badge>
+              </Button>
             )}
             {conflictCount > 0 && (
               <Badge
@@ -286,6 +213,13 @@ export function OfferingCard({ offering, sectionId }: OfferingCardProps) {
           </div>
         </CollapsibleContent>
       </div>
+
+      <OfferingValidationMessagesDrawer
+        isOpen={isValidationDrawerOpen}
+        onOpenChange={setIsValidationDrawerOpen}
+        offeringSubjectCode={offering.snapshotSubjectCode ?? "Unknown"}
+        validationMessages={validationMessages}
+      />
     </Collapsible>
   );
 }

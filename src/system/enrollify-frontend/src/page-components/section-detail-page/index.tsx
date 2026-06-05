@@ -175,7 +175,11 @@ export default function SectionDetailPage({
           value="offerings"
           className="flex min-h-0 flex-col space-y-4"
         >
-          <OfferingsTab sectionId={sectionId} offerings={section.offerings} />
+          <OfferingsTab
+            sectionId={sectionId}
+            offerings={section.offerings}
+            validationMessages={section.validationMessages ?? undefined}
+          />
         </TabsContent>
 
         <TabsContent value="grid" className="flex min-h-0 flex-col space-y-4">
