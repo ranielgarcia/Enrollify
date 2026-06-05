@@ -1,6 +1,7 @@
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Constants;
+using Enrollify.Core.Services.ClassScheduleValidation;
 
 namespace Enrollify.Core.Services.ClassSectionOpenForEnrollmentEligibilityValidation;
 
@@ -57,10 +58,17 @@ public static class ClassSectionEnrollmentEligibilityValidator
           "SUBJECT_OFFERING_MAX_NUMBER_OF_STUDENTS_DEFAULT_VALUE",
           "Max number of students is set to the default value of 0, which means no limit.");
 
-      if (offering.ClassSchedules.Count() < offering.DaysPerWeek)
+      if (!ClassScheduleValidationService.AreSchedulesSufficient(offering.ClassSchedules, offering.DaysPerWeek))
         context.AddOfferingValidationMessage(DomainValidationErrorSeverityEnum.Error, offering.Id,
           "SUBJECT_OFFERING_INSUFFICIENT_CLASS_SCHEDULES",
-          "Subject offering must have class schedules equal to or greater than the days per week.");
+          "Subject offering must have class schedules equal to expected days per week.");
+
+      if (ClassScheduleValidationService.ValidateAllSchedules(offering.ClassSchedules, offering.DaysPerWeek,
+            offering.HoursPerDay) is ClassScheduleValidationResult scheduleValidationResult &&
+          !scheduleValidationResult.IsValid)
+        context.AddOfferingValidationMessage(DomainValidationErrorSeverityEnum.Error, offering.Id,
+          "SUBJECT_OFFERING_INVALID_CLASS_SCHEDULES",
+          $"Subject offering has invalid class schedules: {scheduleValidationResult.ErrorMessage}");
     }
 
     return context;

@@ -1,6 +1,41 @@
 import { z } from "zod";
 import { AuditInfoSchema } from "@/api/models/audit-info";
 import { OfferingSchema } from "./offering";
+import { dateTransformer } from "./date-transformer";
+import {
+  ValidationSeverities,
+  type ValidationSeverityName,
+} from "./validation-severity";
+
+const SeveritySchema = z.object({
+  value: z.enum(ValidationSeverities),
+  name: z.enum(
+    Object.keys(ValidationSeverities) as [
+      ValidationSeverityName,
+      ...ValidationSeverityName[],
+    ],
+  ),
+});
+
+const ValidationMessageSchema = z.object({
+  severity: SeveritySchema,
+  code: z.string(),
+  message: z.string(),
+  computedAt: dateTransformer,
+});
+
+const OfferingValidationMessageSchema = ValidationMessageSchema.extend({
+  offeringId: z.number(),
+});
+
+const ValidationMessagesSchema = z.object({
+  classSectionId: z.number(),
+  classSectionValidationMessages: z.array(ValidationMessageSchema),
+  offeringsValidationMessages: z.record(
+    z.string(), // class section subject offering id as string
+    z.array(OfferingValidationMessageSchema),
+  ),
+});
 
 const CourseSummarySchema = z.object({
   id: z.number(),
@@ -57,6 +92,7 @@ export const ClassSectionSchema = z
     name: z.string(),
     sectionCode: z.string().max(1).optional(),
     intendedYearLevel: z.number().int().min(1).max(6),
+    fullName: z.string(),
     course: CourseSummarySchema,
     curriculum: CurriculumSummarySchema.optional().nullable(),
     academicTerm: AcademicTermSummarySchema,
@@ -68,13 +104,14 @@ export const ClassSectionSchema = z
   })
   .extend(AuditInfoSchema.shape);
 
-
-  
 export const ClassSectionWithOfferingsSchema = ClassSectionSchema.extend({
   offerings: z.array(OfferingSchema),
+  validationMessages: ValidationMessagesSchema.optional().nullable(),
 });
 
 export type ClassSection = z.infer<typeof ClassSectionSchema>;
 export type ClassSectionWithOfferings = z.infer<
   typeof ClassSectionWithOfferingsSchema
 >;
+export type ValidationMessage = z.infer<typeof ValidationMessageSchema>;
+export type ValidationMessages = z.infer<typeof ValidationMessagesSchema>;

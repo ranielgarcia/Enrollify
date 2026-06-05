@@ -12,6 +12,7 @@ public class ClassSectionDto : BaseDto
 {
   public ClassSectionId Id { get; set; }
   public string Name { get; set; } = null!;
+  public string FullName { get; set; } = null!;
   public char SectionCode { get; set; }
   public int IntendedYearLevel { get; set; }
 
@@ -32,6 +33,7 @@ public class ClassSectionDto : BaseDto
     {
       Id = section.Id,
       Name = section.Name,
+      FullName = section.FullName,
       SectionCode = (char)section.SectionCode,
       IntendedYearLevel = (int)section.IntendedYearLevel,
       UnresolvedErrorsCount = unresolvedErrorsCount,

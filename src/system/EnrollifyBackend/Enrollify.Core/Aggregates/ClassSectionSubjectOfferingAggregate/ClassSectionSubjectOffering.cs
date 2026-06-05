@@ -7,6 +7,7 @@ using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.DomainExceptions;
+using Enrollify.Core.Services.ClassScheduleValidation;
 using Enrollify.SharedKernel;
 
 namespace Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
@@ -169,26 +170,14 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
   {
     Guard.Against.Null(classSchedule, nameof(classSchedule));
 
-    // Use decimal for hours to match HoursPerDay (decimal) and avoid implicit double/decimal mixing
-    decimal numberOfHours = (decimal)(classSchedule.EndTime - classSchedule.StartTime).TotalHours;
-    decimal totalHoursAfterAdding =
-      _classSchedules.Sum(cs => (decimal)(cs.EndTime - cs.StartTime).TotalHours) + numberOfHours;
-    decimal expectedTotalHours = DaysPerWeek * HoursPerDay;
-    if (_classSchedules.Count + 1 == DaysPerWeek && Math.Abs(totalHoursAfterAdding - expectedTotalHours) > 0.01m)
-      throw new InvalidClassScheduleException(
-        $"Total hours ({totalHoursAfterAdding:F2}) must equal days per week ({DaysPerWeek}) × hours per day ({HoursPerDay}) = {expectedTotalHours:F2} hours.");
+    ClassScheduleValidationResult validationResult = ClassScheduleValidationService.ValidateAddClassSchedule(
+      _classSchedules,
+      classSchedule,
+      DaysPerWeek,
+      HoursPerDay);
 
-    if (_classSchedules.Where(s => s.IsActive).ToList().Count + 1 > DaysPerWeek)
-      throw new InvalidClassScheduleException(
-        $"Cannot add more than {DaysPerWeek} schedule(s) per week. Current count: {_classSchedules.Count}.");
-
-    if (numberOfHours - HoursPerDay > 0.01m)
-      throw new InvalidClassScheduleException(
-        $"Schedule hours ({numberOfHours:F2}) must not exceed ({HoursPerDay}) × hours per day.");
-
-    if (HoursPerDay - numberOfHours > 0.01m)
-      throw new InvalidClassScheduleException(
-        $"Schedule hours ({numberOfHours:F2}) must not be less than ({HoursPerDay}) × hours per day.");
+    if (!validationResult.IsValid)
+      throw new InvalidClassScheduleException(validationResult.ErrorMessage);
 
     _classSchedules.Add(classSchedule);
     return this;
@@ -210,17 +199,16 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
     Guard.Against.InvalidInput(newEndTime, nameof(newEndTime), e => e > newStartTime,
       "End time must be after start time.");
 
-    // Use decimal for durations to match HoursPerDay (decimal)
-    decimal newScheduleDuration = (decimal)(newEndTime - newStartTime).TotalHours;
-    decimal totalHoursAfterUpdate = _classSchedules
-      .Where(cs => cs.Id != classScheduleId)
-      .Sum(cs => (decimal)(cs.EndTime - cs.StartTime).TotalHours) + newScheduleDuration;
+    ClassScheduleValidationResult validationResult = ClassScheduleValidationService.ValidateUpdateClassSchedule(
+      _classSchedules,
+      classScheduleId,
+      newStartTime,
+      newEndTime,
+      DaysPerWeek,
+      HoursPerDay);
 
-    decimal expectedTotalHours = DaysPerWeek * HoursPerDay;
-
-    if (totalHoursAfterUpdate - expectedTotalHours > 0.01m)
-      throw new InvalidClassScheduleException(
-        $"Total hours after update ({totalHoursAfterUpdate:F2}) must not exceed days per week ({DaysPerWeek}) × hours per day ({HoursPerDay}) = {expectedTotalHours:F2} hours.");
+    if (!validationResult.IsValid)
+      throw new InvalidClassScheduleException(validationResult.ErrorMessage);
 
     _classSchedules.Remove(existingSchedule);
     var updatedSchedule = new ClassSchedule(
