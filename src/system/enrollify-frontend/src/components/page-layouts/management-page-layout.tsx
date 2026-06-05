@@ -3,7 +3,7 @@ import React from "react";
 import { Separator } from "@/components/ui/separator";
 
 interface ManagementPageLayoutProps {
-  title: string;
+  title: string | React.ReactNode;
   description: string;
   icon: React.ReactNode;
   isLoading?: boolean;

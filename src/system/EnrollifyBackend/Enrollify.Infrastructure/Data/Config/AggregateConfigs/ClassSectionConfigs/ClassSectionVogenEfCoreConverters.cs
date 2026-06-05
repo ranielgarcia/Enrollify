@@ -5,6 +5,7 @@ namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.ClassSectionConf
 
 [EfCoreConverter<ClassSectionId>]
 [EfCoreConverter<SectionCode>]
+[EfCoreConverter<ClassSectionEnrollmentEligibilityValidationMessageId>]
 internal partial class ClassSectionVogenEfCoreConverters
 {
 }

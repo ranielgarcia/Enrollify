@@ -37,7 +37,9 @@ function formatTimeLabel(slot: string): string {
 
 export function WeeklyScheduleGrid({ offerings }: WeeklyScheduleGridProps) {
   const activeDays = DAYS.filter((d) =>
-    offerings.some((o) => o.schedules.some((s) => s.dayOfWeek === d.key)),
+    offerings.some((o) =>
+      o.schedules.some((s) => s.dayOfWeekAbbreviation === d.key),
+    ),
   );
   const displayDays = activeDays.length > 0 ? activeDays : DAYS.slice(0, 5);
 

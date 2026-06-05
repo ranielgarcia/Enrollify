@@ -1,10 +1,8 @@
-using Enrollify.WebAPI.BackgroundJobs;
-
 namespace Enrollify.WebAPI.StartupServices;
 
 public static class StartupServicesRegistration
 {
-    public static IServiceCollection AddStartupServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddStartupServices(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
         // Register the StartupRunner as a hosted service
         services.AddHostedService<StartupRunner>();
@@ -12,8 +10,10 @@ public static class StartupServicesRegistration
         // Register individual startup services here
         services.AddScoped<IStartupService, FileStorageRegistration>();
 
-        // Register background jobs
-        services.AddHostedService<SyncCourseCurriculumAssignmentsJob>();
+        if (environment.IsDevelopment())
+        {
+            services.AddScoped<IStartupService, DevelopmentDatabaseSetupService>();
+        }
 
         return services;
     }

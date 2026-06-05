@@ -40,7 +40,7 @@ try
     builder.Services.AddAzureADAuthentication(builder.Configuration);
     builder.Services.AddAuthorizationPolicies();
     builder.Services.AddServiceConfigs(startupLogger, builder);
-    builder.Services.AddStartupServices(builder.Configuration);
+    builder.Services.AddStartupServices(builder.Configuration, builder.Environment);
 
     var app = builder.Build();
 

@@ -56,7 +56,7 @@ public static class InfrastructureServiceExtensions
 
         // Auto register all Vogen Dapper type handlers/converters
         VogenDapperTypeHandlerRegistration.RegisterTypeHandlers();
-        
+
         // Auto register all SmartEnum Dapper type handlers
         RegisterSmartEnumTypeHandlers(typeof(PermissionScopeEnum).Assembly);
         SqlMapper.AddTypeHandler(new SmartFlagEnumDapperTypeHandler<PermissionEnum>());
@@ -69,7 +69,7 @@ public static class InfrastructureServiceExtensions
         {
             var eventDispatchInterceptor = provider.GetRequiredService<EventDispatchInterceptor>();
             var preSaveChangesInterceptor = provider.GetRequiredService<PreSaveChangesInterceptor>();
-            
+
             options.UseSqlServer(connectionString);
 
             if (isDevelopment)
@@ -101,6 +101,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IAcademicYearAndTermRepository, AcademicYearAndTermRepository>();
         services.AddScoped<IClassSectionRepository, ClassSectionRepository>();
         services.AddScoped<IClassSectionSubjectOfferingRepository, ClassSectionSubjectOfferingRepository>();
+        services.AddScoped<IClassSectionEligibilityValidationMessageRepository, ClassSectionEligibilityValidationMessageRepository>();
         services.AddScoped<ICourseCurriculumAssignmentRepository, CourseCurriculumAssignmentRepository>();
 
 
@@ -124,7 +125,7 @@ public static class InfrastructureServiceExtensions
 
         var smartEnumTypes = assemblies
             .SelectMany(assembly => assembly.GetTypes())
-            .Where(type => type is { IsClass: true, IsAbstract: false } 
+            .Where(type => type is { IsClass: true, IsAbstract: false }
                           && IsSmartEnum(type));
 
         foreach (var smartEnumType in smartEnumTypes)
@@ -136,7 +137,7 @@ public static class InfrastructureServiceExtensions
                 while (baseType != null && baseType.IsGenericType)
                 {
                     var genericTypeDef = baseType.GetGenericTypeDefinition();
-                    
+
                     if (genericTypeDef == typeof(SmartEnum<>))
                     {
                         // SmartEnum<T> with int values - use SmartEnumByValueTypeHandler
@@ -153,7 +154,7 @@ public static class InfrastructureServiceExtensions
                         SqlMapper.AddTypeHandler(smartEnumType, (SqlMapper.ITypeHandler)handler!);
                         break;
                     }
-                    
+
                     baseType = baseType.BaseType;
                 }
             }
@@ -179,7 +180,7 @@ public static class InfrastructureServiceExtensions
             if (baseType.IsGenericType)
             {
                 var genericTypeDef = baseType.GetGenericTypeDefinition();
-                if (genericTypeDef == typeof(SmartEnum<>) || 
+                if (genericTypeDef == typeof(SmartEnum<>) ||
                     genericTypeDef == typeof(SmartEnum<,>))
                 {
                     return true;

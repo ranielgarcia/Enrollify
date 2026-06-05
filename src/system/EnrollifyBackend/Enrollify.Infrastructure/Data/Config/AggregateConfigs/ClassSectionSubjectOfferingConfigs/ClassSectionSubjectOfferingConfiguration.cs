@@ -1,4 +1,5 @@
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate;
 
 namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.ClassSectionSubjectOfferingConfigs;
 
@@ -15,9 +16,6 @@ public class ClassSectionSubjectOfferingConfiguration : IEntityTypeConfiguration
 
         builder.Property(e => e.SubjectId)
             .IsRequired();
-
-        builder.Property(e => e.SubjectUnitsOverride)
-            .HasColumnType("decimal(3,1)");
 
         builder.Property(e => e.TeacherId)
             .IsRequired(false);
@@ -36,6 +34,25 @@ public class ClassSectionSubjectOfferingConfiguration : IEntityTypeConfiguration
             .IsRequired().HasDefaultValue(1);
 
         builder.Property(e => e.MaxNumberOfStudents);
+
+        builder.Property(e => e.CurriculumSubjectId)
+            .IsRequired();
+
+        builder.Property(e => e.SnapshotSubjectCode)
+            .HasMaxLength(SubjectCode.MaxLength)
+            .IsRequired();
+
+        builder.Property(e => e.SnapshotSubjectTitle)
+            .IsRequired();
+
+        builder.Property(e => e.SnapshotUnits)
+            .HasColumnType("decimal(3,1)");
+
+        builder.Property(e => e.SnapshotIsElective)
+            .IsRequired();
+
+        builder.Property(e => e.SnapshotElectiveGroupName)
+            .IsRequired(false);
 
         // Navigation to Subject
         builder.HasOne(e => e.Subject)

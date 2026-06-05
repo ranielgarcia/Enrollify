@@ -23,7 +23,10 @@ import { Plus, UserRound } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
-import { createNewClassSectionsOptions } from "@/api/collections/class-section-collection";
+import {
+  createNewClassSectionsOptions,
+  updateClassSectionOptions,
+} from "@/api/collections/class-section-collection";
 import { useMutation } from "@tanstack/react-query";
 
 const sectionFormSchema = z.object({
@@ -75,9 +78,9 @@ export function SectionFormDrawer({
   const { mutateAsync: createSectionAsync } = useMutation(
     createNewClassSectionsOptions(),
   );
-  // const { mutateAsync: updateSection } = useMutation(
-  //   updateSectionOptions(sectionToUpdate?.id ?? 0),
-  // );
+  const { mutateAsync: updateSectionAsync } = useMutation(
+    updateClassSectionOptions(sectionToUpdate?.id ?? 0),
+  );
 
   const courseOptions = courses.map((c) => ({
     value: c.id.toString(),
@@ -92,8 +95,8 @@ export function SectionFormDrawer({
     : [];
 
   const defaultValues: SectionFormData = {
-    yearLevel: sectionToUpdate?.yearLevel ?? 1,
-    studentCapacity: sectionToUpdate?.studentCapacity ?? 40,
+    yearLevel: sectionToUpdate?.intendedYearLevel ?? 1,
+    studentCapacity: 40,
     courseId: sectionToUpdate?.course?.id ?? 0,
     academicTermId: sectionToUpdate?.academicTerm?.id ?? 0,
     adviserId: sectionToUpdate?.adviser?.id ?? 0,
@@ -110,8 +113,7 @@ export function SectionFormDrawer({
       if (meta.submitAction === "create") {
         await createSectionAsync(value);
       } else if (meta.submitAction === "update") {
-        // await updateSection(value);
-        console.log(value);
+        await updateSectionAsync({ adviserId: value.adviserId });
       }
       if (meta.formAction === "close") {
         setIsOpen(false);
@@ -138,7 +140,7 @@ export function SectionFormDrawer({
       </DrawerTrigger>
 
       <AuthorizeView
-        policy="canCreateClassSection"
+        policy={isUpdating ? "canUpdateClassSection" : "canCreateClassSection"}
         unauthorized={
           <Unauthorized
             buttonLabel="Go Home"
@@ -171,6 +173,7 @@ export function SectionFormDrawer({
                     }))}
                     placeholder="Select year level"
                     required
+                    disabled={isUpdating}
                   />
                 )}
               </form.Field>
@@ -184,6 +187,7 @@ export function SectionFormDrawer({
                     placeholder="40"
                     required
                     hint="Maximum number of students"
+                    disabled={isUpdating}
                   />
                 )}
               </form.Field>
@@ -199,6 +203,7 @@ export function SectionFormDrawer({
                     placeholder="Select course"
                     searchPlaceholder="Search courses..."
                     required
+                    disabled={isUpdating}
                   />
                 )}
               </form.Field>
@@ -212,6 +217,7 @@ export function SectionFormDrawer({
                     placeholder="Select term"
                     searchPlaceholder="Search terms..."
                     required
+                    disabled={isUpdating}
                   />
                 )}
               </form.Field>

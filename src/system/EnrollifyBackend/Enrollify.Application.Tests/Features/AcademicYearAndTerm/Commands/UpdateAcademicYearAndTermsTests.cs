@@ -5,6 +5,10 @@ using Enrollify.Application.Features.AcademicYearAndTerm.Commands;
 using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 using Enrollify.Application.Features.AcademicYearAndTerm.Models;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
+using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
+using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Microsoft.Extensions.Logging;
@@ -17,6 +21,7 @@ public class UpdateAcademicYearAndTermsTests
 {
     private readonly Mock<IAcademicYearAndTermRepository> _repositoryMock = new();
     private readonly Mock<IReadRepository<AcademicYear>> _readRepositoryMock = new();
+    private readonly Mock<IReadRepository<ClassSection>> _classSectionReadRepositoryMock = new();
     private readonly FakeLogger<UpdateAcademicYearAndTerms.Handler> _logger;
     private readonly UpdateAcademicYearAndTerms.Handler _handler;
 
@@ -34,6 +39,7 @@ public class UpdateAcademicYearAndTermsTests
         _handler = new UpdateAcademicYearAndTerms.Handler(
             _repositoryMock.Object,
             _readRepositoryMock.Object,
+            _classSectionReadRepositoryMock.Object,
             _logger);
     }
 
@@ -312,12 +318,61 @@ public class UpdateAcademicYearAndTermsTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
 
-    private void SetupExistingYear(AcademicYear year) =>
+    private void SetupExistingYear(AcademicYear year)
+    {
         _readRepositoryMock
             .Setup(r => r.FirstOrDefaultAsync(
                 It.IsAny<ISpecification<AcademicYear>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(year);
+
+        // Default: no active/completed sections blocking the update
+        _classSectionReadRepositoryMock
+            .Setup(r => r.ListAsync(
+                It.IsAny<ISpecification<ClassSection>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+    }
+
+    [Fact(DisplayName = "Handle returns Forbidden when Active sections exist for the academic year terms")]
+    public async Task Handle_HasActiveClassSection_ReturnsForbidden()
+    {
+        SetupNoOverlap();
+        SetupExistingYear(CreateYearWithTerms());
+        SetupActiveSections(new List<ClassSection> { CreateActiveSectionWithFakeIds() });
+
+        var command = new UpdateAcademicYearAndTerms.Command(ValidId, ValidStart, ValidEnd, CreateValidTerms());
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Forbidden, result.Status);
+    }
+
+    private void SetupActiveSections(List<ClassSection> sections) =>
+        _classSectionReadRepositoryMock
+            .Setup(r => r.ListAsync(
+                It.IsAny<ISpecification<ClassSection>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(sections);
+
+    private static ClassSection CreateActiveSectionWithFakeIds()
+    {
+        var creation = new ClassSectionForCreation
+        {
+            Name = "Test Section",
+            IntendedYearLevel = YearLevel.From(1),
+            CourseId = CourseId.From(1),
+            CurriculumId = CurriculumId.From(1),
+            AcademicTermId = AcademicTermId.From(1),
+            CohortAcademicYearId = AcademicYearId.From(1),
+            SectionCode = SectionCode.From('A'),
+        };
+        return new ClassSection(creation)
+            .OpenForEnrollment()
+            .LockEnrollment()
+            .Activate();
+    }
 
     private static AcademicYear CreateYearWithTerms()
     {

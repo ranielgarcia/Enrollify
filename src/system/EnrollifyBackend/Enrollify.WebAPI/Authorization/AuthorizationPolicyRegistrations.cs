@@ -10,6 +10,7 @@ using Enrollify.WebAPI.Authorization.Rooms;
 using Enrollify.WebAPI.Authorization.RoomTypes;
 using Enrollify.WebAPI.Authorization.Shared;
 using Enrollify.WebAPI.Authorization.SubjectEquivalenceGroups;
+using Enrollify.WebAPI.Authorization.SubjectOfferings;
 using Enrollify.WebAPI.Authorization.Subjects;
 using Enrollify.WebAPI.Authorization.Teachers;
 
@@ -33,6 +34,7 @@ public static class AuthorizationPolicyRegistrations
         services.AddTeacherAuthorizationPolicyHandlers();
         services.AddAcademicYearsAndTermsAuthorizationPolicyHandlers();
         services.AddClassSectionsAuthorizationPolicyHandlers();
+        services.AddSubjectOfferingsAuthorizationPolicyHandlers();
 
         services.AddAuthorization(options =>
         {
@@ -52,6 +54,7 @@ public static class AuthorizationPolicyRegistrations
             options.AddTeacherAuthorizationPolicies();
             options.AddAcademicYearsAndTermsAuthorizationPolicies();
             options.AddClassSectionsAuthorizationPolicies();
+            options.AddSubjectOfferingsAuthorizationPolicies();
         });
 
         return services;

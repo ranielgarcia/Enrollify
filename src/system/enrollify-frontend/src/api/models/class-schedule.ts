@@ -13,11 +13,10 @@ export type DayOfWeek = z.infer<typeof DayOfWeekEnum>;
 
 export const ClassScheduleSchema = z.object({
   id: z.number(),
-  classSectionSubjectOfferingId: z.number(),
-  dayOfWeek: DayOfWeekEnum,
-  startTime: z.string().regex(/^\d{2}:\d{2}$/),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/),
-  isActive: z.boolean(),
+  dayOfWeek: z.string().optional(),
+  dayOfWeekAbbreviation: DayOfWeekEnum,
+  startTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/),
+  endTime: z.string().regex(/^\d{2}:\d{2}:\d{2}$/),
 });
 
 export type ClassSchedule = z.infer<typeof ClassScheduleSchema>;

@@ -1,23 +1,27 @@
-import type { OfferingWithSchedules } from "@/api/models/offering";
-import { AssignOfferingDrawer } from "./assign-offering-drawer";
+import type { Offering } from "@/api/models/offering";
+import type { ValidationMessages } from "@/api/models/class-section";
 import { OfferingCard } from "./offering-card";
 import { LayoutGrid } from "lucide-react";
 
 interface OfferingsTabProps {
   sectionId: number;
-  offerings: OfferingWithSchedules[];
+  offerings: Offering[];
+  validationMessages?: ValidationMessages;
 }
 
-export function OfferingsTab({ sectionId, offerings }: OfferingsTabProps) {
+export function OfferingsTab({
+  sectionId,
+  offerings,
+  validationMessages,
+}: OfferingsTabProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           {offerings.length > 0
             ? `${offerings.length} subject offering${offerings.length > 1 ? "s" : ""} assigned to this section`
-            : "No offerings assigned yet"}
+            : "No offerings configured yet"}
         </p>
-        <AssignOfferingDrawer sectionId={sectionId} />
       </div>
 
       {offerings.length === 0 ? (
@@ -28,14 +32,24 @@ export function OfferingsTab({ sectionId, offerings }: OfferingsTabProps) {
           <div>
             <p className="text-base font-semibold">No offerings yet</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Click "Assign Subject Offering" to start building the schedule.
+              Offerings are derived from the section's curriculum. Initialize
+              the section to load offerings automatically.
             </p>
           </div>
         </div>
       ) : (
         <div className="space-y-3">
           {offerings.map((o) => (
-            <OfferingCard key={o.id} offering={o} />
+            <OfferingCard
+              key={o.id}
+              offering={o}
+              sectionId={sectionId}
+              validationMessages={
+                validationMessages?.offeringsValidationMessages[
+                  String(o.id)
+                ] ?? []
+              }
+            />
           ))}
         </div>
       )}

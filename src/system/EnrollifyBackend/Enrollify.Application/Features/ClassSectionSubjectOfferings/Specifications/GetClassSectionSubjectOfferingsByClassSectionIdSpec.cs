@@ -1,0 +1,15 @@
+using Ardalis.Specification;
+using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+
+namespace Enrollify.Application.Features.ClassSectionSubjectOfferings.Specifications;
+
+public class GetClassSectionSubjectOfferingsByClassSectionIdSpec : Specification<ClassSectionSubjectOffering>
+{
+  public GetClassSectionSubjectOfferingsByClassSectionIdSpec(ClassSectionId classSectionId)
+  {
+    Query
+      .Include(o => o.ClassSchedules.Where(s => s.IsActive))
+      .Where(o => o.ClassSectionId == classSectionId && o.IsActive);
+  }
+}

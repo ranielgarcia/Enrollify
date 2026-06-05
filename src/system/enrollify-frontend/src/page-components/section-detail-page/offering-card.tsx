@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { deleteOfferingOptions } from "@/api/collections/offering-collection";
-import type { OfferingWithSchedules } from "@/api/models/offering";
+import type { Offering } from "@/api/models/offering";
+import type { OfferingValidationMessage } from "@/api/models/class-section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,29 +8,41 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { useMutation } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronRight,
   AlertCircle,
-  Trash2,
   LayoutGrid,
+  AlertTriangle,
 } from "lucide-react";
 import { ScheduleRowList } from "./schedule-row-list";
+import { EditOfferingDrawer } from "./edit-offering-drawer";
+import { OfferingValidationMessagesDrawer } from "./offering-validation-messages-drawer";
 
 interface OfferingCardProps {
-  offering: OfferingWithSchedules;
+  offering: Offering;
+  sectionId: number;
+  validationMessages?: OfferingValidationMessage[];
 }
 
-export function OfferingCard({ offering }: OfferingCardProps) {
+export function OfferingCard({
+  offering,
+  sectionId,
+  validationMessages = [],
+}: OfferingCardProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { mutateAsync: deleteOffering } = useMutation(
-    deleteOfferingOptions(offering.id),
-  );
+  const [isValidationDrawerOpen, setIsValidationDrawerOpen] = useState(false);
 
   const conflictCount = offering.conflicts?.length ?? 0;
   const hasHardConflict = offering.conflicts?.some(
     (c) => c.severity === "error",
+  );
+
+  const displayUnits = offering.snapshotUnits;
+
+  const hasValidationMessages = validationMessages.length > 0;
+  const hasValidationError = validationMessages.some(
+    (msg) => msg.severity.name === "Error",
   );
 
   return (
@@ -54,37 +66,55 @@ export function OfferingCard({ offering }: OfferingCardProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold text-sm">
-                {offering.subject.code}
+                {offering.snapshotSubjectCode}
               </span>
               <span className="text-sm text-muted-foreground truncate">
-                {offering.subject.title}
+                {offering.snapshotSubjectTitle}
               </span>
-              <Badge variant="secondary" className="text-xs">
-                {offering.subject.units} units
+              <Badge variant="secondary" className="text-xs cursor-default">
+                {displayUnits} units
               </Badge>
+              {offering.snapshotIsElective && (
+                <Badge variant="outline" className="text-xs">
+                  {offering.snapshotElectiveGroupName ?? "Elective"}
+                </Badge>
+              )}
             </div>
             <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
               <span>
-                {offering.teacher.firstName} {offering.teacher.lastName}
+                {offering.teacher
+                  ? `${offering.teacher.firstName} ${offering.teacher.lastName}`
+                  : "Unassigned"}
               </span>
               <span>·</span>
-              <span>{offering.room.roomNumber}</span>
-              {offering.dayPattern && (
+              <span>{offering.room?.roomNumber ?? "No room"}</span>
+              {(offering.schedules?.length ?? 0) > 0 && (
                 <>
                   <span>·</span>
-                  <span className="font-mono">{offering.dayPattern}</span>
-                </>
-              )}
-              {offering.schedules.length > 0 && (
-                <>
-                  <span>·</span>
-                  <span>{offering.schedules.length} schedule row(s)</span>
+                  <span>{offering.schedules!.length} schedule row(s)</span>
                 </>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1 shrink-0">
+            {hasValidationMessages && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 cursor-pointer hover:bg-transparent"
+                onClick={() => setIsValidationDrawerOpen(true)}
+              >
+                <Badge
+                  variant={hasValidationError ? "destructive" : "secondary"}
+                  className="gap-1 text-xs"
+                >
+                  <AlertTriangle className="size-3" />
+                  {validationMessages.length} issue
+                  {validationMessages.length > 1 ? "s" : ""}
+                </Badge>
+              </Button>
+            )}
             {conflictCount > 0 && (
               <Badge
                 variant={hasHardConflict ? "destructive" : "secondary"}
@@ -94,30 +124,52 @@ export function OfferingCard({ offering }: OfferingCardProps) {
                 {conflictCount} conflict{conflictCount > 1 ? "s" : ""}
               </Badge>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => deleteOffering(undefined as any)}
-              title="Remove offering"
-            >
-              <Trash2 className="size-3.5" />
-            </Button>
+            <EditOfferingDrawer offering={offering} sectionId={sectionId} />
           </div>
         </div>
 
         <CollapsibleContent>
           <div className="border-t px-4 py-3 bg-muted/20 space-y-3">
+            <div className="grid grid-cols-7 gap-4 text-xs">
+              <div>
+                <p className="font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">
+                  Max Students
+                </p>
+                <p>{offering.maxNumberOfStudents ?? "No limit"}</p>
+              </div>
+              <div>
+                <p className="font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">
+                  Days/Week
+                </p>
+                <p>{offering.daysPerWeek ?? "—"}</p>
+              </div>
+              <div>
+                <p className="font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">
+                  Hrs/Day
+                </p>
+                <p>{offering.hoursPerDay ?? "—"}</p>
+              </div>
+            </div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Schedule Rows
             </p>
             <ScheduleRowList
               offeringId={offering.id}
-              schedules={offering.schedules}
+              sectionId={sectionId}
+              schedules={offering.schedules ?? []}
+              hoursPerDay={offering.hoursPerDay}
+              daysPerWeek={offering.daysPerWeek}
             />
           </div>
         </CollapsibleContent>
       </div>
+
+      <OfferingValidationMessagesDrawer
+        isOpen={isValidationDrawerOpen}
+        onOpenChange={setIsValidationDrawerOpen}
+        offeringSubjectCode={offering.snapshotSubjectCode ?? "Unknown"}
+        validationMessages={validationMessages}
+      />
     </Collapsible>
   );
 }

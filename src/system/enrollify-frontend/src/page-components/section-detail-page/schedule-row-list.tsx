@@ -8,7 +8,10 @@ import { ScheduleRowFormDrawer } from "./schedule-row-form-drawer";
 
 interface ScheduleRowListProps {
   offeringId: number;
+  sectionId: number;
   schedules: ClassSchedule[];
+  hoursPerDay?: number;
+  daysPerWeek?: number;
 }
 
 const DAY_LABELS: Record<string, string> = {
@@ -21,18 +24,56 @@ const DAY_LABELS: Record<string, string> = {
   SUN: "Sun",
 };
 
-export function ScheduleRowList({
+function formatTime(time: string): string {
+  return time.slice(0, 5);
+}
+
+interface ScheduleRowItemProps {
+  offeringId: number;
+  sectionId: number;
+  schedule: ClassSchedule;
+}
+
+function ScheduleRowItem({
   offeringId,
-  schedules,
-}: ScheduleRowListProps) {
-  const { mutateAsync: deleteRow } = useMutation(
-    deleteScheduleRowOptions(offeringId, 0),
+  sectionId,
+  schedule,
+}: ScheduleRowItemProps) {
+  const { mutateAsync: deleteRow, isPending } = useMutation(
+    deleteScheduleRowOptions(offeringId, schedule.id, sectionId),
   );
 
-  const handleDelete = async (scheduleId: number) => {
-    await deleteRow({ scheduleId } as any);
-  };
+  return (
+    <div className="flex items-center gap-2 rounded-md border px-3 py-2 bg-muted/30">
+      <Clock className="size-3.5 text-muted-foreground shrink-0" />
+      <Badge variant="outline" className="text-xs font-mono">
+        {DAY_LABELS[schedule.dayOfWeekAbbreviation] ??
+          schedule.dayOfWeekAbbreviation}
+      </Badge>
+      <span className="text-sm font-mono">
+        {formatTime(schedule.startTime)} – {formatTime(schedule.endTime)}
+      </span>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="ml-auto h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
+        onClick={() => deleteRow({})}
+        disabled={isPending}
+        title="Remove schedule row"
+      >
+        <Trash2 className="size-3" />
+      </Button>
+    </div>
+  );
+}
 
+export function ScheduleRowList({
+  offeringId,
+  sectionId,
+  schedules,
+  hoursPerDay,
+  daysPerWeek,
+}: ScheduleRowListProps) {
   return (
     <div className="space-y-2">
       {schedules.length === 0 ? (
@@ -42,34 +83,22 @@ export function ScheduleRowList({
       ) : (
         <div className="space-y-1.5">
           {schedules.map((s) => (
-            <div
+            <ScheduleRowItem
               key={s.id}
-              className="flex items-center gap-2 rounded-md border px-3 py-2 bg-muted/30"
-            >
-              <Clock className="size-3.5 text-muted-foreground shrink-0" />
-              <Badge variant="outline" className="text-xs font-mono">
-                {DAY_LABELS[s.dayOfWeek] ?? s.dayOfWeek}
-              </Badge>
-              <span className="text-sm font-mono">
-                {s.startTime} – {s.endTime}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="ml-auto h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
-                onClick={() => handleDelete(s.id)}
-                title="Remove schedule row"
-              >
-                <Trash2 className="size-3" />
-              </Button>
-            </div>
+              offeringId={offeringId}
+              sectionId={sectionId}
+              schedule={s}
+            />
           ))}
         </div>
       )}
 
       <ScheduleRowFormDrawer
         offeringId={offeringId}
+        sectionId={sectionId}
         existingSchedules={schedules}
+        hoursPerDay={hoursPerDay}
+        daysPerWeek={daysPerWeek}
       />
     </div>
   );

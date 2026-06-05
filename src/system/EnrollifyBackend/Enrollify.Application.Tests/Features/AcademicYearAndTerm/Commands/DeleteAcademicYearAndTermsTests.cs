@@ -3,6 +3,7 @@ using Ardalis.Specification;
 using Enrollify.Application.Features.AcademicYearAndTerm;
 using Enrollify.Application.Features.AcademicYearAndTerm.Commands;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
+using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.SharedKernel;
 using Moq;
 
@@ -12,6 +13,7 @@ public class DeleteAcademicYearAndTermsTests
 {
     private readonly Mock<IAcademicYearAndTermRepository> _repositoryMock = new();
     private readonly Mock<IReadRepository<AcademicYear>> _readRepositoryMock = new();
+    private readonly Mock<IReadRepository<ClassSection>> _classSectionReadRepositoryMock = new();
     private readonly DeleteAcademicYearAndTerms.Handler _handler;
 
     private static readonly AcademicYearStartDate ValidStart =
@@ -23,7 +25,8 @@ public class DeleteAcademicYearAndTermsTests
     {
         _handler = new DeleteAcademicYearAndTerms.Handler(
             _repositoryMock.Object,
-            _readRepositoryMock.Object);
+            _readRepositoryMock.Object,
+            _classSectionReadRepositoryMock.Object);
     }
 
     [Fact]

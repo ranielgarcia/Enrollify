@@ -1,6 +1,45 @@
 import { z } from "zod";
 import { AuditInfoSchema } from "@/api/models/audit-info";
-import { OfferingWithSchedulesSchema } from "./offering";
+import { OfferingSchema } from "./offering";
+import { dateTransformer } from "./date-transformer";
+import {
+  ValidationSeverities,
+  type ValidationSeverityName,
+} from "./validation-severity";
+
+const SeveritySchema = z.object({
+  value: z.enum(ValidationSeverities),
+  name: z.enum(
+    Object.keys(ValidationSeverities) as [
+      ValidationSeverityName,
+      ...ValidationSeverityName[],
+    ],
+  ),
+});
+
+const ValidationMessageSchema = z.object({
+  severity: SeveritySchema,
+  code: z.string(),
+  message: z.string(),
+  computedAt: dateTransformer,
+});
+
+const OfferingValidationMessageSchema = ValidationMessageSchema.extend({
+  offeringId: z.number(),
+});
+
+export type OfferingValidationMessage = z.infer<
+  typeof OfferingValidationMessageSchema
+>;
+
+const ValidationMessagesSchema = z.object({
+  classSectionId: z.number(),
+  classSectionValidationMessages: z.array(ValidationMessageSchema),
+  offeringsValidationMessages: z.record(
+    z.string(), // class section subject offering id as string
+    z.array(OfferingValidationMessageSchema),
+  ),
+});
 
 const CourseSummarySchema = z.object({
   id: z.number(),
@@ -11,32 +50,72 @@ const CourseSummarySchema = z.object({
 export const AcademicTermSummarySchema = z.object({
   id: z.number(),
   termNumber: z.number(),
-  name: z.string(),
+  termName: z.string(),
 });
 
-const TeacherSummarySchema = z.object({
+const CurriculumSummarySchema = z.object({
+  id: z.number(),
+  version: z.string(),
+});
+
+const CohortAcademicYearSchema = z.object({
+  id: z.number(),
+  academicYearTitle: z.string(),
+});
+
+const AdviserSummarySchema = z.object({
   id: z.number(),
   firstName: z.string(),
   lastName: z.string(),
+  email: z.string().optional(),
 });
+
+export const ClassSectionStatusEnum = {
+  Draft: 1,
+  Open: 2,
+  Locked: 3,
+  Active: 4,
+  Completed: 5,
+  Cancelled: 6,
+} as const;
+
+export type ClassSectionStatusValue =
+  (typeof ClassSectionStatusEnum)[keyof typeof ClassSectionStatusEnum];
+
+const ClassSectionStatusSchema = z.object({
+  name: z.enum(["Draft", "Open", "Locked", "Active", "Completed", "Cancelled"]),
+  value: z.number(),
+  description: z.string().optional(),
+});
+
+export type ClassSectionStatus = z.infer<typeof ClassSectionStatusSchema>;
 
 export const ClassSectionSchema = z
   .object({
     id: z.number(),
     name: z.string(),
-    yearLevel: z.number().int().min(1).max(6),
-    studentCapacity: z.number().int().min(1),
+    sectionCode: z.string().max(1).optional(),
+    intendedYearLevel: z.number().int().min(1).max(6),
+    fullName: z.string(),
     course: CourseSummarySchema,
+    curriculum: CurriculumSummarySchema.optional().nullable(),
     academicTerm: AcademicTermSummarySchema,
-    adviser: TeacherSummarySchema,
+    cohortAcademicYear: CohortAcademicYearSchema.optional().nullable(),
+    adviser: AdviserSummarySchema.optional().nullable(),
+    status: ClassSectionStatusSchema,
+    unresolvedErrorsCount: z.number().int().min(0),
+    isEligibleForOpenEnrollment: z.boolean(),
   })
   .extend(AuditInfoSchema.shape);
 
 export const ClassSectionWithOfferingsSchema = ClassSectionSchema.extend({
-  offerings: z.array(OfferingWithSchedulesSchema),
+  offerings: z.array(OfferingSchema),
+  validationMessages: ValidationMessagesSchema.optional().nullable(),
 });
 
 export type ClassSection = z.infer<typeof ClassSectionSchema>;
 export type ClassSectionWithOfferings = z.infer<
   typeof ClassSectionWithOfferingsSchema
 >;
+export type ValidationMessage = z.infer<typeof ValidationMessageSchema>;
+export type ValidationMessages = z.infer<typeof ValidationMessagesSchema>;

@@ -86,7 +86,7 @@ export function DeleteAlertDialog<
     if (!entityToDelete) return;
 
     if (deleteMutationOptions) {
-      await mutateAsync(undefined as never);
+      await mutateAsync({} as never);
     } else if (onConfirmDelete) {
       onConfirmDelete(entityToDelete);
       onOpenChange(false);

@@ -11,14 +11,16 @@ import { Badge } from "@/components/ui/badge";
 import { useDataTable } from "@/hooks/use-data-table";
 import { useTablePermissions } from "@/hooks/use-table-permissions";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Edit2, Trash2, Eye } from "lucide-react";
+import { Edit2, Ban, Eye } from "lucide-react";
 import { useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { SectionStatusBadge } from "./section-status-badge";
+import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 interface SectionsTableProps {
   pagedSections: PagedResult<ClassSection>;
   onEdit: (section: ClassSection) => void;
-  onDelete: (section: ClassSection) => void;
+  onCancel: (section: ClassSection) => void;
 }
 
 const columnHelper = createColumnHelper<ClassSection>();
@@ -35,13 +37,14 @@ const YEAR_LEVEL_LABELS: Record<number, string> = {
 export function SectionsTable({
   pagedSections,
   onEdit,
-  onDelete,
+  onCancel,
 }: SectionsTableProps) {
   const navigate = useNavigate();
-  const { canUpdate, canDelete } = useTablePermissions(
+  const { canUpdate } = useTablePermissions(
     "canUpdateClassSection",
     "canDeleteClassSection",
   );
+  const { selectedAcademicYearSlug } = useEnrollmentContext();
 
   const columns = useMemo(
     () => [
@@ -56,24 +59,41 @@ export function SectionsTable({
           <span className="font-semibold">{info.getValue()}</span>
         ),
       }),
-      columnHelper.accessor((row) => row.course?.name, {
-        id: "course",
+      columnHelper.accessor("sectionCode", {
+        id: "sectionCode",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} label="Course / Program" />
+          <DataTableColumnHeader column={column} label="Code" />
         ),
-        meta: { label: "Course", variant: "text" },
+        meta: { label: "Section Code", variant: "text" },
         enableColumnFilter: true,
         cell: (info) => (
-          <span>
-            <span className="font-mono text-xs text-muted-foreground mr-1.5">
-              {info.row.original.course?.code}
-            </span>
+          <span className="font-mono text-sm">{info.getValue() ?? "-"}</span>
+        ),
+      }),
+      columnHelper.accessor((row) => row.course?.code, {
+        id: "courseCode",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Course Code" />
+        ),
+        meta: { label: "Course Code", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => (
+          <span className="font-mono text-xs text-muted-foreground mr-1.5">
             {info.getValue() ?? "-"}
           </span>
         ),
       }),
-      columnHelper.accessor("yearLevel", {
-        id: "yearLevel",
+      columnHelper.accessor((row) => row.course?.name, {
+        id: "courseName",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Course / Program" />
+        ),
+        meta: { label: "Course Name", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => <span>{info.getValue() ?? "-"}</span>,
+      }),
+      columnHelper.accessor("intendedYearLevel", {
+        id: "intendedYearLevel",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Year Level" />
         ),
@@ -85,13 +105,25 @@ export function SectionsTable({
           </Badge>
         ),
       }),
-      columnHelper.accessor((row) => row.academicTerm?.name, {
+      columnHelper.accessor((row) => row.curriculum?.version, {
+        id: "curriculumVersion",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Curriculum" />
+        ),
+        meta: { label: "Curriculum Version", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => (
+          <span className="text-sm text-muted-foreground">
+            {info.getValue() ?? "-"}
+          </span>
+        ),
+      }),
+      columnHelper.accessor((row) => row.academicTerm?.termName, {
         id: "academicTerm",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} label="Academic Term" />
         ),
         meta: { label: "Academic Term", variant: "text" },
-        enableColumnFilter: true,
         cell: (info) => <span>{info.getValue() ?? "-"}</span>,
       }),
       columnHelper.accessor(
@@ -100,22 +132,32 @@ export function SectionsTable({
             ? `${row.adviser.firstName} ${row.adviser.lastName}`
             : "-",
         {
-          id: "adviser",
+          id: "adviserName",
           header: ({ column }) => (
             <DataTableColumnHeader column={column} label="Adviser" />
           ),
-          meta: { label: "Adviser", variant: "text" },
+          meta: { label: "Adviser Name", variant: "text" },
           enableColumnFilter: true,
-          cell: (info) => <span>{info.getValue()}</span>,
+          cell: (info) => (
+            <span>
+              <span>{info.getValue()}</span>
+              {info.row.original.adviser?.email && (
+                <span className="block text-xs text-muted-foreground">
+                  {info.row.original.adviser.email}
+                </span>
+              )}
+            </span>
+          ),
         },
       ),
-      columnHelper.accessor("studentCapacity", {
-        id: "studentCapacity",
+      columnHelper.accessor("status", {
+        id: "status",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} label="Capacity" />
+          <DataTableColumnHeader column={column} label="Status" />
         ),
-        meta: { label: "Capacity", variant: "number" },
-        cell: (info) => <span className="tabular-nums">{info.getValue()}</span>,
+        meta: { label: "Status", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => <SectionStatusBadge status={info.getValue()} />,
       }),
       columnHelper.display({
         id: "actions",
@@ -131,8 +173,9 @@ export function SectionsTable({
                 size="sm"
                 onClick={() =>
                   navigate({
-                    to: "/portal/curriculum-and-scheduling/sections/$sectionId",
+                    to: "/portal/curriculum-and-scheduling/sections-details/$sectionId",
                     params: { sectionId: String(item.id) },
+                    search: { academicYear: selectedAcademicYearSlug },
                   })
                 }
                 className="hover:bg-primary/10 text-primary hover:text-primary"
@@ -153,19 +196,19 @@ export function SectionsTable({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onDelete(item)}
-                className="hover:bg-destructive/10 text-destructive hover:text-destructive"
-                disabled={!canDelete}
-                title="Delete"
+                onClick={() => onCancel(item)}
+                className="hover:bg-amber-500/10 text-amber-600 hover:text-amber-700"
+                disabled={!canUpdate}
+                title="Cancel section"
               >
-                <Trash2 className="size-4" />
+                <Ban className="size-4" />
               </Button>
             </div>
           );
         },
       }),
     ],
-    [canUpdate, canDelete, onEdit, onDelete, navigate],
+    [canUpdate, onEdit, onCancel, navigate, selectedAcademicYearSlug],
   );
 
   const { table, shallow, debounceMs, throttleMs } = useDataTable({

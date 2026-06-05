@@ -1,46 +1,52 @@
 import { getAllCoursesOptions } from "@/api/collections/course-collection";
+import { filterClassSectionsPaginatedOptions } from "@/api/collections/class-section-collection";
 import type { ClassSection } from "@/api/models/class-section";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { ModuleIcons } from "@/config/module-icons";
 import { useCrudState } from "@/hooks/use-crud-state";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryStates } from "nuqs";
 import { SectionFormDrawer } from "./section-form-drawer";
 import { BulkInitializeSectionsDrawer } from "./bulk-initialize-sections-drawer";
-import { DeleteSectionAlertDialog } from "./delete-section-alert-dialog";
+import { CancelSectionAlertDialog } from "./cancel-section-alert-dialog";
+import { SectionsTable } from "./sections-table";
+import { searchParams } from "./searchParams";
 import { useState } from "react";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 export default function SectionsManagementPage() {
-  // const [{ page, perPage, filters, sort, joinOperator }] =
-  //   useQueryStates(searchParams);
+  const [{ page, perPage, filters, sort, joinOperator }] =
+    useQueryStates(searchParams);
 
   const { selectedAcademicYear } = useEnrollmentContext();
 
   const {
     isFormOpen,
     entityToEdit: sectionToEdit,
-    entityToDelete: sectionToDelete,
+    entityToDelete: sectionToCancel,
+    handleEdit,
     handleFormOpenChange,
-    handleDeleteDialogOpenChange,
+    handleDelete: handleCancel,
+    handleDeleteDialogOpenChange: handleCancelDialogOpenChange,
   } = useCrudState<ClassSection>();
 
   const [isBulkInitializeOpen, setIsBulkInitializeOpen] = useState(false);
 
-  // const currentPage = page ? Number(page) : 1;
-  // const currentPageSize = perPage ? Number(perPage) : 10;
+  const currentPage = page ? Number(page) : 1;
+  const currentPageSize = perPage ? Number(perPage) : 10;
 
-  // const debouncedFilters = useDebounce(filters, 600);
-  // const debouncedSort = useDebounce(sort, 600);
+  const academicYearId = selectedAcademicYear?.id;
 
-  // const { data: pagedSections } = useSuspenseQuery(
-  //   filterSectionsPaginatedOptions(
-  //     currentPage,
-  //     currentPageSize,
-  //     debouncedFilters,
-  //     debouncedSort,
-  //     joinOperator,
-  //   ),
-  // );
+  const { data: pagedSections } = useSuspenseQuery(
+    filterClassSectionsPaginatedOptions(
+      currentPage,
+      currentPageSize,
+      academicYearId ?? 0,
+      filters,
+      sort,
+      joinOperator,
+    ),
+  );
 
   const { data: courses } = useSuspenseQuery(getAllCoursesOptions());
 
@@ -68,16 +74,16 @@ export default function SectionsManagementPage() {
         </div>
       }
     >
-      {/* <SectionsTable
-        pagedSections={[]}
+      <SectionsTable
+        pagedSections={pagedSections}
         onEdit={handleEdit}
-        onDelete={handleDelete}
-      /> */}
+        onCancel={handleCancel}
+      />
 
-      <DeleteSectionAlertDialog
-        sectionToDelete={sectionToDelete}
-        isOpen={!!sectionToDelete}
-        onOpenChange={handleDeleteDialogOpenChange}
+      <CancelSectionAlertDialog
+        sectionToCancel={sectionToCancel}
+        isOpen={!!sectionToCancel}
+        onOpenChange={handleCancelDialogOpenChange}
       />
     </ManagementPageLayout>
   );

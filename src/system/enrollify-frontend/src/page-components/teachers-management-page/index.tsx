@@ -5,7 +5,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useQueryStates } from "nuqs";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { useCrudState } from "@/hooks/use-crud-state";
-import { useDebounce } from "@/hooks/use-debounce";
 import { TeacherFormDrawer } from "./teacher-form-drawer";
 import { TeachersTable } from "./teachers-table";
 import { searchParams } from "./searchParams";
@@ -25,15 +24,12 @@ export default function TeachersManagementPage() {
   const currentPage = page ? Number(page) : 1;
   const currentPageSize = perPage ? Number(perPage) : 10;
 
-  const debouncedFilters = useDebounce(filters, 600);
-  const debouncedSort = useDebounce(sort, 600);
-
   const { data: pagedTeachers } = useSuspenseQuery(
     filterTeachersPaginatedOptions(
       currentPage,
       currentPageSize,
-      debouncedFilters,
-      debouncedSort,
+      filters,
+      sort,
       joinOperator,
     ),
   );
