@@ -7,9 +7,6 @@
   "server": {
     "port": 4096,
   },
-  "permission": {
-    "*": "ask",
-  },
   "attachment": {
     "image": {
       "auto_resize": true,
