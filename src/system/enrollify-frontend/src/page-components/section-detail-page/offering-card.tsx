@@ -33,8 +33,6 @@ interface OfferingCardProps {
   validationMessages?: OfferingValidationMessage[];
 }
 
-
-
 export function OfferingCard({
   offering,
   sectionId,

@@ -205,24 +205,8 @@ export interface paths {
         };
         get: operations["EnrollifyWebAPIFeaturesSubjectOfferingsGetOfferingsByClassSectionIdEndpoint"];
         put?: never;
-        post: operations["EnrollifyWebAPIFeaturesSubjectOfferingsCreateSubjectOfferingEndpoint"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/subject-offerings/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["EnrollifyWebAPIFeaturesSubjectOfferingsUpdateSubjectOfferingEndpoint"];
         post?: never;
-        delete: operations["EnrollifyWebAPIFeaturesSubjectOfferingsDeleteSubjectOfferingEndpoint"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -239,6 +223,22 @@ export interface paths {
         put?: never;
         post?: never;
         delete: operations["EnrollifyWebAPIFeaturesSubjectOfferingsRemoveScheduleFromOfferingEndpoint"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/subject-offerings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesSubjectOfferingsUpdateSubjectOfferingEndpoint"];
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1063,25 +1063,6 @@ export interface components {
             /** Format: time */
             endTime?: string;
         };
-        EnrollifyWebAPIFeaturesSubjectOfferingsCreateSubjectOfferingRequest: {
-            /** Format: int32 */
-            classSectionId?: number;
-            /** Format: int32 */
-            curriculumSubjectId?: number;
-            /** Format: int32 */
-            teacherId?: number | null;
-            /** Format: int32 */
-            roomId?: number | null;
-            /** Format: int32 */
-            daysPerWeek?: number;
-            /** Format: decimal */
-            hoursPerDay?: number;
-            /** Format: int32 */
-            maxNumberOfStudents?: number | null;
-            /** Format: decimal */
-            subjectUnitsOverride?: number | null;
-        };
-        EnrollifyWebAPIFeaturesSubjectOfferingsDeleteSubjectOfferingRequest: Record<string, never>;
         EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsClassSectionSubjectOfferingDto: components["schemas"]["EnrollifyApplicationBaseDto"] & {
             /** Format: int32 */
             id?: number;
@@ -1535,6 +1516,7 @@ export interface components {
              */
             id?: number;
             name?: string;
+            fullName?: string;
             sectionCode?: string;
             /** Format: int32 */
             intendedYearLevel?: number;
@@ -2358,18 +2340,17 @@ export interface operations {
             };
         };
     };
-    EnrollifyWebAPIFeaturesSubjectOfferingsCreateSubjectOfferingEndpoint: {
+    EnrollifyWebAPIFeaturesSubjectOfferingsRemoveScheduleFromOfferingEndpoint: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                id: number;
+                scheduleId: number;
+            };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EnrollifyWebAPIFeaturesSubjectOfferingsCreateSubjectOfferingRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Bad Request */
             400: {
@@ -2410,79 +2391,6 @@ export interface operations {
                 "application/json": components["schemas"]["EnrollifyWebAPIFeaturesSubjectOfferingsUpdateSubjectOfferingRequest"];
             };
         };
-        responses: {
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    EnrollifyWebAPIFeaturesSubjectOfferingsDeleteSubjectOfferingEndpoint: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    EnrollifyWebAPIFeaturesSubjectOfferingsRemoveScheduleFromOfferingEndpoint: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-                scheduleId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             /** @description Bad Request */
             400: {
