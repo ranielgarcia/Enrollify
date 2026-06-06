@@ -37,7 +37,7 @@ public class ClassSectionDto : BaseDto
       SectionCode = (char)section.SectionCode,
       IntendedYearLevel = (int)section.IntendedYearLevel,
       UnresolvedErrorsCount = unresolvedErrorsCount,
-      IsEligibleForOpenEnrollment = unresolvedErrorsCount > 0,
+      IsEligibleForOpenEnrollment = unresolvedErrorsCount == 0,
 
       Course = section.Course is not null
         ? new ClassSectionCourseDto
