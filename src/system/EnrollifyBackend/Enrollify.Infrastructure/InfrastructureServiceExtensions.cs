@@ -62,6 +62,11 @@ public static class InfrastructureServiceExtensions
         RegisterSmartEnumTypeHandlers(typeof(PermissionScopeEnum).Assembly);
         SqlMapper.AddTypeHandler(new SmartFlagEnumDapperTypeHandler<PermissionEnum>());
 
+        // Register custom type handler for TimeSpan → TimeOnly conversion
+        // This is required because Dapper doesn't have built-in support for converting
+        // SQL Server TIME columns (TimeSpan) to .NET TimeOnly type
+        SqlMapper.AddTypeHandler(new TimeSpanToTimeOnlyDapperTypeHandler());
+
         services.AddScoped<EventDispatchInterceptor>();
         services.AddScoped<PreSaveChangesInterceptor>();
         services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
