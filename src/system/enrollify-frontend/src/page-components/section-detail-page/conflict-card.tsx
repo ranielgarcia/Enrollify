@@ -73,14 +73,13 @@ export function ConflictCard({ conflict }: ConflictCardProps) {
               <span className="font-mono font-medium">{o.subject.code}</span>
               <span>{o.subject.title}</span>
               <span className="text-muted-foreground/60">·</span>
-              <span>
-                <Link
-                  to={`/portal/curriculum-and-scheduling/sections-details/$sectionId`}
-                  params={{ sectionId: o.section.id.toString() }}
-                >
-                  {o.section.name}
-                </Link>
-              </span>
+              <Link
+                to={`/portal/curriculum-and-scheduling/sections-details/$sectionId`}
+                params={{ sectionId: o.section.id.toString() }}
+                className="font-medium text-primary underline underline-offset-2 hover:text-primary/80"
+              >
+                {o.section.name}
+              </Link>
             </div>
           ))}
         </div>
