@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using Dapper;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
@@ -14,11 +15,16 @@ namespace Enrollify.Infrastructure.Repositories;
 public class ClassSectionSubjectOfferingRepository : IClassSectionSubjectOfferingRepository
 {
     private readonly EnrollifyDbContext _dbContext;
+    private readonly IDbConnectionFactory _connectionFactory;
     private readonly ILogger<ClassSectionSubjectOfferingRepository> _logger;
 
-    public ClassSectionSubjectOfferingRepository(EnrollifyDbContext dbContext, ILogger<ClassSectionSubjectOfferingRepository> logger)
+    public ClassSectionSubjectOfferingRepository(
+        EnrollifyDbContext dbContext, 
+        IDbConnectionFactory connectionFactory,
+        ILogger<ClassSectionSubjectOfferingRepository> logger)
     {
         _dbContext = dbContext;
+        _connectionFactory = connectionFactory;
         _logger = logger;
     }
 
@@ -96,33 +102,36 @@ public class ClassSectionSubjectOfferingRepository : IClassSectionSubjectOfferin
         ClassSectionSubjectOfferingId? excludeOfferingId,
         CancellationToken ct)
     {
-        var teacherIdValue = (int)teacherId;
-        var termIdValue = (int)academicTermId;
-        var dayStr = dayOfWeek.Value; // "MON", "TUE", etc.
-        int? excludeId = excludeOfferingId.HasValue ? (int)excludeOfferingId.Value : null;
-        
-        // Query: JOIN ClassSchedules → ClassSectionSubjectOffering → ClassSections
-        // Filter by: TeacherId, AcademicTermId, DayOfWeek, time overlap
-        // SNAPSHOT isolation level is already enabled database-wide
-        return await _dbContext.Set<ClassSchedule>()
-            .Where(cs => cs.IsActive && cs.DayOfWeek == dayStr)
-            .Join(
-                _dbContext.ClassSectionSubjectOfferings.Where(o => o.IsActive),
-                cs => cs.ClassSectionSubjectOfferingId,
-                o => o.Id,
-                (cs, o) => new { cs, o })
-            .Join(
-                _dbContext.ClassSections.Where(s => s.IsActive),
-                x => x.o.ClassSectionId,
-                s => s.Id,
-                (x, s) => new { x.cs, x.o, s })
-            .AnyAsync(x =>
-                (int?)x.o.TeacherId == teacherIdValue
-                && (int)x.s.AcademicTermId == termIdValue
-                && x.cs.StartTime < newEndTime
-                && x.cs.EndTime > newStartTime
-                && (excludeId == null || (int)x.o.Id != excludeId),
-            ct);
+        using var conn = await _connectionFactory.CreateOpenAsync(ct);
+
+        var sql = @"
+            SELECT TOP 1 1
+            FROM ClassSchedules cs
+            INNER JOIN ClassSectionSubjectOffering o ON o.Id = cs.ClassSectionSubjectOfferingId
+            INNER JOIN ClassSections sec ON sec.Id = o.ClassSectionId
+            WHERE o.TeacherId = @TeacherId
+              AND sec.AcademicTermId = @AcademicTermId
+              AND cs.DayOfWeek = @DayOfWeek
+              AND cs.StartTime < @NewEndTime
+              AND cs.EndTime > @NewStartTime
+              AND o.IsActive = 1
+              AND cs.IsActive = 1
+              AND sec.IsActive = 1
+              AND (@ExcludeOfferingId IS NULL OR o.Id != @ExcludeOfferingId)";
+
+        var exists = await conn.QueryFirstOrDefaultAsync<int?>(
+            sql,
+            new
+            {
+                TeacherId = (int)teacherId,
+                AcademicTermId = (int)academicTermId,
+                DayOfWeek = dayOfWeek.Value,
+                NewStartTime = newStartTime,
+                NewEndTime = newEndTime,
+                ExcludeOfferingId = excludeOfferingId.HasValue ? (int?)excludeOfferingId.Value.Value : null
+            });
+
+        return exists.HasValue;
     }
     
     /// <summary>
@@ -138,30 +147,36 @@ public class ClassSectionSubjectOfferingRepository : IClassSectionSubjectOfferin
         ClassSectionSubjectOfferingId? excludeOfferingId,
         CancellationToken ct)
     {
-        var roomIdValue = (int)roomId;
-        var termIdValue = (int)academicTermId;
-        var dayStr = dayOfWeek.Value;
-        int? excludeId = excludeOfferingId.HasValue ? (int)excludeOfferingId.Value : null;
-        
-        return await _dbContext.Set<ClassSchedule>()
-            .Where(cs => cs.IsActive && cs.DayOfWeek == dayStr)
-            .Join(
-                _dbContext.ClassSectionSubjectOfferings.Where(o => o.IsActive),
-                cs => cs.ClassSectionSubjectOfferingId,
-                o => o.Id,
-                (cs, o) => new { cs, o })
-            .Join(
-                _dbContext.ClassSections.Where(s => s.IsActive),
-                x => x.o.ClassSectionId,
-                s => s.Id,
-                (x, s) => new { x.cs, x.o, s })
-            .AnyAsync(x =>
-                (int?)x.o.RoomId == roomIdValue
-                && (int)x.s.AcademicTermId == termIdValue
-                && x.cs.StartTime < newEndTime
-                && x.cs.EndTime > newStartTime
-                && (excludeId == null || (int)x.o.Id != excludeId),
-            ct);
+        using var conn = await _connectionFactory.CreateOpenAsync(ct);
+
+        var sql = @"
+            SELECT TOP 1 1
+            FROM ClassSchedules cs
+            INNER JOIN ClassSectionSubjectOffering o ON o.Id = cs.ClassSectionSubjectOfferingId
+            INNER JOIN ClassSections sec ON sec.Id = o.ClassSectionId
+            WHERE o.RoomId = @RoomId
+              AND sec.AcademicTermId = @AcademicTermId
+              AND cs.DayOfWeek = @DayOfWeek
+              AND cs.StartTime < @NewEndTime
+              AND cs.EndTime > @NewStartTime
+              AND o.IsActive = 1
+              AND cs.IsActive = 1
+              AND sec.IsActive = 1
+              AND (@ExcludeOfferingId IS NULL OR o.Id != @ExcludeOfferingId)";
+
+        var exists = await conn.QueryFirstOrDefaultAsync<int?>(
+            sql,
+            new
+            {
+                RoomId = (int)roomId,
+                AcademicTermId = (int)academicTermId,
+                DayOfWeek = dayOfWeek.Value,
+                NewStartTime = newStartTime,
+                NewEndTime = newEndTime,
+                ExcludeOfferingId = excludeOfferingId.HasValue ? (int?)excludeOfferingId.Value.Value : null
+            });
+
+        return exists.HasValue;
     }
     
     /// <summary>
@@ -176,24 +191,32 @@ public class ClassSectionSubjectOfferingRepository : IClassSectionSubjectOfferin
         ClassScheduleId? excludeScheduleId,
         CancellationToken ct)
     {
-        var sectionIdValue = (int)sectionId;
-        var dayStr = dayOfWeek.Value;
-        int? excludeId = excludeScheduleId.HasValue ? (int)excludeScheduleId.Value : null;
-        
-        // Simpler query: no need to join ClassSections since we already have the section ID
-        return await _dbContext.Set<ClassSchedule>()
-            .Where(cs => cs.IsActive && cs.DayOfWeek == dayStr)
-            .Join(
-                _dbContext.ClassSectionSubjectOfferings.Where(o => o.IsActive),
-                cs => cs.ClassSectionSubjectOfferingId,
-                o => o.Id,
-                (cs, o) => new { cs, o })
-            .AnyAsync(x =>
-                (int)x.o.ClassSectionId == sectionIdValue
-                && x.cs.StartTime < newEndTime
-                && x.cs.EndTime > newStartTime
-                && (excludeId == null || (int)x.cs.Id != excludeId),
-            ct);
+        using var conn = await _connectionFactory.CreateOpenAsync(ct);
+
+        var sql = @"
+            SELECT TOP 1 1
+            FROM ClassSchedules cs
+            INNER JOIN ClassSectionSubjectOffering o ON o.Id = cs.ClassSectionSubjectOfferingId
+            WHERE o.ClassSectionId = @SectionId
+              AND cs.DayOfWeek = @DayOfWeek
+              AND cs.StartTime < @NewEndTime
+              AND cs.EndTime > @NewStartTime
+              AND o.IsActive = 1
+              AND cs.IsActive = 1
+              AND (@ExcludeScheduleId IS NULL OR cs.Id != @ExcludeScheduleId)";
+
+        var exists = await conn.QueryFirstOrDefaultAsync<int?>(
+            sql,
+            new
+            {
+                SectionId = (int)sectionId,
+                DayOfWeek = dayOfWeek.Value,
+                NewStartTime = newStartTime,
+                NewEndTime = newEndTime,
+                ExcludeScheduleId = excludeScheduleId.HasValue ? (int?)excludeScheduleId.Value.Value : null
+            });
+
+        return exists.HasValue;
     }
     
     /// <summary>
@@ -210,51 +233,67 @@ public class ClassSectionSubjectOfferingRepository : IClassSectionSubjectOfferin
     {
         var teacherIdList = teacherIds.ToList();
         var roomIdList = roomIds.ToList();
-        
-        // Load all schedules for offerings that share teachers or rooms in the same term,
-        // excluding the target section (to avoid duplicate data)
-        var query = _dbContext.Set<ClassSchedule>()
-            .Where(cs => cs.IsActive)
-            .Join(
-                _dbContext.ClassSectionSubjectOfferings.Where(o => o.IsActive),
-                cs => cs.ClassSectionSubjectOfferingId,
-                o => o.Id,
-                (cs, o) => new { cs, o })
-            .Join(
-                _dbContext.ClassSections.Where(s => s.IsActive),
-                x => x.o.ClassSectionId,
-                s => s.Id,
-                (x, s) => new { x.cs, x.o, s })
-            .Where(x =>
-                (int)x.s.AcademicTermId == academicTermId
-                && (int)x.s.Id != excludeSectionId
-                && (teacherIdList.Contains((int?)x.o.TeacherId ?? -1) || roomIdList.Contains((int?)x.o.RoomId ?? -1)))
-            .Select(x => new ScheduleConflictDto
+
+        // If no teachers or rooms to check, return empty list
+        if (!teacherIdList.Any() && !roomIdList.Any())
+        {
+            return new List<ScheduleConflictDto>();
+        }
+
+        using var conn = await _connectionFactory.CreateOpenAsync(ct);
+
+        var sql = @"
+            SELECT 
+                cs.Id AS ScheduleId,
+                o.Id AS OfferingId,
+                sec.Id AS SectionId,
+                sec.Name AS SectionName,
+                sec.AcademicTermId,
+                
+                o.TeacherId,
+                t.FirstName AS TeacherFirstName,
+                t.LastName AS TeacherLastName,
+                
+                o.RoomId,
+                r.RoomNumber,
+                b.Name AS BuildingName,
+                
+                o.SubjectId,
+                o.SnapshotSubjectCode AS SubjectCode,
+                o.SnapshotSubjectTitle AS SubjectTitle,
+                
+                cs.DayOfWeek,
+                cs.StartTime,
+                cs.EndTime
+            FROM ClassSchedules cs
+            INNER JOIN ClassSectionSubjectOffering o ON o.Id = cs.ClassSectionSubjectOfferingId
+            INNER JOIN ClassSections sec ON sec.Id = o.ClassSectionId
+            LEFT JOIN Teachers t ON t.Id = o.TeacherId
+            LEFT JOIN Rooms r ON r.Id = o.RoomId
+            LEFT JOIN Buildings b ON b.Id = r.BuildingId
+            WHERE cs.IsActive = 1
+              AND o.IsActive = 1
+              AND sec.IsActive = 1
+              AND sec.AcademicTermId = @AcademicTermId
+              AND sec.Id != @ExcludeSectionId
+              AND (
+                  (@HasTeachers = 1 AND o.TeacherId IN @TeacherIds)
+                  OR (@HasRooms = 1 AND o.RoomId IN @RoomIds)
+              )";
+
+        var results = await conn.QueryAsync<ScheduleConflictDto>(
+            sql,
+            new
             {
-                ScheduleId = (int)x.cs.Id,
-                OfferingId = (int)x.o.Id,
-                SectionId = (int)x.s.Id,
-                SectionName = x.s.Name,
-                AcademicTermId = (int)x.s.AcademicTermId,
-                
-                TeacherId = x.o.TeacherId != null ? (int)x.o.TeacherId.Value : null,
-                TeacherFirstName = x.o.Teacher != null ? x.o.Teacher.FirstName : null,
-                TeacherLastName = x.o.Teacher != null ? x.o.Teacher.LastName : null,
-                
-                RoomId = x.o.RoomId != null ? (int)x.o.RoomId.Value : null,
-                RoomNumber = x.o.Room != null ? x.o.Room.RoomNumber : null,
-                BuildingName = x.o.Room != null && x.o.Room.Building != null ? x.o.Room.Building.Name : null,
-                
-                SubjectId = (int)x.o.SubjectId,
-                SubjectCode = x.o.SnapshotSubjectCode != null ? (string)x.o.SnapshotSubjectCode : "",
-                SubjectTitle = x.o.SnapshotSubjectTitle ?? "",
-                
-                DayOfWeek = x.cs.DayOfWeek,
-                StartTime = x.cs.StartTime,
-                EndTime = x.cs.EndTime
+                AcademicTermId = academicTermId,
+                ExcludeSectionId = excludeSectionId,
+                HasTeachers = teacherIdList.Any() ? 1 : 0,
+                TeacherIds = teacherIdList.Any() ? teacherIdList : new List<int> { -1 },
+                HasRooms = roomIdList.Any() ? 1 : 0,
+                RoomIds = roomIdList.Any() ? roomIdList : new List<int> { -1 }
             });
-        
-        return await query.ToListAsync(ct);
+
+        return results.ToList();
     }
     
     /// <summary>
@@ -264,43 +303,46 @@ public class ClassSectionSubjectOfferingRepository : IClassSectionSubjectOfferin
         int sectionId,
         CancellationToken ct)
     {
-        var query = _dbContext.Set<ClassSchedule>()
-            .Where(cs => cs.IsActive)
-            .Join(
-                _dbContext.ClassSectionSubjectOfferings.Where(o => o.IsActive),
-                cs => cs.ClassSectionSubjectOfferingId,
-                o => o.Id,
-                (cs, o) => new { cs, o })
-            .Join(
-                _dbContext.ClassSections.Where(s => s.IsActive && (int)s.Id == sectionId),
-                x => x.o.ClassSectionId,
-                s => s.Id,
-                (x, s) => new { x.cs, x.o, s })
-            .Select(x => new ScheduleConflictDto
-            {
-                ScheduleId = (int)x.cs.Id,
-                OfferingId = (int)x.o.Id,
-                SectionId = (int)x.s.Id,
-                SectionName = x.s.Name,
-                AcademicTermId = (int)x.s.AcademicTermId,
+        using var conn = await _connectionFactory.CreateOpenAsync(ct);
+
+        var sql = @"
+            SELECT 
+                cs.Id AS ScheduleId,
+                o.Id AS OfferingId,
+                sec.Id AS SectionId,
+                sec.Name AS SectionName,
+                sec.AcademicTermId,
                 
-                TeacherId = x.o.TeacherId != null ? (int)x.o.TeacherId.Value : null,
-                TeacherFirstName = x.o.Teacher != null ? x.o.Teacher.FirstName : null,
-                TeacherLastName = x.o.Teacher != null ? x.o.Teacher.LastName : null,
+                o.TeacherId,
+                t.FirstName AS TeacherFirstName,
+                t.LastName AS TeacherLastName,
                 
-                RoomId = x.o.RoomId != null ? (int)x.o.RoomId.Value : null,
-                RoomNumber = x.o.Room != null ? x.o.Room.RoomNumber : null,
-                BuildingName = x.o.Room != null && x.o.Room.Building != null ? x.o.Room.Building.Name : null,
+                o.RoomId,
+                r.RoomNumber,
+                b.Name AS BuildingName,
                 
-                SubjectId = (int)x.o.SubjectId,
-                SubjectCode = x.o.SnapshotSubjectCode != null ? (string)x.o.SnapshotSubjectCode : "",
-                SubjectTitle = x.o.SnapshotSubjectTitle ?? "",
+                o.SubjectId,
+                o.SnapshotSubjectCode AS SubjectCode,
+                o.SnapshotSubjectTitle AS SubjectTitle,
                 
-                DayOfWeek = x.cs.DayOfWeek,
-                StartTime = x.cs.StartTime,
-                EndTime = x.cs.EndTime
-            });
-        
-        return await query.ToListAsync(ct);
+                cs.DayOfWeek,
+                cs.StartTime,
+                cs.EndTime
+            FROM ClassSchedules cs
+            INNER JOIN ClassSectionSubjectOffering o ON o.Id = cs.ClassSectionSubjectOfferingId
+            INNER JOIN ClassSections sec ON sec.Id = o.ClassSectionId
+            LEFT JOIN Teachers t ON t.Id = o.TeacherId
+            LEFT JOIN Rooms r ON r.Id = o.RoomId
+            LEFT JOIN Buildings b ON b.Id = r.BuildingId
+            WHERE cs.IsActive = 1
+              AND o.IsActive = 1
+              AND sec.IsActive = 1
+              AND sec.Id = @SectionId";
+
+        var results = await conn.QueryAsync<ScheduleConflictDto>(
+            sql,
+            new { SectionId = sectionId });
+
+        return results.ToList();
     }
 }
