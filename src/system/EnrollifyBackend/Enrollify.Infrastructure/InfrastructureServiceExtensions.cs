@@ -18,6 +18,7 @@ using Enrollify.Application.Features.SubjectEquivalences;
 using Enrollify.Application.Features.Subjects;
 using Enrollify.Application.Features.Teachers;
 using Enrollify.Application.Features.Teachers.Storage;
+using Enrollify.Application.Features.ClassSchedules.Services;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
 using Enrollify.Core.Services.ScheduleConflictDetection;
@@ -115,6 +116,9 @@ public static class InfrastructureServiceExtensions
         
         // Domain services
         services.AddScoped<ScheduleConflictDetector>();
+        
+        // Application services
+        services.AddScoped<ConflictDetectionHelper>();
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 

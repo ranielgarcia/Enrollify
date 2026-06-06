@@ -5,11 +5,6 @@ import { toast } from "sonner";
 
 const queryKeys = {
   base: () => ["offerings"],
-  bySectionId: (sectionId: number) => [
-    ...queryKeys.base(),
-    "section",
-    sectionId,
-  ],
   detail: (id: number) => [...queryKeys.base(), "detail", id],
   schedules: (offeringId: number) => [
     ...queryKeys.base(),
@@ -40,21 +35,6 @@ const sectionDetailKey = (sectionId: number) => [
   sectionId,
 ];
 
-export const getOfferingsBySectionOptions = (sectionId: number) =>
-  createQueryOptions({
-    path: "/api/subject-offerings",
-    params: { SectionId: sectionId },
-    options: {
-      queryKey: queryKeys.bySectionId(sectionId),
-      staleTime: 1000 * 60 * 2,
-      select: (data): Offering[] => {
-        if (!data || (typeof data === "string" && data === "")) return [];
-        const parsed = typeof data === "string" ? JSON.parse(data) : data;
-        return (parsed as unknown[]).map((item) => OfferingSchema.parse(item));
-      },
-    },
-  });
-
 export const createOfferingOptions = (sectionId: number) =>
   createMutationOptions({
     httpVerb: "post",
@@ -62,11 +42,7 @@ export const createOfferingOptions = (sectionId: number) =>
     mutationKey: queryKeys.create(),
     options: {
       meta: {
-        invalidateQueries: [
-          queryKeys.base(),
-          queryKeys.bySectionId(sectionId),
-          sectionDetailKey(sectionId),
-        ],
+        invalidateQueries: [queryKeys.base(), sectionDetailKey(sectionId)],
       },
       onSuccess: () => toast.success("Subject offering assigned successfully"),
     },

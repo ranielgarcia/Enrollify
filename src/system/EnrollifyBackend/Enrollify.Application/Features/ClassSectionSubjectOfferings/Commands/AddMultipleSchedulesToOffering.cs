@@ -1,16 +1,15 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings.Specifications;
 using Enrollify.Application.Features.ClassSchedules.Models;
+using Enrollify.Application.Features.ClassSchedules.Services;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.Core.DomainExceptions;
-using Enrollify.Core.Services.ScheduleConflictDetection;
 using Enrollify.SharedKernel;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using ScheduleConflictDto = Enrollify.Core.Services.ScheduleConflictDetection.ScheduleConflictDto;
 
 namespace Enrollify.Application.Features.ClassSectionSubjectOfferings.Commands;
 
@@ -36,7 +35,7 @@ public static class AddMultipleSchedulesToOffering
     private readonly IClassSectionSubjectOfferingRepository _offeringRepository;
     private readonly IPublisher _publisher;
     private readonly ILogger<Handler> _logger;
-    private readonly ScheduleConflictDetector _conflictDetector;
+    private readonly ConflictDetectionHelper _conflictDetectionHelper;
     private readonly IUnitOfWork _unitOfWork;
 
     public Handler(
@@ -45,7 +44,7 @@ public static class AddMultipleSchedulesToOffering
       IClassSectionSubjectOfferingRepository offeringRepository,
       IPublisher publisher,
       ILogger<Handler> logger,
-      ScheduleConflictDetector conflictDetector,
+      ConflictDetectionHelper conflictDetectionHelper,
       IUnitOfWork unitOfWork)
     {
       _offeringReadRepository = offeringReadRepository;
@@ -53,7 +52,7 @@ public static class AddMultipleSchedulesToOffering
       _offeringRepository = offeringRepository;
       _publisher = publisher;
       _logger = logger;
-      _conflictDetector = conflictDetector;
+      _conflictDetectionHelper = conflictDetectionHelper;
       _unitOfWork = unitOfWork;
     }
 
@@ -154,7 +153,7 @@ public static class AddMultipleSchedulesToOffering
         _logger.LogInformation("Added {Count} schedule(s) to offering {OfferingId}", addedIds.Count,
           command.OfferingId.Value);
 
-        // Detect conflicts after successful save (Phase 1 requirement)
+        // Detect conflicts after successful save using shared helper
         List<ConflictResultDto> conflicts = await DetectConflictsForOffering(offering, cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
@@ -169,8 +168,6 @@ public static class AddMultipleSchedulesToOffering
 
     /// <summary>
     /// Detects conflicts for the given offering after schedules have been added.
-    /// This runs after SaveChanges, so the data is committed to the database.
-    /// Conflicts are computed on-demand and returned to the frontend for display.
     /// </summary>
     private async Task<List<ConflictResultDto>> DetectConflictsForOffering(
       ClassSectionSubjectOffering offering,
@@ -185,87 +182,19 @@ public static class AddMultipleSchedulesToOffering
         return new List<ConflictResultDto>();
       }
 
-      List<int> teacherIds = offering.TeacherId.HasValue
-        ? new List<int> { (int)offering.TeacherId.Value }
-        : new List<int>();
-      List<int> roomIds = offering.RoomId.HasValue
-        ? new List<int> { (int)offering.RoomId.Value }
-        : new List<int>();
+      // Collect IDs for conflict detection
+      var offeringIds = new List<int> { (int)offering.Id };
+      var teacherIds = offering.TeacherId.HasValue ? new List<int> { (int)offering.TeacherId.Value } : new List<int>();
+      var roomIds = offering.RoomId.HasValue ? new List<int> { (int)offering.RoomId.Value } : new List<int>();
 
-      // If no teacher or room assigned, no cross-offering conflicts to check
-      // (DI-05 duplicate subject check will still run in DetectConflicts)
-      if (!teacherIds.Any() && !roomIds.Any())
-      {
-        // Still check for section-level conflicts (HC-03)
-        List<ScheduleConflictDto> sectionOnlySchedules =
-          await _offeringRepository.GetSectionSchedulesForConflictDetectionAsync(
-            (int)offering.ClassSectionId, cancellationToken);
-        List<ConflictResult> sectionOnlyConflicts =
-          _conflictDetector.DetectConflicts(sectionOnlySchedules, (int)offering.ClassSectionId);
-        return MapConflictsToDtos(sectionOnlyConflicts);
-      }
+      // Use helper to detect conflicts
+      var conflictsByOffering = await _conflictDetectionHelper.DetectConflictsForSectionAsync(
+        section, offeringIds, teacherIds, roomIds, cancellationToken);
 
-      // Load this section's schedules
-      List<ScheduleConflictDto> thisSectionSchedules =
-        await _offeringRepository.GetSectionSchedulesForConflictDetectionAsync(
-          (int)offering.ClassSectionId, cancellationToken);
-
-      // Load related schedules for same teacher/room in same term (excluding this section)
-      List<ScheduleConflictDto> relatedSchedules =
-        await _offeringRepository.GetRelatedSchedulesForConflictDetectionAsync(
-          teacherIds, roomIds, (int)section.AcademicTermId, (int)offering.ClassSectionId, cancellationToken);
-
-      // Combine and detect conflicts
-      var allSchedules = thisSectionSchedules.Concat(relatedSchedules).ToList();
-      List<ConflictResult> domainConflicts =
-        _conflictDetector.DetectConflicts(allSchedules, (int)offering.ClassSectionId);
-
-      return MapConflictsToDtos(domainConflicts);
-    }
-
-    private List<ConflictResultDto> MapConflictsToDtos(List<ConflictResult> conflicts)
-    {
-      return conflicts.Select(c => new ConflictResultDto
-      {
-        Type = MapConflictType(c.Type),
-        Severity = MapConflictSeverity(c.Severity),
-        Message = c.Message,
-        Day = c.Day,
-        StartTime = c.StartTime?.ToString("HH:mm:ss"),
-        EndTime = c.EndTime?.ToString("HH:mm:ss"),
-        AffectedOfferings = c.AffectedOfferings?.Select(a => new AffectedOfferingDto
-        {
-          Id = a.Id,
-          Subject = new SubjectSummaryDto(a.Subject.Code, a.Subject.Title),
-          Section = new SectionSummaryDto(a.Section.Id, a.Section.Name),
-          Room = a.Room != null
-            ? new RoomSummaryDto(a.Room.RoomNumber, a.Room.Building)
-            : null
-        }).ToList()
-      }).ToList();
-    }
-
-    private ConflictTypeEnum MapConflictType(ConflictType type)
-    {
-      return type switch
-      {
-        ConflictType.TeacherDoubleBooked => ConflictTypeEnum.TEACHER_DOUBLE_BOOKED,
-        ConflictType.RoomDoubleBooked => ConflictTypeEnum.ROOM_DOUBLE_BOOKED,
-        ConflictType.SectionOverlap => ConflictTypeEnum.SECTION_OVERLAP,
-        ConflictType.DuplicateSubjectInSection => ConflictTypeEnum.DUPLICATE_SUBJECT_IN_SECTION,
-        _ => throw new ArgumentOutOfRangeException(nameof(type), $"Unknown conflict type: {type}")
-      };
-    }
-
-    private ConflictSeverityEnum MapConflictSeverity(ConflictSeverity severity)
-    {
-      return severity switch
-      {
-        ConflictSeverity.Info => ConflictSeverityEnum.Info,
-        ConflictSeverity.Warning => ConflictSeverityEnum.Warning,
-        ConflictSeverity.Error => ConflictSeverityEnum.Error,
-        _ => throw new ArgumentOutOfRangeException(nameof(severity), $"Unknown severity: {severity}")
-      };
+      // Return conflicts for this offering (or empty list if none)
+      return conflictsByOffering.TryGetValue((int)offering.Id, out var conflicts)
+        ? conflicts
+        : new List<ConflictResultDto>();
     }
   }
 }
