@@ -21,8 +21,6 @@ function timeToMinutes(time: string): number {
 export function ScheduleCell({ day, timeSlot, offerings }: ScheduleCellProps) {
   const slotMinutes = timeToMinutes(timeSlot);
 
-  console.log(offerings);
-
   const matching = offerings.filter((o) =>
     o.schedules?.some((s) => {
       if (s.dayOfWeekAbbreviation !== day) return false;
