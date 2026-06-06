@@ -18,6 +18,7 @@ import {
 import { ScheduleRowList } from "./schedule-row-list";
 import { EditOfferingDrawer } from "./edit-offering-drawer";
 import { OfferingValidationMessagesDrawer } from "./offering-validation-messages-drawer";
+import { OfferingConflictsDrawer } from "./offering-conflicts-drawer";
 
 interface OfferingCardProps {
   offering: Offering;
@@ -32,10 +33,11 @@ export function OfferingCard({
 }: OfferingCardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isValidationDrawerOpen, setIsValidationDrawerOpen] = useState(false);
+  const [isConflictsDrawerOpen, setIsConflictsDrawerOpen] = useState(false);
 
   const conflictCount = offering.conflicts?.length ?? 0;
   const hasHardConflict = offering.conflicts?.some(
-    (c) => c.severity === "error",
+    (c) => c.severity === "Error",
   );
 
   const displayUnits = offering.snapshotUnits;
@@ -116,13 +118,20 @@ export function OfferingCard({
               </Button>
             )}
             {conflictCount > 0 && (
-              <Badge
-                variant={hasHardConflict ? "destructive" : "secondary"}
-                className="gap-1 text-xs"
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 cursor-pointer hover:bg-transparent"
+                onClick={() => setIsConflictsDrawerOpen(true)}
               >
-                <AlertCircle className="size-3" />
-                {conflictCount} conflict{conflictCount > 1 ? "s" : ""}
-              </Badge>
+                <Badge
+                  variant={hasHardConflict ? "destructive" : "secondary"}
+                  className="gap-1 text-xs"
+                >
+                  <AlertCircle className="size-3" />
+                  {conflictCount} conflict{conflictCount > 1 ? "s" : ""}
+                </Badge>
+              </Button>
             )}
             <EditOfferingDrawer offering={offering} sectionId={sectionId} />
           </div>
@@ -169,6 +178,13 @@ export function OfferingCard({
         onOpenChange={setIsValidationDrawerOpen}
         offeringSubjectCode={offering.snapshotSubjectCode ?? "Unknown"}
         validationMessages={validationMessages}
+      />
+
+      <OfferingConflictsDrawer
+        isOpen={isConflictsDrawerOpen}
+        onOpenChange={setIsConflictsDrawerOpen}
+        offeringSubjectCode={offering.snapshotSubjectCode ?? "Unknown"}
+        conflicts={offering.conflicts ?? []}
       />
     </Collapsible>
   );

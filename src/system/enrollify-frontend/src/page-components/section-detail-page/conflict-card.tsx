@@ -1,5 +1,6 @@
 import type { ConflictResult } from "@/api/models/offering";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "@tanstack/react-router";
 import { AlertCircle, AlertTriangle, Info, ArrowRight } from "lucide-react";
 
 interface ConflictCardProps {
@@ -72,7 +73,14 @@ export function ConflictCard({ conflict }: ConflictCardProps) {
               <span className="font-mono font-medium">{o.subject.code}</span>
               <span>{o.subject.title}</span>
               <span className="text-muted-foreground/60">·</span>
-              <span>{o.section.name}</span>
+              <span>
+                <Link
+                  to={`/portal/curriculum-and-scheduling/sections-details/$sectionId`}
+                  params={{ sectionId: o.section.id.toString() }}
+                >
+                  {o.section.name}
+                </Link>
+              </span>
             </div>
           ))}
         </div>
