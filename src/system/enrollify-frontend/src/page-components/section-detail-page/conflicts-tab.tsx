@@ -7,9 +7,9 @@ interface ConflictsTabProps {
 }
 
 export function ConflictsTab({ conflicts }: ConflictsTabProps) {
-  const hardConflicts = conflicts.filter((c) => c.severity === "error");
-  const warnings = conflicts.filter((c) => c.severity === "warning");
-  const infos = conflicts.filter((c) => c.severity === "info");
+  const hardConflicts = conflicts.filter((c) => c.severity === "Error");
+  const warnings = conflicts.filter((c) => c.severity === "Warning");
+  const infos = conflicts.filter((c) => c.severity === "Info");
 
   if (conflicts.length === 0) {
     return (

@@ -7,19 +7,19 @@ interface ConflictCardProps {
 }
 
 const SEVERITY_CONFIG = {
-  error: {
+  Error: {
     icon: AlertCircle,
     iconClass: "text-destructive",
     badgeVariant: "destructive" as const,
     containerClass: "border-destructive/50 bg-destructive/5",
   },
-  warning: {
+  Warning: {
     icon: AlertTriangle,
     iconClass: "text-amber-600",
     badgeVariant: "secondary" as const,
     containerClass: "border-amber-400/50 bg-amber-50 dark:bg-amber-950/20",
   },
-  info: {
+  Info: {
     icon: Info,
     iconClass: "text-blue-500",
     badgeVariant: "outline" as const,
