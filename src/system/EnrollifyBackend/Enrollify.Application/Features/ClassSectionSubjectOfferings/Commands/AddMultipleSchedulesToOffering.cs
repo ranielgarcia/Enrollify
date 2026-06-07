@@ -78,6 +78,26 @@ public static class AddMultipleSchedulesToOffering
         return Result.NotFound($"Subject offering with ID {command.OfferingId.Value} was not found.");
       }
 
+      // Load the offering's parent section to get AcademicTermId
+      ClassSection? section = await _sectionReadRepository.GetByIdAsync(offering.ClassSectionId, cancellationToken);
+      if (section == null)
+      {
+        _logger.LogWarning("Section {SectionId} not found when detecting conflicts for offering {OfferingId}",
+          offering.ClassSectionId.Value, offering.Id.Value);
+        return Result.NotFound($"Parent class section with ID {offering.ClassSectionId.Value} was not found.");
+      }
+
+      if (section.StatusId == ClassSectionStatusEnum.Open)
+      {
+        _logger.LogWarning(
+          "Attempted to add schedules to offering {OfferingId} in section {SectionId} which is open for enrollment",
+          offering.Id.Value, section.Id.Value);
+
+        return Result.Forbidden(
+          "Cannot modify schedules for offerings in sections that are open for enrollment. Please close enrollment for the section before making changes to schedules.");
+      }
+
+
       var addedSchedules = new List<ClassSchedule>();
       var validationErrors = new List<ValidationError>();
 
@@ -154,7 +174,7 @@ public static class AddMultipleSchedulesToOffering
           command.OfferingId.Value);
 
         // Detect conflicts after successful save using shared helper
-        List<ConflictResultDto> conflicts = await DetectConflictsForOffering(offering, cancellationToken);
+        List<ConflictResultDto> conflicts = await DetectConflictsForOffering(section, offering, cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
         return Result.Success(new Response(addedIds, conflicts));
@@ -170,29 +190,24 @@ public static class AddMultipleSchedulesToOffering
     /// Detects conflicts for the given offering after schedules have been added.
     /// </summary>
     private async Task<List<ConflictResultDto>> DetectConflictsForOffering(
+      ClassSection section,
       ClassSectionSubjectOffering offering,
       CancellationToken cancellationToken)
     {
-      // Load the offering's parent section to get AcademicTermId
-      ClassSection? section = await _sectionReadRepository.GetByIdAsync(offering.ClassSectionId, cancellationToken);
-      if (section == null)
-      {
-        _logger.LogWarning("Section {SectionId} not found when detecting conflicts for offering {OfferingId}",
-          offering.ClassSectionId.Value, offering.Id.Value);
-        return new List<ConflictResultDto>();
-      }
-
       // Collect IDs for conflict detection
       var offeringIds = new List<int> { (int)offering.Id };
-      var teacherIds = offering.TeacherId.HasValue ? new List<int> { (int)offering.TeacherId.Value } : new List<int>();
-      var roomIds = offering.RoomId.HasValue ? new List<int> { (int)offering.RoomId.Value } : new List<int>();
+      List<int> teacherIds = offering.TeacherId.HasValue
+        ? new List<int> { (int)offering.TeacherId.Value }
+        : new List<int>();
+      List<int> roomIds = offering.RoomId.HasValue ? new List<int> { (int)offering.RoomId.Value } : new List<int>();
 
       // Use helper to detect conflicts
-      var conflictsByOffering = await _conflictDetectionHelper.DetectConflictsForSectionAsync(
-        section, offeringIds, teacherIds, roomIds, cancellationToken);
+      Dictionary<int, List<ConflictResultDto>> conflictsByOffering =
+        await _conflictDetectionHelper.DetectConflictsForSectionAsync(
+          section, offeringIds, teacherIds, roomIds, cancellationToken);
 
       // Return conflicts for this offering (or empty list if none)
-      return conflictsByOffering.TryGetValue((int)offering.Id, out var conflicts)
+      return conflictsByOffering.TryGetValue((int)offering.Id, out List<ConflictResultDto>? conflicts)
         ? conflicts
         : new List<ConflictResultDto>();
     }

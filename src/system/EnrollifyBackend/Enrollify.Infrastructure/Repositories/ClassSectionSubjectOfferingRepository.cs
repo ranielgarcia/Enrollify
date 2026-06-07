@@ -46,26 +46,19 @@ public class ClassSectionSubjectOfferingRepository : IClassSectionSubjectOfferin
     }
   }
 
-  public async Task<Result> Delete(ClassSectionSubjectOfferingId classSectionSubjectOfferingId,
+  public async Task<Result> Delete(ClassSectionSubjectOffering classSectionSubjectOffering,
     CancellationToken cancellationToken)
   {
     try
     {
-      ClassSectionSubjectOffering? subjectOffering =
-        await _dbContext.ClassSectionSubjectOfferings.FirstOrDefaultAsync(o => o.Id == classSectionSubjectOfferingId,
-          cancellationToken);
-      if (subjectOffering == null)
-        return Result.NotFound(
-          $"Class section subject offering with an ID of {classSectionSubjectOfferingId.Value.ToString()} was not found.");
-
-      _dbContext.ClassSectionSubjectOfferings.Remove(subjectOffering);
+      _dbContext.ClassSectionSubjectOfferings.Remove(classSectionSubjectOffering);
       await _dbContext.SaveChangesAsync(cancellationToken);
       return Result.Success();
     }
     catch (Exception ex)
     {
       _logger.LogError(ex, "Error deleting class section subject offering {@ClassSectionSubjectOfferingId}",
-        classSectionSubjectOfferingId);
+        classSectionSubjectOffering.Id.Value);
       return Result.Error("Unable to delete class section subject offering due to internal error");
     }
   }
