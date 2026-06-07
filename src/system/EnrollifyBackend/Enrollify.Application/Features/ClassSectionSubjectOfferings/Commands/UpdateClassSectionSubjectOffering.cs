@@ -1,9 +1,12 @@
 using Ardalis.Result;
+using Enrollify.Application.Features.ClassSections.Specifications;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings.Specifications;
+using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.SharedKernel;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -24,17 +27,20 @@ public static class UpdateClassSectionSubjectOffering
   {
     private readonly IReadRepository<ClassSectionSubjectOffering> _offeringReadRepository;
     private readonly IClassSectionSubjectOfferingRepository _offeringRepository;
+    private readonly IReadRepository<ClassSection> _classSectionReadRepository;
     private readonly IPublisher _publisher;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
       IReadRepository<ClassSectionSubjectOffering> offeringReadRepository,
       IClassSectionSubjectOfferingRepository offeringRepository,
+      IReadRepository<ClassSection> classSectionReadRepository,
       IPublisher publisher,
       ILogger<Handler> logger)
     {
       _offeringReadRepository = offeringReadRepository;
       _offeringRepository = offeringRepository;
+      _classSectionReadRepository = classSectionReadRepository;
       _publisher = publisher;
       _logger = logger;
     }
@@ -49,6 +55,19 @@ public static class UpdateClassSectionSubjectOffering
       {
         _logger.LogWarning("Subject offering with ID {OfferingId} not found for update", command.Id.Value);
         return Result.NotFound($"Subject offering with ID {command.Id.Value} was not found.");
+      }
+
+      ClassSection? section =
+        await _classSectionReadRepository.FirstOrDefaultAsync(new GetClassSectionByIdSpec(offering.ClassSectionId),
+          cancellationToken);
+
+      if (section is not null && section.StatusId != ClassSectionStatusEnum.Draft)
+      {
+        _logger.LogWarning(
+          "Attempting to update a subject offering {OfferingId} for a class section that is not in Draft status anymore.",
+          offering.Id.Value);
+        return Result.Forbidden(
+          "Cannot update an offering because its class section is not in Draft status.");
       }
 
       if (command.TeacherId is not null)

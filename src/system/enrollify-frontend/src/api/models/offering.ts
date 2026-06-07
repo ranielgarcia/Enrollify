@@ -18,24 +18,29 @@ const RoomSummarySchema = z.object({
 });
 
 export const ConflictResultSchema = z.object({
-  id: z.string().optional(),
+  id: z.string().nullable().optional(),
   type: z.enum([
     "TEACHER_DOUBLE_BOOKED",
     "ROOM_DOUBLE_BOOKED",
     "SECTION_OVERLAP",
     "TEACHER_OVERLOAD",
+    "DUPLICATE_SUBJECT_IN_SECTION",
   ]),
-  severity: z.enum(["error", "warning", "info"]),
+  severity: z.enum(["Error", "Warning", "Info"]),
   message: z.string(),
-  day: z.string().optional(),
-  startTime: z.string().optional(),
-  endTime: z.string().optional(),
+  day: z.string().nullable().optional(),
+  startTime: z.string().nullable().optional(),
+  endTime: z.string().nullable().optional(),
   affectedOfferings: z
     .array(
       z.object({
-        id: z.number(),
+        id: z.number().nullable().optional(),
         subject: z.object({ code: z.string(), title: z.string() }),
-        section: z.object({ name: z.string() }),
+        section: z.object({ id: z.number(), name: z.string() }),
+        room: z
+          .object({ roomNumber: z.string(), building: z.string() })
+          .nullable()
+          .optional(),
       }),
     )
     .optional(),

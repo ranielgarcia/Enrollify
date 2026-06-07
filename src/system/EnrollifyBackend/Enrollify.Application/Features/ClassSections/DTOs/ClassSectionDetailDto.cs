@@ -28,8 +28,8 @@ public class ClassSectionDetailDto : BaseDto
 
   public static ClassSectionDetailDto FromEntities(
     ClassSection section,
-    IEnumerable<ClassSectionSubjectOffering> offerings,
-    List<ClassSectionEnrollmentEligibilityValidationMessage> allValidationMessages)
+    List<ClassSectionEnrollmentEligibilityValidationMessage> allValidationMessages,
+    List<ClassSectionSubjectOfferingDto> offeringDtos)
   {
     var subjectOfferingsValidationMessages = allValidationMessages.Where(x => x.OfferingId != null)
       .Select(ClassSectionSubjectOfferingValidationMessageDto.FromEntity).ToList();
@@ -103,10 +103,7 @@ public class ClassSectionDetailDto : BaseDto
         Description = section.StatusId.Description
       },
 
-      Offerings = offerings
-        .Select(ClassSectionSubjectOfferingDto.FromEntity)
-        .ToList()
-        .AsReadOnly(),
+      Offerings = offeringDtos.AsReadOnly(),
 
       CreatedAt = section.CreatedAt,
       CreatedBy = BaseUserDto.FromUser(section.CreatedByUser),

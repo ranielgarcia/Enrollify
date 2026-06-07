@@ -28,5 +28,20 @@ public class AcademicCoreSettings
         }
     }
 
-    public record YearLevelOption(int value, string label);   
+    public record YearLevelOption(int value, string label);
+    
+    /// <summary>
+    /// Minimum break time (in minutes) required between consecutive classes for the same teacher.
+    /// Used for SC-03 (TEACHER_NO_BREAK) conflict detection in Phase 3.
+    /// Default: 10 minutes.
+    /// </summary>
+    public int MinimumTeacherBreakMinutes { get; private set; } = 10;
+    
+    /// <summary>
+    /// Standard operating hours for class schedules.
+    /// Classes scheduled outside this range will trigger SC-06 (OUTSIDE_OPERATING_HOURS) warning in Phase 3.
+    /// Default: 07:00 - 21:00
+    /// </summary>
+    public TimeOnly EarliestClassStartTime { get; private set; } = new TimeOnly(7, 0);
+    public TimeOnly LatestClassEndTime { get; private set; } = new TimeOnly(21, 0);
 }

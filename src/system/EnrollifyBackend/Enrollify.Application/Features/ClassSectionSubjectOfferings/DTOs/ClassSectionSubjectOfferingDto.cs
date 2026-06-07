@@ -1,3 +1,4 @@
+using Enrollify.Application.Features.ClassSchedules.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 
 namespace Enrollify.Application.Features.ClassSectionSubjectOfferings.DTOs;
@@ -22,6 +23,12 @@ public class ClassSectionSubjectOfferingDto : BaseDto
   public OfferingTeacherDto? Teacher { get; set; }
   public OfferingRoomDto? Room { get; set; }
   public IReadOnlyList<ClassScheduleDto> Schedules { get; set; } = [];
+  
+  /// <summary>
+  /// Detected conflicts for this offering (populated in section detail queries).
+  /// Empty list if no conflicts detected.
+  /// </summary>
+  public List<ConflictResultDto> Conflicts { get; set; } = [];
 
   public static ClassSectionSubjectOfferingDto FromEntity(ClassSectionSubjectOffering offering)
   {

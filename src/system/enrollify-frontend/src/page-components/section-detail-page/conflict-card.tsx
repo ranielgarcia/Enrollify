@@ -1,5 +1,6 @@
 import type { ConflictResult } from "@/api/models/offering";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "@tanstack/react-router";
 import { AlertCircle, AlertTriangle, Info, ArrowRight } from "lucide-react";
 
 interface ConflictCardProps {
@@ -7,19 +8,19 @@ interface ConflictCardProps {
 }
 
 const SEVERITY_CONFIG = {
-  error: {
+  Error: {
     icon: AlertCircle,
     iconClass: "text-destructive",
     badgeVariant: "destructive" as const,
     containerClass: "border-destructive/50 bg-destructive/5",
   },
-  warning: {
+  Warning: {
     icon: AlertTriangle,
     iconClass: "text-amber-600",
     badgeVariant: "secondary" as const,
     containerClass: "border-amber-400/50 bg-amber-50 dark:bg-amber-950/20",
   },
-  info: {
+  Info: {
     icon: Info,
     iconClass: "text-blue-500",
     badgeVariant: "outline" as const,
@@ -72,7 +73,13 @@ export function ConflictCard({ conflict }: ConflictCardProps) {
               <span className="font-mono font-medium">{o.subject.code}</span>
               <span>{o.subject.title}</span>
               <span className="text-muted-foreground/60">·</span>
-              <span>{o.section.name}</span>
+              <Link
+                to={`/portal/curriculum-and-scheduling/sections-details/$sectionId`}
+                params={{ sectionId: o.section.id.toString() }}
+                className="font-medium text-primary underline underline-offset-2 hover:text-primary/80"
+              >
+                {o.section.name}
+              </Link>
             </div>
           ))}
         </div>

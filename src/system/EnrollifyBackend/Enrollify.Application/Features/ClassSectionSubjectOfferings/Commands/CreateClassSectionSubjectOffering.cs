@@ -6,6 +6,7 @@ using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.SharedKernel;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -52,6 +53,16 @@ public static class CreateClassSectionSubjectOffering
       {
         _logger.LogWarning("Class section with ID {ClassSectionId} not found", command.ClassSectionId.Value);
         return Result.NotFound($"Class section with ID {command.ClassSectionId.Value} was not found.");
+      }
+
+      if (classSection.StatusId != ClassSectionStatusEnum.Draft)
+      {
+        _logger.LogWarning(
+          "Attempting to create a subject offering for class section {ClassSectionId} which is currently not in draft status anymore.",
+          command.ClassSectionId.Value);
+
+        return Result.Forbidden(
+          "Cannot add subject offerings to a class section that is not in draft status anymore.");
       }
 
       Curriculum? curriculum = await _curriculumReadRepository.FirstOrDefaultAsync(

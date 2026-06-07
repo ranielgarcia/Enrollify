@@ -18,8 +18,10 @@ using Enrollify.Application.Features.SubjectEquivalences;
 using Enrollify.Application.Features.Subjects;
 using Enrollify.Application.Features.Teachers;
 using Enrollify.Application.Features.Teachers.Storage;
+using Enrollify.Application.Features.ClassSchedules.Services;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
+using Enrollify.Core.Services.ScheduleConflictDetection;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
 using Enrollify.Infrastructure.Data.Queries;
@@ -60,6 +62,11 @@ public static class InfrastructureServiceExtensions
         // Auto register all SmartEnum Dapper type handlers
         RegisterSmartEnumTypeHandlers(typeof(PermissionScopeEnum).Assembly);
         SqlMapper.AddTypeHandler(new SmartFlagEnumDapperTypeHandler<PermissionEnum>());
+
+        // Register custom type handler for TimeSpan → TimeOnly conversion
+        // This is required because Dapper doesn't have built-in support for converting
+        // SQL Server TIME columns (TimeSpan) to .NET TimeOnly type
+        SqlMapper.AddTypeHandler(new TimeSpanToTimeOnlyDapperTypeHandler());
 
         services.AddScoped<EventDispatchInterceptor>();
         services.AddScoped<PreSaveChangesInterceptor>();
@@ -106,6 +113,12 @@ public static class InfrastructureServiceExtensions
 
 
         services.AddScoped<IApplicableCurriculumQueryService, ApplicableCurriculumQueryService>();
+        
+        // Domain services
+        services.AddScoped<ScheduleConflictDetector>();
+        
+        // Application services
+        services.AddScoped<ConflictDetectionHelper>();
 
         logger.LogInformation("{Project} services registered", "Infrastructure");
 

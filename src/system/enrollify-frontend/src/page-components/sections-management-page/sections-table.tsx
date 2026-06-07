@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useDataTable } from "@/hooks/use-data-table";
 import { useTablePermissions } from "@/hooks/use-table-permissions";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Edit2, Ban, Eye } from "lucide-react";
+import { Edit2, Ban, Eye, AlertCircle, CheckCircle } from "lucide-react";
 import { useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { SectionStatusBadge } from "./section-status-badge";
@@ -150,6 +150,47 @@ export function SectionsTable({
           ),
         },
       ),
+      columnHelper.accessor("isEligibleForOpenEnrollment", {
+        id: "enrollmentEligibility",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Open Enrollment" />
+        ),
+        meta: { label: "Enrollment Eligible", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => {
+          const isEligible = info.getValue();
+          return isEligible ? (
+            <div
+              className="flex items-center gap-1"
+              title="Eligible for open enrollment"
+            >
+              <CheckCircle className="size-4 text-green-600" />
+              <span className="text-sm text-green-600">Eligible</span>
+            </div>
+          ) : (
+            <div
+              className="flex items-center gap-1"
+              title="Not eligible for open enrollment"
+            >
+              <AlertCircle className="size-4 text-red-600" />
+              <span className="text-sm text-red-600">Not Eligible</span>
+            </div>
+          );
+        },
+      }),
+      columnHelper.accessor("unresolvedErrorsCount", {
+        id: "errors",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} label="Errors" />
+        ),
+        meta: { label: "Errors", variant: "text" },
+        enableColumnFilter: true,
+        cell: (info) => (
+          <span>
+            <span>{info.getValue()}</span>
+          </span>
+        ),
+      }),
       columnHelper.accessor("status", {
         id: "status",
         header: ({ column }) => (

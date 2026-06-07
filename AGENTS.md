@@ -290,3 +290,4 @@ Project-level Copilot skills for complex, multi-step workflows:
 - `.github/skills/enrollify-integration-tests/SKILL.md` — Comprehensive guide for creating integration tests (WebAPI tests via TestServer, Application tests via Mediator, test data strategies, fixtures, helpers)
 - `.github/skills/enrollify-resize-dialog/SKILL.md` — Quick reference for resizing Dialog components (width classes, height control, scrollable body, when to switch from Dialog to Drawer)
 - `.github/skills/enrollify-resize-drawer/SKILL.md` — Step-by-step guide for resizing right-side Drawer components (vaul data-attribute override pattern, half-screen, near-full, full-screen widths)
+- `.github/skills/grill-me/SKILL.md` — Interview the user relentlessly to stress-test a plan, research, or design until shared understanding is reached
