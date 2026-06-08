@@ -4,19 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "849c5e80f6719c5e",
+        "id": "dc7d4e7fcd149c15",
         "type": "tabs",
         "children": [
           {
-            "id": "609e6657c6db1549",
+            "id": "a663816831ece07b",
             "type": "leaf",
             "state": {
-              "type": "release-notes",
+              "type": "markdown",
               "state": {
-                "currentVersion": "1.10.3"
+                "file": "administrative_roles.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-book-up",
-              "title": "Release Notes 1.10.3"
+              "icon": "lucide-file",
+              "title": "administrative_roles"
             }
           }
         ]
@@ -76,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 387.5
   },
   "right": {
     "id": "727734fd25af5821",
@@ -167,8 +169,22 @@
       "bases:Create new base": false
     }
   },
-  "active": "609e6657c6db1549",
+  "active": "a663816831ece07b",
   "lastOpenFiles": [
+    "data-locking-architecture/how-to-properly-locked-the-important-data-like-cur.md",
+    "Vogen/Overriding-ConfigureConventions-EF-Core.md",
+    "research/scheduling/IMPLEMENTATION-SUMMARY.md",
+    "data-locking-architecture/done/03-class-section-status-machine.md",
+    "data-locking-architecture/done/02-course-curriculum-assignment.md",
+    "data-locking-architecture/done/01-curriculum-status-enum.md",
+    "data-locking-architecture/pending",
+    "data-locking-architecture/done",
+    "data-locking-architecture",
+    "research/scheduling/phase-3-soft-conflicts-implementation.md",
+    "research/scheduling/how-to-properly-implement-a-validation-logic-that-.md",
+    "research/scheduling/class-scheduling-conflicts.md",
+    "research/enrollment/analyse-research-enrollment-curriculum-architectur.md",
+    "research/how-to-properly-locked-the-important-data-like-cur.md",
     "Genetic-Algorithm/Genetic Algorithm Course Scheduling - Csharp Implementation.md",
     "Genetic-Algorithm/Selection, Crossover, and Mutation Explained.md",
     "Genetic-Algorithm/Course Scheduling with GA.md",

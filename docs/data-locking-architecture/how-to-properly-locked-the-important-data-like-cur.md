@@ -155,12 +155,12 @@ flowchart TD
 
 ### Lock Point Summary
 
-| Lock Point | Trigger | What Gets Locked |
-|---|---|---|
-| **Lock 1** | `ApproveCurriculum` command | Curriculum content (subjects, units, prerequisites, year/term placement) is frozen. `CurriculumStatusEnum.Active` prevents any further edits. |
-| **Lock 2** | `ClassSection` transitions to `Open` | At this moment: subject data (units, title, CurriculumSubjectId) is snapshotted in the offering. No new subject offerings can be added. Course, AcademicTerm, and CurriculumId on the ClassSection become immutable. |
-| **Lock 3** | `ClassSection` transitions to `Locked` | Enrollment window closes. No new Enrollment records can be created for this section. Existing PENDING/APPROVED enrollments may still be processed. |
-| **Lock 4** | `ClassSection` transitions to `Completed` | EnrollmentAcademicRecords (grades) become read-only. The section's historical snapshot is archived permanently. |
+| Lock Point | Trigger                                   | What Gets Locked                                                                                                                                                                                                     |
+| ---------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Lock 1** | `ApproveCurriculum` command               | Curriculum content (subjects, units, prerequisites, year/term placement) is frozen. `CurriculumStatusEnum.Active` prevents any further edits.                                                                        |
+| **Lock 2** | `ClassSection` transitions to `Open`      | At this moment: subject data (units, title, CurriculumSubjectId) is snapshotted in the offering. No new subject offerings can be added. Course, AcademicTerm, and CurriculumId on the ClassSection become immutable. |
+| **Lock 3** | `ClassSection` transitions to `Locked`    | Enrollment window closes. No new Enrollment records can be created for this section. Existing PENDING/APPROVED enrollments may still be processed.                                                                   |
+| **Lock 4** | `ClassSection` transitions to `Completed` | EnrollmentAcademicRecords (grades) become read-only. The section's historical snapshot is archived permanently.                                                                                                      |
 
 ---
 
