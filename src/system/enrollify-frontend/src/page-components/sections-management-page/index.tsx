@@ -13,6 +13,8 @@ import { SectionsTable } from "./sections-table";
 import { searchParams } from "./searchParams";
 import { useState } from "react";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default function SectionsManagementPage() {
   const [{ page, perPage, filters, sort, joinOperator }] =
@@ -50,9 +52,30 @@ export default function SectionsManagementPage() {
 
   const { data: courses } = useSuspenseQuery(getAllCoursesOptions());
 
+  // Handle missing academic year gracefully
+  if (!selectedAcademicYear) {
+    return (
+      <ManagementPageLayout
+        title="Class Sections"
+        description="Manage class sections, assign subjects, and build weekly schedules"
+        icon={<ModuleIcons.sections />}
+        createNewItemButton={null}
+      >
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Academic Year Not Selected</AlertTitle>
+          <AlertDescription>
+            Please select an academic year from the year selector to view and
+            manage class sections.
+          </AlertDescription>
+        </Alert>
+      </ManagementPageLayout>
+    );
+  }
+
   return (
     <ManagementPageLayout
-      title={`Class Sections of ${selectedAcademicYear?.academicYearTitle ?? "<invalid academic year...>"}`}
+      title={`Class Sections of ${selectedAcademicYear.academicYearTitle}`}
       description="Manage class sections, assign subjects, and build weekly schedules"
       icon={<ModuleIcons.sections />}
       createNewItemButton={

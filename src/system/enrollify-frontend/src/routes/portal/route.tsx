@@ -32,10 +32,11 @@ import { EnrollmentContextProvider } from "@/contexts/enrollment-context/enrollm
 import z from "zod";
 import { EnrollmentContextDialog } from "@/components/enrollment-context/enrollment-context-dialog";
 import EnrollmentContextActionRequired from "@/components/enrollment-context/enrollment-context-action-required";
+import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 export const Route = createFileRoute("/portal")({
   validateSearch: z.object({
-    academicYear: z.string().optional(),
+    academicYear: z.string().optional().nullable(),
   }),
   beforeLoad: async ({ context: { msal, queryClient }, location }) => {
     const activeAccount = msal?.instance.getActiveAccount();
@@ -73,6 +74,7 @@ export const Route = createFileRoute("/portal")({
 
 function RouteComponent() {
   const matches = useMatches();
+  const { activeAcademicYear } = useEnrollmentContext();
 
   const items = matches
     .filter(
@@ -87,6 +89,19 @@ function RouteComponent() {
       href: pathname,
       label: loaderData.crumb,
     }));
+
+  // Build action required items
+  const actionRequiredItems = activeAcademicYear
+    ? []
+    : [
+        {
+          id: "no-active-academic-year",
+          title: "No Active Academic Year",
+          description:
+            "There is currently no active academic year. Please contact your administrator to set up the academic calendar.",
+          variant: "warning" as const,
+        },
+      ];
 
   return (
     <AuthenticationProvider>
@@ -132,15 +147,7 @@ function RouteComponent() {
                   </div>
                 </div>
               </header>
-              <EnrollmentContextActionRequired
-                items={[
-                  {
-                    id: "test",
-                    title: "test",
-                    variant: "warning",
-                  },
-                ]}
-              />
+              <EnrollmentContextActionRequired items={actionRequiredItems} />
               <Suspense
                 fallback={
                   <OverlayLoader

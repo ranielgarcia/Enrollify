@@ -49,12 +49,42 @@ const pagedSectionsSchema = pagedResultSchema(ClassSectionSchema);
 export const filterClassSectionsPaginatedOptions = (
   page: number,
   pageSize: number,
-  academicYearId: number,
+  academicYearId: number | null,
   filters: ExtendedColumnFilter<ClassSection>[],
   sort: ExtendedColumnSort<ClassSection>[],
   joinOperator: string,
-) =>
-  createQueryOptions({
+) => {
+  // Handle invalid or missing academic year ID
+  if (!academicYearId || academicYearId <= 0) {
+    return createQueryOptions({
+      path: "/api/class-sections/filter/{page}/{pageSize}",
+      pathParams: { page, pageSize },
+      params: {},
+      options: {
+        enabled: false,
+        queryKey: [
+          ...queryKeys.base(),
+          "filter",
+          page,
+          pageSize,
+          "no-academic-year",
+          filters,
+          sort,
+          joinOperator,
+        ],
+        staleTime: 1000 * 60 * 2,
+        select: (): PagedResult<ClassSection> => ({
+          items: [],
+          page,
+          pageSize,
+          totalCount: 0,
+          totalPages: 0,
+        }),
+      },
+    });
+  }
+
+  return createQueryOptions({
     path: "/api/class-sections/filter/{page}/{pageSize}",
     pathParams: { page, pageSize },
     params: {
@@ -64,6 +94,7 @@ export const filterClassSectionsPaginatedOptions = (
       AcademicYearId: academicYearId,
     },
     options: {
+      enabled: true,
       queryKey: queryKeys.filter(
         page,
         pageSize,
@@ -88,6 +119,7 @@ export const filterClassSectionsPaginatedOptions = (
       },
     },
   });
+};
 
 export const getSectionWithOfferingsOptions = (sectionId: number) =>
   createQueryOptions({

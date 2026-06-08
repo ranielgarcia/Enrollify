@@ -60,14 +60,19 @@ export function SearchableSelect({
   const selectedOption = options.find((option) => option.value === selected);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(val) => !disabled && setOpen(val)}>
       <PopoverTrigger asChild>
         <div
-          className={cn("relative", className)}
+          className={cn(
+            "relative",
+            disabled && "pointer-events-none",
+            className,
+          )}
           ref={inputRef}
           role="combobox"
           aria-expanded={open}
           aria-haspopup="listbox"
+          aria-disabled={disabled}
         >
           <Input
             readOnly
@@ -91,7 +96,10 @@ export function SearchableSelect({
         align="start"
       >
         <Command className="w-full">
-          <CommandInput placeholder={searchPlaceholder} aria-label="Search options" />
+          <CommandInput
+            placeholder={searchPlaceholder}
+            aria-label="Search options"
+          />
           <CommandList style={{ maxHeight: "200px" }} role="listbox">
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
@@ -110,7 +118,7 @@ export function SearchableSelect({
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      selected === option.value ? "opacity-100" : "opacity-0"
+                      selected === option.value ? "opacity-100" : "opacity-0",
                     )}
                   />
                   {option.label}
