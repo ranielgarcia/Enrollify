@@ -1,4 +1,3 @@
-using Enrollify.Application.Features.ClassSchedules.Models;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings.Commands;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 
@@ -20,7 +19,6 @@ public class AddMultipleSchedulesToOfferingRequest
 public class AddMultipleSchedulesToOfferingResponse
 {
     public List<int> ScheduleIds { get; set; } = new();
-    public List<ConflictResultDto> Conflicts { get; set; } = new();
 }
 
 public class ScheduleItemValidator : Validator<ScheduleItem>
@@ -65,7 +63,7 @@ public class AddMultipleSchedulesToOfferingEndpoint : Endpoint<AddMultipleSchedu
     public override async Task<CreatedApiResult<AddMultipleSchedulesToOfferingResponse>> ExecuteAsync(
         AddMultipleSchedulesToOfferingRequest request, CancellationToken cancellationToken)
     {
-        var schedules = request.Schedules.Select(s => 
+        var schedules = request.Schedules.Select(s =>
             new AddMultipleSchedulesToOffering.ScheduleToAdd(
                 s.DayOfWeek,
                 s.StartTime,
@@ -81,8 +79,7 @@ public class AddMultipleSchedulesToOfferingEndpoint : Endpoint<AddMultipleSchedu
             response => $"/subject-offerings/{request.Id}/schedules",
             response => new AddMultipleSchedulesToOfferingResponse
             {
-                ScheduleIds = response.AddedScheduleIds.Select(id => id.Value).ToList(),
-                Conflicts = response.Conflicts
+                ScheduleIds = response.AddedScheduleIds.Select(id => id.Value).ToList()
             });
     }
 }

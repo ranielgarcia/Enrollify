@@ -36,9 +36,9 @@ Detection happens in `ScheduleConflictDetector.DetectConflicts()` by grouping sc
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
-| `Enrollify.Core/Services/ScheduleConflictDetection/ScheduleConflictDetector.cs` | Detection logic |
+| File                                                                                                        | Purpose                         |
+| ----------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `Enrollify.Core/Services/ScheduleConflictDetection/ScheduleConflictDetector.cs`                             | Detection logic                 |
 | `Enrollify.Application/Features/ClassSectionSubjectOfferings/Commands/CreateClassSectionSubjectOffering.cs` | Prevents creation of duplicates |
 
 ## Notes

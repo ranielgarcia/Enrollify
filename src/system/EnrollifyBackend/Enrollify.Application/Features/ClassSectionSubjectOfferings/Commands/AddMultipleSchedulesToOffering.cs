@@ -1,7 +1,5 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionSubjectOfferings.Specifications;
-using Enrollify.Application.Features.ClassSchedules.Models;
-using Enrollify.Application.Features.ClassSchedules.Services;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
@@ -20,9 +18,7 @@ public static class AddMultipleSchedulesToOffering
     TimeOnly StartTime,
     TimeOnly EndTime);
 
-  public sealed record Response(
-    List<ClassScheduleId> AddedScheduleIds,
-    List<ConflictResultDto> Conflicts);
+  public sealed record Response(List<ClassScheduleId> AddedScheduleIds);
 
   public sealed record Command(
     ClassSectionSubjectOfferingId OfferingId,
@@ -35,7 +31,6 @@ public static class AddMultipleSchedulesToOffering
     private readonly IClassSectionSubjectOfferingRepository _offeringRepository;
     private readonly IPublisher _publisher;
     private readonly ILogger<Handler> _logger;
-    private readonly ConflictDetectionHelper _conflictDetectionHelper;
     private readonly IUnitOfWork _unitOfWork;
 
     public Handler(
@@ -44,7 +39,6 @@ public static class AddMultipleSchedulesToOffering
       IClassSectionSubjectOfferingRepository offeringRepository,
       IPublisher publisher,
       ILogger<Handler> logger,
-      ConflictDetectionHelper conflictDetectionHelper,
       IUnitOfWork unitOfWork)
     {
       _offeringReadRepository = offeringReadRepository;
@@ -52,7 +46,6 @@ public static class AddMultipleSchedulesToOffering
       _offeringRepository = offeringRepository;
       _publisher = publisher;
       _logger = logger;
-      _conflictDetectionHelper = conflictDetectionHelper;
       _unitOfWork = unitOfWork;
     }
 
@@ -173,11 +166,8 @@ public static class AddMultipleSchedulesToOffering
         _logger.LogInformation("Added {Count} schedule(s) to offering {OfferingId}", addedIds.Count,
           command.OfferingId.Value);
 
-        // Detect conflicts after successful save using shared helper
-        List<ConflictResultDto> conflicts = await DetectConflictsForOffering(section, offering, cancellationToken);
-
         await transaction.CommitAsync(cancellationToken);
-        return Result.Success(new Response(addedIds, conflicts));
+        return Result.Success(new Response(addedIds));
       }
       catch (Exception e)
       {
@@ -186,30 +176,5 @@ public static class AddMultipleSchedulesToOffering
       }
     }
 
-    /// <summary>
-    /// Detects conflicts for the given offering after schedules have been added.
-    /// </summary>
-    private async Task<List<ConflictResultDto>> DetectConflictsForOffering(
-      ClassSection section,
-      ClassSectionSubjectOffering offering,
-      CancellationToken cancellationToken)
-    {
-      // Collect IDs for conflict detection
-      var offeringIds = new List<int> { (int)offering.Id };
-      List<int> teacherIds = offering.TeacherId.HasValue
-        ? new List<int> { (int)offering.TeacherId.Value }
-        : new List<int>();
-      List<int> roomIds = offering.RoomId.HasValue ? new List<int> { (int)offering.RoomId.Value } : new List<int>();
-
-      // Use helper to detect conflicts
-      Dictionary<int, List<ConflictResultDto>> conflictsByOffering =
-        await _conflictDetectionHelper.DetectConflictsForSectionAsync(
-          section, offeringIds, teacherIds, roomIds, cancellationToken);
-
-      // Return conflicts for this offering (or empty list if none)
-      return conflictsByOffering.TryGetValue((int)offering.Id, out List<ConflictResultDto>? conflicts)
-        ? conflicts
-        : new List<ConflictResultDto>();
-    }
   }
 }
