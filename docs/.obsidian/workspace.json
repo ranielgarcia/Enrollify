@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "scheduling-architecture/pending/20-manual-api-testing.md",
+                "file": "room-scheduler-page-design.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "20-manual-api-testing"
+              "title": "room-scheduler-page-design"
             }
           }
         ]
@@ -171,6 +171,22 @@
   },
   "active": "a663816831ece07b",
   "lastOpenFiles": [
+    "Section-Manage-Page-Redeign/sections-management-page-redesign-proposal.md",
+    "room-scheduler-page-design.md",
+    "Section-Manage-Page-Redeign",
+    "scheduling-architecture/pending/06-outside-operating-hours-sc06.md",
+    "scheduling-architecture/pending/05-year-level-mismatch-sc05.md",
+    "scheduling-architecture/pending/04-adviser-as-teacher-sc04.md",
+    "scheduling-architecture/pending/03-teacher-no-break-sc03.md",
+    "scheduling-architecture/pending/02-room-capacity-exceeded-sc02.md",
+    "scheduling-architecture/pending/01-teacher-workload-overload-sc01.md",
+    "user-stories/12-high-class-section-management.md",
+    "user-stories/31-medium-system-audit-logs.md",
+    "user-stories/ZZ-clarifications.md",
+    "user-stories/INDEX.md",
+    "user-stories/GLOSSARY.md",
+    "administrative_roles.md",
+    "scheduling-architecture/pending/20-manual-api-testing.md",
     "scheduling-architecture/pending/19-integration-tests-conflict-detection.md",
     "scheduling-architecture/pending/18-unit-tests-conflict-detection.md",
     "scheduling-architecture/pending/17-database-performance-indexes.md",
@@ -182,21 +198,6 @@
     "scheduling-architecture/pending/11-duplicate-day-in-offering-hc04.md",
     "scheduling-architecture/pending/10-section-with-no-offerings-di04.md",
     "scheduling-architecture/pending/09-offering-with-no-schedules-di03.md",
-    "scheduling-architecture/pending/08-hours-per-day-mismatch-di02.md",
-    "scheduling-architecture/pending/07-schedule-count-mismatch-di01.md",
-    "scheduling-architecture/pending/06-outside-operating-hours-sc06.md",
-    "scheduling-architecture/pending/05-year-level-mismatch-sc05.md",
-    "scheduling-architecture/pending/04-adviser-as-teacher-sc04.md",
-    "scheduling-architecture/pending/03-teacher-no-break-sc03.md",
-    "scheduling-architecture/pending/02-room-capacity-exceeded-sc02.md",
-    "scheduling-architecture/pending/01-teacher-workload-overload-sc01.md",
-    "scheduling-architecture/done/10-dapper-migration-ef-core.md",
-    "scheduling-architecture/done/09-snapshot-isolation.md",
-    "scheduling-architecture/done/08-academic-core-settings.md",
-    "scheduling-architecture/done/07-section-detail-conflicts.md",
-    "scheduling-architecture/done/06-api-conflict-response.md",
-    "scheduling-architecture/done/05-dapper-conflict-queries.md",
-    "scheduling-architecture/done/04-conflict-detection-helper.md",
     "scheduling-architecture/research-document-base",
     "scheduling-architecture/scheduling",
     "scheduling-architecture/pending",
