@@ -35,7 +35,7 @@ As a Scheduler, I want to click an offering card to see its full details and con
 - [ ] `OfferingDetailDrawer` component with offering info + conflicts + quick actions
 - [ ] Hover tooltip on offering cards
 - [ ] Navigation to section detail page
-- [ ] Navigation to room management page
+- [ ]  to room management pageNavigation
 - [ ] Conflict details with overlapping section info
 - [ ] Quick action buttons (Change Time, Change Room, View Section Detail)
 
