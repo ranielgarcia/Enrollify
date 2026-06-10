@@ -57,7 +57,7 @@ export function EnrollmentContextDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <Button variant="link" size="sm" onClick={() => setOpen(true)}>
-        {selectedAcademicYear?.academicYearTitle ?? "Not selected"}{" "}
+        {selectedAcademicYear?.academicYearTitle ?? "Select academic year"}{" "}
         <Edit2Icon className="size-3.5" />
       </Button>
 
