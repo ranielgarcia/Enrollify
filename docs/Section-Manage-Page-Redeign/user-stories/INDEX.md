@@ -1,6 +1,6 @@
 # Section Manage Page Redesign — User Stories
 
-> Generated from PRD-01 through PRD-04, `sections-management-page-redesign-proposal.md`, and `room-scheduler-page-design.md`
+> Generated from PRD-01 through PRD-04 and `sections-management-page-redesign-proposal.md`
 
 ## Sections Management Page v2 (SM)
 
@@ -17,12 +17,4 @@
 | US-SM-09 | Empty State, Performance & Polish | High | Phase 6 |
 | US-SM-10 | Integration Tests for New Endpoints | Medium | Phase 7 |
 
-## Room Scheduler Page (RS)
-
-| ID | Story | Priority | Phase |
-|---|---|---|---|
-| US-RS-01 | Room Schedule Core Table & Layout | High | Phase 1 |
-| US-RS-02 | Room Schedule Offerings & Conflict Display | High | Phase 2 |
-| US-RS-03 | Room Schedule Filters & Controls | High | Phase 3 |
-| US-RS-04 | Room Schedule Detail Drawer & Interactions | High | Phase 4 |
-| US-RS-05 | Room Schedule Export, Legend & Polish | Medium | Phase 5 |
+> **Note:** Room Scheduler user stories are maintained separately under `docs/Room-Scheduling-Page/`
