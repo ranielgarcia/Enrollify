@@ -53,7 +53,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  [Stats Bar: Draft 24 | Open 156 | Locked 43 | Conflicts 12 | Unscheduled  ]│
+│  [Stats Bar: Draft 24 | Open 156 | Cancelled 8 | Conflicts 12 | Unscheduled  ]│
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  [Academic Year Selector]       [View: Card ◉ | Table ○ ]  [Quick Filters]  │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -100,15 +100,16 @@ Displays aggregate counts **for Draft, Open, and Cancelled statuses only**. Each
 - **Open (X)** — Sections opened for enrollment (scheduling complete)
 - **Cancelled (X)** — Sections that were cancelled before/after opening
 - **Unresolved Errors (X)** — Count of Draft/Open/Cancelled sections with ≥1 offering missing teacher OR room OR schedule
-- **Conflicts (X)** — Count of Draft/Open/Cancelled sections with ≥1 offering that has scheduling conflicts with other sections' offerings
+- **Conflicts (X)** — Count of Draft/Open/Cancelled sections with ≥1 offering that has scheduling conflicts with other sections' offerings. Conflicts are only computed for Draft sections (Open sections are considered finalized).
 - **Unscheduled (X)** — Count of Draft/Open/Cancelled sections with 0 complete offerings (offerings lacking teacher+room+schedule)
 
 **Note:** Locked, Active, and Completed statuses are excluded from stats bar as they are managed outside the scheduling workflow.
 
 - Each stat is a button that adds/removes a filter for that status
 - Colors match `SectionStatusBadge` conventions (Draft=secondary, Open=green, Cancelled=red)
+- Stats always reflect **full-dataset numbers** regardless of current page or active filters
 
-**Data source:** Derived from the paginated response's summary metadata; frontend calculates progress and validation status.
+**Data source:** Separate API endpoint (`GET /api/class-sections/stats`) dedicated to aggregate stats. Refreshed on page load and after mutations.
 
 ---
 
@@ -146,23 +147,32 @@ Sections are grouped first by **College**, then by **Course** (program). Each gr
 - College name
 - Section count per course
 - Aggregate scheduling progress bar (weighted average)
-- "Batch Select" checkbox (applies only to **Draft sections** in this course)
+- "Batch Select" checkbox (applies only to **Draft sections** in this course; disabled for non-Draft)
 
 **Status & Actions Column:**
 
 | Status | Actions | Notes |
 |---|---|---|
 | **Draft** | `[Open]` `[Cancel]` `[▸ Details]` | Fully editable; actions available for batch operations |
-| **Open** | `[▸ Details]` | Read-only; no status transitions available on this page |
+| **Open** | `[Cancel]` `[▸ Details]` | Cancellable per lifecycle (Open → Cancelled); otherwise read-only |
 | **Locked** | `[▸ Details]` | Read-only (managed by enrollment deadline automation) |
 | **Active** | `[▸ Details]` | Read-only (managed by term start automation) |
 | **Completed** | `[▸ Details]` | Read-only (managed by term end automation) |
 | **Cancelled** | `[▸ Details]` | Read-only; no further actions |
 
+**Checkbox behavior:**
+- Checkboxes are **disabled** (grayed out) for non-Draft sections
+- Only Draft section checkboxes are interactive and can be selected for batch operations
+- Tooltip on disabled checkboxes: "Batch operations only available for Draft sections"
+
+**Course-level Group Actions Bar:**
+Each course group has its own toolbar with `[☐ Select All]` `[Assign Adviser]` `[Open All]` `[Cancel All]`. These actions are **scoped to that course only** — they affect only the sections within that specific course group. "Open All" transitions only Draft sections (validates eligibility per section).
+
 **Errors/Conflicts Column Display:**
 - Format: `⚠️ X / ❌ Y` where:
   - `⚠️ X` = Unresolved errors count (missing teacher, room, or schedule across offerings)
   - `❌ Y` = Conflicts count (scheduling conflicts with other sections)
+- Amber color when only errors present; red when conflicts present (or both)
 - Click to see details in drawer (see Section 4.9)
 - Red left border on row if errors OR conflicts exist
 
@@ -175,7 +185,7 @@ Each section renders as a compact card (used in **card view**). This replaces a 
 ```
 Draft Section (Editable):
 ┌─────────────────────────────────────────────────────────────────┐
-│ ☐ 3A                                         █ Draft  ⚠️1 ❌0   │
+│ ☐ 3A                                         █ Draft  ⚠️1/❌0  │
 │ BSCS — Computer Science · 1st Semester AY 2025-2026             │
 │ ─────────────────────────────────────────────────────────────── │
 │ Adviser:     Dr. Smith  ──→  [Change]                           │
@@ -189,9 +199,25 @@ Draft Section (Editable):
 │ ⓘ Hover to see weekly schedule grid with conflicts            │
 └─────────────────────────────────────────────────────────────────┘
 
-Open/Locked/Active/Completed Section (Read-Only):
+Open Section (Cancellable):
 ┌─────────────────────────────────────────────────────────────────┐
-│ ☐ 3A                                         █ Open   ✓0 ✓0    │
+│ ☐ 3A  (disabled)                       █ Open   ✓0/✓0          │
+│ BSCS — Computer Science · 1st Semester AY 2025-2026             │
+│ ─────────────────────────────────────────────────────────────── │
+│ Adviser:     Dr. Smith                                          │
+│ Scheduling:  [██████████]  3 of 3 offerings scheduled (100%)    │
+│ Teachers:    Smith (DS), Jones (MATH), Lee (ENGL)              │
+│ Rooms:       101 (MWF), 102 (TTh), 103 (Wed)                   │
+│ Schedule:    MWF 08:00-09:00, TTh 10:00-11:30, Wed 14:00-15:00│
+│ ─────────────────────────────────────────────────────────────── │
+│ [Cancel]  [View Details →]                                      │
+│                                                                 │
+│ ⓘ Hover to see weekly schedule grid                            │
+└─────────────────────────────────────────────────────────────────┘
+
+Locked/Active/Completed/Cancelled Section (Read-Only):
+┌─────────────────────────────────────────────────────────────────┐
+│ ☐ 3A  (disabled)                       █ Locked                │
 │ BSCS — Computer Science · 1st Semester AY 2025-2026             │
 │ ─────────────────────────────────────────────────────────────── │
 │ Adviser:     Dr. Smith                                          │
@@ -201,8 +227,6 @@ Open/Locked/Active/Completed Section (Read-Only):
 │ Schedule:    MWF 08:00-09:00, TTh 10:00-11:30, Wed 14:00-15:00│
 │ ─────────────────────────────────────────────────────────────── │
 │ [View Details →]                                                │
-│                                                                 │
-│ ⓘ Hover to see weekly schedule grid                            │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -210,24 +234,25 @@ Open/Locked/Active/Completed Section (Read-Only):
 
 | Zone                    | Content                                                             |
 | ----------------------- | ------------------------------------------------------------------- |
-| Header checkbox         | For batch selection (Draft sections only)                           |
+| Header checkbox         | For batch selection; **disabled** (grayed) for non-Draft sections   |
 | Section code (`3A`)     | Bold, primary identifier                                            |
 | Status badge            | Colored per `SectionStatusBadge`                                    |
-| Error/Conflict badge    | `⚠️X` (unresolved errors) `❌Y` (conflicts); red if either > 0      |
+| Error/Conflict badge    | Compound `⚠️X/❌Y` format; **amber** when only errors present, **red** when conflicts present (or both); clickable → opens conflict preview drawer |
 | Subtitle                | Course name · Term                                                  |
 | Adviser row             | Current adviser; change button only for Draft                       |
 | Scheduling progress bar | Visual + fraction (e.g. "2 of 3 offerings" or "100%")              |
 | Issues row              | Summary of missing teacher/room/schedule issues (Draft only)        |
 | Room summary            | Compact room assignment per schedule pattern                        |
 | Schedule summary        | Compact text showing day/time patterns; gaps indicated              |
-| Action buttons          | **Draft:** [Open], [Cancel], [Details]; **Others:** [Details] only |
+| Action buttons          | **Draft:** [Open], [Cancel], [Details]; **Open:** [Cancel], [Details]; **Others:** [Details] only |
 | Detail link             | Navigate to section detail page for full editing                   |
 
-**Hover behaviour:** The card reveals a **mini weekly calendar** tooltip (see Section 4.8) showing the section's schedule grid plus conflicting offerings from other sections. This lets the scheduler visually check for overlaps without navigating.
+**Hover behaviour:** The card reveals a **mini weekly calendar** tooltip (see Section 4.8). A static summary is shown immediately on hover; the full weekly grid loads asynchronously from the offering details endpoint.
 
 **Visual Indicators:**
 - **Red left border** if section has ≥1 unresolved error OR ≥1 conflict
-- **Disabled state** for action buttons on non-Draft sections
+- **Disabled checkbox** on non-Draft sections (grayed out with tooltip on hover)
+- **Disabled state** for action buttons on non-Draft/non-Open sections
 
 ---
 
@@ -242,15 +267,15 @@ Some schedulers prefer dense tabular data. The **enhanced table** keeps the stan
 │ 3A   │ BSCS 3A  │ Computer │ Draft   │  67% │ ⚠️1/❌0  │ Dr.Smith │ [O][C][▸]│
 │      │          │ Science  │ (row    │ ████ │          │          │          │
 │      │          │          │ red)    │      │          │          │          │
-│ 3B   │ BSCS 3B  │ Computer │ █ Open  │ 100% │ ✓0/✓0   │ Dr.Jones │ [▸]      │
+│ 3B   │ BSCS 3B  │ Computer │ █ Open  │ 100% │ ✓0/✓0   │ Dr.Jones │ [C][▸]    │
 │      │          │ Science  │ (read)  │ ████ │          │          │          │
-│ 3C   │ BSCS 3C  │ Computer │ █ Open  │ 100% │ ✓0/✓0   │ Dr.Lee   │ [▸]      │
+│ 3C   │ BSCS 3C  │ Computer │ █ Open  │ 100% │ ✓0/✓0   │ Dr.Lee   │ [C][▸]    │
 │      │          │ Science  │ (read)  │ ████ │          │          │          │
 └──────┴──────────┴──────────┴─────────┴──────┴──────────┴──────────┴──────────┘
 
 Legend:
   [O] = Open for Enrollment (Draft only)
-  [C] = Cancel (Draft only)
+  [C] = Cancel (Draft and Open)
   [▸] = View Details
   ⚠️1/❌0 = 1 unresolved error, 0 conflicts
 ```
@@ -261,7 +286,7 @@ Legend:
 | ----------------- | ----------------------------------------------------------------------- |
 | **Sched%**        | Visual progress bar + percentage (0-100%); hover for offering breakdown |
 | **Errors/Conflicts** | Format: `⚠️X/❌Y` where X=unresolved errors, Y=conflicts; click for details |
-| **Actions**       | Status buttons (Draft: [Open][Cancel], Others: [Details]); always visible |
+| **Actions**       | Status buttons (Draft: [Open][Cancel], Open: [Cancel][Details], Others: [Details]); always visible |
 | **Course**        | Group header that spans the row group when in grouped mode              |
 
 **Visual Indicators:**
@@ -310,10 +335,17 @@ When one or more **Draft sections** are selected (via row checkboxes or "Select 
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+**Two Levels of Batch Toolbars:**
+
+| Level | Location | Scope |
+|---|---|---|
+| **Course-level** | Inside each expanded Course Group | Actions affect only sections selected within that specific course |
+| **Global** | Floating sticky bar (bottom of viewport) | Actions affect all selected sections across all courses on the current page |
+
 **Behavior:**
-- Appears as a floating bar (sticky at bottom of viewport or below header)
-- **Only Draft sections can be batch-operated**
-- If non-Draft sections are selected, show tooltip: "Batch operations only available for Draft sections"
+- **Only Draft sections can be batch-operated.** If non-Draft sections are selected, batch buttons are disabled with tooltip: "Batch operations only available for Draft sections"
+- Course-level toolbar actions are scoped to that course's selections only (e.g., clicking "Assign Adviser" on Course A's toolbar affects only Course A's selected sections)
+- Global toolbar actions affect all selected sections across all courses
 - Each action opens a bulk-action drawer similar to `BulkInitializeSectionsDrawer`
 - Adviser assignment opens `SearchTeachersDialog` with multi-select
 - Status transitions show a confirmation with count of affected sections
@@ -322,21 +354,23 @@ When one or more **Draft sections** are selected (via row checkboxes or "Select 
 | Action | Purpose |
 |---|---|
 | **Assign Adviser** | Bulk assign same adviser to multiple Draft sections |
-| **Open for Enrollment** | Transition selected Draft sections to Open status |
-| **Cancel** | Cancel selected Draft sections (confirm with count) |
+| **Open for Enrollment** | Transition selected Draft sections to Open status (validates eligibility per section) |
+| **Cancel** | Cancel selected Draft sections. Shows confirmation dialog with "X offerings will be freed" (teacher/room assignments released via soft-delete cascade) |
 | **Bulk Edit** | Edit capacity, term, or year level across multiple sections |
 
-**Constraint:** Cannot batch-operate on mixed statuses. Show warning if user selects both Draft and non-Draft sections.
+**Constraints:**
+- Cannot batch-operate on mixed statuses. Show warning if user selects both Draft and non-Draft sections.
+- "Open All" (course-level) only affects Draft sections in that course. Eligible sections are validated individually by the backend.
 
 ---
 
 ### 4.7 Inline Status Transitions
 
-**This page only supports transitions for Draft sections.** All other statuses are managed outside the scheduling workflow and are read-only.
+This page supports transitions for **Draft** and **Open** sections. Locked, Active, and Completed are managed outside the scheduling workflow and are read-only.
 
 ```
 [Draft]      → [Open for Enrollment]  [Cancel]  [View Details]
-[Open]       → [View Details] (read-only)
+[Open]       → [Cancel]  [View Details]
 [Locked]     → [View Details] (read-only, managed by enrollment deadline)
 [Active]     → [View Details] (read-only, managed by term start)
 [Completed]  → [View Details] (read-only, managed by term end)
@@ -347,15 +381,24 @@ When one or more **Draft sections** are selected (via row checkboxes or "Select 
 Per `docs/design-decisions/class-section-lifecycle.md`:
 - **Draft → Open:** Admin opens enrollment period (happens on this page)
 - **Draft → Cancelled:** Admin cancels before opening (happens on this page)
+- **Open → Cancelled:** Admin cancels section (happens on this page)
 - **Open → Locked:** Automatic when enrollment deadline passes (not on this page)
 - **Locked → Active:** Automatic when term begins (not on this page)
 - **Active → Completed:** Automatic when term ends (not on this page)
+- **Active → Cancelled:** Emergency cancellation (handled by admin, potentially outside this page)
+
+**Post-Transition Behavior:**
+- Card does **not** visually move — it stays in place
+- Status badge updates immediately (optimistic update)
+- Action buttons reflect new status (e.g., Draft → Open changes buttons from `[Open][Cancel][Details]` to `[Cancel][Details]`)
+- Stats bar refreshes to reflect updated counts
+- Toast notification shown on success; inline error on failure
 
 **Implementation Notes:**
-- Use the existing transition mutations: `openClassSectionOptions(sectionId)`, `cancelClassSectionOptions(sectionId)`
-- Show confirmation alert dialog (reuse `CancelSectionAlertDialog` pattern) before transitioning
-- After successful transition, refetch section data and show toast notification
-- Disable buttons for non-Draft sections (gray out visually)
+- Use existing transition mutations: `openClassSectionOptions(sectionId)`, `cancelClassSectionOptions(sectionId)`
+- Show confirmation alert dialog (reuse `CancelSectionAlertDialog` pattern) before cancelling
+- For Draft → Open: backend validates enrollment eligibility; rejection shows inline error
+- After successful transition, refetch sections + stats and show toast notification
 
 ---
 
@@ -395,7 +438,7 @@ When hovering over a section card or row, a tooltip appears showing a **compact 
 - **Lunch break indicators:** Gray cells for typical lunch periods (12:00-13:00)
 
 **Conflict Information (from API):**
-The hover tooltip receives **conflicting offerings data from the API response**. For each offering with conflicts, the API response includes:
+The hover tooltip receives **conflicting offerings data from the offering details endpoint**. For each offering with conflicts, the endpoint includes:
 - `conflictingOfferingId`, `conflictingSection`, `conflictingTeacher`, `conflictingRoom`
 - Time range of overlap
 - Conflict severity
@@ -405,83 +448,150 @@ The hover tooltip receives **conflicting offerings data from the API response**.
 - Click conflicting offering box → navigates to conflicting section's detail page
 - Tooltip auto-closes when mouse leaves card
 
-**Performance Note:**
+**Performance & Loading Strategy (two-phase):**
+1. **Phase 1 (instant):** Static summary text is rendered on hover immediately (e.g., "3 offerings, 1 conflict detected"). No data fetch — derived from the `validationSummary` already available in the paginated response.
+2. **Phase 2 (async):** Full mini weekly grid with conflict visualization is fetched from `GET /api/class-sections/{sectionId}/offerings` (offering details endpoint) and rendered once loaded. A subtle loading indicator shows during fetch.
 - Mini calendar is **lazy-rendered** on hover (not pre-rendered for all cards)
-- Calendar data comes from the paginated API response (already fetched)
-- No additional API call needed; reuse offerings data with conflict info
+- Offering details are **cached** per sectionId after first fetch (TanStack Query)
+- No offering data is embedded in the paginated response — keeps payload lean
 
-New/modified files under `src/page-components/sections-management-page/`:
+All files live under a new directory `src/page-components/sections-management-page-v2/`. The existing `/sections` page and its components are **not modified** — the new page runs at a separate route (e.g., `/scheduling/sections`).
 
 ```
-sections-management-page/
-├── index.tsx                           # Modified — adds view toggle, stats, grouping
-├── searchParams.ts                     # Modified — adds 'view' param (card|table), groupBy
-├── sections-table.tsx                  # Modified — enhanced columns (sched%, conflicts, actions)
-├── sections-card-view.tsx              # NEW — card view layout with grouping
-├── section-card.tsx                    # NEW — single section card component
-├── section-card-mini-schedule.tsx      # NEW — mini weekly grid tooltip/hover card
-├── stats-bar.tsx                       # NEW — aggregate statistics bar
-├── quick-filters.tsx                   # NEW — preset filter buttons
-├── batch-actions-toolbar.tsx           # NEW — floating batch operations bar
-├── bulk-adviser-assign-drawer.tsx      # NEW — bulk assign adviser drawer
-├── bulk-status-transition-dialog.tsx   # NEW — confirm bulk status change
-├── conflict-preview-drawer.tsx         # NEW — inline conflict summary drawer
-├── inline-transition-buttons.tsx       # NEW — status transition buttons (shared)
-├── section-form-drawer.tsx             # Keep as-is (edit single section)
-├── bulk-initialize-sections-drawer.tsx # Keep as-is
-├── cancel-section-alert-dialog.tsx     # Keep as-is
-├── delete-section-alert-dialog.tsx     # Keep as-is
-├── section-status-badge.tsx            # Keep as-is
+sections-management-page-v2/
+├── index.tsx                           # Page root — view toggle, stats, grouping orchestration
+├── searchParams.ts                     # nuqs parsers (view, groupBy, filters, sort, page)
+├── sections-table.tsx                  # Enhanced table view (new columns, inline actions)
+├── sections-card-view.tsx              # Card view layout with college/course grouping
+├── section-card.tsx                    # Single section card component
+├── section-card-mini-schedule.tsx      # Mini weekly grid tooltip/hover card (async load)
+├── stats-bar.tsx                       # Aggregate statistics bar (clickable filters)
+├── quick-filters.tsx                   # Preset filter buttons
+├── batch-actions-toolbar.tsx           # Floating sticky batch operations bar
+├── bulk-adviser-assign-drawer.tsx      # Bulk assign adviser drawer
+├── bulk-status-transition-dialog.tsx   # Confirm bulk status change
+├── conflict-preview-drawer.tsx         # Inline conflict summary drawer
+├── inline-transition-buttons.tsx       # Status transition buttons — Draft(Open/Cancel), Open(Cancel), Others(Details)
+├── empty-state.tsx                     # Empty state component (filtered + no-data variants)
+├── section-status-badge.tsx            # Re-implemented (no dependency on old page)
+├── cancel-section-alert-dialog.tsx     # Re-implemented with bulk-cancel awareness
+└── section-form-drawer.tsx             # Edit single section form (keep as-is pattern)
 ```
 
 New/modified data layer:
 
 ```
 src/api/collections/
-├── class-section-collection.ts         # Modified — add bulk adviser, bulk transition, aggregate stats
+├── class-section-collection-v2.ts      # NEW — queries/mutations for sections-v2 page
 src/api/models/
-├── class-section.ts                    # Modified — add SchedulingSummary type if needed
+├── class-section.ts                    # Extend with SchedulingSummary type
 ```
 
 ---
 
 ## 6. Implementation Phases
 
-### Phase 1: Quick Wins (1-2 days)
-| Task | Files |
-|---|---|
-| Add inline status transition buttons to table rows | `inline-transition-buttons.tsx`, `sections-table.tsx` |
-| Add conflict count + scheduling progress columns to table | `sections-table.tsx` |
+### Phase 1: Scaffold & Data Layer (2-3 days)
+**Goal:** New route, new files, backend API extensions, and query/mutation infrastructure.
 
-### Phase 2: Overview & Navigation (2-3 days)
-| Task | Files |
-|---|---|
-| Build stats bar component | `stats-bar.tsx` |
-| Add card view toggle and quick filters | `sections-card-view.tsx`, `section-card.tsx`, `quick-filters.tsx`, `index.tsx` |
-| Add college/course grouping to card view | `sections-card-view.tsx` (grouping logic) |
+| Task | Deliverable | Dependencies |
+|---|---|---|
+| Create new route `/scheduling/sections` with TanStack Router file | `src/routes/scheduling.sections.tsx` | None |
+| Set up `searchParams.ts` with added `view` (card/table) param | `searchParams.ts` | None |
+| Extend backend paginated endpoint to include `validationSummary` per section | Backend: `FilterClassSectionsPaginatedQuery` | None |
+| Create backend aggregate stats endpoint (full-dataset, separate call) | Backend: `GET /api/class-sections/stats` | None |
+| Create backend offering details lazy endpoint | Backend: `GET /api/class-sections/{sectionId}/offerings` | None |
+| Create backend bulk operation endpoints (open, cancel, assign-adviser) | Backend: 3 POST endpoints | None |
+| Update frontend API collection with new queries/mutations | `class-section-collection-v2.ts` | Backend endpoints |
+| Regenerate API types (`npm run generate:api:win`) | `src/api/generated/api.ts` | Backend endpoints |
+| Create page scaffold (`index.tsx`) with `useSuspenseQuery` for sections + stats | `index.tsx` | API collection |
 
-### Phase 3: Batch Operations (2-3 days)
-| Task | Files |
-|---|---|
-| Build batch selection + floating toolbar | `batch-actions-toolbar.tsx` |
-| Bulk adviser assignment drawer | `bulk-adviser-assign-drawer.tsx` |
-| Bulk status transition with confirmation | `bulk-status-transition-dialog.tsx` |
-| Add bulk API endpoints (backend) | `Enrollify.WebAPI` + `Enrollify.Application` |
+### Phase 2: Card View (2-3 days)
+**Goal:** Card view with college/course grouping, section cards, progress display.
 
-### Phase 4: Conflict & Schedule Peek (2-3 days)
-| Task | Files |
-|---|---|
-| Inline conflict preview drawer | `conflict-preview-drawer.tsx` |
-| Mini weekly schedule tooltip on card hover | `section-card-mini-schedule.tsx` |
-| Aggregate stats endpoint (backend) | `Enrollify.WebAPI` + `Enrollify.Application` |
+| Task | Deliverable | Dependencies |
+|---|---|---|
+| Build `StatsBar` component with clickable stat buttons | `stats-bar.tsx` | Phase 1 API |
+| Build `QuickFilters` component | `quick-filters.tsx` | None |
+| Build `SectionCard` component with all zones (header, adviser, progress, issues, actions) | `section-card.tsx` | Phase 1 data types |
+| Build `SectionsCardView` with CollegeAccordion → CourseGroup → SectionCard nesting | `sections-card-view.tsx` | `SectionCard` |
+| Wire up view toggle in `index.tsx` | `index.tsx` | All above |
+| Build `InlineTransitionButtons` with Draft(Open/Cancel), Open(Cancel), Others(Details) | `inline-transition-buttons.tsx` | API mutations |
+| Integrate status transitions on card (Draft ↔ Open, Draft/Open → Cancelled) | `section-card.tsx` | `InlineTransitionButtons` |
+| Add red left border for sections with errors/conflicts | `section-card.tsx` | `validationSummary` |
 
-### Phase 5: Polish & Performance (1-2 days)
-| Task | Description |
-|---|---|
-| Debounce/optimistic updates for inline transitions | Ensure fast UX with background invalidation |
-| Responsive card layout | Cards stack to 1-column on small screens |
-| Keyboard navigation | Tab through cards, Enter to select, Space for batch |
-| Accessibility | ARIA labels on progress bars, batch toolbar announcement |
+### Phase 3: Enhanced Table View (1-2 days)
+**Goal:** Table view with enhanced columns.
+
+| Task | Deliverable | Dependencies |
+|---|---|---|
+| Build `SectionsTable` with new columns (Progress bar, Errors/Conflicts badge, inline actions) | `sections-table.tsx` | Phase 1 data types |
+| Add red left border on rows with errors/conflicts | `sections-table.tsx` | Phase 1 |
+| Add gray background for non-Draft rows | `sections-table.tsx` | Phase 1 |
+| Add compound badge (`⚠️X/❌Y`) to table rows | `sections-table.tsx` | Phase 1 |
+| Wire table view in `index.tsx` | `index.tsx` | Phase 2 view toggle |
+
+### Phase 4: Batch Operations (2-3 days)
+**Goal:** Batch select, floating toolbar, course-level toolbar, bulk actions.
+
+| Task | Deliverable | Dependencies |
+|---|---|---|
+| Build batch selection state management (local `Set<number>`, course-scoped + global) | `sections-card-view.tsx` + `sections-table.tsx` | Phases 2-3 |
+| Build floating `BatchActionsToolbar` (global, sticky) | `batch-actions-toolbar.tsx` | Selection state |
+| Build `BulkStatusTransitionDialog` with count summary + "X offerings will be freed" | `bulk-status-transition-dialog.tsx` | Phase 1 bulk endpoints |
+| Build `BulkAdviserAssignDrawer` | `bulk-adviser-assign-drawer.tsx` | Phase 1 bulk endpoints |
+| Add course-level group toolbar with scoped batch actions | `sections-card-view.tsx` (CourseGroupToolbar) | Phase 2 |
+| Disable batch buttons when non-Draft sections are selected (with tooltip) | `batch-actions-toolbar.tsx` | Selection state |
+
+### Phase 5: Conflict & Schedule Peek (2-3 days)
+**Goal:** Mini calendar tooltip, conflict preview drawer, lazy offering loading.
+
+| Task | Deliverable | Dependencies |
+|---|---|---|
+| Build `ConflictPreviewDrawer` (click from compound badge) | `conflict-preview-drawer.tsx` | Phase 1 offering details endpoint |
+| Build `SectionCardMiniSchedule` — static summary on hover + async full grid load | `section-card-mini-schedule.tsx` | Phase 1 offering details endpoint |
+| Wire lazy offering fetch into card hover/expand interaction | `section-card.tsx` → `section-card-mini-schedule.tsx` | Phase 1 |
+
+### Phase 6: Empty State, Polish & Performance (1-2 days)
+**Goal:** Empty states, edge cases, performance optimization, accessibility.
+
+| Task | Deliverable | Dependencies |
+|---|---|---|
+| Build `EmptyState` component (filtered + no-data variants) | `empty-state.tsx` | All phases |
+| Wire empty state into card and table views | `sections-card-view.tsx`, `sections-table.tsx` | `EmptyState` |
+| Add 300ms debounce on filter changes | `searchParams.ts` or `index.tsx` | None |
+| Add `content-visibility: auto` to CourseGroup blocks | `sections-card-view.tsx` CSS | Phase 2 |
+| Virtualize College accordion headers (TanStack Virtual) | `sections-card-view.tsx` | Phase 2 |
+| Add desktop-only viewport check with redirect suggestion banner | `index.tsx` | None |
+| Add ARIA labels on progress bars, batch toolbar announcements | All components | All phases |
+| Keyboard navigation (Tab through cards, Enter to select, Space for batch) | `section-card.tsx`, `sections-table.tsx` | All phases |
+
+### Phase 7: Integration Tests (2-3 days)
+**Goal:** Full test coverage for new endpoints and page.
+
+| Task | Deliverable | Dependencies |
+|---|---|---|
+| WebAPI tests for aggregate stats endpoint | `Enrollify.IntegrationTests` | Phase 1 backend |
+| WebAPI tests for bulk operation endpoints | `Enrollify.IntegrationTests` | Phase 1 backend |
+| WebAPI tests for lazy offering details endpoint | `Enrollify.IntegrationTests` | Phase 1 backend |
+| Application tests for aggregate stats query handler | `Enrollify.IntegrationTests` | Phase 1 backend |
+| Application tests for bulk operation command handlers | `Enrollify.IntegrationTests` | Phase 1 backend |
+| Application tests for offering details query | `Enrollify.IntegrationTests` | Phase 1 backend |
+
+### Dependency Graph
+
+```
+Phase 1 (Scaffold)
+    │
+    ├──► Phase 2 (Card View) ──► Phase 4 (Batch Ops) ──► Phase 6 (Polish)
+    │                                                         │
+    └──► Phase 3 (Table View) ──► Phase 5 (Conflict) ────────┘
+                                                              │
+                                                              ▼
+                                                      Phase 7 (Tests)
+```
+
+Phases 2 and 3 can be built in parallel after Phase 1. Phases 4 and 5 can be partially parallel once their dependencies are done.
 
 ---
 
@@ -497,7 +607,7 @@ src/api/models/
 │                                                                                       │
 ├──────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                       │
-│  [● Card View]  [○ Table View]    │    Quick Filters: [All] [Draft] [Open] [Cancel] │
+│  [● Card View]  [○ Table View]    │    Quick Filters: [All] [Draft] [Open] [Cancelled] │
 │                          [Unresolved Errors] [Conflicts] [Needs Attention]           │
 │                                                                                       │
 ├──────────────────────────────────────────────────────────────────────────────────────┤
@@ -506,7 +616,7 @@ src/api/models/
 │                                                                                       │
 │    ○ BSCS — Computer Science (4)                        [████████░░] 75% scheduled    │
 │    ┌────────────────────────────────────────────────────────────────────────────┐     │
-│    │ ☑ 3A  BSCS 3A                             █ Draft    ⚠️ 1 ❌ 0            │     │
+│    │ ☑ 3A  BSCS 3A                             █ Draft    ⚠️1/❌0            │     │
 │    │    BSCS — Computer Science · 1st Sem AY 2025-26                          │     │
 │    │    Adviser: Dr. Smith                                                     │     │
 │    │    Scheduling: [████████░░] 2 of 3 offerings scheduled                    │     │
@@ -515,20 +625,20 @@ src/api/models/
 │    │    Schedule: MWF 08:00-09:00, TTh 10:00-11:30, ? 1 offering              │     │
 │    │    [Open for Enrollment]  [Cancel]  [View Details →]  ⓘ Hover for schedule │     │
 │    │                                                                           │     │
-│    │ ☐ 3B  BSCS 3B                             █ Open     ✓ 0 ✓ 0             │     │
+│    │ ☐ (disabled) 3B  BSCS 3B                    █ Open     ✓0/✓0              │     │
 │    │    BSCS — Computer Science · 1st Sem AY 2025-26                          │     │
 │    │    Adviser: Dr. Jones                                                     │     │
 │    │    Scheduling: [██████████] 3 of 3 offerings scheduled (100%)             │     │
 │    │    Teachers: Smith (DS), Jones (MATH), Lee (ENGL)                         │     │
 │    │    Rooms: 101 (MWF), 102 (TTh), 201 (Wed)                                 │     │
 │    │    Schedule: MWF 08:00-09:00, TTh 10:00-11:30, Wed 14:00-15:00           │     │
-│    │    [View Details →]  ⓘ Hover for schedule                                │     │
+│    │    [Cancel]  [View Details →]  ⓘ Hover for schedule                     │     │
 │    │                                                                           │     │
-│    │ ☐ 3C  BSCS 3C                             █ Open     ✓ 0 ✓ 0             │     │
+│    │ ☐ (disabled) 3C  BSCS 3C                    █ Open     ✓0/✓0              │     │
 │    │    ...                                                                    │     │
-│    │    [View Details →]                                                       │     │
+│    │    [Cancel]  [View Details →]                                            │     │
 │    │                                                                           │     │
-│    │ ☑ 2A  BSIT 2A                             █ Draft    ⚠️ 2 ❌ 1            │     │
+│    │ ☑ 2A  BSIT 2A                             █ Draft    ⚠️2/❌1            │     │
 │    │    BSIT — Information Tech · 1st Sem AY 2025-26                           │     │
 │    │    Adviser: (unassigned)                                                  │     │
 │    │    Scheduling: [██░░░░░░░░] 1 of 3 offerings scheduled (33%)              │     │
@@ -575,10 +685,10 @@ src/api/models/
 │ ☑ │ 3A   │ BSCS 3A      │ Comp Sci │ Draft   │ ████ 67% │ ⚠️1/❌0│ Dr.Smith │ [O][C][▸]  │
 │   │      │ (1st Sem)    │ (BSCS)   │         │ (2/3)   │         │          │ (has error)│
 ├───┼──────┼──────────────┼──────────┼─────────┼────────┼─────────┼──────────┼────────────┤
-│ ☐ │ 3B   │ BSCS 3B      │ Comp Sci │ Open    │ ██████100%│ ✓0/✓0 │ Dr.Jones │ [▸]        │
+│ ☐ │ 3B   │ BSCS 3B      │ Comp Sci │ Open    │ ██████100%│ ✓0/✓0 │ Dr.Jones │ [C][▸]      │
 │   │      │ (1st Sem)    │ (BSCS)   │ (read)  │ (3/3)   │         │          │ (no issues)│
 ├───┼──────┼──────────────┼──────────┼─────────┼────────┼─────────┼──────────┼────────────┤
-│ ☐ │ 3C   │ BSCS 3C      │ Comp Sci │ Open    │ ██████100%│ ✓0/✓0 │ Dr.Lee   │ [▸]        │
+│ ☐ │ 3C   │ BSCS 3C      │ Comp Sci │ Open    │ ██████100%│ ✓0/✓0 │ Dr.Lee   │ [C][▸]      │
 │   │      │ (1st Sem)    │ (BSCS)   │ (read)  │ (3/3)   │         │          │ (no issues)│
 ├───┼──────┼──────────────┼──────────┼─────────┼────────┼─────────┼──────────┼────────────┤
 │ ☑ │ 2A   │ BSIT 2A      │ Info Tech│ Draft   │ ██░░ 33%  │ ⚠️2/❌1│ (none)   │ [O][C][▸]  │
@@ -590,7 +700,7 @@ src/api/models/
 │                                                                                            │
 │  Legend:                                                                                  │
 │  ⚠️1/❌0 = 1 unresolved error, 0 conflicts    [O] = Open for Enrollment (Draft only)    │
-│  ✓ = No issues                                [C] = Cancel (Draft only)                  │
+│  ✓ = No issues                                [C] = Cancel (Draft and Open)              │
 │  (read) = Read-only (non-Draft status)       [▸] = View Details                        │
 │                                                                                            │
 ├───────────────────────────────────────────────────────────────────────────────────────────┤
@@ -609,28 +719,32 @@ src/api/models/
 
 ## Key Metrics to Surface
 
-**All calculations are performed on the frontend** using data from the paginated API response.
+**All metrics are derived from the `validationSummary` object in the paginated response or the aggregate stats endpoint.** The backend pre-computes validation errors and conflict counts — the frontend reads these without traversing offering data.
 
-| Metric | Where | Calculation Formula |
+| Metric | Where | Source |
 |---|---|---|
-| **Scheduling progress %** | Card progress bar, table column | `(count of offerings with teacher + room + ≥1 schedule) / total offerings * 100` |
-| **Unresolved Errors count** | Card badge, stats bar, table "Errors" column | Count all offerings where `validationMessages.some(msg => msg.Severity === "Error")` |
-| **Missing teacher count** | Card "Issues" row | Count offerings where `validationMessages.some(msg => msg.Code === "MISSING_TEACHER")` |
-| **Missing room count** | Card "Issues" row | Count offerings where `validationMessages.some(msg => msg.Code === "MISSING_ROOM")` |
-| **Missing schedule count** | Card "Issues" row | Count offerings where `validationMessages.some(msg => msg.Code === "NO_SCHEDULE")` |
-| **Conflicts count** | Card badge, stats bar, table "Conflicts" column | Count of offerings with `conflicts` array length > 0 (from API) |
-| **Unscheduled count** | Quick filter, stats bar | Count of sections with `offerings.length === 0` OR all offerings lack complete schedule |
-| **Schedule density** | Mini weekly calendar tooltip | Aggregate all offerings' schedules into (day, time slot) map for visual display |
+| **Scheduling progress %** | Card progress bar, table column | `validationSummary.totalOfferings` vs backend's scheduled count |
+| **Unresolved Errors count** | Card badge, table column | `validationSummary.offeringsWithErrors` |
+| **Missing teacher count** | Card "Issues" row | `validationSummary.missingTeacherCount` |
+| **Missing room count** | Card "Issues" row | `validationSummary.missingRoomCount` |
+| **Missing schedule count** | Card "Issues" row | `validationSummary.missingScheduleCount` |
+| **Conflicts count** | Card badge, table column | `validationSummary.offeringsWithConflicts` |
+| **Unscheduled count** | Stats bar | Aggregate stats endpoint: `unscheduledCount` |
+| **Schedule density** | Mini weekly calendar tooltip | Offering details endpoint (lazy, async) |
 
 **Data Flow:**
 ```
-API Response (offerings with flat validationMessages[] + conflicts[])
+Paginated API Response (validationSummary per section)
+       +
+Separate Stats API (full-dataset aggregate counts)
     ↓
-Frontend parses offerings per section
+Frontend reads pre-computed values directly
     ↓
-Calculate metrics (progress %, errors count, missing items count, conflicts count)
+Display on card, table, stats bar
+    ↓ (on user interaction — hover, expand, click badge)
+Offering Details API (lazy fetch per sectionId)
     ↓
-Display on card, table, stats bar, mini calendar
+Mini calendar grid, conflict preview drawer
 ```
 
 ---
@@ -692,7 +806,7 @@ offerings: Offering[] {
 |---|---|---|
 | `POST /api/class-sections/bulk/assign-adviser` | POST | Bulk assign adviser to Draft sections |
 | `POST /api/class-sections/bulk/open` | POST | Bulk transition Draft sections to Open |
-| `POST /api/class-sections/bulk/cancel` | POST | Bulk transition Draft sections to Cancelled |
+| `POST /api/class-sections/bulk/cancel` | POST | Bulk transition Draft or Open sections to Cancelled (soft-delete cascade) |
 
 **Note:** No export endpoint needed; data analysis handled in Room Scheduler page.
 
@@ -710,17 +824,18 @@ This section addresses frontend and backend optimization strategies for handling
 
 | Concern | Solution |
 |---|---|
-| **Rendering performance with many cards** | Use React virtualization library (react-window or TanStack Virtual) to render only visible cards in viewport; lazy-load card details on expand |
-| **Metrics calculation overhead** | Memoize metric calculations per section using `useMemo`; avoid recalculating on every render |
-| **Mini calendar rendering** | Lazy-render mini calendar ONLY on hover; pre-render only when tooltip becomes visible; reuse offerings data already in memory |
+| **Rendering performance with many cards** | Virtualize only College accordion headers as top-level rows (TanStack Virtual). Inner course blocks use `content-visibility: auto` — no full card-level virtualization needed since nested accordion makes it impractical |
+| **Metrics calculation overhead** | Metrics come from `validationSummary` (backend-computed, already in paginated response). Frontend reads via `useMemo` with `validationSummary` as dependency — no offering traversal |
+| **Mini calendar rendering** | **Two-phase approach:** Phase 1 (instant) shows static summary from `validationSummary`. Phase 2 (async) fetches offering details and renders full grid on hover. Data cached per `sectionId` after first fetch |
 | **Sorting/filtering slowness** | Debounce filter changes (300ms); perform sorting in backend if possible; use shallow filtering (status only) for quick responses |
-| **Large college/course groups** | Collapse course groups by default; expand on demand; virtualize rows within expanded groups |
+| **Large college/course groups** | Collapse course groups by default; expand on demand; `content-visibility: auto` on course blocks for offscreen skipping |
 | **Bundle size** | Tree-shake unused charting libraries; lazy-load mini calendar component |
 
 **Frontend Caching:**
 - Cache paginated response in TanStack Query with 2-minute stale time
+- Cache offering details per `sectionId` (TanStack Query, separate from list)
+- Cache aggregate stats with background refetch after mutations
 - Use background refetch after mutations (optimistic updates)
-- Store calculation results (progress %, errors count) in `useMemo` with dependency on offerings
 
 ### Backend Performance
 
@@ -733,7 +848,7 @@ This section addresses frontend and backend optimization strategies for handling
 | **Computing validation errors at query time** | Pre-compute during seeding; cache in database or calculated field; compute only if offerings changed |
 | **Fetching all offerings for all sections** | Use efficient database query with `SELECT only needed fields`; index by `classSectionId` |
 | **Conflict detection expensive** | Cache conflict results per offering; recompute on schedule changes only; use background job (Hangfire) for batch conflict detection |
-| **Paginated response size** | Include only summary counts in stats; return full offering data (with errors/conflicts) only for current page |
+| **Paginated response size** | Return only `validationSummary` (aggregate counts) per section — no full offering data. Full offering details fetched on demand via separate lazy endpoint |
 
 **Database Indexing:**
 - Index on `ClassSection.AcademicYearId` for filtering
@@ -742,12 +857,12 @@ This section addresses frontend and backend optimization strategies for handling
 
 ### API Response Optimization
 
-**Payload size:** The extended response with validation errors + conflicts per offering will be larger (~2-3x current).
+**Payload size:** The paginated response now includes only `validationSummary` per section (no full offerings). Full offering details with validation messages + conflicts are fetched on demand via a separate lazy endpoint.
 
 **Mitigation:**
-- Paginate offering details; return only offering summary for non-current-page sections
+- Offering details are **not embedded** in the paginated response at all — fetched lazily via `GET /api/class-sections/{sectionId}/offerings`
+- Aggregate stats come from a **separate endpoint** (`GET /api/class-sections/stats`), not embedded in the paginated response
 - Compress JSON response (gzip)
-- Return conflicts only if `includeConflicts=true` query parameter
 - Mock conflict data for development (faker.js); real computation on production
 
 ### Recommendations
@@ -761,9 +876,17 @@ This section addresses frontend and backend optimization strategies for handling
 
 ## 8. API Response Structure
 
-### Current vs. Proposed
+### Overview of Three API Sources
 
-**Current `filterClassSectionsPaginatedOptions` Response:**
+| Endpoint | Purpose | Called When |
+|---|---|---|
+| `GET /api/class-sections/filter/{page}/{pageSize}` | Paginated section list with `validationSummary` per section | On page load, filter/sort/paginate changes |
+| `GET /api/class-sections/stats?academicYearId={id}` | Full-dataset aggregate stats (always total, regardless of filters) | On page load and after mutations |
+| `GET /api/class-sections/{sectionId}/offerings` | Full offering details with validation messages + conflicts | On user interaction (hover, expand, badge click) |
+
+### 8.1 Paginated Section List
+
+**Current Response (unchanged structure):**
 ```json
 {
   "items": [ClassSection],
@@ -774,7 +897,7 @@ This section addresses frontend and backend optimization strategies for handling
 }
 ```
 
-**Proposed Extended Response:**
+**Extended — `validationSummary` added per section:**
 ```json
 {
   "items": [
@@ -788,87 +911,19 @@ This section addresses frontend and backend optimization strategies for handling
       "intendedYearLevel": 3,
       "academicTerm": { "id": 2, "termName": "1st Semester" },
       
-      // NEW: Offerings with validation errors + conflicts
+      // Offerings returned as SUMMARY only (no validation/conflict arrays)
       "offerings": [
         {
           "id": 101,
-          "classSectionId": 1,
-          "subjectId": 10,
           "snapshotSubjectCode": "DS",
           "snapshotSubjectTitle": "Data Structures",
           "teacher": { "id": 5, "firstName": "Dr.", "lastName": "Smith" },
-          "room": { "id": 101, "roomNumber": "101", "building": { "name": "Main" } },
-          "daysPerWeek": 2,
-          "hoursPerDay": 1.5,
-          "schedules": [
-            { "id": 201, "dayOfWeek": "MON", "startTime": "08:00", "endTime": "09:30" }
-          ],
-          
-          // NEW FIELD: Validation messages (per-offering array)
-          "validationMessages": [
-            {
-              "Severity": "Warning",
-              "Code": "POTENTIAL_CONFLICT",
-              "Message": "Offering overlaps with another section in the same room",
-              "ComputedAt": "2025-06-10T15:30:00Z"
-            }
-          ],
-          
-          // NEW FIELD: Conflicts with other sections
-          "conflicts": [
-            {
-              "id": "conflict-001",
-              "type": "ROOM_DOUBLE_BOOKED",
-              "severity": "Error",
-              "message": "Room 101 double-booked on Monday 08:00-09:30",
-              "day": "MON",
-              "startTime": "08:00",
-              "endTime": "09:30",
-              "conflictingOfferingId": 202,
-              "conflictingOffering": {
-                "id": 202,
-                "sectionCode": "2A",
-                "subjectCode": "ENGL",
-                "subjectTitle": "English 101",
-                "teacher": { "id": 7, "firstName": "Dr.", "lastName": "Jones" },
-                "room": { "id": 101, "roomNumber": "101", "building": { "name": "Main" } }
-              }
-            }
-          ]
-        },
-        {
-          "id": 102,
-          "classSectionId": 1,
-          "subjectId": 11,
-          "snapshotSubjectCode": "MATH",
-          "snapshotSubjectTitle": "Calculus I",
-          "teacher": null,  // MISSING TEACHER
-          "room": { "id": 102, "roomNumber": "102", "building": { "name": "Main" } },
-           "daysPerWeek": 3,
-           "hoursPerDay": 1,
-           "schedules": [],  // MISSING SCHEDULE
-           
-           // Validation messages for this offering (array of validation errors)
-           "validationMessages": [
-             {
-               "Severity": "Error",
-               "Code": "MISSING_TEACHER",
-               "Message": "Offering is missing assigned teacher",
-               "ComputedAt": "2025-06-10T15:30:00Z"
-             },
-             {
-               "Severity": "Error",
-               "Code": "NO_SCHEDULE",
-               "Message": "Offering has no scheduled classes",
-               "ComputedAt": "2025-06-10T15:30:00Z"
-             }
-           ],
-           
-           "conflicts": []  // No conflicts for unscheduled offering
-         }
+          "room": { "roomNumber": "101" },
+          "scheduleSummary": "MWF 08:00-09:30"
+        }
       ],
       
-      // NEW FIELD: Aggregate stats for this section
+      // COMPUTED: Aggregate stats for this section (backend-computed)
       "validationSummary": {
         "totalOfferings": 2,
         "offeringsWithErrors": 1,
@@ -880,22 +935,100 @@ This section addresses frontend and backend optimization strategies for handling
     }
   ],
   
-  // NEW FIELD: Page-level stats
-  "stats": {
-    "totalDraft": 24,
-    "totalOpen": 156,
-    "totalCancelled": 8,
-    "sectionsWithUnresolvedErrors": 12,  // Count with ≥1 offering having errors
-    "sectionsWithConflicts": 7,           // Count with ≥1 offering having conflicts
-    "unscheduledCount": 31                // Sections with 0 offerings or no schedules
-  },
-  
   "page": 1,
   "pageSize": 25,
   "totalCount": 312,
   "totalPages": 13
 }
 ```
+
+**Note:** The `stats` object is NOT included here. Full-dataset stats come from the separate stats endpoint.
+
+### 8.2 Aggregate Stats Endpoint
+
+**`GET /api/class-sections/stats?academicYearId={id}`**
+
+```json
+{
+  "totalDraft": 24,
+  "totalOpen": 156,
+  "totalCancelled": 8,
+  "sectionsWithUnresolvedErrors": 12,
+  "sectionsWithConflicts": 7,
+  "unscheduledCount": 31
+}
+```
+
+- Full-dataset numbers — **not affected by filters or pagination**
+- Refetched after any status transition mutation
+
+### 8.3 Offering Details Endpoint (Lazy Load)
+
+**`GET /api/class-sections/{sectionId}/offerings`**
+
+```json
+{
+  "offerings": [
+    {
+      "id": 101,
+      "classSectionId": 1,
+      "subjectId": 10,
+      "snapshotSubjectCode": "DS",
+      "snapshotSubjectTitle": "Data Structures",
+      "teacher": { "id": 5, "firstName": "Dr.", "lastName": "Smith" },
+      "room": { "id": 101, "roomNumber": "101", "building": { "name": "Main" } },
+      "daysPerWeek": 2,
+      "hoursPerDay": 1.5,
+      "schedules": [
+        { "id": 201, "dayOfWeek": "MON", "startTime": "08:00", "endTime": "09:30" }
+      ],
+      
+      "validationMessages": [
+        {
+          "Severity": "Warning",
+          "Code": "POTENTIAL_CONFLICT",
+          "Message": "Offering overlaps with another section in the same room",
+          "ComputedAt": "2025-06-10T15:30:00Z"
+        }
+      ],
+      
+      "conflicts": [
+        {
+          "id": "conflict-001",
+          "type": "ROOM_DOUBLE_BOOKED",
+          "severity": "Error",
+          "message": "Room 101 double-booked on Monday 08:00-09:30",
+          "day": "MON",
+          "startTime": "08:00",
+          "endTime": "09:30",
+          "conflictingOfferingId": 202,
+          "conflictingOffering": {
+            "id": 202,
+            "sectionCode": "2A",
+            "subjectCode": "ENGL",
+            "subjectTitle": "English 101",
+            "teacher": { "id": 7, "firstName": "Dr.", "lastName": "Jones" },
+            "room": { "id": 101, "roomNumber": "101", "building": { "name": "Main" } }
+          }
+        }
+      ]
+    }
+  ],
+  
+  "validationSummary": {
+    "totalOfferings": 1,
+    "offeringsWithErrors": 0,
+    "offeringsWithConflicts": 1,
+    "missingTeacherCount": 0,
+    "missingRoomCount": 0,
+    "missingScheduleCount": 0
+  }
+}
+```
+
+- Called on user interaction (hover, expand card, click error/conflict badge)
+- Cached per `sectionId` after first fetch
+- Conflicts are only computed for **Draft sections** (Open sections are finalized — no conflict detection)
 
 ### Validation Message Codes Reference
 
@@ -917,25 +1050,27 @@ Each offering includes a **flat `validationMessages` array** containing validati
 ### Implementation Notes for API Changes
 
 **Phase 1: Extend FilterClassSectionsPaginatedQuery Handler**
-- The `filterClassSectionsPaginatedOptions` endpoint (in `FilterClassSectionsPaginatedQuery`) currently returns `PagedResult<ClassSectionDto>` 
-- **Add validation messages:** Fetch `ClassSectionEnrollmentEligibilityValidationMessages` for each offering and flatten into a simple array per offering
-- **Add conflicts:** Include `ConflictResult[]` per offering (if available; pre-computed or fetched from a separate service)
-- **Return structure:** Add flat `validationMessages[]` array and `conflicts[]` array directly on each offering object
-- Ensure conflict detection runs pre-query (cached or computed)
+- The `filterClassSectionsPaginatedOptions` endpoint currently returns `PagedResult<ClassSectionDto>`
+- Add `validationSummary` per section (computed aggregate — NOT full offering data)
+- Keep offering summaries only (id, subject code, teacher name, room number, schedule pattern text)
+- **Do NOT** embed `validationMessages[]` or `conflicts[]` in the paginated response
 
-**Phase 2: Add Aggregate Stats to Response**
-- Calculate stats at response time from the paginated results:
-  - `totalDraft`, `totalOpen`, `totalCancelled` = count sections by status
-  - `sectionsWithUnresolvedErrors` = count sections with ≥1 offering containing validation messages where Severity="Error"
-  - `sectionsWithConflicts` = count sections with ≥1 offering with conflicts
-  - `unscheduledCount` = count sections with 0 offerings OR all offerings have 0 schedules
-- Include stats object in paginated response
+**Phase 2: Create Separate Aggregate Stats Endpoint**
+- New handler: `GetClassSectionStatsQuery`
+- Returns full-dataset counts: `totalDraft`, `totalOpen`, `totalCancelled`, `sectionsWithUnresolvedErrors`, `sectionsWithConflicts`, `unscheduledCount`
+- Always full-dataset — not affected by filter/pagination parameters
 
-**Phase 3: Update Frontend Parsing**
-- Parse `validationMessages[]` array from each offering (flat structure, no nested dictionary)
+**Phase 3: Create Separate Offering Details Endpoint**
+- New handler: `GetClassSectionOfferingsQuery`
+- Returns full offering data with `validationMessages[]` and `conflicts[]`
+- Conflicts computed only for **Draft sections** (Open sections are finalized)
+- Cached on the frontend per `sectionId`
+
+**Phase 4: Update Frontend Parsing**
+- Parse `validationSummary` from paginated response for list/metric display
+- Fetch offering details on demand for mini calendar and conflict preview
 - Count unresolved errors by filtering messages where `Severity === "Error"`
 - Detect missing items by checking for specific codes ("MISSING_TEACHER", "MISSING_ROOM", "NO_SCHEDULE")
-- Use conflicts array for conflict badge and mini calendar display
 - **No additional client-side validation logic needed**—rely on backend validation computation
 
 ---
@@ -943,14 +1078,15 @@ Each offering includes a **flat `validationMessages` array** containing validati
 ## Risk & Mitigation
 
 | Risk | Mitigation |
-|---|---|
-| Large API response size (validation + conflicts) | Paginate; compress; include only summary counts initially |
-| Performance with 300+ sections expanded | Lazy-load course groups; virtual scroll; lazy-render mini calendars on hover only |
-| Metrics calculation overhead on frontend | Memoize calculations; cache results; avoid recalculation on re-render |
-| BULK actions on stale data | Optimistic UI + background refetch; validate before transitions |
+|---|---|---|
+| Large API response size (validation + conflicts) | Offering details are NOT embedded in paginated response — fetched lazily via separate endpoint |
+| Performance with 300+ sections expanded | `content-visibility: auto` on course blocks; virtualize only college headers; lazy-render mini calendars |
+| Metrics calculation overhead on frontend | Metrics served as `validationSummary` (backend-computed, pre-cached). No offering traversal on frontend |
+| BULK actions on stale data | Optimistic UI + background refetch; validate before transitions via backend |
 | Cognitive overload (too much info) | Progressive disclosure (collapse course groups by default) |
-| Conflicting offerings missing from response | API must return conflicting offering details for mini calendar display; verify in integration tests |
+| Conflicting offerings missing from response | Offering details endpoint returns full conflict data; verify in integration tests |
 | User selects mixed-status sections for batch | Show warning; disable batch buttons if non-Draft selected |
+| Mini calendar blank on hover while data loads | Two-phase load: static summary immediately, full grid async with loading indicator |
 
 ---
 
@@ -963,6 +1099,7 @@ Each offering includes a **flat `validationMessages` array** containing validati
 This page manages the **Scheduling Workflow** only:
 - **Draft → Open:** Admin initiates enrollment period
 - **Draft → Cancelled:** Admin cancels sections before opening
+- **Open → Cancelled:** Admin cancels sections after opening
 - All other transitions (Open → Locked, Locked → Active, Active → Completed) are automated and managed outside this page per the Class Section Lifecycle.
 
 ### Validation vs. Conflicts
@@ -972,9 +1109,9 @@ This page manages the **Scheduling Workflow** only:
 - Prevents "Open for Enrollment" action
 
 **Conflicts:**
-- Global scope (cross-section)
+- Cross-section scope
 - Scheduling conflicts with other sections' offerings
-- Does NOT prevent "Open for Enrollment" (warnings only)
+- ALSO prevents "Open for Enrollment" — both errors and conflicts block transitioning Draft → Open
 - Resolved on Room Scheduler page or Section Detail page
 
 ---
