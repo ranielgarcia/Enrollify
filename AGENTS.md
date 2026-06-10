@@ -293,3 +293,4 @@ Project-level Copilot skills for complex, multi-step workflows:
 - `.github/skills/grill-me/SKILL.md` — Interview the user relentlessly to stress-test a plan, research, or design until shared understanding is reached
 - `.github/skills/to-issues/SKILL.md` — Break any plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices.
 - `.github/skills/to-prd/SKILL.md` — Turn the current conversation context into a PRD and submit it as a GitHub issue.
+- `.github/skills/enrollify-to-user-stories/SKILL.md` — Decompose a PRD markdown file into individual user story files with YAML frontmatter, acceptance criteria, and technical notes.
