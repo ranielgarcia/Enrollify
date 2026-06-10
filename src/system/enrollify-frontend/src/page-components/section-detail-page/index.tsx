@@ -146,7 +146,7 @@ export default function SectionDetailPage({
             <LayoutGrid className="size-4" />
             Offerings
             {section.offerings.length > 0 && (
-              <Badge variant="secondary" className="text-xs h-4 px-1">
+              <Badge className="text-[11px] px-1.5 py-0 font-semibold bg-muted text-muted-foreground border hover:bg-muted h-4">
                 {section.offerings.length}
               </Badge>
             )}
@@ -162,8 +162,11 @@ export default function SectionDetailPage({
             Conflicts
             {allConflicts.length > 0 && (
               <Badge
-                variant={hardConflictCount > 0 ? "destructive" : "secondary"}
-                className="text-xs h-4 px-1"
+                className={
+                  hardConflictCount > 0
+                    ? "text-[11px] px-1.5 py-0 font-semibold bg-red-500/15 text-red-600 border border-red-500/25 hover:bg-red-500/15 h-4"
+                    : "text-[11px] px-1.5 py-0 font-semibold bg-amber-500/15 text-amber-600 border border-amber-500/25 hover:bg-amber-500/15 h-4"
+                }
               >
                 {allConflicts.length}
               </Badge>

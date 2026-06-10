@@ -1,6 +1,5 @@
 import { OverlayLoader } from "@/components/app-loading-overlay";
 import React from "react";
-import { Separator } from "@/components/ui/separator";
 
 interface ManagementPageLayoutProps {
   title: string | React.ReactNode;
@@ -25,19 +24,22 @@ export function ManagementPageLayout({
 
       <div className="flex items-start justify-between py-2">
         <div className="flex items-start gap-3">
-          <div className="flex h-12 w-12 items-center justify-center">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
             {icon}
           </div>
-          <div className="flex flex-col">
-            <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
-            <span className="text-sm font-medium text-slate-500">
-              {description}
-            </span>
+          <div className="flex flex-col justify-center">
+            <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+            <span className="text-sm text-muted-foreground">{description}</span>
           </div>
         </div>
         <div className="py-2">{createNewItemButton}</div>
       </div>
-      <Separator />
+
+      <div className="relative my-1">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-dashed" />
+        </div>
+      </div>
 
       <div className="flex min-h-0 flex-1 flex-col py-5">{children}</div>
     </main>
