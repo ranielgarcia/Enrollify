@@ -16,50 +16,49 @@ All files live under `src/page-components/sections-management-page-v2/` (new dir
 
 ```
 sections-management-page-v2/
-├── index.tsx                           # Page root — view toggle, stats, grouping orchestration
-├── searchParams.ts                     # nuqs parsers (view, groupBy, filters, sort, page)
+├── index.tsx                           # Page root — college selector, view toggle, stats, grouping orchestration
+├── searchParams.ts                     # nuqs parsers (collegeId, view, filters, sort)
+├── college-selector.tsx                # Dropdown to select college
 ├── sections-table.tsx                  # Enhanced table view (new columns, inline actions)
-├── sections-card-view.tsx              # Card view layout with college/course grouping
+├── sections-card-view.tsx              # Card view layout with course grouping (single college)
 ├── section-card.tsx                    # Single section card component
 ├── section-card-mini-schedule.tsx      # Mini weekly grid tooltip/hover card
-├── stats-bar.tsx                       # Aggregate statistics bar (clickable filters)
+├── stats-bar.tsx                       # College-scoped aggregate statistics bar (clickable filters)
 ├── quick-filters.tsx                   # Preset filter buttons
-├── batch-actions-toolbar.tsx           # Floating sticky batch operations bar
+├── batch-actions-toolbar.tsx           # Course-level batch operations toolbar
 ├── bulk-adviser-assign-drawer.tsx      # Bulk assign adviser drawer
 ├── bulk-status-transition-dialog.tsx   # Confirm bulk status change
 ├── conflict-preview-drawer.tsx         # Inline conflict summary drawer
-├── inline-transition-buttons.tsx       # Status transition buttons — supports Draft(Open/Cancel), Open(Cancel), Others(Details)
+├── inline-transition-buttons.tsx       # Status transition buttons — Draft(Open/Cancel), Open(Cancel), Others(Details)
 ├── empty-state.tsx                     # Empty state component (filtered + no-data variants)
 ├── section-status-badge.tsx            # Re-use existing or port
-├── cancel-section-alert-dialog.tsx     # Re-use existing pattern or re-implement
-└── delete-section-alert-dialog.tsx     # Re-use existing pattern or re-implement
+└── cancel-section-alert-dialog.tsx     # Re-use existing pattern or re-implement
 ```
 
 ### 3. Component Tree
 
 ```
 Page (index.tsx)
+├── CollegeSelector
 ├── StatsBar
 │   └── StatButton[] (clickable → adds nuqs filter)
-├── AcademicYearSelector
+├── AcademicYearDisplay (read-only, from existing selected academic year context)
 ├── ViewToggle (card/table)
 ├── QuickFilters
 ├── [View Router]
 │   ├── CardView
-│   │   └── CollegeAccordion[]
-│   │       └── CourseGroup[]
-│   │           ├── CourseGroupToolbar (course-scoped batch)
-│   │           └── SectionCard[]
-│   │               ├── InlineTransitionButtons
-│   │               ├── MiniScheduleTooltip (lazy async)
-│   │               └── Checkbox (disabled if non-Draft)
+│   │   └── CourseGroup[]
+│   │       ├── CourseGroupToolbar (course-scoped batch)
+│   │       └── SectionCard[]
+│   │           ├── InlineTransitionButtons
+│   │           ├── MiniScheduleTooltip (lazy async)
+│   │           └── Checkbox (disabled if non-Draft)
 │   └── TableView
 │       └── DataTable
 │           └── Row[]
 │               ├── Checkbox (disabled if non-Draft)
 │               ├── InlineTransitionButtons
 │               └── CompoundBadge (clickable → ConflictPreviewDrawer)
-├── BatchActionsToolbar (global, sticky)
 ├── ConflictPreviewDrawer
 ├── BulkStatusTransitionDialog
 ├── BulkAdviserAssignDrawer
@@ -68,29 +67,18 @@ Page (index.tsx)
 
 ### 4. API Endpoints
 
-#### 4.1 Enhanced Paginated Endpoint
+#### 4.1 College-Filtered Section List (Full List Per College)
 
-**`GET /api/class-sections/filter/{page}/{pageSize}`** — Extended with lazy offering support
+**`GET /api/colleges/{collegeId}/class-sections?academicYearId={id}`** — Single-college list response with lightweight per-section aggregates
 
-- Returns `PagedResult<ClassSectionDto>` with:
-  - Section metadata (id, code, status, course, adviser, term, year level)
-  - **`validationSummary`** (per-section aggregate):
-    ```json
-    "validationSummary": {
-      "totalOfferings": 3,
-      "offeringsWithErrors": 1,
-      "offeringsWithConflicts": 1,
-      "missingTeacherCount": 1,
-      "missingRoomCount": 0,
-      "missingScheduleCount": 1
-    }
-    ```
-  - Offerings returned as **summary only** (id, subject code, teacher name, room number, schedule pattern text — no nested validation/conflict arrays)
-- Full offering details (with `validationMessages[]` + `conflicts[]`) fetched via separate lazy endpoint on demand
+- Returns a full list of sections for the selected college (no server-side paging)
+- Includes per-section `validationSummary` and a college-scoped summary block
+- Offerings are **summary only** (no nested validation/conflict arrays)
+- Full details (eligibility messages + schedules + conflicts) are lazy-loaded via the offering details endpoint
 
-#### 4.2 New: Aggregate Stats Endpoint
+#### 4.2 College-Scoped Stats Endpoint
 
-**`GET /api/class-sections/stats?academicYearId={id}`**
+**`GET /api/colleges/{collegeId}/class-sections/stats?academicYearId={id}`**
 
 ```json
 {
@@ -103,7 +91,7 @@ Page (index.tsx)
 }
 ```
 
-- Always returns full-dataset numbers regardless of active filters
+- Always returns selected-college numbers regardless of active filters
 - Refreshed via separate TanStack Query with background refetch after mutations
 
 #### 4.3 New: Offering Details Endpoint (Lazy Load)
@@ -122,9 +110,6 @@ Page (index.tsx)
       "teacher": { ... },
       "room": { ... },
       "schedules": [...],
-      "validationMessages": [
-        { "Severity": "Error", "Code": "MISSING_TEACHER", "Message": "...", "ComputedAt": "..." }
-      ],
       "conflicts": [
         { "id": "c-001", "type": "ROOM_DOUBLE_BOOKED", "severity": "Error", ... }
       ]
@@ -134,6 +119,8 @@ Page (index.tsx)
 ```
 
 - Called on demand: when user expands card details, hovers for mini schedule, or clicks errors/conflicts badge
+- Conflicts are computed only for Draft sections in this page
+- Only **Error-severity** conflicts block Draft → Open
 
 #### 4.4 Bulk Operation Endpoints
 
@@ -153,13 +140,13 @@ All bulk endpoints:
 ```
 ┌────────────────────────┐
 │  Stats API             │ ← TanStack Query, 2-min stale, refetch on mutations
-│  (/api/.../stats)      │
+│  (/api/colleges/.../stats)│
 └────────┬───────────────┘
          │ stats data
          ▼
 ┌────────────────────────┐
-│  Paginated Sections    │ ← TanStack Query, page+filter params as query key
-│  (/api/.../filter/..)   │
+│  College Sections List │ ← TanStack Query, collegeId+filter params as query key
+│  (/api/colleges/.../class-sections) │
 └────────┬───────────────┘
          │ sections[] with validationSummary
          ▼
@@ -187,11 +174,11 @@ All bulk endpoints:
 | State | Mechanism | Details |
 |---|---|---|
 | **View mode** | `sessionStorage` | Card/Table toggle |
-| **Filters, sort, pagination** | `nuqs` (`useQueryStates`) | URL-synced; same pattern as existing pages |
-| **Section list** | TanStack Query `useSuspenseQuery` | Keys include `page`, `perPage`, `filters`, `sort` |
+| **Filters, sort** | `nuqs` (`useQueryStates`) | URL-synced |
+| **Section list** | TanStack Query `useSuspenseQuery` | Keys include `collegeId`, `academicYearId`, `filters`, `sort` |
 | **Stats** | TanStack Query `useSuspenseQuery` | Separate query, refetched after mutations |
 | **Offering details** | TanStack Query (lazy, `enabled` flag) | Fetched on demand per section; cached |
-| **Batch selection** | `useCrudState` extension or local `Set<number>` state | Course-level vs global selection tracking |
+| **Batch selection** | Local `Set<number>` state | Course-level selection only |
 | **Metrics (progress %, counts)** | `useMemo` | Derived from `validationSummary` |
 
 ### 7. Key Metrics Calculation

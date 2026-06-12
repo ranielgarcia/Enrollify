@@ -10,7 +10,7 @@ updated_at: 2026-06-10T00:00:00Z
 
 ## Summary
 
-Create the new `/scheduling/sections` route with all supporting files, backend API endpoints (enhanced paginated list, aggregate stats, lazy offering details, bulk operations), and the frontend API collection layer.
+Create the new `/scheduling/sections` route with all supporting files, backend API endpoints (college-filtered full list, college-scoped stats, lazy offering details, bulk operations), and the frontend API collection layer.
 
 ## Persona(s)
 
@@ -23,17 +23,18 @@ As a Scheduler, I want a new dedicated page route and backend API infrastructure
 ## Acceptance Criteria
 
 1. Given a user navigates to `/scheduling/sections` When the route loads Then a new page scaffold renders with `useSuspenseQuery` for sections and stats.
-2. Given the paginated endpoint `GET /api/class-sections/filter/{page}/{pageSize}` When called Then it returns sections with `validationSummary` per section (aggregate counts only, no full offering data).
-3. Given the stats endpoint `GET /api/class-sections/stats?academicYearId={id}` When called Then it returns full-dataset aggregate counts (`totalDraft`, `totalOpen`, `totalCancelled`, `sectionsWithUnresolvedErrors`, `sectionsWithConflicts`, `unscheduledCount`) unaffected by filters.
-4. Given the offering details endpoint `GET /api/class-sections/{sectionId}/offerings` When called Then it returns full offering data with `validationMessages[]` and `conflicts[]`.
-5. Given the bulk endpoint `POST /api/class-sections/bulk/open` When called with `{ sectionIds: number[] }` Then it validates Draft eligibility and returns `{ succeeded, failed, errors[] }`.
-6. Given the bulk endpoint `POST /api/class-sections/bulk/cancel` When called Then it performs soft-delete cascade and returns success/failure counts.
-7. Given the bulk endpoint `POST /api/class-sections/bulk/assign-adviser` When called Then it assigns the adviser to all Draft sections.
+2. Given a college is selected When the list endpoint `GET /api/colleges/{collegeId}/class-sections?academicYearId={id}` is called Then it returns the full list of sections for that college with `validationSummary` per section (aggregate counts only, no nested validation/conflict arrays).
+3. Given a college is selected When the stats endpoint `GET /api/colleges/{collegeId}/class-sections/stats?academicYearId={id}` is called Then it returns selected-college aggregate counts (`totalDraft`, `totalOpen`, `totalCancelled`, `sectionsWithUnresolvedErrors`, `sectionsWithConflicts`, `unscheduledCount`) unaffected by filters.
+4. Given the offering details endpoint `GET /api/class-sections/{sectionId}/offerings` When called Then it returns offering schedules and conflict details; conflicts are computed for Draft sections only.
+5. Given the single-section Draft → Open mutation is called Then it validates enrollment eligibility **and** blocks on **Error-severity** conflicts.
+6. Given the bulk endpoint `POST /api/class-sections/bulk/open` When called with `{ sectionIds: number[] }` Then it validates Draft eligibility **and** blocks on Error-severity conflicts and returns `{ succeeded, failed, errors[] }`.
+7. Given the bulk endpoint `POST /api/class-sections/bulk/cancel` When called Then it frees assignments (teacher/room/schedules) and returns success/failure counts.
+8. Given the bulk endpoint `POST /api/class-sections/bulk/assign-adviser` When called Then it assigns the adviser to all Draft sections.
 
 ## Definition of Done
 
 - [ ] New TanStack Router file at `src/routes/scheduling.sections.tsx`
-- [ ] `searchParams.ts` with `view` (card/table) param
+- [ ] `searchParams.ts` with `collegeId`, `view` (card/table), `filters`, `sort` params
 - [ ] All backend endpoints implemented and returning correct shapes
 - [ ] Frontend API collection (`class-section-collection-v2.ts`) with query keys and mutation options
 - [ ] API types regenerated via `npm run generate:api:win`
@@ -46,16 +47,17 @@ As a Scheduler, I want a new dedicated page route and backend API infrastructure
 
 ## Business Rules / Validation
 
-- `validationSummary` contains pre-computed aggregates only — no `validationMessages[]` or `conflicts[]` in paginated response.
-- Stats endpoint always returns full-dataset numbers, independent of pagination or filters.
+- The college-filtered list response contains pre-computed aggregates only — no nested validation/conflict arrays in the list payload.
+- Stats endpoint returns selected-college numbers, independent of active filters.
+- Draft → Open must validate enrollment eligibility and block when any **Error-severity** conflict exists.
 - Offering details endpoint returns conflicts only for **Draft** sections (Open sections finalized — no conflict computation).
 - Bulk open validates all sections are Draft before processing.
 
 ## API / Back-end Notes
 
-**Enhanced Paginated Endpoint:**
-`GET /api/class-sections/filter/{page}/{pageSize}`
-Response: `PagedResult<ClassSectionDto>` with `validationSummary` per section:
+**College-Filtered List Endpoint:**
+`GET /api/colleges/{collegeId}/class-sections?academicYearId={id}`
+Response: list of `ClassSectionDto` with `validationSummary` per section:
 ```json
 {
   "validationSummary": {
@@ -69,8 +71,8 @@ Response: `PagedResult<ClassSectionDto>` with `validationSummary` per section:
 }
 ```
 
-**Aggregate Stats Endpoint:**
-`GET /api/class-sections/stats?academicYearId={id}`
+**College-Scoped Stats Endpoint:**
+`GET /api/colleges/{collegeId}/class-sections/stats?academicYearId={id}`
 ```json
 {
   "totalDraft": 24,
@@ -105,8 +107,8 @@ All return `{ succeeded: number, failed: number, errors: { sectionId, message }[
 
 ## Test Cases
 
-1. GET paginated endpoint returns `validationSummary` per section.
-2. GET stats endpoint returns correct aggregate counts.
+1. GET college-filtered list endpoint returns `validationSummary` per section.
+2. GET college-scoped stats endpoint returns correct aggregate counts.
 3. GET offering details returns full messages + conflicts for Draft sections.
 4. POST bulk open with mixed Draft/non-Draft returns failure for non-Draft.
 5. POST bulk cancel performs soft-delete cascade.
@@ -123,7 +125,6 @@ All return `{ succeeded: number, failed: number, errors: { sectionId, message }[
 
 ## Notes / Implementation Considerations
 
-- Use `FilterExpressionBuilder` and `SpecSortBuilder<T>` for paginated query.
 - Vogen IDs cast to `object?` in LINQ expressions.
-- Stats query uses separate handler (`GetClassSectionStatsQuery`) — no filter/pagination params.
+- Stats query uses separate handler (`GetCollegeClassSectionStatsQuery`) — no filter params.
 - Offering details lazy-loaded and cached per `sectionId` on frontend.

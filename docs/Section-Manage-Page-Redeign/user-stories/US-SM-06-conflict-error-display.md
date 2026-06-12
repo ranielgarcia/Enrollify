@@ -26,7 +26,7 @@ As a Scheduler, I want to see a compact error/conflict summary on every card and
 2. Given a section with conflicts (with or without errors) When the badge renders Then it shows `⚠️X/❌Y` in red color.
 3. Given a section with no errors and no conflicts When the badge renders Then it shows `✓0/✓0` in green (or hidden — clean state).
 4. Given the compound badge When clicked Then a slide-out drawer opens showing each validation message and conflict with details.
-5. Given the conflict preview drawer When opened Then it lists all offerings with validation messages (code, severity, message) and conflicts (type, severity, overlapping section, time range).
+5. Given the conflict preview drawer When opened Then it lists eligibility validation messages (code, severity, message) and conflicts (type, severity, affected offerings, time range).
 6. Given a conflict with an overlapping section When displayed Then the user can click to navigate to that section's detail page.
 7. Given the conflict preview drawer When opened for a Draft section Then offering details are lazy-loaded from `GET /api/class-sections/{sectionId}/offerings`.
 
@@ -41,20 +41,20 @@ As a Scheduler, I want to see a compact error/conflict summary on every card and
 
 ## Preconditions & Assumptions
 
-- Offering details endpoint returns `validationMessages[]` and `conflicts[]` per offering.
+- Offering details endpoint returns eligibility validation messages (section-level + offering-level) and `conflicts[]` per offering.
 - Conflicts only computed for Draft sections; Open sections have empty `conflicts[]`.
 
 ## Business Rules / Validation
 
-- Validation error codes: `MISSING_TEACHER`, `MISSING_ROOM`, `NO_SCHEDULE` (Error severity); `POTENTIAL_CONFLICT` (Warning severity).
+- Enrollment-eligibility validation codes use domain codes (e.g., `CLASS_SECTION_ADVISER_REQUIRED`, `SUBJECT_OFFERING_TEACHER_REQUIRED`, `SUBJECT_OFFERING_ROOM_REQUIRED`, `SUBJECT_OFFERING_INSUFFICIENT_CLASS_SCHEDULES`, `SUBJECT_OFFERING_INVALID_CLASS_SCHEDULES`).
 - Both unresolved errors AND conflicts prevent "Open for Enrollment".
 - Badge is clickable only when errors or conflicts exist.
 
 ## API / Back-end Notes
 
-- Badge data from `validationSummary` in paginated response.
+- Badge data from `validationSummary` in the college-filtered list response.
 - Drawer detail data from `GET /api/class-sections/{sectionId}/offerings` (lazy-loaded).
-- Conflict types: `ROOM_DOUBLE_BOOKED`, `TIME_OVERLAP`, `TEACHER_DOUBLE_BOOKED`.
+- Conflict types: `TEACHER_DOUBLE_BOOKED`, `ROOM_DOUBLE_BOOKED`, `SECTION_OVERLAP`, `DUPLICATE_SUBJECT_IN_SECTION`.
 
 ## UI Notes
 
@@ -79,7 +79,7 @@ As a Scheduler, I want to see a compact error/conflict summary on every card and
 
 ## Dependencies
 
-- US-SM-01 (for paginated + offering details endpoints)
+- US-SM-01 (for college-filtered list + offering details endpoints)
 - US-SM-03 (for card badge integration)
 - US-SM-04 (for table badge integration)
 

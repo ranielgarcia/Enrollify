@@ -10,7 +10,7 @@ updated_at: 2026-06-10T00:00:00Z
 
 ## Summary
 
-Enable inline status transitions directly on section cards and table rows without navigating to the detail page. Support Draft → Open (with eligibility validation), Draft/Open → Cancelled (with confirmation dialog), with optimistic UI updates and toast notifications.
+Enable inline status transitions directly on section cards and table rows without navigating to the detail page. Support Draft → Open (with eligibility validation + conflict validation) and Draft/Open → Cancelled (with confirmation dialog + resource cleanup), with optimistic UI updates and toast notifications.
 
 ## Persona(s)
 
@@ -22,8 +22,8 @@ As a Scheduler, I want to open or cancel sections directly from the list~view wi
 
 ## Acceptance Criteria
 
-1. Given a Draft section When the user clicks [Open for Enrollment] Then the system validates eligibility; if valid, transitions to Open, updates the badge/buttons inline, and shows a success toast.
-2. Given a Draft section with unresolved errors OR conflicts When the user clicks [Open for Enrollment] Then the system rejects with an inline error message explaining why.
+1. Given a Draft section When the user clicks [Open for Enrollment] Then the system validates eligibility and conflicts; if valid, transitions to Open, updates the badge/buttons inline, and shows a success toast.
+2. Given a Draft section with unresolved errors OR **Error-severity** conflicts When the user clicks [Open for Enrollment] Then the system rejects with an inline error message explaining why.
 3. Given a Draft or Open section When the user clicks [Cancel] Then a confirmation dialog appears with impact summary ("X offerings will be freed — teacher/room assignments released").
 4. Given the confirmation dialog When the user confirms Then the section transitions to Cancelled, card/row updates inline, stats bar refreshes.
 5. Given a successful transition When the mutation completes Then a toast notification is shown; on failure, an inline error is displayed.
@@ -45,16 +45,16 @@ As a Scheduler, I want to open or cancel sections directly from the list~view wi
 
 ## Business Rules / Validation
 
-- Both unresolved errors AND conflicts block "Open for Enrollment" for Draft sections.
+- Both unresolved errors AND **Error-severity** conflicts block "Open for Enrollment" for Draft sections.
 - Only Draft → Open and Draft/Open → Cancelled transitions are available on this page.
 - Locked → Active → Completed transitions are automated (not on this page).
-- Cancellation performs soft-delete cascade, freeing teacher/room assignments.
+- Cancellation frees assignments (teacher/room/schedules) and excludes cancelled data from conflict detection.
 
 ## API / Back-end Notes
 
 - Reuse existing single-section mutations from `class-section-collection-v2.ts`.
-- `PATCH /api/class-sections/{id}/open` — validates eligibility; returns 400 with message if validation fails.
-- `PATCH /api/class-sections/{id}/cancel` — performs soft-delete cascade.
+- `PUT /api/class-sections/{id}/open` — validates eligibility and blocks on **Error-severity** conflicts; returns 400 with message if validation fails.
+- `PUT /api/class-sections/{id}/cancel` — cancels section and frees assignments.
 - Stats bar refetched via `invalidateQueries` after success.
 
 ## UI Notes

@@ -53,7 +53,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  [College Selector: Engineering ▾]  [Academic Year: 2025-2026 ▾]             │
+│  [College Selector: Engineering ▾]  [Academic Year: 2025-2026]               │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  [📋 Draft: 8]  [📂 Open: 42]  [❌ Cancelled: 2]                            │
@@ -107,9 +107,9 @@ Displays aggregate counts **for the selected college** (Draft, Open, and Cancell
 - **Draft (X)** — Sections in Draft status (newly created, awaiting scheduling) **in the selected college**
 - **Open (X)** — Sections opened for enrollment (scheduling complete) **in the selected college**
 - **Cancelled (X)** — Sections that were cancelled before/after opening **in the selected college**
-- **Unresolved Errors (X)** — Count of Draft/Open/Cancelled sections with ≥1 offering missing teacher OR room OR schedule **in the selected college**
-- **Conflicts (X)** — Count of Draft/Open/Cancelled sections with ≥1 offering that has scheduling conflicts with other sections' offerings. Conflicts are only computed for Draft sections (Open sections are considered finalized). **Scoped to the selected college.**
-- **Unscheduled (X)** — Count of Draft/Open/Cancelled sections with 0 complete offerings (offerings lacking teacher+room+schedule) **in the selected college**
+- **Unresolved Errors (X)** — Count of Draft sections whose enrollment-eligibility validation messages include at least one **Error-severity** item (e.g., adviser missing, offerings missing, teacher/room missing, insufficient/invalid schedules) **in the selected college**
+- **Conflicts (X)** — Count of Draft sections **in the selected college** that have ≥1 offering with at least one **Error-severity** scheduling conflict with other sections' offerings. Conflicts are computed only for Draft sections; non-Draft sections are not evaluated for conflicts in this page.
+- **Unscheduled (X)** — Count of Draft sections with 0 fully scheduled offerings (no offering with teacher + room + sufficient schedules) **in the selected college**
 
 **Note:** Locked, Active, and Completed statuses are excluded from stats bar as they are managed outside the scheduling workflow.
 
@@ -117,7 +117,7 @@ Displays aggregate counts **for the selected college** (Draft, Open, and Cancell
 - Colors match `SectionStatusBadge` conventions (Draft=secondary, Open=green, Cancelled=red)
 - Stats reflect **the selected college's data only** (updated when college selector changes)
 
-**Data source:** API endpoint (`GET /api/class-sections/stats?collegeId={id}`) dedicated to college-scoped aggregate stats. Refreshed on page load, college selection change, and after mutations.
+**Data source:** API endpoint (`GET /api/colleges/{collegeId}/class-sections/stats?academicYearId={id}`) dedicated to college-scoped aggregate stats. `academicYearId` comes from the existing selected academic year context. Refreshed on page load, college selection change, and after mutations.
 
 ---
 
@@ -181,10 +181,10 @@ Each course group has its own toolbar with `[☐ Select All]` `[Assign Adviser]`
 
 **Errors/Conflicts Column Display:**
 - Format: `⚠️ X / ❌ Y` where:
-  - `⚠️ X` = Unresolved errors count (missing teacher, room, or schedule across offerings)
-  - `❌ Y` = Conflicts count (scheduling conflicts with other sections)
+  - `⚠️ X` = Unresolved errors count for the section (number of Error-severity enrollment-eligibility messages)
+  - `❌ Y` = Conflicts count for the section (number of offerings with at least one Error-severity scheduling conflict)
 - Amber color when only errors present; red when conflicts present (or both)
-- Click to see details in drawer (see Section 4.9)
+- Click to see details in drawer (see Conflict Preview Drawer)
 - Red left border on row if errors OR conflicts exist
 
 ---
@@ -305,7 +305,7 @@ Legend:
 - **Gray background** on non-Draft (read-only) rows
 - **Disabled buttons** for non-Draft status transitions
 
-The table maintains all existing filtering/sorting/pagination via `nuqs` and `DataTableAdvancedToolbar`.
+The table maintains all existing filtering/sorting behavior via `nuqs` and `DataTableAdvancedToolbar`.
 
 ---
 
@@ -313,7 +313,7 @@ The table maintains all existing filtering/sorting/pagination via `nuqs` and `Da
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  [College: Engineering ▾]  [Academic Year: 2025-2026 ▾]                     │
+│  [College: Engineering ▾]  [Academic Year: 2025-2026]                       │
 │  View: [Card ●] [Table ○]                                                   │
 │                                                                             │
 │  Quick Filters:                                                             │
@@ -331,9 +331,9 @@ The table maintains all existing filtering/sorting/pagination via `nuqs` and `Da
 **View & Filters:**
 - **Card/Table toggle** — persists choice in `sessionStorage`
 - **Quick Filters** — preset filter configurations (scoped to selected college):
-  - "Unresolved Errors" → sections with ≥1 offering missing teacher OR room OR schedule
-  - "Conflicts" → sections with ≥1 offering that has scheduling conflicts
-  - "Needs Attention" → Draft status OR has unresolved errors OR has conflicts
+  - "Unresolved Errors" → Draft sections with at least one **Error-severity** enrollment-eligibility message
+  - "Conflicts" → Draft sections with at least one **Error-severity** scheduling conflict
+  - "Needs Attention" → Draft sections that either have unresolved errors OR have conflicts
 - **Status filters:** Draft, Open, Cancelled only (Locked/Active/Completed excluded per scheduling scope)
 - **Note:** Export functionality is not currently supported; data analysis happens in detail/room scheduler pages
 
@@ -415,7 +415,7 @@ Per `docs/design-decisions/class-section-lifecycle.md`:
 **Implementation Notes:**
 - Use existing transition mutations: `openClassSectionOptions(sectionId)`, `cancelClassSectionOptions(sectionId)`
 - Show confirmation alert dialog (reuse `CancelSectionAlertDialog` pattern) before cancelling
-- For Draft → Open: backend validates enrollment eligibility; rejection shows inline error
+- For Draft → Open: backend must validate **both** enrollment eligibility **and** scheduling conflicts. Any **Error-severity** conflict or enrollment-eligibility Error blocks the transition and shows an inline error.
 - After successful transition, refetch sections + stats and show toast notification
 
 ---
@@ -456,10 +456,9 @@ When hovering over a section card or row, a tooltip appears showing a **compact 
 - **Lunch break indicators:** Gray cells for typical lunch periods (12:00-13:00)
 
 **Conflict Information (from API):**
-The hover tooltip receives **conflicting offerings data from the offering details endpoint**. For each offering with conflicts, the endpoint includes:
-- `conflictingOfferingId`, `conflictingSection`, `conflictingTeacher`, `conflictingRoom`
-- Time range of overlap
-- Conflict severity
+The hover tooltip receives **conflict data from the offering details endpoint**. For each Error-severity conflict, the endpoint includes:
+- Conflict type, severity, message, day, start/end time
+- A list of `affectedOfferings` with subject, section, and room summaries
 
 **Interaction:**
 - Click "View Full Schedule" → navigates to section detail page's "Weekly Grid" tab
@@ -467,18 +466,18 @@ The hover tooltip receives **conflicting offerings data from the offering detail
 - Tooltip auto-closes when mouse leaves card
 
 **Performance & Loading Strategy (two-phase):**
-1. **Phase 1 (instant):** Static summary text is rendered on hover immediately (e.g., "3 offerings, 1 conflict detected"). No data fetch — derived from the `validationSummary` already available in the paginated response.
+1. **Phase 1 (instant):** Static summary text is rendered on hover immediately (e.g., "3 offerings, 1 conflict detected"). No data fetch — derived from the `validationSummary` already available in the college-filtered list response.
 2. **Phase 2 (async):** Full mini weekly grid with conflict visualization is fetched from `GET /api/class-sections/{sectionId}/offerings` (offering details endpoint) and rendered once loaded. A subtle loading indicator shows during fetch.
 - Mini calendar is **lazy-rendered** on hover (not pre-rendered for all cards)
 - Offering details are **cached** per sectionId after first fetch (TanStack Query)
-- No offering data is embedded in the paginated response — keeps payload lean
+- No offering data is embedded in the college-filtered list response — keeps payload lean
 
 All files live under a new directory `src/page-components/sections-management-page-v2/`. The existing `/sections` page and its components are **not modified** — the new page runs at a separate route (e.g., `/scheduling/sections`).
 
 ```
 sections-management-page-v2/
 ├── index.tsx                           # Page root — college selector, view toggle, stats, grouping orchestration
-├── searchParams.ts                     # nuqs parsers (collegeId, view, filters, sort) — NO pagination
+├── searchParams.ts                     # nuqs parsers (collegeId, view, filters, sort) for this single-college page
 ├── college-selector.tsx                # Dropdown to select college from institution list
 ├── sections-table.tsx                  # Enhanced table view (new columns, inline actions)
 ├── sections-card-view.tsx              # Card view layout with course grouping (single college)
@@ -513,13 +512,13 @@ src/api/models/
 ## 6. Implementation Phases
 
 ### Phase 1: Scaffold & Data Layer (2-3 days)
-**Goal:** New route, new files, backend API extensions for college-filtered sections (no pagination), and query/mutation infrastructure.
+**Goal:** New route, new files, backend API extensions for college-filtered sections (full list per college), and query/mutation infrastructure.
 
 | Task | Deliverable | Dependencies |
 |---|---|---|
 | Create new route `/scheduling/sections` with TanStack Router file | `src/routes/scheduling.sections.tsx` | None |
-| Set up `searchParams.ts` with `collegeId`, `view`, `filters`, `sort` params (**NO pagination**) | `searchParams.ts` | None |
-| Create backend college-filtered sections endpoint (no pagination) | Backend: `GET /api/colleges/{collegeId}/class-sections` | None |
+| Set up `searchParams.ts` with `collegeId`, `view`, `filters`, `sort` params | `searchParams.ts` | None |
+| Create backend college-filtered sections endpoint that returns the full list of sections for a college | Backend: `GET /api/colleges/{collegeId}/class-sections` | None |
 | Extend backend endpoint to include `validationSummary` per section | Backend: filtered sections query | None |
 | Create backend college-scoped aggregate stats endpoint | Backend: `GET /api/colleges/{collegeId}/class-sections/stats` | None |
 | Create backend offering details lazy endpoint | Backend: `GET /api/class-sections/{sectionId}/offerings` | None |
@@ -626,7 +625,7 @@ Phases 2 and 3 can be built in parallel after Phase 1. Phases 4 and 5 can be par
 │  Curriculum & Scheduling  >  Class Sections                                          │
 ├──────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                       │
-│  [College: Engineering ▾]  [Academic Year: 2025-2026 ▾]                              │
+│  [College: Engineering ▾]  [Academic Year: 2025-2026]                                │
 │                                                                                       │
 ├──────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                       │
@@ -698,7 +697,7 @@ Phases 2 and 3 can be built in parallel after Phase 1. Phases 4 and 5 can be par
 │  Curriculum & Scheduling  >  Class Sections                                              │
 ├───────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                            │
-│  [College: Engineering ▾]  [Academic Year: 2025-2026 ▾]                                   │
+│  [College: Engineering ▾]  [Academic Year: 2025-2026]                                     │
 │                                                                                            │
 ├───────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                            │
@@ -755,11 +754,11 @@ Phases 2 and 3 can be built in parallel after Phase 1. Phases 4 and 5 can be par
 | Metric | Where | Source |
 |---|---|---|
 | **Scheduling progress %** | Card progress bar, table column | `validationSummary.totalOfferings` vs backend's scheduled count |
-| **Unresolved Errors count** | Card badge, table column | `validationSummary.offeringsWithErrors` |
+| **Unresolved Errors count** | Card badge, table column | `validationSummary.offeringsWithErrors` (Error-severity eligibility issues) |
 | **Missing teacher count** | Card "Issues" row | `validationSummary.missingTeacherCount` |
 | **Missing room count** | Card "Issues" row | `validationSummary.missingRoomCount` |
 | **Missing schedule count** | Card "Issues" row | `validationSummary.missingScheduleCount` |
-| **Conflicts count** | Card badge, table column | `validationSummary.offeringsWithConflicts` |
+| **Conflicts count** | Card badge, table column | `validationSummary.offeringsWithConflicts` (offerings with at least one Error-severity conflict) |
 | **Unscheduled count** | Stats bar | Aggregate stats endpoint (college-scoped): `unscheduledCount` |
 | **Schedule density** | Mini weekly calendar tooltip | Offering details endpoint (lazy, async) |
 
@@ -782,23 +781,22 @@ Mini calendar grid, conflict preview drawer
 
 ## Backend Changes Needed
 
-### New Endpoint: College-Filtered Sections (No Pagination)
+### New Endpoint: College-Filtered Sections (Full List Per College)
 
 **`GET /api/colleges/{collegeId}/class-sections`** — Return sections for a specific college with validation summary:
 
 ```csharp
-// NEW ENDPOINT: College-filtered list (no pagination)
+// NEW ENDPOINT: College-filtered list (returns full list for a college)
 
 new response structure {
   items: ClassSection[], // with extended offerings
-  // NO page, pageSize, totalCount, totalPages
   
   validationSummary: {
     totalDraft,
     totalOpen,
     totalCancelled,
-    sectionsWithUnresolvedErrors,    // count with ≥1 offering missing teacher/room/schedule
-    sectionsWithConflicts,            // count with ≥1 offering having conflicts
+    sectionsWithUnresolvedErrors,    // count of sections with at least one Error-severity eligibility message
+    sectionsWithConflicts,           // count of sections with at least one offering that has an Error-severity conflict
     unscheduledCount
   }
 }
@@ -818,13 +816,23 @@ offerings: Offering[] {
 
 | Endpoint | Method | Purpose |
 |---|---|---|
-| `GET /api/colleges/{collegeId}/class-sections/stats` | GET | College-scoped aggregate stats (replaces full-dataset stats) |
+| `GET /api/colleges/{collegeId}/class-sections/stats` | GET | College-scoped aggregate stats (replaces the old cross-college stats) |
 | `GET /api/class-sections/{sectionId}/offerings` | GET | Lazy-load offering details with validation messages and conflicts (shared with other pages) |
 | `POST /api/class-sections/bulk/assign-adviser` | POST | Bulk assign adviser to Draft sections (college-scoped) |
 | `POST /api/class-sections/bulk/open` | POST | Bulk transition Draft sections to Open (college-scoped) |
 | `POST /api/class-sections/bulk/cancel` | POST | Bulk transition Draft or Open sections to Cancelled (soft-delete cascade) |
 
 **Note:** No export endpoint needed; data analysis handled in Room Scheduler page.
+
+### Status Transitions & Resource Cleanup
+
+- **Draft → Open (single-section and bulk):**
+  - `OpenClassSectionForEnrollment` (and its bulk counterpart) must validate both enrollment-eligibility messages and **Error-severity** conflicts.
+  - If any Error-severity eligibility message or Error-severity conflict exists, the command returns `Invalid` and the status remains Draft.
+  - Only Error-severity conflicts block; Warning/Info conflicts are advisory.
+- **Cancel (single-section and bulk):**
+  - `CancelClassSection` (and bulk cancel) must mark related offerings/schedules/assignments as inactive or unassigned so they no longer participate in conflict detection.
+  - Conflict detection queries must exclude Cancelled sections (by status) and any inactive offerings/schedules.
 
 ---
 
@@ -884,7 +892,7 @@ This section addresses frontend and backend optimization strategies for handling
 
 ### Recommendations
 
-1. **Start with:** Pagination + lazy-loaded mini calendars + memoized metrics
+1. **Start with:** Single-college full list + lazy-loaded mini calendars + memoized metrics
 2. **Monitor:** Frontend render time with React DevTools Profiler
 3. **Optimize if slow:** Add virtual scrolling, background workers for conflict detection
 4. **Test:** Load test with 500+ sections to identify bottlenecks
@@ -897,7 +905,7 @@ This section addresses frontend and backend optimization strategies for handling
 
 | Endpoint | Purpose | Called When |
 |---|---|---|
-| `GET /api/colleges/{collegeId}/class-sections` | College-filtered section list with `validationSummary` per section (NO pagination) | On page load, college selection change, filter/sort changes |
+| `GET /api/colleges/{collegeId}/class-sections` | College-filtered section list with `validationSummary` per section (full list) | On page load, college selection change, filter/sort changes |
 | `GET /api/colleges/{collegeId}/class-sections/stats` | College-scoped aggregate stats (always for selected college) | On page load, college selection change, and after mutations |
 | `GET /api/class-sections/{sectionId}/offerings` | Full offering details with validation messages + conflicts | On user interaction (hover, expand, badge click) |
 
@@ -907,7 +915,6 @@ This section addresses frontend and backend optimization strategies for handling
 ```json
 {
   "items": [ClassSection],
-  // NO page, pageSize, totalCount, totalPages
   
   "validationSummary": {
     "totalDraft": 8,
@@ -959,7 +966,7 @@ This section addresses frontend and backend optimization strategies for handling
     }
   ],
   
-  // College-scoped stats (replaces full-dataset stats from paginated approach)
+  // College-scoped stats (replaces old cross-college totals)
   "validationSummary": {
     "totalDraft": 8,
     "totalOpen": 42,
@@ -971,7 +978,7 @@ This section addresses frontend and backend optimization strategies for handling
 }
 ```
 
-**Note:** No pagination metadata (`page`, `pageSize`, `totalCount`, `totalPages`). College-scoped stats are embedded in the response for convenience.
+**Note:** College-scoped stats are embedded in the response for convenience.
 
 ### 8.2 College-Scoped Stats Endpoint
 
@@ -1013,39 +1020,52 @@ This section addresses frontend and backend optimization strategies for handling
       "schedules": [
         { "id": 201, "dayOfWeek": "MON", "startTime": "08:00", "endTime": "09:30" }
       ],
-      
-      "validationMessages": [
-        {
-          "Severity": "Warning",
-          "Code": "POTENTIAL_CONFLICT",
-          "Message": "Offering overlaps with another section in the same room",
-          "ComputedAt": "2025-06-10T15:30:00Z"
-        }
-      ],
-      
+
       "conflicts": [
         {
           "id": "conflict-001",
           "type": "ROOM_DOUBLE_BOOKED",
           "severity": "Error",
-          "message": "Room 101 double-booked on Monday 08:00-09:30",
+          "message": "Room 101 double-booked on MON 08:00-09:30",
           "day": "MON",
-          "startTime": "08:00",
-          "endTime": "09:30",
-          "conflictingOfferingId": 202,
-          "conflictingOffering": {
-            "id": 202,
-            "sectionCode": "2A",
-            "subjectCode": "ENGL",
-            "subjectTitle": "English 101",
-            "teacher": { "id": 7, "firstName": "Dr.", "lastName": "Jones" },
-            "room": { "id": 101, "roomNumber": "101", "building": { "name": "Main" } }
-          }
+          "startTime": "08:00:00",
+          "endTime": "09:30:00",
+          "affectedOfferings": [
+            {
+              "id": 202,
+              "subject": { "code": "ENGL", "title": "English 101" },
+              "section": { "id": 2, "name": "BSEE-2A" },
+              "room": { "roomNumber": "101", "building": "Main" }
+            }
+          ]
         }
       ]
     }
   ],
-  
+
+  "validationMessages": {
+    "classSectionId": 1,
+    "classSectionValidationMessages": [
+      {
+        "severity": { "name": "Error", "value": 3 },
+        "code": "CLASS_SECTION_ADVISER_REQUIRED",
+        "message": "Class section must have an adviser assigned.",
+        "computedAt": "2026-06-10T15:30:00Z"
+      }
+    ],
+    "offeringsValidationMessages": {
+      "101": [
+        {
+          "offeringId": 101,
+          "severity": { "name": "Error", "value": 3 },
+          "code": "SUBJECT_OFFERING_INSUFFICIENT_CLASS_SCHEDULES",
+          "message": "Subject offering must have class schedules equal to expected days per week.",
+          "computedAt": "2026-06-10T15:30:00Z"
+        }
+      ]
+    }
+  },
+   
   "validationSummary": {
     "totalOfferings": 1,
     "offeringsWithErrors": 0,
@@ -1063,26 +1083,30 @@ This section addresses frontend and backend optimization strategies for handling
 
 ### Validation Message Codes Reference
 
-Each offering includes a **flat `validationMessages` array** containing validation errors and warnings. The backend validation system uses standardized message codes:
+Enrollment-eligibility validation messages are stored as domain validation messages with standardized codes. Examples:
 
 | Code | Severity | Category | UI Display |
 |---|---|---|---|
-| `MISSING_TEACHER` | Error | Unresolved Error | "Offering missing teacher" |
-| `MISSING_ROOM` | Error | Unresolved Error | "Offering missing room" |
-| `NO_SCHEDULE` | Error | Unresolved Error | "Offering has no schedule" |
-| `POTENTIAL_CONFLICT` | Warning | Validation | Per message text |
-| Other codes | Warning / Info | Validation | Per message text |
+| `CLASS_SECTION_ADVISER_REQUIRED` | Error | Unresolved Error | "Class section must have an adviser assigned" |
+| `CLASS_SECTION_SUBJECT_OFFERINGS_MISSING` | Error | Unresolved Error | "Class section must have subject offerings" |
+| `SUBJECT_OFFERING_TEACHER_REQUIRED` | Error | Unresolved Error | "Subject offering must have a teacher assigned" |
+| `SUBJECT_OFFERING_ROOM_REQUIRED` | Error | Unresolved Error | "Subject offering must have a room assigned" |
+| `SUBJECT_OFFERING_INSUFFICIENT_CLASS_SCHEDULES` | Error | Unresolved Error | "Subject offering must have class schedules equal to expected days per week" |
+| `SUBJECT_OFFERING_INVALID_CLASS_SCHEDULES` | Error | Unresolved Error | "Subject offering has invalid class schedules" |
+| `SUBJECT_OFFERING_DAYS_PER_WEEK_DEFAULT_VALUE` | Warning | Advisory | "Days per week is set to the default value of 1" |
+| `SUBJECT_OFFERING_HOURS_PER_DAY_DEFAULT_VALUE` | Warning | Advisory | "Hours per day is set to the default value of 1" |
+| `SUBJECT_OFFERING_MAX_NUMBER_OF_STUDENTS_DEFAULT_VALUE` | Warning | Advisory | "Max number of students is set to the default value of 0" |
 
-**Frontend Metric Calculation:**
-- **Unresolved Errors count** = Count all validation messages where `Severity === "Error"` across all offerings
-- **Missing teacher/room/schedule detection** = Check for specific codes (MISSING_TEACHER, MISSING_ROOM, NO_SCHEDULE) in validationMessages array
-- **Conflicts count** = Count all offerings with `conflicts` array length > 0
+**Frontend Metric Calculation (conceptual):**
+- **Unresolved Errors count** = Provided by backend (`unresolvedErrorsCount` / `sectionsWithUnresolvedErrors`) based on Error-severity validation messages
+- **Missing teacher/room/schedule detection** = Derived from validation codes like `SUBJECT_OFFERING_TEACHER_REQUIRED`, `SUBJECT_OFFERING_ROOM_REQUIRED`, `SUBJECT_OFFERING_INSUFFICIENT_CLASS_SCHEDULES`, `SUBJECT_OFFERING_INVALID_CLASS_SCHEDULES`
+- **Conflicts count** = Provided by backend (`offeringsWithConflicts` / `sectionsWithConflicts`) and based only on **Error-severity** conflicts
 
 ### Implementation Notes for API Changes
 
 **Phase 1: Create College-Filtered Sections Endpoint**
 - New handler: `GetCollegeClassSectionsQuery`
-- Returns college-filtered sections (no pagination): `List<ClassSectionDto>` + embedded `validationSummary`
+- Returns all sections for a college (no server-side paging): `List<ClassSectionDto>` + embedded `validationSummary`
 - URL: `GET /api/colleges/{collegeId}/class-sections?academicYearId={id}&statusFilter={status}&...`
 - Keep offering summaries only (id, subject code, teacher name, room number, schedule pattern text)
 - Embed college-scoped stats in response for convenience
@@ -1096,15 +1120,15 @@ Each offering includes a **flat `validationMessages` array** containing validati
 
 **Phase 3: Create Separate Offering Details Endpoint**
 - New handler: `GetClassSectionOfferingsQuery` (shared with other pages)
-- Returns full offering data with `validationMessages[]` and `conflicts[]`
+- Returns full offering data plus enrollment-eligibility validation messages and conflicts
 - Conflicts computed only for **Draft sections** (Open sections are finalized)
 - Cached on the frontend per `sectionId`
 
 **Phase 4: Update Frontend Parsing**
 - Parse `validationSummary` from college-filtered response for list/metric display
 - Fetch offering details on demand for mini calendar and conflict preview
-- Count unresolved errors by filtering messages where `Severity === "Error"`
-- Detect missing items by checking for specific codes ("MISSING_TEACHER", "MISSING_ROOM", "NO_SCHEDULE")
+- Treat a section as having unresolved errors when it has at least one **Error-severity** enrollment-eligibility message (backend-computed fields preferred)
+- For detailed UI, use eligibility codes like `CLASS_SECTION_ADVISER_REQUIRED`, `SUBJECT_OFFERING_TEACHER_REQUIRED`, `SUBJECT_OFFERING_ROOM_REQUIRED`, `SUBJECT_OFFERING_INSUFFICIENT_CLASS_SCHEDULES`, `SUBJECT_OFFERING_INVALID_CLASS_SCHEDULES`
 - **No additional client-side validation logic needed**—rely on backend validation computation
 
 ---
@@ -1140,14 +1164,14 @@ This page manages the **Scheduling Workflow** only:
 
 ### Validation vs. Conflicts
 **Unresolved Errors (Validation):**
-- Per-offering scope
-- Missing teacher, room, or schedule
-- Prevents "Open for Enrollment" action
+- Enrollment-eligibility validation messages for a section and its offerings
+- Error-severity issues such as adviser missing, offerings missing, teacher/room missing, insufficient or invalid schedules
+- Prevent "Open for Enrollment" when any Error-severity message exists
 
 **Conflicts:**
-- Cross-section scope
-- Scheduling conflicts with other sections' offerings
-- ALSO prevents "Open for Enrollment" — both errors and conflicts block transitioning Draft → Open
+- Cross-section scope (teacher/room/section overlaps across sections in the same academic term)
+- Detected via the conflict detection pipeline; only **Error-severity** conflicts block Draft → Open
+- Cancelled sections (and their offerings/schedules) must be excluded from conflict detection once cancel frees assignments
 - Resolved on Room Scheduler page or Section Detail page
 
 ---

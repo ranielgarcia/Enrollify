@@ -1,5 +1,5 @@
 ---
-title: US-SM-03 Card View with College/Course Grouping
+title: US-SM-03 Card View with Course Grouping (Single College)
 id: US-SM-03
 epic: Section Manage Page Redesign
 priority: high
@@ -10,7 +10,7 @@ updated_at: 2026-06-10T00:00:00Z
 
 ## Summary
 
-Build the card view as the default display mode, with sections grouped by College (accordion header) then Course (sub-group). Each section renders as a rich card showing status, scheduling progress, adviser, issues, rooms, schedule summary, and action buttons.
+Build the card view as the default display mode, with sections grouped by Course within the selected college. Each section renders as a rich card showing status, scheduling progress, adviser, issues, rooms, schedule summary, and action buttons.
 
 ## Persona(s)
 
@@ -22,8 +22,8 @@ As a Scheduler, I want to see sections organized hierarchically by college and c
 
 ## Acceptance Criteria
 
-1. Given the page loads in card view When sections are returned Then they are grouped by College (accordion header) then by Course (sub-group).
-2. Given a college accordion header When displayed Then it shows college name, total section count, and aggregate scheduling progress bar.
+1. Given the page loads in card view When sections are returned Then they are grouped by Course within the selected college.
+2. Given a college is selected When displayed Then the page shows the selected college name, total section count, and an aggregate scheduling progress indicator.
 3. Given a course group When displayed Then it shows course code + name, section count, and scheduling progress bar.
 4. Given a course group is collapsed by default When the user clicks it Then it expands to reveal section cards.
 5. Given a Draft section card When rendered Then it shows: checkbox (enabled), section code, status badge, error/conflict compound badge, subtitle, adviser row, scheduling progress bar, issues row, room summary, schedule summary, and action buttons [Open] [Cancel] [Details].
@@ -36,7 +36,7 @@ As a Scheduler, I want to see sections organized hierarchically by college and c
 ## Definition of Done
 
 - [ ] `SectionCard` component with all zones (header, subtitle, adviser, progress, issues, rooms, schedule, actions)
-- [ ] `SectionsCardView` with CollegeAccordion → CourseGroup → SectionCard nesting
+- [ ] `SectionsCardView` with CourseGroup → SectionCard nesting (single college)
 - [ ] `SectionStatusBadge` component
 - [ ] View toggle persisted in `sessionStorage`
 - [ ] Red left border conditionally applied
@@ -57,14 +57,14 @@ As a Scheduler, I want to see sections organized hierarchically by college and c
 
 ## API / Back-end Notes
 
-- Section list from `GET /api/class-sections/filter/{page}/{pageSize}` with `validationSummary`.
+- Section list from `GET /api/colleges/{collegeId}/class-sections?academicYearId={id}` with `validationSummary`.
 - View toggle stored in `sessionStorage` key (e.g., `sections-view-mode`).
 
 ## UI Notes
 
 - Card zones: Header (checkbox + code + status badge + error/conflict badge) → Subtitle → Adviser row → Progress bar → Issues row → Room summary → Schedule summary → Action buttons.
 - Red left border via CSS class; disabled checkbox grayed out.
-- Academic Year selector visible in all views.
+- Academic Year display visible in all views (from existing selected academic year context).
 
 ## Edge Cases & Error Handling
 
@@ -82,7 +82,7 @@ As a Scheduler, I want to see sections organized hierarchically by college and c
 
 ## Dependencies
 
-- US-SM-01 (for paginated endpoint with `validationSummary`)
+- US-SM-01 (for college-filtered list endpoint with `validationSummary`)
 
 ## Related Requirements / Source
 
@@ -91,6 +91,6 @@ As a Scheduler, I want to see sections organized hierarchically by college and c
 
 ## Notes / Implementation Considerations
 
-- Virtualize only College accordion headers; use `content-visibility: auto` on inner course blocks.
+- Collapse course groups by default; use `content-visibility: auto` on course blocks.
 - Progress bar derived from `validationSummary`: `offerings without errors / totalOfferings * 100` (backend-computed ratio preferred).
 - Mini calendar tooltip handled in US-SM-07.

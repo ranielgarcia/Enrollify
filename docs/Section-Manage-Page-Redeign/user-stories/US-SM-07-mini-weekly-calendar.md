@@ -25,9 +25,9 @@ As a Scheduler, I want to hover over a section to see its weekly schedule with c
 1. Given a section card When the user hovers over it Then a static summary tooltip appears instantly (e.g., "3 offerings, 1 conflict detected"), derived from `validationSummary`.
 2. Given the static summary is shown When the offering details complete loading Then the full mini weekly grid renders with time slots, offerings, and conflict visualization.
 3. Given the mini grid When rendered Then it shows Mon-Fri columns, time rows (hourly or 30-min), and colored offering blocks with subject code and teacher name.
-4. Given a conflicted offering When rendered in the mini grid Then it has a red border.
+4. Given a conflicted offering When rendered in the mini grid Then it has a red border (Error-severity conflicts only).
 5. Given "View Full Schedule" When clicked Then it navigates to the section detail page.
-6. Given a conflicting offering box When clicked Then it navigates to the conflicting section's detail page.
+6. Given a conflicting offering box When clicked Then it navigates to the conflicting section's detail page (using the conflict's `affectedOfferings` section summary).
 7. Given the mouse leaves the card When the tooltip is open Then it auto-closes.
 
 ## Definition of Done

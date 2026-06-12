@@ -8,7 +8,7 @@
 |---|---|---|---|
 | US-SM-01 | Sections Page Scaffold & Data Layer | High | Phase 1 |
 | US-SM-02 | Stats Bar & Quick Filters | High | Phase 2 |
-| US-SM-03 | Card View with College/Course Grouping | High | Phase 2 |
+| US-SM-03 | Card View with Course Grouping (Single College) | High | Phase 2 |
 | US-SM-04 | Enhanced Table View | High | Phase 3 |
 | US-SM-05 | Inline Status Transitions | High | Phase 2 |
 | US-SM-06 | Conflict & Error Display with Preview Drawer | High | Phase 5 |

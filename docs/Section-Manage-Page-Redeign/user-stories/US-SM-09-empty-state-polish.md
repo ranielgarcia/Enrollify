@@ -10,7 +10,7 @@ updated_at: 2026-06-10T00:00:00Z
 
 ## Summary
 
-Build empty state components (filtered + no-data variants), add performance optimizations (virtual scrolling, `content-visibility`, debounce), implement desktop-only viewport check, add ARIA labels, and ensure keyboard navigation works across cards and table rows.
+Build empty state components (filtered + no-data variants), add performance optimizations (`content-visibility`, debounce, collapsed-by-default course groups), implement desktop-only viewport check, add ARIA labels, and ensure keyboard navigation works across cards and table rows.
 
 ## Persona(s)
 
@@ -24,8 +24,8 @@ As a Scheduler, I want clear empty states when filters return no results and a p
 
 1. Given filters return zero sections When the list renders Then an empty state shows: "No sections match your current filters" with suggestions and a `[Clear All Filters]` button.
 2. Given no sections exist at all for the academic year When the list renders Then an empty state shows: "No sections have been created for this academic year" with `[Bulk Initialize →]`.
-3. Given the list is empty When rendered Then the stats bar and academic year selector remain visible.
-4. Given many college accordions When the page loads Then only visible college headers are rendered (virtualized); inner course blocks use `content-visibility: auto`.
+3. Given the list is empty When rendered Then the stats bar, college selector, and academic year display remain visible.
+4. Given a large college When the page loads Then course groups are collapsed by default and course blocks use `content-visibility: auto`.
 5. Given filter changes When the user types Then the filter update is debounced by 300ms.
 6. Given a viewport smaller than 1024px When the page loads Then a banner appears: "This page is optimized for desktop. Use [Room Scheduler] or [Section Detail] on smaller screens."
 7. Given a keyboard user When tabbing through cards Then focus is visible, Enter activates links/buttons, Space toggles checkboxes.
@@ -37,14 +37,13 @@ As a Scheduler, I want clear empty states when filters return no results and a p
 - [ ] Empty state wired into card and table views
 - [ ] 300ms debounce on filter changes
 - [ ] `content-visibility: auto` on CourseGroup blocks
-- [ ] Virtualized College accordion headers (TanStack Virtual)
+- [ ] Course groups collapsed by default for large colleges
 - [ ] Desktop-only viewport check with banner
-- [ ] ARIA labels on progress bars, batch toolbar
+- [ ] ARIA labels on progress bars and course group headers
 - [ ] Keyboard navigation (Tab, Enter, Space)
 
 ## Preconditions & Assumptions
 
-- TanStack Virtual is available in the project.
 - `content-visibility` CSS property supported in target browsers.
 
 ## Business Rules / Validation

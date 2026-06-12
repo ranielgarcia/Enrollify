@@ -10,7 +10,7 @@ updated_at: 2026-06-10T00:00:00Z
 
 ## Summary
 
-Build the stats bar showing full-dataset aggregate counts (Draft, Open, Cancelled, Unresolved Errors, Conflicts, Unscheduled) and the quick filter buttons (All, Draft, Open, Cancelled, Unresolved Errors, Conflicts, Needs Attention). Stats are clickable to apply filters. Quick filters are URL-synced via `nuqs`.
+Build the stats bar showing selected-college aggregate counts (Draft, Open, Cancelled, Unresolved Errors, Conflicts, Unscheduled) and the quick filter buttons (All, Draft, Open, Cancelled, Unresolved Errors, Conflicts, Needs Attention). Stats are clickable to apply filters. Quick filters are URL-synced via `nuqs`.
 
 ## Persona(s)
 
@@ -24,10 +24,11 @@ As a Scheduler, I want to see aggregate counts for all sections at a glance and 
 
 1. Given the page loads When the stats endpoint returns data Then each stat (Draft, Open, Cancelled, Unresolved Errors, Conflicts, Unscheduled) displays its count with matching color convention.
 2. Given a stat button is clicked When the user clicks it Then a `nuqs` filter param is applied and the list filters accordingly.
-3. Given filters are active When the stats bar renders Then it still shows full-dataset numbers (unaffected by filters).
+3. Given filters are active When the stats bar renders Then it still shows selected-college numbers (unaffected by filters).
 4. Given a quick filter button (e.g., "Conflicts") is clicked When the filter is applied Then the button is visually highlighted.
 5. Given multiple quick filters are active When the user clicks another filter Then it toggles or combines (e.g., Draft + Conflicts).
-6. Given the "Needs Attention" filter When clicked Then it applies a combined filter: Draft status OR has unresolved errors OR has conflicts.
+6. Given the "Needs Attention" filter When clicked Then it applies a combined filter: Draft status AND (has unresolved errors OR has conflicts).
+7. Given the user changes the selected college When the page refreshes data Then stats and list are reloaded for the newly selected college.
 
 ## Definition of Done
 
@@ -35,18 +36,18 @@ As a Scheduler, I want to see aggregate counts for all sections at a glance and 
 - [ ] Quick filters component with preset buttons
 - [ ] Filters URL-synced via `nuqs` (`useQueryStates`)
 - [ ] Active filter visually highlighted
-- [ ] Stats always show full-dataset numbers from separate endpoint
+- [ ] Stats always show selected-college numbers from separate endpoint
 - [ ] Locked/Active/Completed excluded from stats bar
 
 ## Business Rules / Validation
 
-- Stats always reflect full-dataset numbers regardless of current page or active filters.
-- "Needs Attention" = Draft status OR has unresolved errors OR has conflicts.
+- Stats always reflect selected-college numbers regardless of active filters.
+- "Needs Attention" applies only to Draft sections: Draft AND (unresolved errors OR conflicts).
 - Locked, Active, and Completed statuses excluded from stats bar.
 
 ## API / Back-end Notes
 
-- Stats come from `GET /api/class-sections/stats?academicYearId={id}`.
+- Stats come from `GET /api/colleges/{collegeId}/class-sections/stats?academicYearId={id}`.
 - Refreshed via TanStack Query with background refetch after mutations.
 - Quick filters apply as URL search params via `nuqs`.
 
@@ -64,7 +65,7 @@ As a Scheduler, I want to see aggregate counts for all sections at a glance and 
 
 ## Test Cases
 
-1. Stats bar loads full-dataset counts independent of filters.
+1. Stats bar loads selected-college counts independent of filters.
 2. Clicking "Draft" stat applies Draft filter.
 3. Clicking "Needs Attention" applies compound filter.
 4. Stats bar refreshes after a status transition mutation.

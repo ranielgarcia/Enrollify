@@ -10,7 +10,7 @@ updated_at: 2026-06-10T00:00:00Z
 
 ## Summary
 
-Build the enhanced table view as an alternative to the card view, adding scheduling-specific columns (progress bar, errors/conflicts compound badge, inline action buttons) to the existing DataTable pattern while maintaining filtering/sorting/pagination via `nuqs`.
+Build the enhanced table view as an alternative to the card view, adding scheduling-specific columns (progress bar, errors/conflicts compound badge, inline action buttons) to the existing DataTable pattern while maintaining filtering/sorting via `nuqs`.
 
 ## Persona(s)
 
@@ -29,7 +29,7 @@ As a Scheduler who prefers dense tabular data, I want an enhanced table view wit
 5. Given a non-Draft row When rendered Then action buttons for status transitions are disabled.
 6. Given the compound badge When displayed Then it shows `⚠️X/❌Y` format (amber for errors-only, red when conflicts present).
 7. Given the compound badge When clicked Then it opens the conflict preview drawer.
-8. Given the existing sorting/filtering/pagination When the user interacts Then it works identically to existing management pages via `nuqs` + `DataTableAdvancedToolbar`.
+8. Given the existing sorting/filtering When the user interacts Then it works via `nuqs` + `DataTableAdvancedToolbar`.
 
 ## Definition of Done
 
@@ -39,7 +39,7 @@ As a Scheduler who prefers dense tabular data, I want an enhanced table view wit
 - [ ] Inline action buttons column (Draft: Open/Cancel/Details, Open: Cancel/Details, Others: Details)
 - [ ] Red left border on rows with errors/conflicts
 - [ ] Gray background on non-Draft rows
-- [ ] Existing filtering/sorting/pagination maintained
+- [ ] Existing filtering/sorting maintained
 
 ## Preconditions & Assumptions
 
@@ -53,7 +53,7 @@ As a Scheduler who prefers dense tabular data, I want an enhanced table view wit
 
 ## API / Back-end Notes
 
-- Same paginated endpoint as card view: `GET /api/class-sections/filter/{page}/{pageSize}`.
+- Same college-filtered list endpoint as card view: `GET /api/colleges/{collegeId}/class-sections?academicYearId={id}`.
 - Same `validationSummary` used for progress and error/conflict columns.
 
 ## UI Notes

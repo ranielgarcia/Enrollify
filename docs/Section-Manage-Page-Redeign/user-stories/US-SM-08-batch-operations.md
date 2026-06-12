@@ -10,7 +10,7 @@ updated_at: 2026-06-10T00:00:00Z
 
 ## Summary
 
-Enable multi-select batch operations on Draft sections via checkboxes. Provide a floating sticky global toolbar and per-course group toolbars. Support bulk actions: Assign Adviser, Open for Enrollment, Cancel, and Bulk Edit.
+Enable multi-select batch operations on Draft sections via checkboxes. Provide per-course group toolbars only. Support bulk actions: Assign Adviser, Open for Enrollment, Cancel, and Bulk Edit.
 
 ## Persona(s)
 
@@ -22,20 +22,19 @@ As a Scheduler, I want to select multiple Draft sections and perform batch actio
 
 ## Acceptance Criteria
 
-1. Given at least one Draft section checkbox is selected When checked Then a floating sticky toolbar appears at the bottom showing selection count and action buttons.
-2. Given the floating toolbar When visible Then it shows: selection count, `[Assign Adviser]`, `[Open for Enrollment]`, `[Cancel]`, `[Bulk Edit ▾]`.
+1. Given at least one Draft section checkbox is selected within a course group When checked Then a course-level toolbar appears inside that course group showing selection count and action buttons.
+2. Given the course-level toolbar When visible Then it shows: selection count, `[Assign Adviser]`, `[Open for Enrollment]`, `[Cancel]`, `[Bulk Edit ▾]`.
 3. Given non-Draft section checkboxes When displayed Then they are disabled with tooltip: "Batch operations only available for Draft sections".
 4. Given a user selects both Draft and non-Draft sections When the toolbar renders Then batch buttons are disabled with tooltip: "Batch operations only available for Draft sections".
 5. Given a course group toolbar When the user selects sections within a course Then the toolbar actions are scoped to that course's selections only.
-6. Given the global toolbar When the user has selections across courses Then actions affect all selected sections.
-7. Given batch "Open for Enrollment" When triggered Then a confirmation shows count; on confirm, bulk endpoint validates each section, succeeds for eligible, reports failures per section.
-8. Given batch "Cancel" When triggered Then a confirmation dialog details "X offerings will be freed" (teacher/room assignments); on confirm, performs soft-delete cascade.
+6. Given batch "Open for Enrollment" When triggered Then a confirmation shows count; on confirm, bulk endpoint validates each section's eligibility and blocks on Error-severity conflicts, succeeds for eligible, reports failures per section.
+7. Given batch "Cancel" When triggered Then a confirmation dialog details "X offerings will be freed" (teacher/room/schedules); on confirm, frees assignments and excludes cancelled data from conflict detection.
 9. Given batch "Assign Adviser" When clicked Then a drawer opens with adviser search and multi-select, applies to all selected Draft sections.
 
 ## Definition of Done
 
-- [ ] Checkbox state management (local `Set<number>`, course-scoped + global)
-- [ ] Floating sticky `BatchActionsToolbar` component
+- [ ] Checkbox state management (local `Set<number>`, course-scoped)
+- [ ] Course-level `BatchActionsToolbar` component
 - [ ] Course-level group toolbar with scoped batch actions
 - [ ] `BulkStatusTransitionDialog` with count summary + confirmation
 - [ ] `BulkAdviserAssignDrawer` with search + multi-select
@@ -47,7 +46,6 @@ As a Scheduler, I want to select multiple Draft sections and perform batch actio
 
 - Batch operations only available for Draft sections.
 - Course-level toolbar only appears when course group is expanded.
-- Global toolbar appears when ≥1 Draft section is selected across courses.
 
 ## Business Rules / Validation
 
@@ -55,8 +53,8 @@ As a Scheduler, I want to select multiple Draft sections and perform batch actio
 - If non-Draft sections selected, batch buttons disabled with tooltip.
 - Mixed-status selections show a warning before batch action.
 - "Open All" only affects Draft sections within that course.
-- Bulk Cancel performs soft-delete cascade (frees teacher/room assignments).
-- Bulk Open validates eligibility per section individually.
+- Bulk Cancel frees assignments (teacher/room/schedules) and excludes cancelled data from conflict detection.
+- Bulk Open validates eligibility per section and blocks on Error-severity conflicts.
 
 ## API / Back-end Notes
 
@@ -69,7 +67,6 @@ As a Scheduler, I want to select multiple Draft sections and perform batch actio
 
 ## UI Notes
 
-- Floating toolbar: sticky at bottom of viewport, full-width.
 - Course-level toolbar: inside each CourseGroup header area, below progress bar.
 - Confirmation dialogs show count + per-section failure summary if partial.
 - Bulk Cancel dialog: "X offerings will be freed, releasing Y teacher assignments and Z room assignments."
@@ -84,10 +81,10 @@ As a Scheduler, I want to select multiple Draft sections and perform batch actio
 
 ## Test Cases
 
-1. Select single Draft section → toolbar appears with correct count.
+1. Select single Draft section → course toolbar appears with correct count.
 2. Select Draft + non-Draft → batch buttons disabled.
 3. Course-level "Open All" only affects Draft sections in that course.
-4. Bulk Cancel shows "X offerings will be freed" and soft-deletes.
+4. Bulk Cancel shows "X offerings will be freed" and frees assignments.
 5. Bulk Adviser Assign drawer opens and applies adviser.
 
 ## Dependencies

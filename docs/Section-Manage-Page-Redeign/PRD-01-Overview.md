@@ -3,8 +3,8 @@
 ## PRD-01: Overview
 
 > **Status:** Approved (post-grilling session, 2026-06-10)
-> **Audience:** School administrator / Scheduler responsible for scheduling class sections across colleges.
-> **Goal:** Give the scheduler a bird's-eye view of scheduling status, surface conflicts early, enable batch operations (Draft sections only), and reduce navigation overhead.
+> **Audience:** School administrator / Scheduler responsible for scheduling class sections for a specific college (one college at a time).
+> **Goal:** Let the scheduler select a college and manage all its class sections, surface conflicts early, enable batch operations (Draft sections only), and reduce navigation overhead.
 
 ---
 
@@ -36,15 +36,17 @@ The current Class Sections management page has seven key limitations:
 
 - New route (`/sections-v2` or `/scheduling/sections`) — built from scratch alongside the existing page
 - Two view modes: **Card view** (default) and **Enhanced Table view** (toggle persisted in `sessionStorage`)
-- College → Course → Section accordion grouping in card view
-- Stats bar with full-dataset aggregate counts (separate API endpoint)
+- College selector (single-college view) with last selection persisted (e.g., `sessionStorage`)
+- Course → Section accordion grouping in card view (within the selected college)
+- Stats bar with selected-college aggregate counts (separate API endpoint)
 - Quick filters: All, Draft, Open, Cancelled, Unresolved Errors, Conflicts, Needs Attention
 - Inline status transitions (Draft ↔ Open, Draft/Open ↔ Cancelled) directly on cards and table rows
-- Batch operations toolbar (floating, sticky) for Draft sections only
+- Batch operations toolbar (course-level, inside each expanded course group) for Draft sections only
 - Lazy-loaded offering details and mini weekly calendar on hover
-- Separate full-dataset stats endpoint + per-section `validationSummary` embed
+- Separate selected-college stats endpoint + per-section `validationSummary` embedded in the college-filtered list response
 - Empty state design when filters return zero results
 - Desktop-only (1024px+). Mobile/tablet users directed to Room Scheduler or Section Detail pages.
+- Academic Year comes from the existing selected academic year context (displayed read-only on this page)
 
 #### Out of Scope
 
@@ -54,6 +56,7 @@ The current Class Sections management page has seven key limitations:
 - Open → Locked, Locked → Active, Active → Completed transitions (automated, managed outside this page per Class Section Lifecycle)
 - Per-teacher conflict view (Section Detail page)
 - Per-room conflict view (Room Scheduler page)
+- Cross-college batch operations (this page is single-college)
 
 ### 4. Success Metrics
 
@@ -71,15 +74,15 @@ The current Class Sections management page has seven key limitations:
 |---|---|---|
 | Checkbox behavior | Checkboxes disabled for non-Draft sections | Batch ops are Draft-only; showing active checkboxes on Open/Locked rows misleads |
 | Conflict/Error badge | Compound `⚠️X/❌Y` format in both views, colored amber for errors-only, red for conflicts | Single badge saves space; compound preserves diagnostic info; clicking opens conflict-preview drawer |
-| Conflicts block enrollment | YES — both unresolved errors **and** conflicts prevent "Open for Enrollment" | Consistency: scheduler should not open a section that has any issue |
+| Conflicts block enrollment | YES — both unresolved errors **and** **Error-severity** conflicts prevent "Open for Enrollment" | Consistency: scheduler should not open a section that has any blocking issue |
 | Open sections can be cancelled | YES — lifecycle doc shows `Open → Cancelled` | Open sections need Cancel button alongside `[Details]` |
 | Needs Attention scope | Draft sections only (with errors or conflicts) | Open section issues are read-only observational; action happens in Draft |
-| Stats endpoint | Separate API endpoint for full-dataset aggregate stats | Avoids computing full-dataset stats on every paginated call; keeps paginated responses lightweight |
-| Per-section stats | Embedded `validationSummary` per section on paginated response | Card/table rendering uses this directly; no extra computation |
-| Offering details | Lazy-loaded (not included in paginated response body) | Keeps payload size manageable; avoids 2-3x blowup from nested validation + conflict arrays |
+| Stats endpoint | Separate API endpoint for **selected-college** aggregate stats | Keeps the list response lightweight and avoids recomputing aggregate counts on every list fetch |
+| Per-section stats | Embedded `validationSummary` per section on the college-filtered list response | Card/table rendering uses this directly; no extra computation |
+| Offering details | Lazy-loaded (not included in list response body) | Keeps payload size manageable; avoids 2-3x blowup from nested validation + conflict arrays |
 | Mini calendar | Static summary rendered on hover immediately; full mini-weekly grid fetched async | Hover is instant (no blank tooltip); data loads in background |
-| Virtualization strategy | Virtualize College accordion headers only; `content-visibility: auto` on inner course blocks | Nested accordion is too complex for full virtual scrolling; college count is small enough |
-| Course-level vs Global toolbar | Both co-exist. Course toolbar scoped to that course's selections. Global toolbar affects all selected across courses | Each level has its use case; clear labeling prevents confusion |
-| Bulk Cancel | Soft-delete cascade; frees up teacher/room assignments; confirmation dialog shows "X offerings will be freed" | Prevents resource leaks; user knows impact before confirming |
+| Virtualization strategy | No top-level virtualization required for single-college; collapse course groups by default + `content-visibility: auto` on course blocks | Keeps rendering performant without complex virtualization |
+| Course-level vs Global toolbar | Course-level toolbar only | Single-college page does not need cross-course/global selection semantics |
+| Bulk Cancel | Cancel frees assignments (schedules/teacher/room) and excludes cancelled data from conflict detection; confirmation shows "X offerings will be freed" | Prevents resource leaks; user knows impact before confirming |
 | Page strategy | New route (`/sections-v2`), built from scratch, old page kept until manually deleted | Avoids regressions; faster iteration; no constraint of existing component API |
-| Empty states | Stats bar always visible showing full-dataset numbers. List area shows empty state with "Clear All Filters" CTA | User sees context even when list is empty; clear path to recovery |
+| Empty states | Stats bar always visible showing selected-college numbers. List area shows empty state with "Clear All Filters" CTA | User sees context even when list is empty; clear path to recovery |
