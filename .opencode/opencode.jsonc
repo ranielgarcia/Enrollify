@@ -15,4 +15,8 @@
       "max_base64_bytes": 5242880,
     },
   },
+  "permission": {
+    "git": "ask",
+    "exit": "ask",
+  },
 }

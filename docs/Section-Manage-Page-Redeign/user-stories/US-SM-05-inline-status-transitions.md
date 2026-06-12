@@ -18,7 +18,7 @@ Enable inline status transitions directly on section cards and table rows withou
 
 ## User Story
 
-As a Scheduler, I want to open or cancel sections directly from the list view without navigating to the detail page, so that I can perform status transitions efficiently at scale.
+As a Scheduler, I want to open or cancel sections directly from the list~view without navigating to the detail page, so that I can perform status transitions efficiently at scale.
 
 ## Acceptance Criteria
 

@@ -1,7 +1,7 @@
 # Class Sections Management Page — Redesign Proposal
 
-> **Audience:** School administrator / Scheduler responsible for scheduling class sections across colleges.
-> **Goal:** Give the scheduler a bird's-eye view of scheduling status, surface conflicts early, enable batch operations (Draft sections only), and reduce navigation overhead.
+> **Audience:** School administrator / Scheduler responsible for scheduling class sections for a specific college.
+> **Goal:** Allow the scheduler to select a college and manage all its class sections (courses, sections, schedules), surface conflicts early, enable batch operations (Draft sections only), and reduce navigation overhead.
 
 ---
 
@@ -53,29 +53,37 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  [Stats Bar: Draft 24 | Open 156 | Cancelled 8 | Conflicts 12 | Unscheduled  ]│
-├─────────────────────────────────────────────────────────────────────────────┤
-│  [Academic Year Selector]       [View: Card ◉ | Table ○ ]  [Quick Filters]  │
+│  [College Selector: Engineering ▾]  [Academic Year: 2025-2026 ▾]             │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  College of Engineering ─────────────────────────────────────────── 42 secs │
-│  ┌───────────────────────────────────────────────────────────────────────┐  │
-│  │ │ BSCS — Computer Science  (12 sections)          [▮▮▮▮▮▮▮▮▮▮] 80%  │  │
-│  │ │ ┌──────┬────────┬──────────┬──────┬──────────┐                    │  │
-│  │ │ │ Name │ Status │ Sched %  │ Tchr │ Conflicts│                    │  │
-│  │ │ ├──────┼────────┼──────────┼──────┼──────────┤                    │  │
-│  │ │ │ 3A   │ █ Open │ ████░░ 2/3│ Smith│  ✗ 1    │                    │  │
-│  │ │ │ 3B   │ █ Open │ ██████ 3/3│ Jones│  ✓ 0    │                    │  │
-│  │ │ │ 3C   │ █ Lock │ ██████ 3/3│  --  │  ✓ 0    │                    │  │
-│  │ │ └──────┴────────┴──────────┴──────┴──────────┘                    │  │
-│  │ └───────────────────────────────────────────────────────────────────┘  │
+│  [📋 Draft: 8]  [📂 Open: 42]  [❌ Cancelled: 2]                            │
+│  [⚠️ Unresolved Errors: 3]  [🔴 Conflicts: 2]  [🕐 Unscheduled: 5]          │
 │                                                                             │
-│  College of Business ────────────────────────────────────────────── 28 secs │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  [● Card View]  [○ Table View]    │    Quick Filters: [All] [Draft] [Open] │
+│                                          [Unresolved Errors] [Conflicts]   │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  College of Engineering                                                     │
+│                                                                             │
+│  ▸ BSCS — Computer Science  (4 sections)      [████████░░] 75% scheduled    │
 │  ┌───────────────────────────────────────────────────────────────────────┐  │
-│  │ │ BSA — Accountancy  (8 sections)                    [▮▮▮▮▮▮░░░░] 60%│  │
-│  │ │ ...                                                               │  │
-│  │ └───────────────────────────────────────────────────────────────────┘  │
+│  │ ☑ 3A   BSCS 3A                             █ Draft    ⚠️1/❌0        │  │
+│  │    BSCS — Computer Science · 1st Sem AY 2025-26                      │  │
+│  │    ...                                                                │  │
+│  │    [Open for Enrollment]  [Cancel]  [View Details →]                 │  │
+│  │                                                                       │  │
+│  │ ☐ 3B   BSCS 3B                             █ Open     ✓0/✓0          │  │
+│  │ ☐ 3C   BSCS 3C                             █ Open     ✓0/✓0          │  │
+│  │                                                                       │  │
 │  └───────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+│  [☐ Select All]  [Assign Adviser ▾]  [Open for Enrollment]  [Cancel]       │
+│                                                                             │
+│  ▸ BSIT — Information Technology  (3 sections)  [██░░░░░░░░] 45%           │
+│  ...                                                                        │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -86,41 +94,41 @@
 
 ### 4.1 Stats Bar
 
-Displays aggregate counts **for Draft, Open, and Cancelled statuses only**. Each stat is clickable to filter the list.
+Displays aggregate counts **for the selected college** (Draft, Open, and Cancelled statuses only). Each stat is clickable to filter the list.
 
 ```
 ┌───────────────────────────────────────────────────────────────────────────────┐
-│  [📋 Draft 24]  [📂 Open 156]  [❌ Cancelled 8]                               │
-│  [⚠️ Unresolved Errors 12]  [🔴 Conflicts 7]  [🕐 Unscheduled 31]             │
+│  [📋 Draft 8]  [📂 Open 42]  [❌ Cancelled 2]                                 │
+│  [⚠️ Unresolved Errors 3]  [🔴 Conflicts 2]  [🕐 Unscheduled 5]               │
 └───────────────────────────────────────────────────────────────────────────────┘
 ```
 
 **Stat Definitions:**
-- **Draft (X)** — Sections in Draft status (newly created, awaiting scheduling)
-- **Open (X)** — Sections opened for enrollment (scheduling complete)
-- **Cancelled (X)** — Sections that were cancelled before/after opening
-- **Unresolved Errors (X)** — Count of Draft/Open/Cancelled sections with ≥1 offering missing teacher OR room OR schedule
-- **Conflicts (X)** — Count of Draft/Open/Cancelled sections with ≥1 offering that has scheduling conflicts with other sections' offerings. Conflicts are only computed for Draft sections (Open sections are considered finalized).
-- **Unscheduled (X)** — Count of Draft/Open/Cancelled sections with 0 complete offerings (offerings lacking teacher+room+schedule)
+- **Draft (X)** — Sections in Draft status (newly created, awaiting scheduling) **in the selected college**
+- **Open (X)** — Sections opened for enrollment (scheduling complete) **in the selected college**
+- **Cancelled (X)** — Sections that were cancelled before/after opening **in the selected college**
+- **Unresolved Errors (X)** — Count of Draft/Open/Cancelled sections with ≥1 offering missing teacher OR room OR schedule **in the selected college**
+- **Conflicts (X)** — Count of Draft/Open/Cancelled sections with ≥1 offering that has scheduling conflicts with other sections' offerings. Conflicts are only computed for Draft sections (Open sections are considered finalized). **Scoped to the selected college.**
+- **Unscheduled (X)** — Count of Draft/Open/Cancelled sections with 0 complete offerings (offerings lacking teacher+room+schedule) **in the selected college**
 
 **Note:** Locked, Active, and Completed statuses are excluded from stats bar as they are managed outside the scheduling workflow.
 
 - Each stat is a button that adds/removes a filter for that status
 - Colors match `SectionStatusBadge` conventions (Draft=secondary, Open=green, Cancelled=red)
-- Stats always reflect **full-dataset numbers** regardless of current page or active filters
+- Stats reflect **the selected college's data only** (updated when college selector changes)
 
-**Data source:** Separate API endpoint (`GET /api/class-sections/stats`) dedicated to aggregate stats. Refreshed on page load and after mutations.
+**Data source:** API endpoint (`GET /api/class-sections/stats?collegeId={id}`) dedicated to college-scoped aggregate stats. Refreshed on page load, college selection change, and after mutations.
 
 ---
 
-### 4.2 College / Course Grouping
+### 4.2 Course Grouping (Single College View)
 
-Sections are grouped first by **College**, then by **Course** (program). Each group is an accordion.
+Since only **one college is selected at a time**, sections are grouped by **Course** (program) within that college. Each course group is an accordion.
 
 ```
-┌─ College of Engineering ──────────────────────────────────────── 42 secs ──┐
+┌─ College of Engineering ──────────────────────────────────────────────────┐
 │                                                                             │
-│  BSCS — Computer Science (12 secs)             [████████░░] 80% scheduled   │
+│  ▸ BSCS — Computer Science (4 sections)        [████████░░] 80% scheduled   │
 │  ┌──────────────────────────────────────────────────────────────────────┐   │
 │  │  [Group actions bar]  ☐ Batch Select  │  [Assign Adviser] [Open All] │   │
 │  │  ┌─────┬─────────┬───────────┬────────┬──────────┬───────────┐       │   │
@@ -133,13 +141,16 @@ Sections are grouped first by **College**, then by **Course** (program). Each gr
 │  │  └─────┴─────────┴───────────┴────────┴──────────┴───────────┘       │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
-│  BSIT — Information Technology (8 secs)              [████░░░░░░] 45%       │
+│  ▸ BSIT — Information Technology (3 sections)   [██░░░░░░░░] 45% scheduled   │
 │  ┌──────────────────────────────────────────────────────────────────────┐   │
 │  │  ...                                                                 │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
-├─────────────────────────────────────────────────────────────────────────────┤
-│  College of Business ──────────────────────────────────────────── 28 secs ──┤
-│  ...                                                                         │
+│                                                                             │
+│  ▸ BSEE — Electrical Engineering (5 sections)   [██████░░░░] 60% scheduled   │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │  ...                                                                 │   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -298,11 +309,12 @@ The table maintains all existing filtering/sorting/pagination via `nuqs` and `Da
 
 ---
 
-### 4.5 View Toggle & Quick Filters
+### 4.5 View Toggle, College Selector & Quick Filters
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  [Academic Year: 2025-2026 ▾]     View: [Card ●] [Table ○]                 │
+│  [College: Engineering ▾]  [Academic Year: 2025-2026 ▾]                     │
+│  View: [Card ●] [Table ○]                                                   │
 │                                                                             │
 │  Quick Filters:                                                             │
 │  [All] [Draft] [Open] [Cancelled] [Unresolved Errors] [Conflicts]          │
@@ -310,8 +322,15 @@ The table maintains all existing filtering/sorting/pagination via `nuqs` and `Da
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+**College Selector:**
+- Dropdown showing all colleges in the institution
+- Selecting a college filters the displayed sections, courses, and stats to that college only
+- Default: first college or last selected college (stored in `sessionStorage`)
+- Refreshes stats bar, section list, and filtering on change
+
+**View & Filters:**
 - **Card/Table toggle** — persists choice in `sessionStorage`
-- **Quick Filters** — preset filter configurations:
+- **Quick Filters** — preset filter configurations (scoped to selected college):
   - "Unresolved Errors" → sections with ≥1 offering missing teacher OR room OR schedule
   - "Conflicts" → sections with ≥1 offering that has scheduling conflicts
   - "Needs Attention" → Draft status OR has unresolved errors OR has conflicts
@@ -320,32 +339,30 @@ The table maintains all existing filtering/sorting/pagination via `nuqs` and `Da
 
 ---
 
-### 4.6 Batch Operations Toolbar
+### 4.6 Batch Operations Toolbar (Course-Level Only)
 
-When one or more **Draft sections** are selected (via row checkboxes or "Select All" in a course group):
+When one or more **Draft sections** are selected within a course group (via row checkboxes or "Select All" in that course):
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  ☑ 5 Draft sections selected                                   [Clear]     │
+│  [Inside each expanded course group]                                         │
 │                                                                             │
+│  ☑ 3 Draft sections selected  [Clear]                                       │
 │  [Assign Adviser ▾]  [Open for Enrollment]  [Cancel]                       │
-│  [Bulk Edit ▾ → Capacity / Term / Year Level]                              │
+│  [Bulk Edit ▾]  [Capacity / Term / Year Level]                             │
 │                                                                             │
 │  ⓘ Batch operations only available for Draft sections                      │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Two Levels of Batch Toolbars:**
-
-| Level | Location | Scope |
-|---|---|---|
-| **Course-level** | Inside each expanded Course Group | Actions affect only sections selected within that specific course |
-| **Global** | Floating sticky bar (bottom of viewport) | Actions affect all selected sections across all courses on the current page |
+**Course-Level Batch Toolbar:**
+- **Location:** Inside each expanded Course Group header
+- **Scope:** Actions affect only sections selected within that specific course
+- Each course group has its own independent batch selection and toolbar
 
 **Behavior:**
 - **Only Draft sections can be batch-operated.** If non-Draft sections are selected, batch buttons are disabled with tooltip: "Batch operations only available for Draft sections"
-- Course-level toolbar actions are scoped to that course's selections only (e.g., clicking "Assign Adviser" on Course A's toolbar affects only Course A's selected sections)
-- Global toolbar actions affect all selected sections across all courses
+- Toolbar actions are scoped to that course's selections only (e.g., clicking "Assign Adviser" on Course A's toolbar affects only Course A's selected sections)
 - Each action opens a bulk-action drawer similar to `BulkInitializeSectionsDrawer`
 - Adviser assignment opens `SearchTeachersDialog` with multi-select
 - Status transitions show a confirmation with count of affected sections
@@ -353,14 +370,15 @@ When one or more **Draft sections** are selected (via row checkboxes or "Select 
 **Available Batch Actions (Draft only):**
 | Action | Purpose |
 |---|---|
-| **Assign Adviser** | Bulk assign same adviser to multiple Draft sections |
+| **Assign Adviser** | Bulk assign same adviser to multiple Draft sections in this course |
 | **Open for Enrollment** | Transition selected Draft sections to Open status (validates eligibility per section) |
 | **Cancel** | Cancel selected Draft sections. Shows confirmation dialog with "X offerings will be freed" (teacher/room assignments released via soft-delete cascade) |
-| **Bulk Edit** | Edit capacity, term, or year level across multiple sections |
+| **Bulk Edit** | Edit capacity, term, or year level across multiple sections in this course |
 
 **Constraints:**
 - Cannot batch-operate on mixed statuses. Show warning if user selects both Draft and non-Draft sections.
 - "Open All" (course-level) only affects Draft sections in that course. Eligible sections are validated individually by the backend.
+- Since only one college is displayed, global cross-course batch operations are not needed.
 
 ---
 
@@ -459,15 +477,16 @@ All files live under a new directory `src/page-components/sections-management-pa
 
 ```
 sections-management-page-v2/
-├── index.tsx                           # Page root — view toggle, stats, grouping orchestration
-├── searchParams.ts                     # nuqs parsers (view, groupBy, filters, sort, page)
+├── index.tsx                           # Page root — college selector, view toggle, stats, grouping orchestration
+├── searchParams.ts                     # nuqs parsers (collegeId, view, filters, sort) — NO pagination
+├── college-selector.tsx                # Dropdown to select college from institution list
 ├── sections-table.tsx                  # Enhanced table view (new columns, inline actions)
-├── sections-card-view.tsx              # Card view layout with college/course grouping
+├── sections-card-view.tsx              # Card view layout with course grouping (single college)
 ├── section-card.tsx                    # Single section card component
 ├── section-card-mini-schedule.tsx      # Mini weekly grid tooltip/hover card (async load)
-├── stats-bar.tsx                       # Aggregate statistics bar (clickable filters)
+├── stats-bar.tsx                       # College-scoped aggregate statistics bar (clickable filters)
 ├── quick-filters.tsx                   # Preset filter buttons
-├── batch-actions-toolbar.tsx           # Floating sticky batch operations bar
+├── batch-actions-toolbar.tsx           # Course-level batch operations toolbar (no global bar)
 ├── bulk-adviser-assign-drawer.tsx      # Bulk assign adviser drawer
 ├── bulk-status-transition-dialog.tsx   # Confirm bulk status change
 ├── conflict-preview-drawer.tsx         # Inline conflict summary drawer
@@ -483,8 +502,10 @@ New/modified data layer:
 ```
 src/api/collections/
 ├── class-section-collection-v2.ts      # NEW — queries/mutations for sections-v2 page
+├── college-collection.ts               # NEW or extend — fetch list of colleges for selector
 src/api/models/
 ├── class-section.ts                    # Extend with SchedulingSummary type
+├── college.ts                          # Ensure basic college model available
 ```
 
 ---
@@ -492,30 +513,33 @@ src/api/models/
 ## 6. Implementation Phases
 
 ### Phase 1: Scaffold & Data Layer (2-3 days)
-**Goal:** New route, new files, backend API extensions, and query/mutation infrastructure.
+**Goal:** New route, new files, backend API extensions for college-filtered sections (no pagination), and query/mutation infrastructure.
 
 | Task | Deliverable | Dependencies |
 |---|---|---|
 | Create new route `/scheduling/sections` with TanStack Router file | `src/routes/scheduling.sections.tsx` | None |
-| Set up `searchParams.ts` with added `view` (card/table) param | `searchParams.ts` | None |
-| Extend backend paginated endpoint to include `validationSummary` per section | Backend: `FilterClassSectionsPaginatedQuery` | None |
-| Create backend aggregate stats endpoint (full-dataset, separate call) | Backend: `GET /api/class-sections/stats` | None |
+| Set up `searchParams.ts` with `collegeId`, `view`, `filters`, `sort` params (**NO pagination**) | `searchParams.ts` | None |
+| Create backend college-filtered sections endpoint (no pagination) | Backend: `GET /api/colleges/{collegeId}/class-sections` | None |
+| Extend backend endpoint to include `validationSummary` per section | Backend: filtered sections query | None |
+| Create backend college-scoped aggregate stats endpoint | Backend: `GET /api/colleges/{collegeId}/class-sections/stats` | None |
 | Create backend offering details lazy endpoint | Backend: `GET /api/class-sections/{sectionId}/offerings` | None |
 | Create backend bulk operation endpoints (open, cancel, assign-adviser) | Backend: 3 POST endpoints | None |
+| Create/extend backend college list endpoint for selector | Backend: `GET /api/colleges` (basic list) | None |
 | Update frontend API collection with new queries/mutations | `class-section-collection-v2.ts` | Backend endpoints |
 | Regenerate API types (`npm run generate:api:win`) | `src/api/generated/api.ts` | Backend endpoints |
-| Create page scaffold (`index.tsx`) with `useSuspenseQuery` for sections + stats | `index.tsx` | API collection |
+| Create page scaffold (`index.tsx`) with `useSuspenseQuery` for sections + stats + college selector | `index.tsx` | API collection |
 
-### Phase 2: Card View (2-3 days)
-**Goal:** Card view with college/course grouping, section cards, progress display.
+### Phase 2: Card View & College Selector (2-3 days)
+**Goal:** Card view with course grouping for a single selected college, college selector, section cards, progress display.
 
 | Task | Deliverable | Dependencies |
 |---|---|---|
-| Build `StatsBar` component with clickable stat buttons | `stats-bar.tsx` | Phase 1 API |
+| Build `CollegeSelector` component (dropdown with college list) | `college-selector.tsx` | Phase 1 college list API |
+| Build `StatsBar` component with college-scoped clickable stat buttons | `stats-bar.tsx` | Phase 1 API |
 | Build `QuickFilters` component | `quick-filters.tsx` | None |
 | Build `SectionCard` component with all zones (header, adviser, progress, issues, actions) | `section-card.tsx` | Phase 1 data types |
-| Build `SectionsCardView` with CollegeAccordion → CourseGroup → SectionCard nesting | `sections-card-view.tsx` | `SectionCard` |
-| Wire up view toggle in `index.tsx` | `index.tsx` | All above |
+| Build `SectionsCardView` with CourseGroup → SectionCard nesting (single college) | `sections-card-view.tsx` | `SectionCard` |
+| Wire up college selector and view toggle in `index.tsx` | `index.tsx` | All above |
 | Build `InlineTransitionButtons` with Draft(Open/Cancel), Open(Cancel), Others(Details) | `inline-transition-buttons.tsx` | API mutations |
 | Integrate status transitions on card (Draft ↔ Open, Draft/Open → Cancelled) | `section-card.tsx` | `InlineTransitionButtons` |
 | Add red left border for sections with errors/conflicts | `section-card.tsx` | `validationSummary` |
@@ -532,16 +556,17 @@ src/api/models/
 | Wire table view in `index.tsx` | `index.tsx` | Phase 2 view toggle |
 
 ### Phase 4: Batch Operations (2-3 days)
-**Goal:** Batch select, floating toolbar, course-level toolbar, bulk actions.
+**Goal:** Batch select within course groups, course-level toolbars, bulk actions.
 
 | Task | Deliverable | Dependencies |
 |---|---|---|
-| Build batch selection state management (local `Set<number>`, course-scoped + global) | `sections-card-view.tsx` + `sections-table.tsx` | Phases 2-3 |
-| Build floating `BatchActionsToolbar` (global, sticky) | `batch-actions-toolbar.tsx` | Selection state |
+| Build batch selection state management (local `Set<number>`, course-scoped) | `sections-card-view.tsx` + `sections-table.tsx` | Phases 2-3 |
+| Build `BatchActionsToolbar` (course-level, inside each course group header) | `batch-actions-toolbar.tsx` | Selection state |
 | Build `BulkStatusTransitionDialog` with count summary + "X offerings will be freed" | `bulk-status-transition-dialog.tsx` | Phase 1 bulk endpoints |
 | Build `BulkAdviserAssignDrawer` | `bulk-adviser-assign-drawer.tsx` | Phase 1 bulk endpoints |
 | Add course-level group toolbar with scoped batch actions | `sections-card-view.tsx` (CourseGroupToolbar) | Phase 2 |
 | Disable batch buttons when non-Draft sections are selected (with tooltip) | `batch-actions-toolbar.tsx` | Selection state |
+| Remove global floating toolbar (not needed for single-college view) | — | N/A |
 
 ### Phase 5: Conflict & Schedule Peek (2-3 days)
 **Goal:** Mini calendar tooltip, conflict preview drawer, lazy offering loading.
@@ -561,9 +586,8 @@ src/api/models/
 | Wire empty state into card and table views | `sections-card-view.tsx`, `sections-table.tsx` | `EmptyState` |
 | Add 300ms debounce on filter changes | `searchParams.ts` or `index.tsx` | None |
 | Add `content-visibility: auto` to CourseGroup blocks | `sections-card-view.tsx` CSS | Phase 2 |
-| Virtualize College accordion headers (TanStack Virtual) | `sections-card-view.tsx` | Phase 2 |
 | Add desktop-only viewport check with redirect suggestion banner | `index.tsx` | None |
-| Add ARIA labels on progress bars, batch toolbar announcements | All components | All phases |
+| Add ARIA labels on progress bars, course group headers | All components | All phases |
 | Keyboard navigation (Tab through cards, Enter to select, Space for batch) | `section-card.tsx`, `sections-table.tsx` | All phases |
 
 ### Phase 7: Integration Tests (2-3 days)
@@ -581,14 +605,14 @@ src/api/models/
 ### Dependency Graph
 
 ```
-Phase 1 (Scaffold)
+Phase 1 (Scaffold & College-filtered API)
     │
-    ├──► Phase 2 (Card View) ──► Phase 4 (Batch Ops) ──► Phase 6 (Polish)
-    │                                                         │
-    └──► Phase 3 (Table View) ──► Phase 5 (Conflict) ────────┘
-                                                              │
-                                                              ▼
-                                                      Phase 7 (Tests)
+    ├──► Phase 2 (Card View & Selector) ──► Phase 4 (Batch Ops) ──► Phase 6 (Polish)
+    │                                                                      │
+    └──► Phase 3 (Table View) ──────────► Phase 5 (Conflict Peek) ────────┘
+                                                                           │
+                                                                           ▼
+                                                                   Phase 7 (Tests)
 ```
 
 Phases 2 and 3 can be built in parallel after Phase 1. Phases 4 and 5 can be partially parallel once their dependencies are done.
@@ -599,22 +623,26 @@ Phases 2 and 3 can be built in parallel after Phase 1. Phases 4 and 5 can be par
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────┐
-│  Curriculum & Scheduling  >  Class Sections  [Academic Year: 2025-2026 ▾]             │
+│  Curriculum & Scheduling  >  Class Sections                                          │
 ├──────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                       │
-│  [📋 Draft: 24]  [📂 Open: 156]  [❌ Cancelled: 8]                                    │
-│  [⚠️ Unresolved Errors: 12]  [🔴 Conflicts: 7]  [🕐 Unscheduled: 31]                 │
-│                                                                                       │
-├──────────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                       │
-│  [● Card View]  [○ Table View]    │    Quick Filters: [All] [Draft] [Open] [Cancelled] │
-│                          [Unresolved Errors] [Conflicts] [Needs Attention]           │
+│  [College: Engineering ▾]  [Academic Year: 2025-2026 ▾]                              │
 │                                                                                       │
 ├──────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                       │
-│  ▸ College of Engineering ────────────────────────────────────────────────────── ▼   │
+│  [📋 Draft: 8]  [📂 Open: 42]  [❌ Cancelled: 2]                                      │
+│  [⚠️ Unresolved Errors: 3]  [🔴 Conflicts: 2]  [🕐 Unscheduled: 5]                   │
 │                                                                                       │
-│    ○ BSCS — Computer Science (4)                        [████████░░] 75% scheduled    │
+├──────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                       │
+│  [● Card View]  [○ Table View]    │    Quick Filters: [All] [Draft] [Open] [Cancel] │
+│                                                  [Unresolved Errors] [Conflicts]    │
+│                                                                                       │
+├──────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                       │
+│  College of Engineering                                                              │
+│                                                                                       │
+│    ▸ BSCS — Computer Science (4)                        [████████░░] 75% scheduled    │
 │    ┌────────────────────────────────────────────────────────────────────────────┐     │
 │    │ ☑ 3A  BSCS 3A                             █ Draft    ⚠️1/❌0            │     │
 │    │    BSCS — Computer Science · 1st Sem AY 2025-26                          │     │
@@ -638,6 +666,12 @@ Phases 2 and 3 can be built in parallel after Phase 1. Phases 4 and 5 can be par
 │    │    ...                                                                    │     │
 │    │    [Cancel]  [View Details →]                                            │     │
 │    │                                                                           │     │
+│    │ [☐ Select All]  [Assign Adviser ▾]  [Open for Enrollment]  [Cancel]      │     │
+│    │                                                                           │     │
+│    └────────────────────────────────────────────────────────────────────────────┘     │
+│                                                                                       │
+│    ▸ BSIT — Information Technology (3)          [██░░░░░░░░] 45% scheduled           │
+│    ┌────────────────────────────────────────────────────────────────────────────┐     │
 │    │ ☑ 2A  BSIT 2A                             █ Draft    ⚠️2/❌1            │     │
 │    │    BSIT — Information Tech · 1st Sem AY 2025-26                           │     │
 │    │    Adviser: (unassigned)                                                  │     │
@@ -645,19 +679,12 @@ Phases 2 and 3 can be built in parallel after Phase 1. Phases 4 and 5 can be par
 │    │    Issues: 2 offerings missing teacher · 1 missing room · 1 conflict      │     │
 │    │    [Open for Enrollment]  [Cancel]  [View Details →]                     │     │
 │    │                                                                           │     │
+│    │ [☐ Select All]  [Assign Adviser ▾]  [Open for Enrollment]  [Cancel]      │     │
+│    │                                                                           │     │
 │    └────────────────────────────────────────────────────────────────────────────┘     │
 │                                                                                       │
-│    [☐ Select All]  [Assign Adviser ▾]  [Open for Enrollment]  [Cancel]              │
-│                                                                                       │
-│  ▸ College of Business ──────────────────────────────────────────────────────── ▼    │
-│  ▸ College of Arts & Sciences ────────────────────────────────────────────────── ▼   │
-│                                                                                       │
-├──────────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                       │
-│  ☑ 3 Draft sections selected  ──────────────────────────────────────────── [Clear]   │
-│  [Assign Adviser ▾]  [Open for Enrollment]  [Cancel]  [Bulk Edit ▾]                 │
-│                                                                                       │
-│  ⓘ Batch operations only available for Draft sections                               │
+│    ▸ BSEE — Electrical Engineering (5)          [██████░░░░] 60% scheduled           │
+│    ...                                                                                │
 │                                                                                       │
 └──────────────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -668,11 +695,15 @@ Phases 2 and 3 can be built in parallel after Phase 1. Phases 4 and 5 can be par
 
 ```
 ┌───────────────────────────────────────────────────────────────────────────────────────────┐
-│  Curriculum & Scheduling  >  Class Sections    [Academic Year: 2025-2026 ▾]                 │
+│  Curriculum & Scheduling  >  Class Sections                                              │
 ├───────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                            │
-│  [📋 Draft: 24]  [📂 Open: 156]  [❌ Cancelled: 8]                                         │
-│  [⚠️ Unresolved Errors: 12]  [🔴 Conflicts: 7]  [🕐 Unscheduled: 31]                      │
+│  [College: Engineering ▾]  [Academic Year: 2025-2026 ▾]                                   │
+│                                                                                            │
+├───────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                            │
+│  [📋 Draft: 8]  [📂 Open: 42]  [❌ Cancelled: 2]                                           │
+│  [⚠️ Unresolved Errors: 3]  [🔴 Conflicts: 2]  [🕐 Unscheduled: 5]                        │
 │                                                                                            │
 ├───────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                            │
@@ -680,38 +711,38 @@ Phases 2 and 3 can be built in parallel after Phase 1. Phases 4 and 5 can be par
 │                                              [Unresolved Errors] [Conflicts]             │
 │                                                                                            │
 ├───────────────────────────────────────────────────────────────────────────────────────────┤
-│ ☐ │ Code │ Section      │ Course   │ Status  │Progress│Errors/CF│ Adviser  │ Actions    │
-├───┼──────┼──────────────┼──────────┼─────────┼────────┼─────────┼──────────┼────────────┤
-│ ☑ │ 3A   │ BSCS 3A      │ Comp Sci │ Draft   │ ████ 67% │ ⚠️1/❌0│ Dr.Smith │ [O][C][▸]  │
-│   │      │ (1st Sem)    │ (BSCS)   │         │ (2/3)   │         │          │ (has error)│
-├───┼──────┼──────────────┼──────────┼─────────┼────────┼─────────┼──────────┼────────────┤
-│ ☐ │ 3B   │ BSCS 3B      │ Comp Sci │ Open    │ ██████100%│ ✓0/✓0 │ Dr.Jones │ [C][▸]      │
-│   │      │ (1st Sem)    │ (BSCS)   │ (read)  │ (3/3)   │         │          │ (no issues)│
-├───┼──────┼──────────────┼──────────┼─────────┼────────┼─────────┼──────────┼────────────┤
-│ ☐ │ 3C   │ BSCS 3C      │ Comp Sci │ Open    │ ██████100%│ ✓0/✓0 │ Dr.Lee   │ [C][▸]      │
-│   │      │ (1st Sem)    │ (BSCS)   │ (read)  │ (3/3)   │         │          │ (no issues)│
-├───┼──────┼──────────────┼──────────┼─────────┼────────┼─────────┼──────────┼────────────┤
-│ ☑ │ 2A   │ BSIT 2A      │ Info Tech│ Draft   │ ██░░ 33%  │ ⚠️2/❌1│ (none)   │ [O][C][▸]  │
-│   │      │ (1st Sem)    │ (BSIT)   │         │ (1/3)   │         │          │ (has error)│
-├───┼──────┼──────────────┼──────────┼─────────┼────────┼─────────┼──────────┼────────────┤
-│ ☑ │ 2B   │ BSIT 2B      │ Info Tech│ Draft   │ ░░░░░░ 0%│ ⚠️3/❌0│ Dr.Jones │ [O][C][▸]  │
-│   │      │ (1st Sem)    │ (BSIT)   │         │ (0/3)   │         │          │ (has error)│
-├───┴──────┴──────────────┴──────────┴─────────┴────────┴─────────┴──────────┴────────────┤
+│                          BSCS — Computer Science                                         │
+│ ☐ │ Code │ Section      │ Status  │Progress│Errors/CF│ Adviser  │ Actions    │         │
+├───┼──────┼──────────────┼─────────┼────────┼─────────┼──────────┼────────────┤         │
+│ ☑ │ 3A   │ BSCS 3A      │ Draft   │ ████ 67% │ ⚠️1/❌0│ Dr.Smith │ [O][C][▸]  │         │
+│   │      │ (1st Sem)    │         │ (2/3)   │         │          │ (has error)│         │
+├───┼──────┼──────────────┼─────────┼────────┼─────────┼──────────┼────────────┤         │
+│ ☐ │ 3B   │ BSCS 3B      │ Open    │ ██████100%│ ✓0/✓0 │ Dr.Jones │ [C][▸]      │         │
+│   │      │ (1st Sem)    │ (read)  │ (3/3)   │         │          │ (no issues)│         │
+├───┼──────┼──────────────┼─────────┼────────┼─────────┼──────────┼────────────┤         │
+│ ☐ │ 3C   │ BSCS 3C      │ Open    │ ██████100%│ ✓0/✓0 │ Dr.Lee   │ [C][▸]      │         │
+│   │      │ (1st Sem)    │ (read)  │ (3/3)   │         │          │ (no issues)│         │
+├───┼──────┼──────────────┼─────────┼────────┼─────────┼──────────┼────────────┤         │
+│ ☑ │ 3D   │ BSCS 3D      │ Draft   │ ██░░ 50%  │ ⚠️1/❌1│ (unassigned)│[O][C][▸]│         │
+│   │      │ (1st Sem)    │         │ (1/2)   │         │          │ (has error)│         │
+├───┴──────┴──────────────┴─────────┴────────┴─────────┴──────────┴────────────┤         │
+│                          BSIT — Information Technology                                  │
+├───┬──────┬──────────────┬─────────┬────────┬─────────┬──────────┬────────────┤         │
+│ ☑ │ 2A   │ BSIT 2A      │ Draft   │ ██░░ 33%  │ ⚠️2/❌1│ (none)   │ [O][C][▸]  │         │
+│   │      │ (1st Sem)    │         │ (1/3)   │         │          │ (has error)│         │
+├───┼──────┼──────────────┼─────────┼────────┼─────────┼──────────┼────────────┤         │
+│ ☐ │ 2B   │ BSIT 2B      │ Draft   │ ░░░░░░ 0%│ ⚠️3/❌0│ Dr.Jones │ [O][C][▸]  │         │
+│   │      │ (1st Sem)    │         │ (0/3)   │         │          │ (has error)│         │
+├───┼──────┼──────────────┼─────────┼────────┼─────────┼──────────┼────────────┤         │
+│ ☐ │ 2C   │ BSIT 2C      │ Open    │ ██████100%│ ✓0/✓0 │ Dr.Smith │ [C][▸]      │         │
+│   │      │ (1st Sem)    │ (read)  │ (3/3)   │         │          │ (no issues)│         │
+├───┴──────┴──────────────┴─────────┴────────┴─────────┴──────────┴────────────┤         │
 │                                                                                            │
 │  Legend:                                                                                  │
 │  ⚠️1/❌0 = 1 unresolved error, 0 conflicts    [O] = Open for Enrollment (Draft only)    │
 │  ✓ = No issues                                [C] = Cancel (Draft and Open)              │
 │  (read) = Read-only (non-Draft status)       [▸] = View Details                        │
 │                                                                                            │
-├───────────────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                            │
-│  ☑ 3 Draft sections selected  ──────────────────────────────────────────────── [Clear]   │
-│  [Assign Adviser ▾]  [Open for Enrollment]  [Cancel]  [Bulk Edit ▾]                     │
-│                                                                                            │
-│  ⓘ Batch operations only available for Draft sections                                   │
-│                                                                                            │
-├───────────────────────────────────────────────────────────────────────────────────────────┤
-│  Page 1 of 13  ◀ 1 2 3 ... 13 ▶  Per page: [25 ▾]                                        │
 └───────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -719,7 +750,7 @@ Phases 2 and 3 can be built in parallel after Phase 1. Phases 4 and 5 can be par
 
 ## Key Metrics to Surface
 
-**All metrics are derived from the `validationSummary` object in the paginated response or the aggregate stats endpoint.** The backend pre-computes validation errors and conflict counts — the frontend reads these without traversing offering data.
+**All metrics are derived from the `validationSummary` object in the college-scoped response or the aggregate stats endpoint.** The backend pre-computes validation errors and conflict counts — the frontend reads these without traversing offering data.
 
 | Metric | Where | Source |
 |---|---|---|
@@ -729,14 +760,14 @@ Phases 2 and 3 can be built in parallel after Phase 1. Phases 4 and 5 can be par
 | **Missing room count** | Card "Issues" row | `validationSummary.missingRoomCount` |
 | **Missing schedule count** | Card "Issues" row | `validationSummary.missingScheduleCount` |
 | **Conflicts count** | Card badge, table column | `validationSummary.offeringsWithConflicts` |
-| **Unscheduled count** | Stats bar | Aggregate stats endpoint: `unscheduledCount` |
+| **Unscheduled count** | Stats bar | Aggregate stats endpoint (college-scoped): `unscheduledCount` |
 | **Schedule density** | Mini weekly calendar tooltip | Offering details endpoint (lazy, async) |
 
 **Data Flow:**
 ```
-Paginated API Response (validationSummary per section)
+College-Filtered API Response (validationSummary per section)
        +
-Separate Stats API (full-dataset aggregate counts)
+College-Scoped Stats API (aggregate counts for selected college)
     ↓
 Frontend reads pre-computed values directly
     ↓
@@ -751,19 +782,18 @@ Mini calendar grid, conflict preview drawer
 
 ## Backend Changes Needed
 
-### Existing Endpoint Enhancement
+### New Endpoint: College-Filtered Sections (No Pagination)
 
-**`GET /api/class-sections/filter/{page}/{pageSize}`** — Extend response to include validation errors and conflicts per offering:
+**`GET /api/colleges/{collegeId}/class-sections`** — Return sections for a specific college with validation summary:
 
 ```csharp
-// CURRENT: Returns PagedResult<ClassSection>
-// PROPOSED: Extend ClassSection to include:
+// NEW ENDPOINT: College-filtered list (no pagination)
 
 new response structure {
   items: ClassSection[], // with extended offerings
-  page, pageSize, totalCount, totalPages,
+  // NO page, pageSize, totalCount, totalPages
   
-  stats: {
+  validationSummary: {
     totalDraft,
     totalOpen,
     totalCancelled,
@@ -773,39 +803,25 @@ new response structure {
   }
 }
 
-// Inside ClassSection:
+// Inside ClassSection offering summary (in college-filtered list):
 offerings: Offering[] {
   id, classSectionId, subjectId,
   teacher?, room?,
-  schedules: ClassSchedule[],
+  scheduleSummary: string // e.g., "MWF 08:00-09:30"
   
-  // NEW FIELD: Validation messages (per-offering messages only)
-  // ValidationMessageDto array for this specific offering
-  validationMessages: ValidationMessageDto[] {
-    Severity: "Error" | "Warning" | "Info" (DomainValidationErrorSeverityEnum),
-    Code: string (e.g., "MISSING_TEACHER", "MISSING_ROOM", "NO_SCHEDULE"),
-    Message: string (human-readable validation message),
-    ComputedAt: ISO 8601 timestamp (when validation was computed)
-  }
-  
-  // NEW FIELD: Conflicts with other offerings
-  conflicts: ConflictResult[] {
-    id, type, severity, message,
-    conflictingOfferingId,
-    conflictingSection: { id, code, name, course },
-    conflictingTeacher: { id, firstName, lastName },
-    conflictingRoom: { id, roomNumber },
-    day, startTime, endTime
-  }
+  // NO validationMessages[] or conflicts[] in list response
+  // These are fetched lazily via separate endpoint when needed
 }
 ```
 
-### New Endpoints
+### Additional New Endpoints
 
 | Endpoint | Method | Purpose |
 |---|---|---|
-| `POST /api/class-sections/bulk/assign-adviser` | POST | Bulk assign adviser to Draft sections |
-| `POST /api/class-sections/bulk/open` | POST | Bulk transition Draft sections to Open |
+| `GET /api/colleges/{collegeId}/class-sections/stats` | GET | College-scoped aggregate stats (replaces full-dataset stats) |
+| `GET /api/class-sections/{sectionId}/offerings` | GET | Lazy-load offering details with validation messages and conflicts (shared with other pages) |
+| `POST /api/class-sections/bulk/assign-adviser` | POST | Bulk assign adviser to Draft sections (college-scoped) |
+| `POST /api/class-sections/bulk/open` | POST | Bulk transition Draft sections to Open (college-scoped) |
 | `POST /api/class-sections/bulk/cancel` | POST | Bulk transition Draft or Open sections to Cancelled (soft-delete cascade) |
 
 **Note:** No export endpoint needed; data analysis handled in Room Scheduler page.
@@ -814,54 +830,55 @@ offerings: Offering[] {
 
 ## 7. Performance Considerations
 
-This section addresses frontend and backend optimization strategies for handling large datasets of sections, offerings, and validation data.
+This section addresses frontend and backend optimization strategies for handling course sections, offerings, and validation data for a single college at a time.
 
 ### Frontend Performance
 
-**Challenge:** With 200+ rooms across multiple colleges and 1000+ offerings with validation data, rendering all sections + cards + mini calendars can be slow.
+**Challenge:** With a single college's sections (typically 50-200 sections) and 1000+ offerings with validation data, rendering course groups + cards + mini calendars should be performant.
 
 **Mitigation Strategies:**
 
 | Concern | Solution |
 |---|---|
-| **Rendering performance with many cards** | Virtualize only College accordion headers as top-level rows (TanStack Virtual). Inner course blocks use `content-visibility: auto` — no full card-level virtualization needed since nested accordion makes it impractical |
-| **Metrics calculation overhead** | Metrics come from `validationSummary` (backend-computed, already in paginated response). Frontend reads via `useMemo` with `validationSummary` as dependency — no offering traversal |
+| **Rendering performance with many cards** | Course groups are collapsible; expand on demand. Use `content-visibility: auto` on course blocks for offscreen skipping. No college-level virtualization needed since only one college is shown |
+| **Metrics calculation overhead** | Metrics come from `validationSummary` (backend-computed, already in response). Frontend reads via `useMemo` with `validationSummary` as dependency — no offering traversal |
 | **Mini calendar rendering** | **Two-phase approach:** Phase 1 (instant) shows static summary from `validationSummary`. Phase 2 (async) fetches offering details and renders full grid on hover. Data cached per `sectionId` after first fetch |
 | **Sorting/filtering slowness** | Debounce filter changes (300ms); perform sorting in backend if possible; use shallow filtering (status only) for quick responses |
-| **Large college/course groups** | Collapse course groups by default; expand on demand; `content-visibility: auto` on course blocks for offscreen skipping |
+| **Large course groups** | Collapse course groups by default; expand on demand; `content-visibility: auto` on course blocks for offscreen skipping |
 | **Bundle size** | Tree-shake unused charting libraries; lazy-load mini calendar component |
 
 **Frontend Caching:**
-- Cache paginated response in TanStack Query with 2-minute stale time
+- Cache college-filtered response in TanStack Query with 2-minute stale time
 - Cache offering details per `sectionId` (TanStack Query, separate from list)
-- Cache aggregate stats with background refetch after mutations
+- Cache college-scoped stats with background refetch after mutations
 - Use background refetch after mutations (optimistic updates)
 
 ### Backend Performance
 
-**Challenge:** Calculating validation errors and conflicts for every offering on every request is expensive.
+**Challenge:** Calculating validation errors and conflicts for every offering on every request is expensive, even for a single college.
 
 **Mitigation Strategies:**
 
 | Concern | Solution |
 |---|---|
 | **Computing validation errors at query time** | Pre-compute during seeding; cache in database or calculated field; compute only if offerings changed |
-| **Fetching all offerings for all sections** | Use efficient database query with `SELECT only needed fields`; index by `classSectionId` |
+| **Fetching all offerings for a college** | Use efficient database query with `SELECT only needed fields`; index by `ClassSectionId` and `CollegeId` |
 | **Conflict detection expensive** | Cache conflict results per offering; recompute on schedule changes only; use background job (Hangfire) for batch conflict detection |
-| **Paginated response size** | Return only `validationSummary` (aggregate counts) per section — no full offering data. Full offering details fetched on demand via separate lazy endpoint |
+| **College-filtered response size** | Return only `validationSummary` (aggregate counts) per section — no full offering data. Full offering details fetched on demand via separate lazy endpoint |
 
 **Database Indexing:**
-- Index on `ClassSection.AcademicYearId` for filtering
+- Index on `ClassSection.CollegeId` for filtering by college
+- Index on `ClassSection.AcademicYearId, CollegeId` for combined filtering
 - Index on `Offering.ClassSectionId` and `Offering.ConflictCount` for quick lookups
 - Index on `Schedule.DayOfWeek, Schedule.StartTime` for conflict detection
 
 ### API Response Optimization
 
-**Payload size:** The paginated response now includes only `validationSummary` per section (no full offerings). Full offering details with validation messages + conflicts are fetched on demand via a separate lazy endpoint.
+**Payload size:** The college-filtered response includes only `validationSummary` per section (no full offerings). Full offering details with validation messages + conflicts are fetched on demand via a separate lazy endpoint.
 
 **Mitigation:**
-- Offering details are **not embedded** in the paginated response at all — fetched lazily via `GET /api/class-sections/{sectionId}/offerings`
-- Aggregate stats come from a **separate endpoint** (`GET /api/class-sections/stats`), not embedded in the paginated response
+- Offering details are **not embedded** in the college-filtered response — fetched lazily via `GET /api/class-sections/{sectionId}/offerings`
+- College-scoped stats come from a **separate endpoint** (`GET /api/colleges/{collegeId}/class-sections/stats`), not embedded in the filtered response
 - Compress JSON response (gzip)
 - Mock conflict data for development (faker.js); real computation on production
 
@@ -880,24 +897,30 @@ This section addresses frontend and backend optimization strategies for handling
 
 | Endpoint | Purpose | Called When |
 |---|---|---|
-| `GET /api/class-sections/filter/{page}/{pageSize}` | Paginated section list with `validationSummary` per section | On page load, filter/sort/paginate changes |
-| `GET /api/class-sections/stats?academicYearId={id}` | Full-dataset aggregate stats (always total, regardless of filters) | On page load and after mutations |
+| `GET /api/colleges/{collegeId}/class-sections` | College-filtered section list with `validationSummary` per section (NO pagination) | On page load, college selection change, filter/sort changes |
+| `GET /api/colleges/{collegeId}/class-sections/stats` | College-scoped aggregate stats (always for selected college) | On page load, college selection change, and after mutations |
 | `GET /api/class-sections/{sectionId}/offerings` | Full offering details with validation messages + conflicts | On user interaction (hover, expand, badge click) |
 
-### 8.1 Paginated Section List
+### 8.1 College-Filtered Section List (No Pagination)
 
-**Current Response (unchanged structure):**
+**New Response Structure:**
 ```json
 {
   "items": [ClassSection],
-  "page": 1,
-  "pageSize": 25,
-  "totalCount": 312,
-  "totalPages": 13
+  // NO page, pageSize, totalCount, totalPages
+  
+  "validationSummary": {
+    "totalDraft": 8,
+    "totalOpen": 42,
+    "totalCancelled": 2,
+    "sectionsWithUnresolvedErrors": 3,
+    "sectionsWithConflicts": 2,
+    "unscheduledCount": 5
+  }
 }
 ```
 
-**Extended — `validationSummary` added per section:**
+**Extended per section:**
 ```json
 {
   "items": [
@@ -907,6 +930,7 @@ This section addresses frontend and backend optimization strategies for handling
       "sectionCode": "3A",
       "status": { "value": 1, "name": "Draft" },
       "course": { "id": 1, "code": "BSCS", "name": "Computer Science" },
+      "college": { "id": 10, "name": "College of Engineering" },
       "adviser": { "id": 5, "firstName": "Dr.", "lastName": "Smith" },
       "intendedYearLevel": 3,
       "academicTerm": { "id": 2, "termName": "1st Semester" },
@@ -935,32 +959,39 @@ This section addresses frontend and backend optimization strategies for handling
     }
   ],
   
-  "page": 1,
-  "pageSize": 25,
-  "totalCount": 312,
-  "totalPages": 13
+  // College-scoped stats (replaces full-dataset stats from paginated approach)
+  "validationSummary": {
+    "totalDraft": 8,
+    "totalOpen": 42,
+    "totalCancelled": 2,
+    "sectionsWithUnresolvedErrors": 3,
+    "sectionsWithConflicts": 2,
+    "unscheduledCount": 5
+  }
 }
 ```
 
-**Note:** The `stats` object is NOT included here. Full-dataset stats come from the separate stats endpoint.
+**Note:** No pagination metadata (`page`, `pageSize`, `totalCount`, `totalPages`). College-scoped stats are embedded in the response for convenience.
 
-### 8.2 Aggregate Stats Endpoint
+### 8.2 College-Scoped Stats Endpoint
 
-**`GET /api/class-sections/stats?academicYearId={id}`**
+**`GET /api/colleges/{collegeId}/class-sections/stats?academicYearId={id}`**
 
 ```json
 {
-  "totalDraft": 24,
-  "totalOpen": 156,
-  "totalCancelled": 8,
-  "sectionsWithUnresolvedErrors": 12,
-  "sectionsWithConflicts": 7,
-  "unscheduledCount": 31
+  "totalDraft": 8,
+  "totalOpen": 42,
+  "totalCancelled": 2,
+  "sectionsWithUnresolvedErrors": 3,
+  "sectionsWithConflicts": 2,
+  "unscheduledCount": 5
 }
 ```
 
-- Full-dataset numbers — **not affected by filters or pagination**
+- College-scoped numbers — reflects the **selected college only**
+- Not affected by status/error filters (always shows full counts for the college)
 - Refetched after any status transition mutation
+- Refetched when college selection changes
 
 ### 8.3 Offering Details Endpoint (Lazy Load)
 
@@ -1049,25 +1080,28 @@ Each offering includes a **flat `validationMessages` array** containing validati
 
 ### Implementation Notes for API Changes
 
-**Phase 1: Extend FilterClassSectionsPaginatedQuery Handler**
-- The `filterClassSectionsPaginatedOptions` endpoint currently returns `PagedResult<ClassSectionDto>`
-- Add `validationSummary` per section (computed aggregate — NOT full offering data)
+**Phase 1: Create College-Filtered Sections Endpoint**
+- New handler: `GetCollegeClassSectionsQuery`
+- Returns college-filtered sections (no pagination): `List<ClassSectionDto>` + embedded `validationSummary`
+- URL: `GET /api/colleges/{collegeId}/class-sections?academicYearId={id}&statusFilter={status}&...`
 - Keep offering summaries only (id, subject code, teacher name, room number, schedule pattern text)
-- **Do NOT** embed `validationMessages[]` or `conflicts[]` in the paginated response
+- Embed college-scoped stats in response for convenience
+- **Do NOT** embed `validationMessages[]` or `conflicts[]` in the college-filtered response
 
-**Phase 2: Create Separate Aggregate Stats Endpoint**
-- New handler: `GetClassSectionStatsQuery`
-- Returns full-dataset counts: `totalDraft`, `totalOpen`, `totalCancelled`, `sectionsWithUnresolvedErrors`, `sectionsWithConflicts`, `unscheduledCount`
-- Always full-dataset — not affected by filter/pagination parameters
+**Phase 2: Create College-Scoped Stats Endpoint**
+- New handler: `GetCollegeClassSectionStatsQuery`
+- Returns college-scoped counts: `totalDraft`, `totalOpen`, `totalCancelled`, `sectionsWithUnresolvedErrors`, `sectionsWithConflicts`, `unscheduledCount`
+- URL: `GET /api/colleges/{collegeId}/class-sections/stats?academicYearId={id}`
+- Always reflects the selected college — not affected by filter parameters
 
 **Phase 3: Create Separate Offering Details Endpoint**
-- New handler: `GetClassSectionOfferingsQuery`
+- New handler: `GetClassSectionOfferingsQuery` (shared with other pages)
 - Returns full offering data with `validationMessages[]` and `conflicts[]`
 - Conflicts computed only for **Draft sections** (Open sections are finalized)
 - Cached on the frontend per `sectionId`
 
 **Phase 4: Update Frontend Parsing**
-- Parse `validationSummary` from paginated response for list/metric display
+- Parse `validationSummary` from college-filtered response for list/metric display
 - Fetch offering details on demand for mini calendar and conflict preview
 - Count unresolved errors by filtering messages where `Severity === "Error"`
 - Detect missing items by checking for specific codes ("MISSING_TEACHER", "MISSING_ROOM", "NO_SCHEDULE")
@@ -1078,15 +1112,17 @@ Each offering includes a **flat `validationMessages` array** containing validati
 ## Risk & Mitigation
 
 | Risk | Mitigation |
-|---|---|---|
-| Large API response size (validation + conflicts) | Offering details are NOT embedded in paginated response — fetched lazily via separate endpoint |
-| Performance with 300+ sections expanded | `content-visibility: auto` on course blocks; virtualize only college headers; lazy-render mini calendars |
+|---|---|
+| Large API response size (validation + conflicts) | Offering details are NOT embedded in college-filtered response — fetched lazily via separate endpoint |
+| Performance with 100+ sections in a large college expanded | `content-visibility: auto` on course blocks; collapse course groups by default; lazy-render mini calendars |
 | Metrics calculation overhead on frontend | Metrics served as `validationSummary` (backend-computed, pre-cached). No offering traversal on frontend |
 | BULK actions on stale data | Optimistic UI + background refetch; validate before transitions via backend |
-| Cognitive overload (too much info) | Progressive disclosure (collapse course groups by default) |
+| Cognitive overload (too much info) | Progressive disclosure (collapse course groups by default; only one college shown at a time) |
 | Conflicting offerings missing from response | Offering details endpoint returns full conflict data; verify in integration tests |
 | User selects mixed-status sections for batch | Show warning; disable batch buttons if non-Draft selected |
 | Mini calendar blank on hover while data loads | Two-phase load: static summary immediately, full grid async with loading indicator |
+| College selector not representative of institution | Ensure college list is complete and up-to-date; handle college deletion gracefully (prevent selection if deleted) |
+| Missing college change on stats refresh | Use `collegeId` from URL params to fetch/refresh stats; always synchronized with current selection |
 
 ---
 
