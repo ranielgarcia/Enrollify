@@ -20,6 +20,7 @@ using Enrollify.Infrastructure.Data.Config;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.AcademicYearConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.BuildingConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.ClassSectionConfigs;
+using Enrollify.Infrastructure.Data.Config.AggregateConfigs.ClassSectionConflictConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.ClassSectionSubjectOfferingConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CollegeConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CourseConfigs;
@@ -113,6 +114,7 @@ public class EnrollifyDbContext : DbContext
     configurationBuilder.RegisterAllInClassSectionVogenEfCoreConverters();
     configurationBuilder.RegisterAllInClassSectionSubjectOfferingVogenEfCoreConverters();
     configurationBuilder.RegisterAllInCourseCurriculumAssignmentEfCoreConverters();
+    configurationBuilder.RegisterAllInClassSectionConflictVogenEfCoreConverters();
 
   }
 }

@@ -5,11 +5,11 @@ CREATE TABLE ClassSectionConflicts
   CourseId       INT            NOT NULL,
   AcademicTermId INT            NOT NULL,
   ClassSectionId INT            NOT NULL,
-  OfferingId     INT            NULL,
+  OfferingId     INT            NOT NULL,
   ConflictType   VARCHAR(50)    NOT NULL, -- e.g. "TIME_CONFLICT", "INSTRUCTOR_CONFLICT"
   Severity       INT            NOT NULL, -- e.g. 1 = Info, 2 = Warning, 3 = Error
   Message        VARCHAR(255)   NOT NULL, -- Human-readable description
-  DayOfWeek      VARCHAR(50)    NOT NULL,
+  DayOfWeek      CHAR(3)        NOT NULL,
   StartTime      TIME           NULL,
   EndTime        TIME           NULL,
   ComputedAt     DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET(),
@@ -45,7 +45,7 @@ INCLUDE
 (
     ClassSectionId,
     OfferingId,
-    Type,
+    ConflictType,
     StartTime,
     EndTime,
     ComputedAt
@@ -60,7 +60,7 @@ CREATE TABLE ClassSectionConflictAffectedOfferings
   CONSTRAINT FK_ClassSectionConflictAffectedOfferings_Conflict
     FOREIGN KEY (ConflictId) REFERENCES ClassSectionConflicts (Id) ON DELETE CASCADE,
   CONSTRAINT FK_ClassSectionConflictAffectedOfferings_Offering
-    FOREIGN KEY (OfferingId) REFERENCES ClassSectionSubjectOffering (Id) ON DELETE CASCADE,
+    FOREIGN KEY (OfferingId) REFERENCES ClassSectionSubjectOffering (Id) ON DELETE NO ACTION,
 );
 
 CREATE
