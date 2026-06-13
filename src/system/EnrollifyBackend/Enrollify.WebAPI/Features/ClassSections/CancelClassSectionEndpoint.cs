@@ -1,4 +1,4 @@
-using Enrollify.Application.Features.ClassSections.Commands;
+using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections.StateMachine;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 
 namespace Enrollify.WebAPI.Features.ClassSections;

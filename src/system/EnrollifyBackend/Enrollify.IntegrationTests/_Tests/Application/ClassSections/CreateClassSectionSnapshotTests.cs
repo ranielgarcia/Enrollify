@@ -1,4 +1,3 @@
-using Enrollify.Application.Features.ClassSections.Commands;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
@@ -15,6 +14,7 @@ using Enrollify.Core.ValueObjects;
 using Enrollify.IntegrationTests.Helpers;
 using Enrollify.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
 
 namespace Enrollify.IntegrationTests._Tests.Application.ClassSections;
 

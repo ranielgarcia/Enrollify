@@ -1,6 +1,6 @@
 using Ardalis.Specification;
-using Enrollify.Application.Features.ClassSections.Commands;
-using Enrollify.Application.Features.ClassSections.Validators;
+using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
+using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections.Validators;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;

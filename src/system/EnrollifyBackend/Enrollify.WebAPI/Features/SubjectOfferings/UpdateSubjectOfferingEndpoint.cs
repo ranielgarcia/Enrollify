@@ -1,5 +1,5 @@
 using Ardalis.Result;
-using Enrollify.Application.Features.ClassSectionSubjectOfferings.Commands;
+using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSectionSubjectOfferings;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;

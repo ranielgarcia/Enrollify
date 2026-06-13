@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Enrollify.Application;
-using Enrollify.Application.Features.ClassSections.DTOs;
-using Enrollify.Application.Features.ClassSections.Queries;
+using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
+using Enrollify.Application.Features.ClassSectionScheduling.Queries.ClassSections;
 using Enrollify.Application.Filtering;
 
 namespace Enrollify.WebAPI.Features.ClassSections;

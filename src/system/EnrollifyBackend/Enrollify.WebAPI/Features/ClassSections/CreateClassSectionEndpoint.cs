@@ -1,4 +1,4 @@
-using Enrollify.Application.Features.ClassSections.Commands;
+using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;

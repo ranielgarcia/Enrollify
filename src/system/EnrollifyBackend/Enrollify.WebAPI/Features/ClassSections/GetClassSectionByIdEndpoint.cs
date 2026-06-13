@@ -1,5 +1,5 @@
-using Enrollify.Application.Features.ClassSections.DTOs;
-using Enrollify.Application.Features.ClassSections.Queries;
+using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
+using Enrollify.Application.Features.ClassSectionScheduling.Queries.ClassSections;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 
 namespace Enrollify.WebAPI.Features.ClassSections;

@@ -1,4 +1,4 @@
-using Enrollify.Application.Features.ClassSectionSubjectOfferings.Commands;
+using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSectionSubjectOfferings;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 
 namespace Enrollify.WebAPI.Features.SubjectOfferings;

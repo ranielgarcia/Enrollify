@@ -1,8 +1,7 @@
 using Ardalis.Result;
 using Ardalis.Specification;
-using Enrollify.Application.Features.ClassSections;
-using Enrollify.Application.Features.ClassSections.Commands;
-using Enrollify.Application.Features.ClassSectionSubjectOfferings;
+using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
+using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;

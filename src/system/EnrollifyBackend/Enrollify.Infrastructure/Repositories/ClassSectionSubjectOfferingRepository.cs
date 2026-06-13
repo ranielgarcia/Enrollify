@@ -1,6 +1,5 @@
 using Ardalis.Result;
 using Dapper;
-using Enrollify.Application.Features.ClassSectionSubjectOfferings;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate;
@@ -10,6 +9,7 @@ using Enrollify.Core.Constants;
 using Enrollify.Core.Services.ScheduleConflictDetection;
 using Enrollify.Infrastructure.Data;
 using Microsoft.Data.SqlClient;
+using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 
 namespace Enrollify.Infrastructure.Repositories;
 
