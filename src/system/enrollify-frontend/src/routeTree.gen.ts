@@ -25,6 +25,7 @@ import { Route as PortalCurriculumAndSchedulingTeachersRouteImport } from './rou
 import { Route as PortalCurriculumAndSchedulingSectionsRouteImport } from './routes/portal/curriculum-and-scheduling/sections'
 import { Route as PortalCurriculumAndSchedulingAcademicYearRouteImport } from './routes/portal/curriculum-and-scheduling/academic-year'
 import { Route as PortalCurriculumAndSchedulingSectionsDetailsSectionIdRouteImport } from './routes/portal/curriculum-and-scheduling/sections-details.$sectionId'
+import { Route as PortalCurriculumAndSchedulingSchedulingSectionsRouteImport } from './routes/portal/curriculum-and-scheduling/scheduling/sections'
 import { Route as PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125RouteImport } from './routes/portal/curriculum-and-scheduling/curriculum.{-$curriculumId}'
 
 const LoginRoute = LoginRouteImport.update({
@@ -116,6 +117,12 @@ const PortalCurriculumAndSchedulingSectionsDetailsSectionIdRoute =
     path: '/sections-details/$sectionId',
     getParentRoute: () => PortalCurriculumAndSchedulingRouteRoute,
   } as any)
+const PortalCurriculumAndSchedulingSchedulingSectionsRoute =
+  PortalCurriculumAndSchedulingSchedulingSectionsRouteImport.update({
+    id: '/scheduling/sections',
+    path: '/scheduling/sections',
+    getParentRoute: () => PortalCurriculumAndSchedulingRouteRoute,
+  } as any)
 const PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route =
   PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125RouteImport.update(
     {
@@ -142,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
   '/portal/master-data/subjects': typeof PortalMasterDataSubjectsRoute
   '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}': typeof PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route
+  '/portal/curriculum-and-scheduling/scheduling/sections': typeof PortalCurriculumAndSchedulingSchedulingSectionsRoute
   '/portal/curriculum-and-scheduling/sections-details/$sectionId': typeof PortalCurriculumAndSchedulingSectionsDetailsSectionIdRoute
 }
 export interface FileRoutesByTo {
@@ -161,6 +169,7 @@ export interface FileRoutesByTo {
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
   '/portal/master-data/subjects': typeof PortalMasterDataSubjectsRoute
   '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}': typeof PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route
+  '/portal/curriculum-and-scheduling/scheduling/sections': typeof PortalCurriculumAndSchedulingSchedulingSectionsRoute
   '/portal/curriculum-and-scheduling/sections-details/$sectionId': typeof PortalCurriculumAndSchedulingSectionsDetailsSectionIdRoute
 }
 export interface FileRoutesById {
@@ -181,6 +190,7 @@ export interface FileRoutesById {
   '/portal/master-data/rooms': typeof PortalMasterDataRoomsRoute
   '/portal/master-data/subjects': typeof PortalMasterDataSubjectsRoute
   '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}': typeof PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route
+  '/portal/curriculum-and-scheduling/scheduling/sections': typeof PortalCurriculumAndSchedulingSchedulingSectionsRoute
   '/portal/curriculum-and-scheduling/sections-details/$sectionId': typeof PortalCurriculumAndSchedulingSectionsDetailsSectionIdRoute
 }
 export interface FileRouteTypes {
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/portal/master-data/rooms'
     | '/portal/master-data/subjects'
     | '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}'
+    | '/portal/curriculum-and-scheduling/scheduling/sections'
     | '/portal/curriculum-and-scheduling/sections-details/$sectionId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/portal/master-data/rooms'
     | '/portal/master-data/subjects'
     | '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}'
+    | '/portal/curriculum-and-scheduling/scheduling/sections'
     | '/portal/curriculum-and-scheduling/sections-details/$sectionId'
   id:
     | '__root__'
@@ -240,6 +252,7 @@ export interface FileRouteTypes {
     | '/portal/master-data/rooms'
     | '/portal/master-data/subjects'
     | '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}'
+    | '/portal/curriculum-and-scheduling/scheduling/sections'
     | '/portal/curriculum-and-scheduling/sections-details/$sectionId'
   fileRoutesById: FileRoutesById
 }
@@ -363,6 +376,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalCurriculumAndSchedulingSectionsDetailsSectionIdRouteImport
       parentRoute: typeof PortalCurriculumAndSchedulingRouteRoute
     }
+    '/portal/curriculum-and-scheduling/scheduling/sections': {
+      id: '/portal/curriculum-and-scheduling/scheduling/sections'
+      path: '/scheduling/sections'
+      fullPath: '/portal/curriculum-and-scheduling/scheduling/sections'
+      preLoaderRoute: typeof PortalCurriculumAndSchedulingSchedulingSectionsRouteImport
+      parentRoute: typeof PortalCurriculumAndSchedulingRouteRoute
+    }
     '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}': {
       id: '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}'
       path: '/curriculum/{-$curriculumId}'
@@ -378,6 +398,7 @@ interface PortalCurriculumAndSchedulingRouteRouteChildren {
   PortalCurriculumAndSchedulingSectionsRoute: typeof PortalCurriculumAndSchedulingSectionsRoute
   PortalCurriculumAndSchedulingTeachersRoute: typeof PortalCurriculumAndSchedulingTeachersRoute
   PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route: typeof PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route
+  PortalCurriculumAndSchedulingSchedulingSectionsRoute: typeof PortalCurriculumAndSchedulingSchedulingSectionsRoute
   PortalCurriculumAndSchedulingSectionsDetailsSectionIdRoute: typeof PortalCurriculumAndSchedulingSectionsDetailsSectionIdRoute
 }
 
@@ -391,6 +412,8 @@ const PortalCurriculumAndSchedulingRouteRouteChildren: PortalCurriculumAndSchedu
       PortalCurriculumAndSchedulingTeachersRoute,
     PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route:
       PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route,
+    PortalCurriculumAndSchedulingSchedulingSectionsRoute:
+      PortalCurriculumAndSchedulingSchedulingSectionsRoute,
     PortalCurriculumAndSchedulingSectionsDetailsSectionIdRoute:
       PortalCurriculumAndSchedulingSectionsDetailsSectionIdRoute,
   }
