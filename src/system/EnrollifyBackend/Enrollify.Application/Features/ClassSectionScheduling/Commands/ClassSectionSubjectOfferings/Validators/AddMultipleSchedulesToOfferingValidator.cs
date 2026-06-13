@@ -12,95 +12,95 @@ namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSe
 
 public class AddMultipleSchedulesToOfferingValidator : AbstractValidator<Command>
 {
-    public AddMultipleSchedulesToOfferingValidator(
-        IClassSectionSubjectOfferingRepository offeringRepo,
-        IReadRepository<ClassSectionSubjectOffering> readRepo,
-        IReadRepository<ClassSection> sectionReadRepo)
-    {
-        // HC-01, HC-02, HC-03 — checked per schedule in a single async pass
-        RuleFor(x => x)
-            .CustomAsync(async (cmd, context, ct) =>
+  public AddMultipleSchedulesToOfferingValidator(
+      IClassSectionSubjectOfferingScheduleConflictRepository conflictRepo,
+      IReadRepository<ClassSectionSubjectOffering> readRepo,
+      IReadRepository<ClassSection> sectionReadRepo)
+  {
+    // HC-01, HC-02, HC-03 — checked per schedule in a single async pass
+    RuleFor(x => x)
+        .CustomAsync(async (cmd, context, ct) =>
+        {
+          if (!cmd.ValidateConflicts) return;
+
+          var offering = await readRepo.FirstOrDefaultAsync(
+                  new GetClassSectionSubjectOfferingByIdSpec(cmd.OfferingId), ct);
+
+          if (offering is null) return; // Not found — handler will surface 404
+
+          var section = await sectionReadRepo.FirstOrDefaultAsync(
+                  new GetClassSectionByIdSpec(offering.ClassSectionId), ct);
+
+          if (section is null) return; // Not found — handler will surface 404
+
+          foreach (ScheduleToAdd scheduleToAdd in cmd.Schedules)
+          {
+            if (!DayOfWeekEnum.TryFromValue(scheduleToAdd.DayOfWeek, out DayOfWeekEnum? dayOfWeek))
+              continue; // Invalid day value — caught by the command's own validation
+
+            // HC-01 — Teacher double-booked
+            if (offering.TeacherId.HasValue)
             {
-                if (!cmd.ValidateConflicts) return;
+              bool teacherConflict = await conflictRepo.HasTeacherScheduleConflictAsync(
+                      offering.TeacherId.Value,
+                      section.AcademicTermId,
+                      dayOfWeek!,
+                      scheduleToAdd.StartTime,
+                      scheduleToAdd.EndTime,
+                      excludeOfferingId: null,
+                      ct);
 
-                var offering = await readRepo.FirstOrDefaultAsync(
-                    new GetClassSectionSubjectOfferingByIdSpec(cmd.OfferingId), ct);
+              if (teacherConflict)
+                context.AddFailure(
+                        new FluentValidation.Results.ValidationFailure(
+                            nameof(cmd.Schedules),
+                            $"The assigned teacher already has a class scheduled on {scheduleToAdd.DayOfWeek} at this time.")
+                        {
+                          ErrorCode = "TEACHER_DOUBLE_BOOKED"
+                        });
+            }
 
-                if (offering is null) return; // Not found — handler will surface 404
+            // HC-02 — Room double-booked
+            if (offering.RoomId.HasValue)
+            {
+              bool roomConflict = await conflictRepo.HasRoomScheduleConflictAsync(
+                      offering.RoomId.Value,
+                      section.AcademicTermId,
+                      dayOfWeek!,
+                      scheduleToAdd.StartTime,
+                      scheduleToAdd.EndTime,
+                      excludeOfferingId: null,
+                      ct);
 
-                var section = await sectionReadRepo.FirstOrDefaultAsync(
-                    new GetClassSectionByIdSpec(offering.ClassSectionId), ct);
+              if (roomConflict)
+                context.AddFailure(
+                        new FluentValidation.Results.ValidationFailure(
+                            nameof(cmd.Schedules),
+                            $"The assigned room is already booked on {scheduleToAdd.DayOfWeek} at this time.")
+                        {
+                          ErrorCode = "ROOM_DOUBLE_BOOKED"
+                        });
+            }
 
-                if (section is null) return; // Not found — handler will surface 404
+            // HC-03 — Section overlap
+            bool sectionConflict = await conflictRepo.HasSectionScheduleOverlapAsync(
+                    offering.ClassSectionId,
+                    dayOfWeek!,
+                    scheduleToAdd.StartTime,
+                    scheduleToAdd.EndTime,
+                    excludeScheduleId: null,
+                    ct);
 
-                foreach (ScheduleToAdd scheduleToAdd in cmd.Schedules)
-                {
-                    if (!DayOfWeekEnum.TryFromValue(scheduleToAdd.DayOfWeek, out DayOfWeekEnum? dayOfWeek))
-                        continue; // Invalid day value — caught by the command's own validation
-
-                    // HC-01 — Teacher double-booked
-                    if (offering.TeacherId.HasValue)
-                    {
-                        bool teacherConflict = await offeringRepo.HasTeacherScheduleConflictAsync(
-                            offering.TeacherId.Value,
-                            section.AcademicTermId,
-                            dayOfWeek!,
-                            scheduleToAdd.StartTime,
-                            scheduleToAdd.EndTime,
-                            excludeOfferingId: null,
-                            ct);
-
-                        if (teacherConflict)
-                            context.AddFailure(
-                                new FluentValidation.Results.ValidationFailure(
-                                    nameof(cmd.Schedules),
-                                    $"The assigned teacher already has a class scheduled on {scheduleToAdd.DayOfWeek} at this time.")
-                                {
-                                    ErrorCode = "TEACHER_DOUBLE_BOOKED"
-                                });
-                    }
-
-                    // HC-02 — Room double-booked
-                    if (offering.RoomId.HasValue)
-                    {
-                        bool roomConflict = await offeringRepo.HasRoomScheduleConflictAsync(
-                            offering.RoomId.Value,
-                            section.AcademicTermId,
-                            dayOfWeek!,
-                            scheduleToAdd.StartTime,
-                            scheduleToAdd.EndTime,
-                            excludeOfferingId: null,
-                            ct);
-
-                        if (roomConflict)
-                            context.AddFailure(
-                                new FluentValidation.Results.ValidationFailure(
-                                    nameof(cmd.Schedules),
-                                    $"The assigned room is already booked on {scheduleToAdd.DayOfWeek} at this time.")
-                                {
-                                    ErrorCode = "ROOM_DOUBLE_BOOKED"
-                                });
-                    }
-
-                    // HC-03 — Section overlap
-                    bool sectionConflict = await offeringRepo.HasSectionScheduleOverlapAsync(
-                        offering.ClassSectionId,
-                        dayOfWeek!,
-                        scheduleToAdd.StartTime,
-                        scheduleToAdd.EndTime,
-                        excludeScheduleId: null,
-                        ct);
-
-                    if (sectionConflict)
-                        context.AddFailure(
-                            new FluentValidation.Results.ValidationFailure(
-                                nameof(cmd.Schedules),
-                                $"Another subject in this section is already scheduled on {scheduleToAdd.DayOfWeek} at this time.")
-                            {
-                                ErrorCode = "SECTION_OVERLAP"
-                            });
-                }
-            });
-    }
+            if (sectionConflict)
+              context.AddFailure(
+                      new FluentValidation.Results.ValidationFailure(
+                          nameof(cmd.Schedules),
+                          $"Another subject in this section is already scheduled on {scheduleToAdd.DayOfWeek} at this time.")
+                      {
+                        ErrorCode = "SECTION_OVERLAP"
+                      });
+          }
+        });
+  }
 }
 

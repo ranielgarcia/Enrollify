@@ -2,7 +2,6 @@ using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Services.ScheduleConflictDetection;
-using ScheduleConflictDto = Enrollify.Core.Services.ScheduleConflictDetection.ScheduleConflictDto;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Services;
 
@@ -12,14 +11,14 @@ namespace Enrollify.Application.Features.ClassSectionScheduling.Services;
 /// </summary>
 public class ConflictDetectionHelper
 {
-  private readonly IClassSectionSubjectOfferingRepository _offeringRepository;
+  private readonly IClassSectionSubjectOfferingScheduleConflictRepository _conflictRepo;
   private readonly ScheduleConflictDetector _conflictDetector;
 
   public ConflictDetectionHelper(
-    IClassSectionSubjectOfferingRepository offeringRepository,
+    IClassSectionSubjectOfferingScheduleConflictRepository conflictRepo,
     ScheduleConflictDetector conflictDetector)
   {
-    _offeringRepository = offeringRepository;
+    _conflictRepo = conflictRepo;
     _conflictDetector = conflictDetector;
   }
 
@@ -29,7 +28,6 @@ public class ConflictDetectionHelper
   /// </summary>
   public async Task<Dictionary<int, List<ConflictResultDto>>> DetectConflictsForSectionAsync(
     ClassSection section,
-    IEnumerable<int> offeringIds,
     IEnumerable<int> teacherIds,
     IEnumerable<int> roomIds,
     CancellationToken cancellationToken)
@@ -41,8 +39,8 @@ public class ConflictDetectionHelper
     if (!teacherIdList.Any() && !roomIdList.Any())
     {
       // Still check for section overlap conflicts
-      List<ScheduleConflictDto> sectionOnlySchedules =
-        await _offeringRepository.GetSectionSchedulesForConflictDetectionAsync(
+      List<ScheduleConflictProjectionDto> sectionOnlySchedules =
+        await _conflictRepo.GetSectionSchedulesForConflictDetectionAsync(
           section.Id.Value, cancellationToken);
       List<ConflictResult> sectionOnlyConflicts =
         _conflictDetector.DetectConflicts(sectionOnlySchedules, section.Id.Value);
@@ -50,12 +48,12 @@ public class ConflictDetectionHelper
     }
 
     // Load this section's schedules
-    List<ScheduleConflictDto> thisSectionSchedules =
-      await _offeringRepository.GetSectionSchedulesForConflictDetectionAsync(
+    List<ScheduleConflictProjectionDto> thisSectionSchedules =
+      await _conflictRepo.GetSectionSchedulesForConflictDetectionAsync(
         section.Id.Value, cancellationToken);
 
     // Load related schedules for same teacher/room in same term (excluding this section)
-    List<ScheduleConflictDto> relatedSchedules = await _offeringRepository.GetRelatedSchedulesForConflictDetectionAsync(
+    List<ScheduleConflictProjectionDto> relatedSchedules = await _conflictRepo.GetRelatedSchedulesForConflictDetectionAsync(
       teacherIdList, roomIdList, section.AcademicTermId.Value, section.Id.Value, cancellationToken);
 
     // Combine and detect conflicts

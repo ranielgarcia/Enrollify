@@ -70,14 +70,13 @@ public class GetClassSectionByIdQueryHandler
     if (!offeringDtos.Any()) return;
 
     // Collect teacher and room IDs from all offerings
-    var offeringIds = offeringDtos.Select(o => o.Id).ToList();
     var teacherIds = offeringDtos.Where(o => o.Teacher != null).Select(o => o.Teacher!.Id).ToList();
     var roomIds = offeringDtos.Where(o => o.Room != null).Select(o => o.Room!.Id).ToList();
 
     // Use helper to detect conflicts
     Dictionary<int, List<ConflictResultDto>> conflictsByOffering =
       await _conflictDetectionHelper.DetectConflictsForSectionAsync(
-        section, offeringIds, teacherIds, roomIds, cancellationToken);
+        section, teacherIds, roomIds, cancellationToken);
 
     // Embed conflicts in each offering DTO
     foreach (ClassSectionSubjectOfferingDto dto in offeringDtos)

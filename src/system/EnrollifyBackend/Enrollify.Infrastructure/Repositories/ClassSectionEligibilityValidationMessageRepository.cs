@@ -23,14 +23,9 @@ public class ClassSectionEligibilityValidationMessageRepository
     IEnumerable<ClassSectionEnrollmentEligibilityValidationMessage> messages,
     CancellationToken cancellationToken = default)
   {
-    // Delete existing projection rows for this section
-    List<ClassSectionEnrollmentEligibilityValidationMessage> existing =
-      await _dbContext.ClassSectionEnrollmentEligibilityValidationMessages
-        .Where(m => m.ClassSectionId == classSectionId)
-        .ToListAsync(cancellationToken);
-
-    if (existing.Count > 0)
-      _dbContext.ClassSectionEnrollmentEligibilityValidationMessages.RemoveRange(existing);
+    int deletedRows = await _dbContext.ClassSectionEnrollmentEligibilityValidationMessages
+      .Where(m => m.ClassSectionId == classSectionId)
+      .ExecuteDeleteAsync(cancellationToken);
 
     // Insert fresh messages
     var freshMessages = messages.ToList();
@@ -42,7 +37,7 @@ public class ClassSectionEligibilityValidationMessageRepository
 
     _logger.LogDebug(
       "Replaced eligibility messages for ClassSection {ClassSectionId}: removed {RemovedCount}, inserted {InsertedCount}",
-      classSectionId.Value, existing.Count, freshMessages.Count);
+      classSectionId.Value, deletedRows, freshMessages.Count);
   }
 }
 

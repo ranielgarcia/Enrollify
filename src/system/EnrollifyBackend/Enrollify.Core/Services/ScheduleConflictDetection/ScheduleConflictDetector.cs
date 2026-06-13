@@ -28,7 +28,7 @@ public class ScheduleConflictDetector
   /// <param name="targetSectionId">The section being analyzed (optional, for scoping section overlap checks)</param>
   /// <returns>List of detected conflicts</returns>
   public List<ConflictResult> DetectConflicts(
-    IEnumerable<ScheduleConflictDto> schedules,
+    IEnumerable<ScheduleConflictProjectionDto> schedules,
     int? targetSectionId = null)
   {
     var conflicts = new List<ConflictResult>();
@@ -49,17 +49,17 @@ public class ScheduleConflictDetector
     return conflicts;
   }
 
-  private List<ConflictResult> DetectTeacherConflicts(List<ScheduleConflictDto> schedules)
+  private List<ConflictResult> DetectTeacherConflicts(List<ScheduleConflictProjectionDto> schedules)
   {
     var conflicts = new List<ConflictResult>();
 
     // Group by (TeacherId, DayOfWeek) to reduce comparison space
     // This transforms O(n²) over all schedules to O(n²) within small groups (typically 2-10 rows)
-    IEnumerable<IGrouping<(int Value, string DayOfWeek), ScheduleConflictDto>> byTeacherDay = schedules
+    IEnumerable<IGrouping<(int Value, string DayOfWeek), ScheduleConflictProjectionDto>> byTeacherDay = schedules
       .Where(s => s.TeacherId.HasValue)
       .GroupBy(s => (s.TeacherId!.Value, s.DayOfWeek));
 
-    foreach (IGrouping<(int Value, string DayOfWeek), ScheduleConflictDto> group in byTeacherDay)
+    foreach (IGrouping<(int Value, string DayOfWeek), ScheduleConflictProjectionDto> group in byTeacherDay)
     {
       var groupList = group.ToList();
 
@@ -67,8 +67,8 @@ public class ScheduleConflictDetector
       for (int i = 0; i < groupList.Count; i++)
         for (int j = i + 1; j < groupList.Count; j++)
         {
-          ScheduleConflictDto s1 = groupList[i];
-          ScheduleConflictDto s2 = groupList[j];
+          ScheduleConflictProjectionDto s1 = groupList[i];
+          ScheduleConflictProjectionDto s2 = groupList[j];
 
           // Skip if same offering (shouldn't happen due to duplicate-day constraint)
           if (s1.OfferingId == s2.OfferingId) continue;
@@ -96,23 +96,23 @@ public class ScheduleConflictDetector
     return conflicts;
   }
 
-  private List<ConflictResult> DetectRoomConflicts(List<ScheduleConflictDto> schedules)
+  private List<ConflictResult> DetectRoomConflicts(List<ScheduleConflictProjectionDto> schedules)
   {
     var conflicts = new List<ConflictResult>();
 
-    IEnumerable<IGrouping<(int Value, string DayOfWeek), ScheduleConflictDto>> byRoomDay = schedules
+    IEnumerable<IGrouping<(int Value, string DayOfWeek), ScheduleConflictProjectionDto>> byRoomDay = schedules
       .Where(s => s.RoomId.HasValue)
       .GroupBy(s => (s.RoomId!.Value, s.DayOfWeek));
 
-    foreach (IGrouping<(int Value, string DayOfWeek), ScheduleConflictDto> group in byRoomDay)
+    foreach (IGrouping<(int Value, string DayOfWeek), ScheduleConflictProjectionDto> group in byRoomDay)
     {
       var groupList = group.ToList();
 
       for (int i = 0; i < groupList.Count; i++)
         for (int j = i + 1; j < groupList.Count; j++)
         {
-          ScheduleConflictDto s1 = groupList[i];
-          ScheduleConflictDto s2 = groupList[j];
+          ScheduleConflictProjectionDto s1 = groupList[i];
+          ScheduleConflictProjectionDto s2 = groupList[j];
 
           if (s1.OfferingId == s2.OfferingId) continue;
 
@@ -138,7 +138,7 @@ public class ScheduleConflictDetector
     return conflicts;
   }
 
-  private List<ConflictResult> DetectSectionOverlaps(List<ScheduleConflictDto> schedules, int targetSectionId)
+  private List<ConflictResult> DetectSectionOverlaps(List<ScheduleConflictProjectionDto> schedules, int targetSectionId)
   {
     var conflicts = new List<ConflictResult>();
 
@@ -147,18 +147,18 @@ public class ScheduleConflictDetector
       .Where(s => s.SectionId == targetSectionId)
       .ToList();
 
-    IEnumerable<IGrouping<string, ScheduleConflictDto>> bySectionDay = sectionSchedules
+    IEnumerable<IGrouping<string, ScheduleConflictProjectionDto>> bySectionDay = sectionSchedules
       .GroupBy(s => s.DayOfWeek);
 
-    foreach (IGrouping<string, ScheduleConflictDto> group in bySectionDay)
+    foreach (IGrouping<string, ScheduleConflictProjectionDto> group in bySectionDay)
     {
       var groupList = group.ToList();
 
       for (int i = 0; i < groupList.Count; i++)
         for (int j = i + 1; j < groupList.Count; j++)
         {
-          ScheduleConflictDto s1 = groupList[i];
-          ScheduleConflictDto s2 = groupList[j];
+          ScheduleConflictProjectionDto s1 = groupList[i];
+          ScheduleConflictProjectionDto s2 = groupList[j];
 
           if (s1.OfferingId == s2.OfferingId) continue;
 
@@ -184,19 +184,19 @@ public class ScheduleConflictDetector
     return conflicts;
   }
 
-  private List<ConflictResult> DetectDuplicateSubjects(List<ScheduleConflictDto> schedules)
+  private List<ConflictResult> DetectDuplicateSubjects(List<ScheduleConflictProjectionDto> schedules)
   {
     var conflicts = new List<ConflictResult>();
 
     // Group by (SectionId, SubjectId) and count
-    IEnumerable<IGrouping<(int SectionId, int SubjectId), ScheduleConflictDto>> duplicates = schedules
+    IEnumerable<IGrouping<(int SectionId, int SubjectId), ScheduleConflictProjectionDto>> duplicates = schedules
       .GroupBy(s => (s.SectionId, s.SubjectId))
       .Where(g => g.DistinctBy(x => x.OfferingId).Count() > 1);
 
-    foreach (IGrouping<(int SectionId, int SubjectId), ScheduleConflictDto> group in duplicates)
+    foreach (IGrouping<(int SectionId, int SubjectId), ScheduleConflictProjectionDto> group in duplicates)
     {
       var offerings = group.ToList();
-      ScheduleConflictDto first = offerings.First();
+      ScheduleConflictProjectionDto first = offerings.First();
 
       conflicts.Add(new ConflictResult
       {
@@ -210,7 +210,7 @@ public class ScheduleConflictDetector
     return conflicts;
   }
 
-  private AffectedOffering MapToAffectedOffering(ScheduleConflictDto dto)
+  private AffectedOffering MapToAffectedOffering(ScheduleConflictProjectionDto dto)
   {
     return new AffectedOffering
     {
