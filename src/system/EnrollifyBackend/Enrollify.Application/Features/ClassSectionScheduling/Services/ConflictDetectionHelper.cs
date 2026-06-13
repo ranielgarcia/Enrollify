@@ -86,10 +86,10 @@ public class ConflictDetectionHelper
   {
     return new ConflictResultDto
     {
-      Type = MapConflictType(conflict.Type),
-      Severity = MapConflictSeverity(conflict.Severity),
+      Type = conflict.Type.Name,
+      Severity = conflict.Severity.Name,
       Message = conflict.Message,
-      Day = conflict.Day,
+      DayOfWeek = conflict.DayOfWeek,
       StartTime = conflict.StartTime?.ToString("HH:mm:ss"),
       EndTime = conflict.EndTime?.ToString("HH:mm:ss"),
       AffectedOfferings = conflict.AffectedOfferings?.Select(a => new AffectedOfferingDto
@@ -101,29 +101,6 @@ public class ConflictDetectionHelper
           ? new RoomSummaryDto(a.Room.RoomNumber, a.Room.Building)
           : null
       }).ToList()
-    };
-  }
-
-  private string MapConflictType(ConflictType type)
-  {
-    return type switch
-    {
-      ConflictType.TeacherDoubleBooked => nameof(ConflictTypeEnum.TEACHER_DOUBLE_BOOKED),
-      ConflictType.RoomDoubleBooked => nameof(ConflictTypeEnum.ROOM_DOUBLE_BOOKED),
-      ConflictType.SectionOverlap => nameof(ConflictTypeEnum.SECTION_OVERLAP),
-      ConflictType.DuplicateSubjectInSection => nameof(ConflictTypeEnum.DUPLICATE_SUBJECT_IN_SECTION),
-      _ => throw new ArgumentOutOfRangeException(nameof(type), $"Unknown conflict type: {type}")
-    };
-  }
-
-  private string MapConflictSeverity(ConflictSeverity severity)
-  {
-    return severity switch
-    {
-      ConflictSeverity.Info => nameof(ConflictSeverityEnum.Info),
-      ConflictSeverity.Warning => nameof(ConflictSeverityEnum.Warning),
-      ConflictSeverity.Error => nameof(ConflictSeverityEnum.Error),
-      _ => throw new ArgumentOutOfRangeException(nameof(severity), $"Unknown severity: {severity}")
     };
   }
 }

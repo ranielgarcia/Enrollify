@@ -1,3 +1,5 @@
+using Enrollify.Core.Constants;
+
 namespace Enrollify.Core.Services.ScheduleConflictDetection;
 
 /// <summary>
@@ -10,7 +12,7 @@ namespace Enrollify.Core.Services.ScheduleConflictDetection;
 /// See: research/scheduling/class-scheduling-conflicts.md § IN-02
 /// If terms overlap in the future, add calendar date range checks.
 ///
-/// Conflict detection uses half-open interval overlap formula:
+/// Conflict detection uses half-open interval overlap formula: https://chatgpt.com/c/6a2d4921-7c40-83ec-86cd-0f8058a958cf
 /// A overlaps B iff A.StartTime &lt; B.EndTime AND A.EndTime &gt; B.StartTime
 /// Adjacent classes (A ends 10:30, B starts 10:30) are NOT conflicts (gap = 0).
 /// Use SC-03 (TEACHER_NO_BREAK) separately to enforce minimum break time.
@@ -63,32 +65,32 @@ public class ScheduleConflictDetector
 
       // O(n²) within group (typically 2-10 rows, so ~10-100 comparisons)
       for (int i = 0; i < groupList.Count; i++)
-      for (int j = i + 1; j < groupList.Count; j++)
-      {
-        ScheduleConflictDto s1 = groupList[i];
-        ScheduleConflictDto s2 = groupList[j];
+        for (int j = i + 1; j < groupList.Count; j++)
+        {
+          ScheduleConflictDto s1 = groupList[i];
+          ScheduleConflictDto s2 = groupList[j];
 
-        // Skip if same offering (shouldn't happen due to duplicate-day constraint)
-        if (s1.OfferingId == s2.OfferingId) continue;
+          // Skip if same offering (shouldn't happen due to duplicate-day constraint)
+          if (s1.OfferingId == s2.OfferingId) continue;
 
-        // Half-open interval overlap: A.start < B.end AND A.end > B.start
-        if (s1.StartTime < s2.EndTime && s1.EndTime > s2.StartTime)
-          conflicts.Add(new ConflictResult
-          {
-            Type = ConflictType.TeacherDoubleBooked,
-            Severity = ConflictSeverity.Error,
-            Message =
-              $"{s1.TeacherFirstName} {s1.TeacherLastName} is assigned to multiple classes at {s1.DayOfWeek} {FormatTime(s1.StartTime)}-{FormatTime(s1.EndTime)}",
-            Day = s1.DayOfWeek,
-            StartTime = s1.StartTime,
-            EndTime = s1.EndTime,
-            AffectedOfferings = new List<AffectedOffering>
+          // Half-open interval overlap: A.start < B.end AND A.end > B.start
+          if (s1.StartTime < s2.EndTime && s1.EndTime > s2.StartTime)
+            conflicts.Add(new ConflictResult
+            {
+              Type = ClassScheduleConflictTypeEnum.TEACHER_DOUBLE_BOOKED,
+              Severity = DomainValidationErrorSeverityEnum.Error,
+              Message =
+                $"{s1.TeacherFirstName} {s1.TeacherLastName} is assigned to multiple classes at {s1.DayOfWeek} {FormatTime(s1.StartTime)}-{FormatTime(s1.EndTime)}",
+              DayOfWeek = s1.DayOfWeek,
+              StartTime = s1.StartTime,
+              EndTime = s1.EndTime,
+              AffectedOfferings = new List<AffectedOffering>
             {
               MapToAffectedOffering(s1),
               MapToAffectedOffering(s2)
             }
-          });
-      }
+            });
+        }
     }
 
     return conflicts;
@@ -107,30 +109,30 @@ public class ScheduleConflictDetector
       var groupList = group.ToList();
 
       for (int i = 0; i < groupList.Count; i++)
-      for (int j = i + 1; j < groupList.Count; j++)
-      {
-        ScheduleConflictDto s1 = groupList[i];
-        ScheduleConflictDto s2 = groupList[j];
+        for (int j = i + 1; j < groupList.Count; j++)
+        {
+          ScheduleConflictDto s1 = groupList[i];
+          ScheduleConflictDto s2 = groupList[j];
 
-        if (s1.OfferingId == s2.OfferingId) continue;
+          if (s1.OfferingId == s2.OfferingId) continue;
 
-        if (s1.StartTime < s2.EndTime && s1.EndTime > s2.StartTime)
-          conflicts.Add(new ConflictResult
-          {
-            Type = ConflictType.RoomDoubleBooked,
-            Severity = ConflictSeverity.Error,
-            Message =
-              $"Room {s1.RoomNumber} ({s1.BuildingName}) is assigned to multiple classes at {s1.DayOfWeek} {FormatTime(s1.StartTime)}-{FormatTime(s1.EndTime)}",
-            Day = s1.DayOfWeek,
-            StartTime = s1.StartTime,
-            EndTime = s1.EndTime,
-            AffectedOfferings = new List<AffectedOffering>
+          if (s1.StartTime < s2.EndTime && s1.EndTime > s2.StartTime)
+            conflicts.Add(new ConflictResult
+            {
+              Type = ClassScheduleConflictTypeEnum.ROOM_DOUBLE_BOOKED,
+              Severity = DomainValidationErrorSeverityEnum.Error,
+              Message =
+                $"Room {s1.RoomNumber} ({s1.BuildingName}) is assigned to multiple classes at {s1.DayOfWeek} {FormatTime(s1.StartTime)}-{FormatTime(s1.EndTime)}",
+              DayOfWeek = s1.DayOfWeek,
+              StartTime = s1.StartTime,
+              EndTime = s1.EndTime,
+              AffectedOfferings = new List<AffectedOffering>
             {
               MapToAffectedOffering(s1),
               MapToAffectedOffering(s2)
             }
-          });
-      }
+            });
+        }
     }
 
     return conflicts;
@@ -153,30 +155,30 @@ public class ScheduleConflictDetector
       var groupList = group.ToList();
 
       for (int i = 0; i < groupList.Count; i++)
-      for (int j = i + 1; j < groupList.Count; j++)
-      {
-        ScheduleConflictDto s1 = groupList[i];
-        ScheduleConflictDto s2 = groupList[j];
+        for (int j = i + 1; j < groupList.Count; j++)
+        {
+          ScheduleConflictDto s1 = groupList[i];
+          ScheduleConflictDto s2 = groupList[j];
 
-        if (s1.OfferingId == s2.OfferingId) continue;
+          if (s1.OfferingId == s2.OfferingId) continue;
 
-        if (s1.StartTime < s2.EndTime && s1.EndTime > s2.StartTime)
-          conflicts.Add(new ConflictResult
-          {
-            Type = ConflictType.SectionOverlap,
-            Severity = ConflictSeverity.Warning, // Soft conflict per design decision
-            Message =
-              $"Section {s1.SectionName} has overlapping classes at {s1.DayOfWeek} {FormatTime(s1.StartTime)}-{FormatTime(s1.EndTime)}",
-            Day = s1.DayOfWeek,
-            StartTime = s1.StartTime,
-            EndTime = s1.EndTime,
-            AffectedOfferings = new List<AffectedOffering>
+          if (s1.StartTime < s2.EndTime && s1.EndTime > s2.StartTime)
+            conflicts.Add(new ConflictResult
+            {
+              Type = ClassScheduleConflictTypeEnum.SECTION_OVERLAP,
+              Severity = DomainValidationErrorSeverityEnum.Warning, // Soft conflict per design decision
+              Message =
+                $"Section {s1.SectionName} has overlapping classes at {s1.DayOfWeek} {FormatTime(s1.StartTime)}-{FormatTime(s1.EndTime)}",
+              DayOfWeek = s1.DayOfWeek,
+              StartTime = s1.StartTime,
+              EndTime = s1.EndTime,
+              AffectedOfferings = new List<AffectedOffering>
             {
               MapToAffectedOffering(s1),
               MapToAffectedOffering(s2)
             }
-          });
-      }
+            });
+        }
     }
 
     return conflicts;
@@ -198,8 +200,8 @@ public class ScheduleConflictDetector
 
       conflicts.Add(new ConflictResult
       {
-        Type = ConflictType.DuplicateSubjectInSection,
-        Severity = ConflictSeverity.Error,
+        Type = ClassScheduleConflictTypeEnum.DUPLICATE_SUBJECT_IN_SECTION,
+        Severity = DomainValidationErrorSeverityEnum.Error,
         Message = $"Subject {first.SubjectCode} is assigned to section {first.SectionName} multiple times",
         AffectedOfferings = offerings.Select(MapToAffectedOffering).ToList()
       });

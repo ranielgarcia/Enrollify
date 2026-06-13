@@ -1,3 +1,5 @@
+using Enrollify.Core.Constants;
+
 namespace Enrollify.Core.Services.ScheduleConflictDetection;
 
 /// <summary>
@@ -6,13 +8,13 @@ namespace Enrollify.Core.Services.ScheduleConflictDetection;
 /// </summary>
 public record ConflictResult
 {
-    public ConflictType Type { get; init; }
-    public ConflictSeverity Severity { get; init; }
-    public string Message { get; init; } = string.Empty;
-    public string? Day { get; init; }
-    public TimeOnly? StartTime { get; init; }
-    public TimeOnly? EndTime { get; init; }
-    public List<AffectedOffering>? AffectedOfferings { get; init; }
+  public ClassScheduleConflictTypeEnum Type { get; init; }
+  public DomainValidationErrorSeverityEnum Severity { get; init; }
+  public string Message { get; init; } = string.Empty;
+  public string? DayOfWeek { get; init; }
+  public TimeOnly? StartTime { get; init; }
+  public TimeOnly? EndTime { get; init; }
+  public List<AffectedOffering>? AffectedOfferings { get; init; }
 }
 
 /// <summary>
@@ -20,40 +22,13 @@ public record ConflictResult
 /// </summary>
 public record AffectedOffering
 {
-    public int Id { get; init; }
-    public SubjectSummary Subject { get; init; } = null!;
-    public SectionSummary Section { get; init; } = null!;
-    public RoomSummary? Room { get; init; }
+  public int Id { get; init; }
+  public SubjectSummary Subject { get; init; } = null!;
+  public SectionSummary Section { get; init; } = null!;
+  public RoomSummary? Room { get; init; }
 }
 
 public record SubjectSummary(string Code, string Title);
 public record SectionSummary(int Id, string Name);
 public record RoomSummary(string RoomNumber, string Building);
 
-/// <summary>
-/// Conflict types for domain-level conflict detection.
-/// Maps to ConflictTypeEnum in the application layer.
-/// </summary>
-public enum ConflictType
-{
-    // Phase 1 conflicts
-    TeacherDoubleBooked,
-    RoomDoubleBooked,
-    SectionOverlap,
-    DuplicateSubjectInSection,
-    
-    // Phase 3 conflicts (future)
-    ScheduleCountMismatch,
-    HoursMismatch,
-    NoSchedules
-}
-
-/// <summary>
-/// Conflict severity levels
-/// </summary>
-public enum ConflictSeverity
-{
-    Info,
-    Warning,
-    Error
-}
