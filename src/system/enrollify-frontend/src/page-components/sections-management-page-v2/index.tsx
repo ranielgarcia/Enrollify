@@ -1,4 +1,7 @@
-import { getClassSectionsStatsOptions, filterClassSectionsPaginatedOptions } from "@/api/collections/class-section-collection-v2";
+import {
+  getClassSectionsStatsOptions,
+  filterClassSectionsPaginatedOptions,
+} from "@/api/collections/class-section-collection-v2";
 import type { ClassSectionV2 } from "@/api/models/class-section-v2";
 import { Button } from "@/components/ui/button";
 import { useSuspenseQuery } from "@tanstack/react-query";

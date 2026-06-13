@@ -15,9 +15,21 @@ import {
 
 const queryKeys = {
   base: () => ["class-sections-v2"],
-  bySectionId: (sectionId: number) => [...queryKeys.base(), "section", sectionId],
-  stats: (collegeId?: string) => [...queryKeys.base(), "stats", collegeId ?? "all"],
-  list: (collegeId?: string) => [...queryKeys.base(), "list", collegeId ?? "all"],
+  bySectionId: (sectionId: number) => [
+    ...queryKeys.base(),
+    "section",
+    sectionId,
+  ],
+  stats: (collegeId?: string) => [
+    ...queryKeys.base(),
+    "stats",
+    collegeId ?? "all",
+  ],
+  list: (collegeId?: string) => [
+    ...queryKeys.base(),
+    "list",
+    collegeId ?? "all",
+  ],
   filter: (
     collegeId: string | undefined,
     page: number,
@@ -35,7 +47,11 @@ const queryKeys = {
     sort,
     joinOperator,
   ],
-  offerings: (sectionId: number) => [...queryKeys.base(), sectionId, "offerings"],
+  offerings: (sectionId: number) => [
+    ...queryKeys.base(),
+    sectionId,
+    "offerings",
+  ],
 };
 
 export const getClassSectionsStatsOptions = (collegeId?: string) =>
@@ -81,7 +97,14 @@ export const filterClassSectionsPaginatedOptions = (
     pathParams: { collegeId: collegeId ?? "1" },
     options: {
       enabled: !!collegeId && !!page && !!pageSize,
-      queryKey: queryKeys.filter(collegeId, page, pageSize, filters, sort, joinOperator),
+      queryKey: queryKeys.filter(
+        collegeId,
+        page,
+        pageSize,
+        filters,
+        sort,
+        joinOperator,
+      ),
       staleTime: 1000 * 60 * 2,
       select: (): PagedResult<ClassSectionV2> => {
         // Mock paginated response

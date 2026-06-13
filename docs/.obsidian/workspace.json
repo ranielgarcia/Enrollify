@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Section-Manage-Page-Redeign/sections-management-page-redesign-proposal.md",
+                "file": "EventStorming-Sticky-Notes-Reference.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "sections-management-page-redesign-proposal"
+              "title": "EventStorming-Sticky-Notes-Reference"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Genetic-Algorithm/Genetic Algorithm Course Scheduling - Csharp Implementation.md",
+                "file": "EventStorming-Sticky-Notes-Reference.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Genetic Algorithm Course Scheduling - Csharp Implementation"
+              "title": "Backlinks for EventStorming-Sticky-Notes-Reference"
             }
           },
           {
@@ -155,8 +155,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -171,9 +170,12 @@
   },
   "active": "a663816831ece07b",
   "lastOpenFiles": [
+    "frontend-modernization-plan.md",
+    "Section-Manage-Page-Redeign/sections-management-page-redesign-proposal.md",
+    "EventStorming-Sticky-Notes-Reference.md",
+    "EventStorming-Sticky-Notes-Reference.md.crdownload",
     "room-scheduler-page-design.md",
     "Section-Manage-Page-Redeign/room-scheduler-page-design.md",
-    "Section-Manage-Page-Redeign/sections-management-page-redesign-proposal.md",
     "Section-Manage-Page-Redeign",
     "scheduling-architecture/pending/06-outside-operating-hours-sc06.md",
     "scheduling-architecture/pending/05-year-level-mismatch-sc05.md",
@@ -196,8 +198,6 @@
     "scheduling-architecture/pending/14-admin-conflict-dashboard.md",
     "scheduling-architecture/pending/13-cross-term-booking-in02.md",
     "scheduling-architecture/pending/12-room-type-mismatch-in01.md",
-    "scheduling-architecture/pending/11-duplicate-day-in-offering-hc04.md",
-    "scheduling-architecture/pending/10-section-with-no-offerings-di04.md",
     "scheduling-architecture/research-document-base",
     "scheduling-architecture/scheduling",
     "scheduling-architecture/pending",
@@ -205,7 +205,6 @@
     "scheduling-architecture",
     "data-locking-architecture/pending",
     "data-locking-architecture/done",
-    "data-locking-architecture",
-    "Genetic-Algorithm"
+    "data-locking-architecture"
   ]
 }
