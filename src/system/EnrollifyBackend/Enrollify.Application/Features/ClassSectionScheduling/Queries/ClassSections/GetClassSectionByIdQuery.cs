@@ -5,6 +5,8 @@ using Enrollify.Application.Features.ClassSectionScheduling.Specifications.Class
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Aggregates.RoomAggregate;
+using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.SharedKernel;
 using MediatR;
 
@@ -70,17 +72,17 @@ public class GetClassSectionByIdQueryHandler
     if (!offeringDtos.Any()) return;
 
     // Collect teacher and room IDs from all offerings
-    var teacherIds = offeringDtos.Where(o => o.Teacher != null).Select(o => o.Teacher!.Id).ToList();
-    var roomIds = offeringDtos.Where(o => o.Room != null).Select(o => o.Room!.Id).ToList();
+    var teacherIds = offeringDtos.Where(o => o.Teacher != null).Select(o => TeacherId.From(o.Teacher!.Id)).ToList();
+    var roomIds = offeringDtos.Where(o => o.Room != null).Select(o => RoomId.From(o.Room!.Id)).ToList();
 
     // Use helper to detect conflicts
-    Dictionary<int, List<ConflictResultDto>> conflictsByOffering =
+    Dictionary<ClassSectionSubjectOfferingId, List<ConflictResultDto>> conflictsByOffering =
       await _conflictDetectionHelper.DetectConflictsForSectionAsync(
         section, teacherIds, roomIds, cancellationToken);
 
     // Embed conflicts in each offering DTO
     foreach (ClassSectionSubjectOfferingDto dto in offeringDtos)
-      dto.Conflicts = conflictsByOffering.TryGetValue(dto.Id, out List<ConflictResultDto>? conflicts)
+      dto.Conflicts = conflictsByOffering.TryGetValue(ClassSectionSubjectOfferingId.From(dto.Id), out List<ConflictResultDto>? conflicts)
         ? conflicts
         : new List<ConflictResultDto>();
   }

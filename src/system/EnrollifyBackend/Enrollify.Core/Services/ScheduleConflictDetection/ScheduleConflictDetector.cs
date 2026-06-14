@@ -1,3 +1,8 @@
+using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionConflictAggregate.Models;
+using Enrollify.Core.Aggregates.RoomAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate;
+using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Constants;
 
 namespace Enrollify.Core.Services.ScheduleConflictDetection;
@@ -29,7 +34,7 @@ public class ScheduleConflictDetector
   /// <returns>List of detected conflicts</returns>
   public List<ConflictResult> DetectConflicts(
     IEnumerable<ScheduleConflictProjectionDto> schedules,
-    int? targetSectionId = null)
+    ClassSectionId? targetSectionId = null)
   {
     var conflicts = new List<ConflictResult>();
     var scheduleList = schedules.ToList();
@@ -55,11 +60,11 @@ public class ScheduleConflictDetector
 
     // Group by (TeacherId, DayOfWeek) to reduce comparison space
     // This transforms O(n²) over all schedules to O(n²) within small groups (typically 2-10 rows)
-    IEnumerable<IGrouping<(int Value, string DayOfWeek), ScheduleConflictProjectionDto>> byTeacherDay = schedules
-      .Where(s => s.TeacherId.HasValue)
+    IEnumerable<IGrouping<(TeacherId Value, DayOfWeekEnum DayOfWeek), ScheduleConflictProjectionDto>> byTeacherDay = schedules
+      .Where(s => s.TeacherId != null)
       .GroupBy(s => (s.TeacherId!.Value, s.DayOfWeek));
 
-    foreach (IGrouping<(int Value, string DayOfWeek), ScheduleConflictProjectionDto> group in byTeacherDay)
+    foreach (IGrouping<(TeacherId Value, DayOfWeekEnum DayOfWeek), ScheduleConflictProjectionDto> group in byTeacherDay)
     {
       var groupList = group.ToList();
 
@@ -100,11 +105,11 @@ public class ScheduleConflictDetector
   {
     var conflicts = new List<ConflictResult>();
 
-    IEnumerable<IGrouping<(int Value, string DayOfWeek), ScheduleConflictProjectionDto>> byRoomDay = schedules
-      .Where(s => s.RoomId.HasValue)
+    IEnumerable<IGrouping<(RoomId RoomId, DayOfWeekEnum DayOfWeek), ScheduleConflictProjectionDto>> byRoomDay = schedules
+      .Where(s => s.RoomId != null)
       .GroupBy(s => (s.RoomId!.Value, s.DayOfWeek));
 
-    foreach (IGrouping<(int Value, string DayOfWeek), ScheduleConflictProjectionDto> group in byRoomDay)
+    foreach (IGrouping<(RoomId RoomId, DayOfWeekEnum DayOfWeek), ScheduleConflictProjectionDto> group in byRoomDay)
     {
       var groupList = group.ToList();
 
@@ -138,7 +143,7 @@ public class ScheduleConflictDetector
     return conflicts;
   }
 
-  private List<ConflictResult> DetectSectionOverlaps(List<ScheduleConflictProjectionDto> schedules, int targetSectionId)
+  private List<ConflictResult> DetectSectionOverlaps(List<ScheduleConflictProjectionDto> schedules, ClassSectionId targetSectionId)
   {
     var conflicts = new List<ConflictResult>();
 
@@ -147,10 +152,10 @@ public class ScheduleConflictDetector
       .Where(s => s.SectionId == targetSectionId)
       .ToList();
 
-    IEnumerable<IGrouping<string, ScheduleConflictProjectionDto>> bySectionDay = sectionSchedules
+    IEnumerable<IGrouping<DayOfWeekEnum, ScheduleConflictProjectionDto>> bySectionDay = sectionSchedules
       .GroupBy(s => s.DayOfWeek);
 
-    foreach (IGrouping<string, ScheduleConflictProjectionDto> group in bySectionDay)
+    foreach (IGrouping<DayOfWeekEnum, ScheduleConflictProjectionDto> group in bySectionDay)
     {
       var groupList = group.ToList();
 
@@ -189,11 +194,11 @@ public class ScheduleConflictDetector
     var conflicts = new List<ConflictResult>();
 
     // Group by (SectionId, SubjectId) and count
-    IEnumerable<IGrouping<(int SectionId, int SubjectId), ScheduleConflictProjectionDto>> duplicates = schedules
+    IEnumerable<IGrouping<(ClassSectionId SectionId, SubjectId SubjectId), ScheduleConflictProjectionDto>> duplicates = schedules
       .GroupBy(s => (s.SectionId, s.SubjectId))
       .Where(g => g.DistinctBy(x => x.OfferingId).Count() > 1);
 
-    foreach (IGrouping<(int SectionId, int SubjectId), ScheduleConflictProjectionDto> group in duplicates)
+    foreach (IGrouping<(ClassSectionId SectionId, SubjectId SubjectId), ScheduleConflictProjectionDto> group in duplicates)
     {
       var offerings = group.ToList();
       ScheduleConflictProjectionDto first = offerings.First();

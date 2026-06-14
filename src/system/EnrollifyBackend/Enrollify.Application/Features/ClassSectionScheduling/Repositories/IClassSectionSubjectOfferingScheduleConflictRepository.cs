@@ -55,20 +55,20 @@ public interface IClassSectionSubjectOfferingScheduleConflictRepository
   /// within the same academic term. Used for section detail conflict display (Read Path).
   /// </summary>
   Task<List<ScheduleConflictProjectionDto>> GetRelatedSchedulesForConflictDetectionAsync(
-    IEnumerable<int> teacherIds,
-    IEnumerable<int> roomIds,
-    int academicTermId,
-    int excludeSectionId,
+    IEnumerable<TeacherId> teacherIds,
+    IEnumerable<RoomId> roomIds,
+    AcademicTermId academicTermId,
+    ClassSectionId excludeSectionId,
     CancellationToken cancellationToken);
 
   /// <summary>
   /// Projects all schedules for a given section into flat DTOs for conflict detection.
   /// </summary>
   Task<List<ScheduleConflictProjectionDto>> GetSectionSchedulesForConflictDetectionAsync(
-    int sectionId,
+    ClassSectionId sectionId,
     CancellationToken cancellationToken);
 
   Task<List<ScheduleConflictProjectionDto>> GetOfferingSchedulesForConflictDetectionAsync(
-    int offeringId,
+    ClassSectionSubjectOfferingId offeringId,
     CancellationToken cancellationToken);
 }

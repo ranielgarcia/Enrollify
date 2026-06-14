@@ -1,6 +1,7 @@
 using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionConflictAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
@@ -11,8 +12,6 @@ namespace Enrollify.Core.Aggregates.ClassSectionConflictAggregate;
 
 public class ClassSectionConflict : EntityBase<ClassSectionConflict, ClassSectionConflictId>, IAggregateRoot
 {
-  private readonly List<ClassSectionConflictAffectedOffering> _affectedOfferings = new();
-
   private ClassSectionConflict() { }
 
   public ClassSectionConflict(
@@ -21,14 +20,7 @@ public class ClassSectionConflict : EntityBase<ClassSectionConflict, ClassSectio
     AcademicTermId academicTermId,
     ClassSectionId classSectionId,
     ClassSectionSubjectOfferingId offeringId,
-    ClassScheduleConflictTypeEnum conflictType,
-    DomainValidationErrorSeverityEnum severity,
-    string message,
-    DayOfWeekEnum dayOfWeek,
-    TimeOnly? startTime,
-    TimeOnly? endTime,
-    DateTimeOffset computedAt,
-    IEnumerable<ClassSectionSubjectOfferingId>? affectedOfferingIds
+    ConflictResult conflictResult
     )
   {
     CollegeId = Guard.Against.Null(collegeId, nameof(collegeId));
@@ -36,21 +28,14 @@ public class ClassSectionConflict : EntityBase<ClassSectionConflict, ClassSectio
     AcademicTermId = Guard.Against.Null(academicTermId, nameof(academicTermId));
     ClassSectionId = Guard.Against.Null(classSectionId, nameof(classSectionId));
     OfferingId = Guard.Against.Null(offeringId, nameof(offeringId));
-    ConflictType = Guard.Against.Null(conflictType, nameof(conflictType));
-    Severity = Guard.Against.Null(severity, nameof(severity));
-    Message = Guard.Against.NullOrEmpty(message, nameof(message));
-    DayOfWeek = Guard.Against.Null(dayOfWeek, nameof(dayOfWeek));
-    StartTime = startTime;
-    EndTime = endTime;
-    ComputedAt = Guard.Against.Null(computedAt, nameof(computedAt));
-
-    if (affectedOfferingIds != null && affectedOfferingIds.Any())
-    {
-      _affectedOfferings.AddRange(affectedOfferingIds.Select(offeringId => new ClassSectionConflictAffectedOffering(Id, offeringId)));
-    }
+    ConflictType = Guard.Against.Null(conflictResult.Type, nameof(conflictResult.Type));
+    Severity = Guard.Against.Null(conflictResult.Severity, nameof(conflictResult.Severity));
+    Message = Guard.Against.NullOrEmpty(conflictResult.Message, nameof(conflictResult.Message));
+    DayOfWeek = Guard.Against.Null(conflictResult.DayOfWeek, nameof(conflictResult.DayOfWeek));
+    StartTime = conflictResult.StartTime;
+    EndTime = conflictResult.EndTime;
+    AffectedOfferings = conflictResult.AffectedOfferings;
   }
-
-  public IReadOnlyCollection<ClassSectionConflictAffectedOffering> AffectedOfferings => _affectedOfferings.AsReadOnly();
 
   public CollegeId CollegeId { get; private set; }
 
@@ -73,4 +58,5 @@ public class ClassSectionConflict : EntityBase<ClassSectionConflict, ClassSectio
 
   public DateTimeOffset ComputedAt { get; private set; }
 
+  public List<AffectedOffering> AffectedOfferings { get; private set; }
 }

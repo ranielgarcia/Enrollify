@@ -17,6 +17,7 @@ using Enrollify.Application.Features.SubjectEquivalences;
 using Enrollify.Application.Features.Subjects;
 using Enrollify.Application.Features.Teachers;
 using Enrollify.Application.Features.Teachers.Storage;
+using Enrollify.Core.Constants;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
 using Enrollify.Core.Services.ScheduleConflictDetection;
@@ -57,9 +58,19 @@ public static class InfrastructureServiceExtensions
     // Auto register all Vogen Dapper type handlers/converters
     VogenDapperTypeHandlerRegistration.RegisterTypeHandlers();
 
-    // Auto register all SmartEnum Dapper type handlers
+    // Auto register all SmartEnum Dapper type handlers from Enrollify.Core assembly
+    // This handles regular SmartEnum types like PermissionScopeEnum, etc.
     RegisterSmartEnumTypeHandlers(typeof(PermissionScopeEnum).Assembly);
+
+    // Manually register SmartFlagEnum types (bit-flag enums)
+    // SmartFlagEnum requires a specific handler because it can hold multiple values
     SqlMapper.AddTypeHandler(new SmartFlagEnumDapperTypeHandler<PermissionEnum>());
+
+    // Custom handler for DayOfWeekEnum (SmartEnum<T, string> with string values)
+    // The auto-registration uses FromName() but our database stores values ("MON", "TUE", etc.)
+    // This handler uses FromValue() to correctly parse the database values
+    SqlMapper.AddTypeHandler(new DayOfWeekEnumDapperTypeHandler());
+
 
     // Register custom type handler for TimeSpan → TimeOnly conversion
     // This is required because Dapper doesn't have built-in support for converting

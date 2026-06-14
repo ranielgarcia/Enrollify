@@ -12,6 +12,7 @@ CREATE TABLE ClassSectionConflicts
   DayOfWeek      CHAR(3)        NOT NULL,
   StartTime      TIME           NULL,
   EndTime        TIME           NULL,
+  AffectedOfferingsJson NVARCHAR(MAX) NULL, -- json array of affected offerings objects
   ComputedAt     DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET(),
   CONSTRAINT FK_ClassSectionConflicts_College
     FOREIGN KEY (CollegeId) REFERENCES Colleges (Id) ON DELETE CASCADE,
@@ -50,19 +51,3 @@ INCLUDE
     EndTime,
     ComputedAt
 );
-
-
-CREATE TABLE ClassSectionConflictAffectedOfferings
-(
-  Id             INT            NOT NULL IDENTITY (1,1) PRIMARY KEY,
-  ConflictId     INT            NOT NULL,
-  OfferingId     INT            NOT NULL,
-  CONSTRAINT FK_ClassSectionConflictAffectedOfferings_Conflict
-    FOREIGN KEY (ConflictId) REFERENCES ClassSectionConflicts (Id) ON DELETE CASCADE,
-  CONSTRAINT FK_ClassSectionConflictAffectedOfferings_Offering
-    FOREIGN KEY (OfferingId) REFERENCES ClassSectionSubjectOffering (Id) ON DELETE NO ACTION,
-);
-
-CREATE
-  NONCLUSTERED INDEX IX_ClassSectionConflictAffectedOfferings_ConflictId
-  ON ClassSectionConflictAffectedOfferings (ConflictId);

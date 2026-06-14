@@ -1,4 +1,6 @@
+using System.Text.Json;
 using Enrollify.Core.Aggregates.ClassSectionConflictAggregate;
+using Enrollify.Core.Aggregates.ClassSectionConflictAggregate.Models;
 
 namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.ClassSectionConflictConfigs;
 
@@ -48,25 +50,12 @@ public class ClassSectionConflictConfiguration : IEntityTypeConfiguration<ClassS
     builder.Property(e => e.EndTime).IsRequired(false);
     builder.Property(e => e.ComputedAt).IsRequired();
 
-    // EF Core can't add/remove items via a read-only collection,
-    // so you tell EF to use the backing field instead of the property
-    // This is mainly about materialization and change-tracking without requiring a public setter or a mutable collection property.
-    builder.Navigation(c => c.AffectedOfferings)
-            .UsePropertyAccessMode(PropertyAccessMode.Field);
-
-    builder.OwnsMany<ClassSectionConflictAffectedOffering>(c => c.AffectedOfferings, ao =>
-    {
-      ao.ToTable("ClassSectionConflictAffectedOfferings");
-
-      ao.WithOwner().HasForeignKey(e => e.ConflictId);
-
-      ao.HasKey(e => e.Id);
-      ao.Property(e => e.Id)
-              .UseIdentityColumn()
-              .IsRequired();
-
-      ao.Property(e => e.OfferingId).IsRequired();
-
-    });
+    builder.Property(e => e.AffectedOfferings)
+        .HasConversion(
+            v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+            v => JsonSerializer.Deserialize<List<AffectedOffering>>(v, (JsonSerializerOptions?)null) ?? new List<AffectedOffering>())
+        .HasColumnName("AffectedOfferingsJson")
+        .HasColumnType("nvarchar(max)")
+        .IsRequired(false);
   }
 }

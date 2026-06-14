@@ -1,3 +1,11 @@
+using Enrollify.Core.Aggregates.AcademicYearAggregate;
+using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Aggregates.RoomAggregate;
+using Enrollify.Core.Aggregates.SubjectAggregate;
+using Enrollify.Core.Aggregates.TeacherAggregate;
+using Enrollify.Core.Constants;
+
 namespace Enrollify.Core.Services.ScheduleConflictDetection;
 
 /// <summary>
@@ -7,25 +15,25 @@ namespace Enrollify.Core.Services.ScheduleConflictDetection;
 /// </summary>
 public record ScheduleConflictProjectionDto
 {
-  public int ScheduleId { get; init; }
-  public int OfferingId { get; init; }
-  public int SectionId { get; init; }
+  public ClassScheduleId ScheduleId { get; init; }
+  public ClassSectionSubjectOfferingId OfferingId { get; init; }
+  public ClassSectionId SectionId { get; init; }
   public string SectionName { get; init; } = string.Empty;
-  public int AcademicTermId { get; init; }
+  public AcademicTermId AcademicTermId { get; init; }
 
-  public int? TeacherId { get; init; }
+  public TeacherId? TeacherId { get; init; }
   public string? TeacherFirstName { get; init; }
   public string? TeacherLastName { get; init; }
 
-  public int? RoomId { get; init; }
+  public RoomId? RoomId { get; init; }
   public string? RoomNumber { get; init; }
   public string? BuildingName { get; init; }
 
-  public int SubjectId { get; init; }
-  public string SubjectCode { get; init; } = string.Empty;
+  public SubjectId SubjectId { get; init; }
+  public SubjectCode SubjectCode { get; init; }
   public string SubjectTitle { get; init; } = string.Empty;
 
-  public string DayOfWeek { get; init; } = string.Empty;
+  public DayOfWeekEnum DayOfWeek { get; init; } = null!;
   public TimeOnly StartTime { get; init; }
   public TimeOnly EndTime { get; init; }
 }
