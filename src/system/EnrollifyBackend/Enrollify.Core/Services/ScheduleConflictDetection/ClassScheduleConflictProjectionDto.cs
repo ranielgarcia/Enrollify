@@ -10,10 +10,10 @@ namespace Enrollify.Core.Services.ScheduleConflictDetection;
 
 /// <summary>
 /// Domain-level schedule DTO for conflict detection.
-/// This is used by the ScheduleConflictDetector domain service.
+/// This is used by the ClassScheduleConflictDetector domain service.
 /// The application layer has its own version for API projections.
 /// </summary>
-public record ScheduleConflictProjectionDto
+public record ClassScheduleConflictProjectionDto
 {
   public ClassScheduleId ScheduleId { get; init; }
   public ClassSectionSubjectOfferingId OfferingId { get; init; }

@@ -162,7 +162,7 @@ public static class AddMultipleSchedulesToOffering
         }
 
         // Publish eligibility recompute event once after all schedules are added
-        await _publisher.Publish(new ClassSectionEligibilityRecomputeRequestedEvent(offering.ClassSectionId),
+        await _publisher.Publish(new ClassSectionValidationRecomputeRequestedEvent(offering.ClassSectionId),
           cancellationToken);
 
         _logger.LogInformation("Added {Count} schedule(s) to offering {OfferingId}", addedIds.Count,
@@ -177,6 +177,5 @@ public static class AddMultipleSchedulesToOffering
         return Result.Error("An unexpected error occurred while adding schedules to the offering.");
       }
     }
-
   }
 }

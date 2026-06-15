@@ -1,8 +1,8 @@
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.BuildingAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.ClassSectionConflictAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
@@ -56,7 +56,8 @@ public class EnrollifyDbContext : DbContext
   public DbSet<Subject> Subjects => Set<Subject>();
   public DbSet<Curriculum> Curriculums => Set<Curriculum>();
 
-  public DbSet<LatestActiveCurriculumPerCourseView> LatestActiveCurriculumPerCourse => Set<LatestActiveCurriculumPerCourseView>();
+  public DbSet<LatestActiveCurriculumPerCourseView> LatestActiveCurriculumPerCourse =>
+    Set<LatestActiveCurriculumPerCourseView>();
 
   public DbSet<SubjectEquivalenceGroup> SubjectEquivalenceGroups => Set<SubjectEquivalenceGroup>();
 
@@ -66,10 +67,8 @@ public class EnrollifyDbContext : DbContext
   public DbSet<CourseCurriculumAssignment> CourseCurriculumAssignments => Set<CourseCurriculumAssignment>();
   public DbSet<ClassSection> ClassSections => Set<ClassSection>();
   public DbSet<ClassSectionSubjectOffering> ClassSectionSubjectOfferings => Set<ClassSectionSubjectOffering>();
-  public DbSet<ClassSectionEnrollmentEligibilityValidationMessage> ClassSectionEnrollmentEligibilityValidationMessages
-    => Set<ClassSectionEnrollmentEligibilityValidationMessage>();
 
-  public DbSet<ClassSectionConflict> ClassSectionConflicts => Set<ClassSectionConflict>();
+  public DbSet<ClassSectionValidationIssue> ClassSectionValidationIssues => Set<ClassSectionValidationIssue>();
 
   public DbSet<User> Users => Set<User>();
   public DbSet<Role> Roles => Set<Role>();
@@ -81,14 +80,16 @@ public class EnrollifyDbContext : DbContext
     modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
     modelBuilder.Entity<LatestActiveCurriculumPerCourseView>()
-        .ToView("vw_LatestActiveCurriculumPerCourse")
-        .HasNoKey();
+      .ToView("vw_LatestActiveCurriculumPerCourse")
+      .HasNoKey();
 
     modelBuilder.AddSoftDeleteQueryFilter();
   }
 
-  public override int SaveChanges() =>
-        SaveChangesAsync().GetAwaiter().GetResult();
+  public override int SaveChanges()
+  {
+    return SaveChangesAsync().GetAwaiter().GetResult();
+  }
 
   protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
   {
@@ -111,10 +112,8 @@ public class EnrollifyDbContext : DbContext
     configurationBuilder.RegisterAllInTeacherVogenEfCoreConverters();
     configurationBuilder.RegisterAllInSharedValueObjectsVogenEfCoreConverters();
     configurationBuilder.RegisterAllInAcademicYearVogenEfCoreConverters();
-    configurationBuilder.RegisterAllInClassSectionVogenEfCoreConverters();
     configurationBuilder.RegisterAllInClassSectionSubjectOfferingVogenEfCoreConverters();
     configurationBuilder.RegisterAllInCourseCurriculumAssignmentEfCoreConverters();
-    configurationBuilder.RegisterAllInClassSectionConflictVogenEfCoreConverters();
-
+    configurationBuilder.RegisterAllInClassSectionValidationIssueVogenEfCoreConverters();
   }
 }

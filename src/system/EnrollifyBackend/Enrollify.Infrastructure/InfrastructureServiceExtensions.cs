@@ -20,6 +20,7 @@ using Enrollify.Application.Features.Teachers.Storage;
 using Enrollify.Core.Constants;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
+using Enrollify.Core.Services.ClassSectionDataIntegrityValidation;
 using Enrollify.Core.Services.ScheduleConflictDetection;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
@@ -50,7 +51,7 @@ public static class InfrastructureServiceExtensions
     Guard.Against.Null(connectionString);
 
     services.AddTransient<IDbConnectionFactory>(sp =>
-        new SqlConnectionFactory(connectionString));
+      new SqlConnectionFactory(connectionString));
 
     // Azure Blob Storage
     services.AddStorageSettings(config);
@@ -83,8 +84,8 @@ public static class InfrastructureServiceExtensions
 
     services.AddDbContext<EnrollifyDbContext>((provider, options) =>
     {
-      var eventDispatchInterceptor = provider.GetRequiredService<EventDispatchInterceptor>();
-      var preSaveChangesInterceptor = provider.GetRequiredService<PreSaveChangesInterceptor>();
+      EventDispatchInterceptor eventDispatchInterceptor = provider.GetRequiredService<EventDispatchInterceptor>();
+      PreSaveChangesInterceptor preSaveChangesInterceptor = provider.GetRequiredService<PreSaveChangesInterceptor>();
 
       options.UseSqlServer(connectionString);
 
@@ -97,7 +98,7 @@ public static class InfrastructureServiceExtensions
 
 
     services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>))
-           .AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
+      .AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
 
     services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
@@ -117,16 +118,18 @@ public static class InfrastructureServiceExtensions
     services.AddScoped<IAcademicYearAndTermRepository, AcademicYearAndTermRepository>();
     services.AddScoped<IClassSectionRepository, ClassSectionRepository>();
     services.AddScoped<IClassSectionSubjectOfferingRepository, ClassSectionSubjectOfferingRepository>();
-    services.AddScoped<IClassSectionSubjectOfferingScheduleConflictRepository, ClassSectionSubjectOfferingScheduleConflictRepository>();
-    services.AddScoped<IClassSectionEligibilityValidationMessageRepository, ClassSectionEligibilityValidationMessageRepository>();
-    services.AddScoped<IClassSectionConflictRepository, ClassSectionConflictRepository>();
+    services
+      .AddScoped<IClassSectionSubjectOfferingScheduleConflictRepository,
+        ClassSectionSubjectOfferingScheduleConflictRepository>();
+    services.AddScoped<IClassSectionValidationIssueRepository, ClassSectionValidationIssueRepository>();
     services.AddScoped<ICourseCurriculumAssignmentRepository, CourseCurriculumAssignmentRepository>();
 
 
     services.AddScoped<IApplicableCurriculumQueryService, ApplicableCurriculumQueryService>();
 
     // Domain services
-    services.AddScoped<ScheduleConflictDetector>();
+    services.AddScoped<ClassSectionDataIntegrityValidator>();
+    services.AddScoped<ClassScheduleConflictDetector>();
 
     // Application services
     services.AddScoped<ConflictDetectionHelper>();
@@ -142,39 +145,35 @@ public static class InfrastructureServiceExtensions
   /// <param name="assemblies">Assemblies to scan for SmartEnum types. If none provided, scans the calling assembly.</param>
   public static void RegisterSmartEnumTypeHandlers(params Assembly[] assemblies)
   {
-    if (assemblies == null || assemblies.Length == 0)
-    {
-      assemblies = [Assembly.GetCallingAssembly()];
-    }
+    if (assemblies == null || assemblies.Length == 0) assemblies = [Assembly.GetCallingAssembly()];
 
-    var smartEnumTypes = assemblies
-        .SelectMany(assembly => assembly.GetTypes())
-        .Where(type => type is { IsClass: true, IsAbstract: false }
-                      && IsSmartEnum(type));
+    IEnumerable<Type> smartEnumTypes = assemblies
+      .SelectMany(assembly => assembly.GetTypes())
+      .Where(type => type is { IsClass: true, IsAbstract: false }
+                     && IsSmartEnum(type));
 
-    foreach (var smartEnumType in smartEnumTypes)
-    {
+    foreach (Type smartEnumType in smartEnumTypes)
       try
       {
         // Check if it's SmartEnum<T> (int value) or SmartEnum<T, TValue> (custom value type)
-        var baseType = smartEnumType.BaseType;
+        Type? baseType = smartEnumType.BaseType;
         while (baseType != null && baseType.IsGenericType)
         {
-          var genericTypeDef = baseType.GetGenericTypeDefinition();
+          Type genericTypeDef = baseType.GetGenericTypeDefinition();
 
           if (genericTypeDef == typeof(SmartEnum<>))
           {
             // SmartEnum<T> with int values - use SmartEnumByValueTypeHandler
-            var handlerType = typeof(SmartEnumByValueTypeHandler<>).MakeGenericType(smartEnumType);
-            var handler = Activator.CreateInstance(handlerType);
+            Type handlerType = typeof(SmartEnumByValueTypeHandler<>).MakeGenericType(smartEnumType);
+            object? handler = Activator.CreateInstance(handlerType);
             SqlMapper.AddTypeHandler(smartEnumType, (SqlMapper.ITypeHandler)handler!);
             break;
           }
           else if (genericTypeDef == typeof(SmartEnum<,>))
           {
             // SmartEnum<T, TValue> with custom value type - use SmartEnumByNameTypeHandler
-            var handlerType = typeof(SmartEnumByNameTypeHandler<>).MakeGenericType(smartEnumType);
-            var handler = Activator.CreateInstance(handlerType);
+            Type handlerType = typeof(SmartEnumByNameTypeHandler<>).MakeGenericType(smartEnumType);
+            object? handler = Activator.CreateInstance(handlerType);
             SqlMapper.AddTypeHandler(smartEnumType, (SqlMapper.ITypeHandler)handler!);
             break;
           }
@@ -193,25 +192,24 @@ public static class InfrastructureServiceExtensions
         // Skip types that cannot be loaded or instantiated
         continue;
       }
-    }
   }
 
   private static bool IsSmartEnum(Type type)
   {
-    var baseType = type.BaseType;
+    Type? baseType = type.BaseType;
     while (baseType != null)
     {
       if (baseType.IsGenericType)
       {
-        var genericTypeDef = baseType.GetGenericTypeDefinition();
+        Type genericTypeDef = baseType.GetGenericTypeDefinition();
         if (genericTypeDef == typeof(SmartEnum<>) ||
             genericTypeDef == typeof(SmartEnum<,>))
-        {
           return true;
-        }
       }
+
       baseType = baseType.BaseType;
     }
+
     return false;
   }
 }

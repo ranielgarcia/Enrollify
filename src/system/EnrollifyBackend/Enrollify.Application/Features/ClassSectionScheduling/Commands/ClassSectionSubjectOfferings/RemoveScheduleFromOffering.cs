@@ -86,7 +86,7 @@ public static class RemoveScheduleFromOffering
         return Result.Error("Unable to remove schedule from offering.");
       }
 
-      await _publisher.Publish(new ClassSectionEligibilityRecomputeRequestedEvent(offering.ClassSectionId),
+      await _publisher.Publish(new ClassSectionValidationRecomputeRequestedEvent(offering.ClassSectionId),
         cancellationToken);
 
       _logger.LogInformation("Removed schedule {ScheduleId} from offering {OfferingId}",

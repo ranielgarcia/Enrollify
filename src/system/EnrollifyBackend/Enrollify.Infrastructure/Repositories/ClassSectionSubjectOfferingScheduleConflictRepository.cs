@@ -12,7 +12,8 @@ using Microsoft.Data.SqlClient;
 
 namespace Enrollify.Infrastructure.Repositories;
 
-public class ClassSectionSubjectOfferingScheduleConflictRepository : IClassSectionSubjectOfferingScheduleConflictRepository
+public class
+  ClassSectionSubjectOfferingScheduleConflictRepository : IClassSectionSubjectOfferingScheduleConflictRepository
 {
   private readonly IDbConnectionFactory _connectionFactory;
 
@@ -166,7 +167,7 @@ public class ClassSectionSubjectOfferingScheduleConflictRepository : IClassSecti
   /// within the same academic term. Used for section detail conflict display (Read Path).
   /// Excludes the target section to avoid loading duplicate data.
   /// </summary>
-  public async Task<List<ScheduleConflictProjectionDto>> GetRelatedSchedulesForConflictDetectionAsync(
+  public async Task<List<ClassScheduleConflictProjectionDto>> GetRelatedSchedulesForConflictDetectionAsync(
     IEnumerable<TeacherId> teacherIds,
     IEnumerable<RoomId> roomIds,
     AcademicTermId academicTermId,
@@ -177,7 +178,7 @@ public class ClassSectionSubjectOfferingScheduleConflictRepository : IClassSecti
     var roomIdList = roomIds.ToList();
 
     // If no teachers or rooms to check, return empty list
-    if (!teacherIdList.Any() && !roomIdList.Any()) return new List<ScheduleConflictProjectionDto>();
+    if (!teacherIdList.Any() && !roomIdList.Any()) return new List<ClassScheduleConflictProjectionDto>();
 
     using SqlConnection conn = await _connectionFactory.CreateOpenAsync(ct);
 
@@ -220,7 +221,7 @@ public class ClassSectionSubjectOfferingScheduleConflictRepository : IClassSecti
                   OR (@HasRooms = 1 AND o.RoomId IN @RoomIds)
               )";
 
-    IEnumerable<ScheduleConflictProjectionDto> results = await conn.QueryAsync<ScheduleConflictProjectionDto>(
+    IEnumerable<ClassScheduleConflictProjectionDto> results = await conn.QueryAsync<ClassScheduleConflictProjectionDto>(
       sql,
       new
       {
@@ -238,7 +239,7 @@ public class ClassSectionSubjectOfferingScheduleConflictRepository : IClassSecti
   /// <summary>
   /// Projects all schedules for a given section into flat DTOs for conflict detection.
   /// </summary>
-  public async Task<List<ScheduleConflictProjectionDto>> GetSectionSchedulesForConflictDetectionAsync(
+  public async Task<List<ClassScheduleConflictProjectionDto>> GetSectionSchedulesForConflictDetectionAsync(
     ClassSectionId sectionId,
     CancellationToken ct)
   {
@@ -278,14 +279,15 @@ public class ClassSectionSubjectOfferingScheduleConflictRepository : IClassSecti
               AND sec.IsActive = 1
               AND sec.Id = @SectionId";
 
-    IEnumerable<ScheduleConflictProjectionDto> results = await conn.QueryAsync<ScheduleConflictProjectionDto>(
+    IEnumerable<ClassScheduleConflictProjectionDto> results = await conn.QueryAsync<ClassScheduleConflictProjectionDto>(
       sql,
       new { SectionId = sectionId.Value });
 
     return results.ToList();
   }
 
-  public async Task<List<ScheduleConflictProjectionDto>> GetOfferingSchedulesForConflictDetectionAsync(ClassSectionSubjectOfferingId offeringId, CancellationToken cancellationToken)
+  public async Task<List<ClassScheduleConflictProjectionDto>> GetOfferingSchedulesForConflictDetectionAsync(
+    ClassSectionSubjectOfferingId offeringId, CancellationToken cancellationToken)
   {
     using SqlConnection conn = await _connectionFactory.CreateOpenAsync(cancellationToken);
 
@@ -323,7 +325,7 @@ public class ClassSectionSubjectOfferingScheduleConflictRepository : IClassSecti
               AND sec.IsActive = 1
               AND o.Id = @OfferingId";
 
-    IEnumerable<ScheduleConflictProjectionDto> results = await conn.QueryAsync<ScheduleConflictProjectionDto>(
+    IEnumerable<ClassScheduleConflictProjectionDto> results = await conn.QueryAsync<ClassScheduleConflictProjectionDto>(
       sql,
       new { OfferingId = offeringId.Value });
 

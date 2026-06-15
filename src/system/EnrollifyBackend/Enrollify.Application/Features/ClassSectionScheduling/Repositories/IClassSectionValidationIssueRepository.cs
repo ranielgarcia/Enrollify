@@ -1,12 +1,12 @@
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.ClassSectionConflictAggregate;
+using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 
-public interface IClassSectionConflictRepository
+public interface IClassSectionValidationIssueRepository
 {
   Task ReplaceAllForSectionAsync(
     ClassSectionId classSectionId,
-    IEnumerable<ClassSectionConflict> conflicts,
+    IEnumerable<ClassSectionValidationIssue> validationIssues,
     CancellationToken cancellationToken = default);
 }

@@ -2,9 +2,9 @@ using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 
-namespace Enrollify.Core.Aggregates.ClassSectionConflictAggregate.Models;
+namespace Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Models;
 
-public record AffectedOffering
+public record ClassScheduleConflictingOffering
 {
   public ClassSectionSubjectOfferingId Id { get; init; }
   public SubjectSummary Subject { get; init; } = null!;
@@ -13,6 +13,7 @@ public record AffectedOffering
 }
 
 public record SubjectSummary(SubjectCode Code, string Title);
-public record SectionSummary(ClassSectionId Id, string Name);
-public record RoomSummary(string RoomNumber, string Building);
 
+public record SectionSummary(ClassSectionId Id, string Name);
+
+public record RoomSummary(string RoomNumber, string Building);

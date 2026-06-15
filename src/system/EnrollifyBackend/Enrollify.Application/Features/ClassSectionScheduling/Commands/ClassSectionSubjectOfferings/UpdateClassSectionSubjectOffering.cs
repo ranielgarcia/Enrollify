@@ -89,7 +89,7 @@ public static class UpdateClassSectionSubjectOffering
         return Result.Error("Unable to update the subject offering.");
       }
 
-      await _publisher.Publish(new ClassSectionEligibilityRecomputeRequestedEvent(offering.ClassSectionId),
+      await _publisher.Publish(new ClassSectionValidationRecomputeRequestedEvent(offering.ClassSectionId),
         cancellationToken);
 
       _logger.LogInformation("Updated subject offering {OfferingId}", command.Id.Value);

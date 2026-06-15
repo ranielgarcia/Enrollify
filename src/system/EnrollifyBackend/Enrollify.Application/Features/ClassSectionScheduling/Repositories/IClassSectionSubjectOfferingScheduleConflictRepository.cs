@@ -54,7 +54,7 @@ public interface IClassSectionSubjectOfferingScheduleConflictRepository
   /// Loads all schedule DTOs for offerings that share the given teacher or room IDs
   /// within the same academic term. Used for section detail conflict display (Read Path).
   /// </summary>
-  Task<List<ScheduleConflictProjectionDto>> GetRelatedSchedulesForConflictDetectionAsync(
+  Task<List<ClassScheduleConflictProjectionDto>> GetRelatedSchedulesForConflictDetectionAsync(
     IEnumerable<TeacherId> teacherIds,
     IEnumerable<RoomId> roomIds,
     AcademicTermId academicTermId,
@@ -64,11 +64,11 @@ public interface IClassSectionSubjectOfferingScheduleConflictRepository
   /// <summary>
   /// Projects all schedules for a given section into flat DTOs for conflict detection.
   /// </summary>
-  Task<List<ScheduleConflictProjectionDto>> GetSectionSchedulesForConflictDetectionAsync(
+  Task<List<ClassScheduleConflictProjectionDto>> GetSectionSchedulesForConflictDetectionAsync(
     ClassSectionId sectionId,
     CancellationToken cancellationToken);
 
-  Task<List<ScheduleConflictProjectionDto>> GetOfferingSchedulesForConflictDetectionAsync(
+  Task<List<ClassScheduleConflictProjectionDto>> GetOfferingSchedulesForConflictDetectionAsync(
     ClassSectionSubjectOfferingId offeringId,
     CancellationToken cancellationToken);
 }

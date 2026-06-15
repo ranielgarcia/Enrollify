@@ -76,14 +76,15 @@ public class GetClassSectionByIdQueryHandler
     var roomIds = offeringDtos.Where(o => o.Room != null).Select(o => RoomId.From(o.Room!.Id)).ToList();
 
     // Use helper to detect conflicts
-    Dictionary<ClassSectionSubjectOfferingId, List<ConflictResultDto>> conflictsByOffering =
+    Dictionary<ClassSectionSubjectOfferingId, List<ClassSectionValidationIssueDto>> conflictsByOffering =
       await _conflictDetectionHelper.DetectConflictsForSectionAsync(
         section, teacherIds, roomIds, cancellationToken);
 
     // Embed conflicts in each offering DTO
     foreach (ClassSectionSubjectOfferingDto dto in offeringDtos)
-      dto.Conflicts = conflictsByOffering.TryGetValue(ClassSectionSubjectOfferingId.From(dto.Id), out List<ConflictResultDto>? conflicts)
+      dto.Conflicts = conflictsByOffering.TryGetValue(ClassSectionSubjectOfferingId.From(dto.Id),
+        out List<ClassSectionValidationIssueDto>? conflicts)
         ? conflicts
-        : new List<ConflictResultDto>();
+        : new List<ClassSectionValidationIssueDto>();
   }
 }

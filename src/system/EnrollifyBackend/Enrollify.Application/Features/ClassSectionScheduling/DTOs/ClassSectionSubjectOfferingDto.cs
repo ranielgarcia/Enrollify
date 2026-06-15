@@ -22,12 +22,12 @@ public class ClassSectionSubjectOfferingDto : BaseDto
   public OfferingTeacherDto? Teacher { get; set; }
   public OfferingRoomDto? Room { get; set; }
   public IReadOnlyList<ClassScheduleDto> Schedules { get; set; } = [];
-  
+
   /// <summary>
   /// Detected conflicts for this offering (populated in section detail queries).
   /// Empty list if no conflicts detected.
   /// </summary>
-  public List<ConflictResultDto> Conflicts { get; set; } = [];
+  public List<ClassSectionValidationIssueDto> Conflicts { get; set; } = [];
 
   public static ClassSectionSubjectOfferingDto FromEntity(ClassSectionSubjectOffering offering)
   {
