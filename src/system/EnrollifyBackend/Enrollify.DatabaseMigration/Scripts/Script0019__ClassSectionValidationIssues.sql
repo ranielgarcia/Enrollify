@@ -47,7 +47,7 @@ INCLUDE
 (
     ClassSectionId,
     OfferingId,
-    ConflictType,
+    Type,
     StartTime,
     EndTime,
     ComputedAt

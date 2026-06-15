@@ -4,7 +4,6 @@ using Dapper;
 using Enrollify.Application.Features.AcademicYearAndTerm;
 using Enrollify.Application.Features.Buildings;
 using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
-using Enrollify.Application.Features.ClassSectionScheduling.Services;
 using Enrollify.Application.Features.Colleges;
 using Enrollify.Application.Features.CourseCurriculumAssignments;
 using Enrollify.Application.Features.Courses;
@@ -130,9 +129,6 @@ public static class InfrastructureServiceExtensions
     // Domain services
     services.AddScoped<ClassSectionDataIntegrityValidator>();
     services.AddScoped<ClassScheduleConflictDetector>();
-
-    // Application services
-    services.AddScoped<ConflictDetectionHelper>();
 
     logger.LogInformation("{Project} services registered", "Infrastructure");
 
