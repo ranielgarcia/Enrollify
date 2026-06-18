@@ -24,16 +24,13 @@ public class FilterClassSectionsPaginatedQueryHandler
 {
   private readonly IReadRepository<ClassSection> _readRepository;
   private readonly IReadRepository<AcademicYear> _academicYearRepository;
-  private readonly IReadRepository<ClassSectionEnrollmentEligibilityValidationMessage> _validationMessageRepository;
 
   public FilterClassSectionsPaginatedQueryHandler(
     IReadRepository<ClassSection> readRepository,
-    IReadRepository<AcademicYear> academicYearRepository,
-    IReadRepository<ClassSectionEnrollmentEligibilityValidationMessage> validationMessageRepository)
+    IReadRepository<AcademicYear> academicYearRepository)
   {
     _readRepository = readRepository;
     _academicYearRepository = academicYearRepository;
-    _validationMessageRepository = validationMessageRepository;
   }
 
   public async Task<Result<PagedResult<ClassSectionDto>>> Handle(
@@ -68,24 +65,10 @@ public class FilterClassSectionsPaginatedQueryHandler
     List<ClassSection> sections = await _readRepository.ListAsync(spec, cancellationToken);
     int totalCount = await _readRepository.CountAsync(spec, cancellationToken);
 
-    var sectionIds = sections.Select(s => s.Id).Distinct().ToList();
-
-    List<ClassSectionEnrollmentEligibilityValidationMessage> validationMessagesPerSection =
-      await _validationMessageRepository
-        .ListAsync(new GetClassSectionEnrollmentEligibilityValidationErrorsSpec(sectionIds), cancellationToken);
-
-    var validationMessagesPerSectionLookup = validationMessagesPerSection.GroupBy(m => m.ClassSectionId)
-      .ToDictionary(g => g.Key, g => g.ToList());
-
     var sectionsToReturn = new List<ClassSectionDto>();
     foreach (ClassSection section in sections)
     {
-      List<ClassSectionEnrollmentEligibilityValidationMessage> allValidationMessagesForCurrentSection =
-        validationMessagesPerSectionLookup.ContainsKey(section.Id)
-          ? validationMessagesPerSectionLookup[section.Id]
-          : new List<ClassSectionEnrollmentEligibilityValidationMessage>();
-
-      var sectionDto = ClassSectionDto.FromEntity(section, allValidationMessagesForCurrentSection.Count);
+      var sectionDto = ClassSectionDto.FromEntity(section);
       sectionsToReturn.Add(sectionDto);
     }
 

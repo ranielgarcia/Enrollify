@@ -23,11 +23,7 @@ public class ClassSectionDto : BaseDto
   public ClassSectionAdviserDto? Adviser { get; set; }
   public ClassSectionStatusDto Status { get; set; } = null!;
 
-  public int UnresolvedErrorsCount { get; set; }
-
-  public bool IsEligibleForOpenEnrollment { get; set; }
-
-  public static ClassSectionDto FromEntity(ClassSection section, int unresolvedErrorsCount)
+  public static ClassSectionDto FromEntity(ClassSection section)
   {
     return new ClassSectionDto
     {
@@ -36,8 +32,6 @@ public class ClassSectionDto : BaseDto
       FullName = section.FullName,
       SectionCode = (char)section.SectionCode,
       IntendedYearLevel = (int)section.IntendedYearLevel,
-      UnresolvedErrorsCount = unresolvedErrorsCount,
-      IsEligibleForOpenEnrollment = unresolvedErrorsCount == 0,
 
       Course = section.Course is not null
         ? new ClassSectionCourseDto

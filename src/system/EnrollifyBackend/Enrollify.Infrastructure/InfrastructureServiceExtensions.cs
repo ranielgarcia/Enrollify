@@ -122,7 +122,7 @@ public static class InfrastructureServiceExtensions
         ClassSectionSubjectOfferingScheduleConflictRepository>();
     services.AddScoped<IClassSectionValidationIssueRepository, ClassSectionValidationIssueRepository>();
     services.AddScoped<ICourseCurriculumAssignmentRepository, CourseCurriculumAssignmentRepository>();
-
+    services.AddScoped<IClassSectionSchedulingStatsRepository, ClassSectionSchedulingStatsRepository>();
 
     services.AddScoped<IApplicableCurriculumQueryService, ApplicableCurriculumQueryService>();
 

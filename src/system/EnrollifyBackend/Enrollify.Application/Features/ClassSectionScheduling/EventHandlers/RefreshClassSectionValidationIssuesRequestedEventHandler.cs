@@ -2,9 +2,10 @@ using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
+using Enrollify.Core.Aggregates.ClassSectionSchedulingStatsAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
+using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Models;
 using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
@@ -17,22 +18,23 @@ using Microsoft.Extensions.Logging;
 namespace Enrollify.Application.Features.ClassSectionScheduling.EventHandlers;
 
 /// <summary>
-/// Handles <see cref="ClassSectionValidationRecomputeRequestedEvent"/> — re-runs the full
+/// Handles <see cref="RefreshClassSectionValidationIssuesRequestedEvent"/> — re-runs the full
 /// eligibility validation pipeline and replaces all stored messages for the affected section.
 /// Triggered by adviser updates on <see cref="ClassSection"/> and by teacher, room, or schedule
 /// changes on <see cref="ClassSectionSubjectOffering"/>.
 /// </summary>
-public sealed class ClassSectionValidationRecomputeRequestedEventHandler(
+public sealed class RefreshClassSectionValidationIssuesRequestedEventHandler(
   IReadRepository<ClassSection> classSectionReadRepository,
   IReadRepository<ClassSectionSubjectOffering> offeringReadRepository,
   IClassSectionValidationIssueRepository validationIssueRepository,
   ClassScheduleConflictDetector conflictDetector,
   ClassSectionDataIntegrityValidator dataIntegrityValidator,
   IClassSectionSubjectOfferingScheduleConflictRepository conflictRepo,
-  ILogger<ClassSectionValidationRecomputeRequestedEventHandler> logger)
-  : IDomainEventHandler<ClassSectionValidationRecomputeRequestedEvent>
+  IPublisher publisher,
+  ILogger<RefreshClassSectionValidationIssuesRequestedEventHandler> logger)
+  : IDomainEventHandler<RefreshClassSectionValidationIssuesRequestedEvent>
 {
-  public async Task Handle(ClassSectionValidationRecomputeRequestedEvent notification,
+  public async Task Handle(RefreshClassSectionValidationIssuesRequestedEvent notification,
     CancellationToken cancellationToken)
   {
     ClassSectionId classSectionId = notification.ClassSectionId;
@@ -43,7 +45,7 @@ public sealed class ClassSectionValidationRecomputeRequestedEventHandler(
     if (section is null)
     {
       logger.LogWarning(
-        "ClassSectionValidationRecomputeRequestedEventHandler: ClassSection {ClassSectionId} not found — skipping",
+        "RefreshClassSectionValidationIssuesRequestedEventHandler: ClassSection {ClassSectionId} not found — skipping",
         classSectionId.Value);
       return;
     }
@@ -97,6 +99,10 @@ public sealed class ClassSectionValidationRecomputeRequestedEventHandler(
     var validationIssues = conflictValidationIssues.Concat(dataIntegrityValidationIssues).ToList();
 
     await validationIssueRepository.ReplaceAllForSectionAsync(section.Id, validationIssues, cancellationToken);
+
+    await publisher.Publish(
+      new RefreshClassSectionSchedulingStatsAggregateCountsRequestedEvent(section.AcademicTermId, section.CourseId,
+        section.Id), cancellationToken);
 
     logger.LogInformation(
       "Eligibility recomputed for ClassSection {ClassSectionId}: {ErrorCount} error(s)",
