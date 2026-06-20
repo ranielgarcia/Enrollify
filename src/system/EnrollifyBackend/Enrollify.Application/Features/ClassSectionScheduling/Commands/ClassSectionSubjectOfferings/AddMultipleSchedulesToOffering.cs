@@ -4,6 +4,7 @@ using Enrollify.Application.Features.ClassSectionScheduling.Specifications.Class
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.Constants;
 using Enrollify.Core.DomainExceptions;
 using Enrollify.SharedKernel;
@@ -161,9 +162,7 @@ public static class AddMultipleSchedulesToOffering
           if (scheduleId is not null) addedIds.Add(scheduleId.Value);
         }
 
-        // Publish eligibility recompute event once after all schedules are added
-        await _publisher.Publish(new ClassSectionValidationRecomputeRequestedEvent(offering.ClassSectionId),
-          cancellationToken);
+        await _publisher.Publish(new RefreshClassSectionValidationIssuesRequestedEvent(section.Id), cancellationToken);
 
         _logger.LogInformation("Added {Count} schedule(s) to offering {OfferingId}", addedIds.Count,
           command.OfferingId.Value);

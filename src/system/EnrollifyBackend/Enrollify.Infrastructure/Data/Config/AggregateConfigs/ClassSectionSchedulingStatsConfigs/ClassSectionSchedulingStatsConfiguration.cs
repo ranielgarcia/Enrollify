@@ -27,8 +27,8 @@ public class ClassSectionSchedulingStatsConfiguration : IEntityTypeConfiguration
 
     builder.Property(e => e.AggregateType)
       .HasColumnName("AggregateType")
-      .HasConversion(v => v.Value
-        , v => Core.Constants.ClassSectionSchedulingStatsAggregateTypeEnum.FromValue(v))
+      .HasConversion(v => v.Name
+        , v => Core.Constants.ClassSectionSchedulingStatsAggregateTypeEnum.FromName(v))
       .IsRequired();
 
     builder.Property(e => e.AggregateCount)

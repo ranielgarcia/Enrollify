@@ -19,4 +19,8 @@
     <ProjectReference Include="..\Enrollify.SharedKernel\Enrollify.SharedKernel.csproj"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\ClassSectionScheduling\Specifications\ClassSectionValidationIssues\"/>
+  </ItemGroup>
+
 </Project>

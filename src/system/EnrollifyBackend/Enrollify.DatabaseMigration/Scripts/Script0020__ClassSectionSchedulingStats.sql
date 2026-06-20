@@ -4,7 +4,7 @@ CREATE TABLE ClassSectionSchedulingStats
   AcademicTermId INT            NOT NULL,
   CourseId       INT            NOT NULL,
   ClassSectionId INT NULL,
-  AggregateType  INT            NOT NULL,
+  AggregateType  VARCHAR(50)    NOT NULL,
   AggregateCount INT            NOT NULL, -- e.g. number of conflicts of this type for the class section
   ComputedAt     DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET(),
   CONSTRAINT FK_ClassSectionSchedulingStats_AcademicTerm

@@ -5,6 +5,7 @@ using Enrollify.Application.Features.ClassSectionScheduling.Specifications.Class
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.Constants;
 using Enrollify.Core.DomainExceptions;
 using Enrollify.SharedKernel;
@@ -86,8 +87,8 @@ public static class RemoveScheduleFromOffering
         return Result.Error("Unable to remove schedule from offering.");
       }
 
-      await _publisher.Publish(new ClassSectionValidationRecomputeRequestedEvent(offering.ClassSectionId),
-        cancellationToken);
+      await _publisher.Publish(new RefreshClassSectionValidationIssuesRequestedEvent(section.Id), cancellationToken);
+
 
       _logger.LogInformation("Removed schedule {ScheduleId} from offering {OfferingId}",
         command.ScheduleId.Value, command.OfferingId.Value);

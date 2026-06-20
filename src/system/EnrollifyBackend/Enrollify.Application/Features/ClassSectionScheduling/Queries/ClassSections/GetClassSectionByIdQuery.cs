@@ -1,12 +1,9 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
-using Enrollify.Application.Features.ClassSectionScheduling.Services;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
-using Enrollify.Core.Aggregates.RoomAggregate;
-using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.SharedKernel;
 using MediatR;
 
@@ -19,19 +16,13 @@ public class GetClassSectionByIdQueryHandler
 {
   private readonly IReadRepository<ClassSection> _classSectionReadRepository;
   private readonly IReadRepository<ClassSectionSubjectOffering> _offeringReadRepository;
-  private readonly IReadRepository<ClassSectionEnrollmentEligibilityValidationMessage> _validationMessageRepository;
-  private readonly ConflictDetectionHelper _conflictDetectionHelper;
 
   public GetClassSectionByIdQueryHandler(
     IReadRepository<ClassSection> classSectionReadRepository,
-    IReadRepository<ClassSectionSubjectOffering> offeringReadRepository,
-    IReadRepository<ClassSectionEnrollmentEligibilityValidationMessage> validationMessageRepository,
-    ConflictDetectionHelper conflictDetectionHelper)
+    IReadRepository<ClassSectionSubjectOffering> offeringReadRepository)
   {
     _classSectionReadRepository = classSectionReadRepository;
     _offeringReadRepository = offeringReadRepository;
-    _validationMessageRepository = validationMessageRepository;
-    _conflictDetectionHelper = conflictDetectionHelper;
   }
 
   public async Task<Result<ClassSectionDetailDto>> Handle(
@@ -47,24 +38,13 @@ public class GetClassSectionByIdQueryHandler
     List<ClassSectionSubjectOffering> offerings = await _offeringReadRepository.ListAsync(
       new GetClassSectionSubjectOfferingsWithFullDetailsByClassSectionIdSpec(request.Id), cancellationToken);
 
-    List<ClassSectionEnrollmentEligibilityValidationMessage> allValidationMessagesForSection =
-      await _validationMessageRepository
-        .ListAsync(new GetClassSectionEnrollmentEligibilityValidationMessagesSpec(section.Id), cancellationToken);
-
     // Convert offerings to DTOs
     var offeringDtos = offerings.Select(ClassSectionSubjectOfferingDto.FromEntity).ToList();
 
-    // Detect and embed conflicts in offering DTOs
-    await DetectAndEmbedConflicts(offeringDtos, section, cancellationToken);
-
-    return Result.Success(ClassSectionDetailDto.FromEntities(section, allValidationMessagesForSection, offeringDtos));
+    return Result.Success(ClassSectionDetailDto.FromEntities(section, offeringDtos));
   }
 
-  /// <summary>
-  /// Detects conflicts for all offerings in the section and embeds them in the DTOs.
-  /// This provides the single source of truth for conflict information on the section detail page.
-  /// </summary>
-  private async Task DetectAndEmbedConflicts(
+  /*private async Task DetectAndEmbedConflicts(
     List<ClassSectionSubjectOfferingDto> offeringDtos,
     ClassSection section,
     CancellationToken cancellationToken)
@@ -86,5 +66,5 @@ public class GetClassSectionByIdQueryHandler
         out List<ClassSectionValidationIssueDto>? conflicts)
         ? conflicts
         : new List<ClassSectionValidationIssueDto>();
-  }
+  }*/
 }

@@ -196,22 +196,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/subject-offerings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["EnrollifyWebAPIFeaturesSubjectOfferingsGetOfferingsByClassSectionIdEndpoint"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/subject-offerings/{id}/schedules/{scheduleId}": {
         parameters: {
             query?: never;
@@ -997,6 +981,12 @@ export interface components {
             /** Format: int32 */
             maximumAllowableYearLevel?: number;
             yearLevelOptions?: components["schemas"]["EnrollifyCoreAcademicCoreSettings_YearLevelOption"][];
+            /** Format: int32 */
+            minimumTeacherBreakMinutes?: number;
+            /** Format: time */
+            earliestClassStartTime?: string;
+            /** Format: time */
+            latestClassEndTime?: string;
         };
         EnrollifyCoreAcademicCoreSettings_YearLevelOption: {
             /** Format: int32 */
@@ -1058,6 +1048,7 @@ export interface components {
         };
         EnrollifyWebAPIFeaturesSubjectOfferingsAddMultipleSchedulesToOfferingRequest: {
             schedules: components["schemas"]["EnrollifyWebAPIFeaturesSubjectOfferingsScheduleItem"][];
+            isValidateConflicts?: boolean | null;
         };
         EnrollifyWebAPIFeaturesSubjectOfferingsScheduleItem: {
             dayOfWeek: string;
@@ -1066,57 +1057,6 @@ export interface components {
             /** Format: time */
             endTime?: string;
         };
-        EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsClassSectionSubjectOfferingDto: components["schemas"]["EnrollifyApplicationBaseDto"] & {
-            /** Format: int32 */
-            id?: number;
-            /** Format: int32 */
-            classSectionId?: number;
-            /** Format: int32 */
-            subjectId?: number;
-            snapshotSubjectCode?: string;
-            snapshotSubjectTitle?: string;
-            /** Format: decimal */
-            snapshotUnits?: number;
-            snapshotIsElective?: boolean;
-            snapshotElectiveGroupName?: string | null;
-            /** Format: int32 */
-            daysPerWeek?: number;
-            /** Format: decimal */
-            hoursPerDay?: number;
-            /** Format: int32 */
-            maxNumberOfStudents?: number | null;
-            isFullyScheduled?: boolean;
-            teacher?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsOfferingTeacherDto"] | null;
-            room?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsOfferingRoomDto"] | null;
-            schedules?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsClassScheduleDto"][];
-        };
-        EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsOfferingTeacherDto: {
-            /** Format: int32 */
-            id?: number;
-            firstName?: string;
-            lastName?: string;
-            email?: string;
-        };
-        EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsOfferingRoomDto: {
-            /** Format: int32 */
-            id?: number;
-            roomNumber?: string;
-            building?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsOfferingRoomBuildingDto"];
-        };
-        EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsOfferingRoomBuildingDto: {
-            name?: string | null;
-        };
-        EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsClassScheduleDto: {
-            /** Format: int32 */
-            id?: number;
-            dayOfWeek?: string;
-            dayOfWeekAbbreviation?: string;
-            /** Format: time */
-            startTime?: string;
-            /** Format: time */
-            endTime?: string;
-        };
-        EnrollifyWebAPIFeaturesSubjectOfferingsGetOfferingsByClassSectionIdRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesSubjectOfferingsRemoveScheduleFromOfferingRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesSubjectOfferingsUpdateSubjectOfferingRequest: {
             /** Format: int32 */
@@ -1496,7 +1436,7 @@ export interface components {
             reOrderClassSectionCodes?: boolean;
         };
         EnrollifyApplicationPagedResultOfClassSectionDto: {
-            items?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionDto"][];
+            items?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionDto"][];
             /** Format: int32 */
             page?: number;
             /** Format: int32 */
@@ -1506,7 +1446,7 @@ export interface components {
             /** Format: int32 */
             totalPages?: number;
         };
-        EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionDto: components["schemas"]["EnrollifyApplicationBaseDto"] & {
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionDto: components["schemas"]["EnrollifyApplicationBaseDto"] & {
             /**
              * Format: int32
              * @description Value object wrapping Int32
@@ -1517,17 +1457,14 @@ export interface components {
             sectionCode?: string;
             /** Format: int32 */
             intendedYearLevel?: number;
-            course?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionCourseDto"];
-            curriculum?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionCurriculumDto"];
-            academicTerm?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionAcademicTermDto"];
-            cohortAcademicYear?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionCohortYearDto"];
-            adviser?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionAdviserDto"] | null;
-            status?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionStatusDto"];
-            /** Format: int32 */
-            unresolvedErrorsCount?: number;
-            isEligibleForOpenEnrollment?: boolean;
+            course?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionCourseDto"];
+            curriculum?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionCurriculumDto"];
+            academicTerm?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionAcademicTermDto"];
+            cohortAcademicYear?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionCohortYearDto"];
+            adviser?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionAdviserDto"] | null;
+            status?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionStatusDto"];
         };
-        EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionCourseDto: {
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionCourseDto: {
             /**
              * Format: int32
              * @description Value object wrapping Int32
@@ -1536,7 +1473,7 @@ export interface components {
             code?: string;
             name?: string;
         };
-        EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionCurriculumDto: {
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionCurriculumDto: {
             /**
              * Format: int32
              * @description Value object wrapping Int32
@@ -1544,7 +1481,7 @@ export interface components {
             id?: number;
             version?: string;
         };
-        EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionAcademicTermDto: {
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionAcademicTermDto: {
             /**
              * Format: int32
              * @description Value object wrapping Int32
@@ -1554,7 +1491,7 @@ export interface components {
             termNumber?: number;
             termName?: string;
         };
-        EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionCohortYearDto: {
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionCohortYearDto: {
             /**
              * Format: int32
              * @description Value object wrapping Int32
@@ -1562,7 +1499,7 @@ export interface components {
             id?: number;
             academicYearTitle?: string;
         };
-        EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionAdviserDto: {
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionAdviserDto: {
             /**
              * Format: int32
              * @description Value object wrapping Int32
@@ -1572,7 +1509,7 @@ export interface components {
             lastName?: string;
             email?: string;
         };
-        EnrollifyApplicationFeaturesClassSectionsDTOsClassSectionStatusDto: {
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionStatusDto: {
             name?: string;
             /** Format: int32 */
             value?: number;
@@ -2267,51 +2204,6 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Bad Request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    EnrollifyWebAPIFeaturesSubjectOfferingsGetOfferingsByClassSectionIdEndpoint: {
-        parameters: {
-            query: {
-                SectionId: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Success */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EnrollifyApplicationFeaturesClassSectionSubjectOfferingsDTOsClassSectionSubjectOfferingDto"][];
-                };
-            };
             /** @description Bad Request */
             400: {
                 headers: {

@@ -19,19 +19,16 @@ public class ClassSectionValidationIssue : EntityBase<ClassSectionValidationIssu
 
   // Constructor for conflict-origin issues (has times, offerings, affected offerings)
   public ClassSectionValidationIssue(
-    CollegeId collegeId,
     CourseId courseId,
     AcademicTermId academicTermId,
     ClassSectionId classSectionId,
     ClassScheduleConflictResult classScheduleConflictResult)
   {
-    CollegeId = Guard.Against.Null(collegeId);
     CourseId = Guard.Against.Null(courseId);
     AcademicTermId = Guard.Against.Null(academicTermId);
     ClassSectionId = Guard.Against.Null(classSectionId);
     OfferingId = Guard.Against.Null(classScheduleConflictResult.OfferingId);
     Type = Guard.Against.Null(classScheduleConflictResult.Type);
-    Severity = Guard.Against.Null(classScheduleConflictResult.Severity);
     Message = Guard.Against.NullOrEmpty(classScheduleConflictResult.Message);
     DayOfWeek = Guard.Against.Null(classScheduleConflictResult.DayOfWeek);
     StartTime = classScheduleConflictResult.StartTime;
@@ -42,19 +39,16 @@ public class ClassSectionValidationIssue : EntityBase<ClassSectionValidationIssu
 
   // Constructor for data integrity issues (may lack offering/time)
   public ClassSectionValidationIssue(
-    CollegeId collegeId,
     CourseId courseId,
     AcademicTermId academicTermId,
     ClassSectionId classSectionId,
     ClassSectionDataIntegrityResult dataIntegrityResult)
   {
-    CollegeId = Guard.Against.Null(collegeId);
     CourseId = Guard.Against.Null(courseId);
     AcademicTermId = Guard.Against.Null(academicTermId);
     ClassSectionId = Guard.Against.Null(classSectionId);
     OfferingId = dataIntegrityResult.OfferingId; // nullable
     Type = Guard.Against.Null(dataIntegrityResult.Type);
-    Severity = Guard.Against.Null(dataIntegrityResult.Severity);
     Message = Guard.Against.NullOrEmpty(dataIntegrityResult.Message);
     DayOfWeek = null;
     StartTime = null;
@@ -62,8 +56,6 @@ public class ClassSectionValidationIssue : EntityBase<ClassSectionValidationIssu
     ConflictingOfferings = [];
     ComputedAt = DateTimeOffset.UtcNow;
   }
-
-  public CollegeId CollegeId { get; private set; }
 
   public CourseId CourseId { get; private set; }
 
@@ -73,8 +65,6 @@ public class ClassSectionValidationIssue : EntityBase<ClassSectionValidationIssu
   public ClassSectionSubjectOfferingId? OfferingId { get; private set; }
 
   public ClassSectionValidationIssueTypeEnum Type { get; private set; }
-
-  public DomainValidationErrorSeverityEnum Severity { get; private set; }
 
   public string Message { get; private set; } = null!;
   public DayOfWeekEnum? DayOfWeek { get; private set; }

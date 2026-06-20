@@ -87,7 +87,6 @@ public class ClassScheduleConflictDetector
           {
             OfferingId = s1.OfferingId, // Primary offering for linking to DTOs (arbitrary choice of s1 vs s2)
             Type = ClassSectionValidationIssueTypeEnum.TEACHER_DOUBLE_BOOKED,
-            Severity = DomainValidationErrorSeverityEnum.Error,
             Message =
               $"{s1.TeacherFirstName} {s1.TeacherLastName} is assigned to multiple classes at {s1.DayOfWeek} {FormatTime(s1.StartTime)}-{FormatTime(s1.EndTime)}",
             DayOfWeek = s1.DayOfWeek,
@@ -130,7 +129,6 @@ public class ClassScheduleConflictDetector
           {
             OfferingId = s1.OfferingId,
             Type = ClassSectionValidationIssueTypeEnum.ROOM_DOUBLE_BOOKED,
-            Severity = DomainValidationErrorSeverityEnum.Error,
             Message =
               $"Room {s1.RoomNumber} ({s1.BuildingName}) is assigned to multiple classes at {s1.DayOfWeek} {FormatTime(s1.StartTime)}-{FormatTime(s1.EndTime)}",
             DayOfWeek = s1.DayOfWeek,
@@ -177,7 +175,6 @@ public class ClassScheduleConflictDetector
           {
             OfferingId = s1.OfferingId,
             Type = ClassSectionValidationIssueTypeEnum.SECTION_OVERLAP,
-            Severity = DomainValidationErrorSeverityEnum.Warning, // Soft conflict per design decision
             Message =
               $"Section {s1.SectionName} has overlapping classes at {s1.DayOfWeek} {FormatTime(s1.StartTime)}-{FormatTime(s1.EndTime)}",
             DayOfWeek = s1.DayOfWeek,
@@ -214,7 +211,6 @@ public class ClassScheduleConflictDetector
       conflicts.Add(new ClassScheduleConflictResult
       {
         Type = ClassSectionValidationIssueTypeEnum.DUPLICATE_SUBJECT_IN_SECTION,
-        Severity = DomainValidationErrorSeverityEnum.Error,
         Message = $"Subject {first.SubjectCode} is assigned to section {first.SectionName} multiple times",
         ConflictingOfferings = offerings.Select(MapToAffectedOffering).ToList()
       });

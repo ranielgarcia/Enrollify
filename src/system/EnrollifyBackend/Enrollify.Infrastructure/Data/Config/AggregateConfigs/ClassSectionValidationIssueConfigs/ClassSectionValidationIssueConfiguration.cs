@@ -8,14 +8,13 @@ public class ClassSectionValidationIssueConfiguration : IEntityTypeConfiguration
 {
   public void Configure(EntityTypeBuilder<ClassSectionValidationIssue> builder)
   {
-    builder.ToTable("ClassSectionConflicts");
+    builder.ToTable("ClassSectionValidationIssues");
 
     builder.HasKey(e => e.Id);
     builder.Property(e => e.Id)
       .UseIdentityColumn()
       .IsRequired();
 
-    builder.Property(e => e.CollegeId).IsRequired();
     builder.Property(e => e.CourseId).IsRequired();
     builder.Property(e => e.AcademicTermId).IsRequired();
     builder.Property(e => e.ClassSectionId).IsRequired();
@@ -26,13 +25,6 @@ public class ClassSectionValidationIssueConfiguration : IEntityTypeConfiguration
         v => v.Name,
         v => Core.Constants.ClassSectionValidationIssueTypeEnum.FromName(v))
       .HasColumnType("varchar(50)")
-      .IsRequired();
-
-    builder.Property(e => e.Severity)
-      .HasConversion(
-        v => v.Value,
-        v => Core.Constants.DomainValidationErrorSeverityEnum.FromValue(v))
-      .HasColumnType("int")
       .IsRequired();
 
     builder.Property(e => e.Message)

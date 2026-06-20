@@ -10,6 +10,5 @@ public class ClassSectionDataIntegrityResult
   public ClassSectionSubjectOfferingId? OfferingId { get; set; }
 
   public required ClassSectionValidationIssueTypeEnum Type { get; set; }
-  public required DomainValidationErrorSeverityEnum Severity { get; set; }
   public string Message { get; init; } = string.Empty;
 }

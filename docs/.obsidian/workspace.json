@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "EventStorming-Sticky-Notes-Reference.md",
+                "file": "Section-Manage-Page-Redeign/sections-management-page-redesign-proposal.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "EventStorming-Sticky-Notes-Reference"
+              "title": "sections-management-page-redesign-proposal"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "EventStorming-Sticky-Notes-Reference.md",
+                "file": "Section-Manage-Page-Redeign/sections-management-page-redesign-proposal.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for EventStorming-Sticky-Notes-Reference"
+              "title": "Backlinks for sections-management-page-redesign-proposal"
             }
           },
           {
@@ -170,9 +170,9 @@
   },
   "active": "a663816831ece07b",
   "lastOpenFiles": [
+    "EventStorming-Sticky-Notes-Reference.md",
     "frontend-modernization-plan.md",
     "Section-Manage-Page-Redeign/sections-management-page-redesign-proposal.md",
-    "EventStorming-Sticky-Notes-Reference.md",
     "EventStorming-Sticky-Notes-Reference.md.crdownload",
     "room-scheduler-page-design.md",
     "Section-Manage-Page-Redeign/room-scheduler-page-design.md",

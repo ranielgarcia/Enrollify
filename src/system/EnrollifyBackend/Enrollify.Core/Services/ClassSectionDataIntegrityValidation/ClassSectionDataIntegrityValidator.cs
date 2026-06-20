@@ -28,7 +28,6 @@ public class ClassSectionDataIntegrityValidator
         ClassSectionId = classSection.Id,
         OfferingId = null,
         Type = ClassSectionValidationIssueTypeEnum.ADVISER_NOT_ASSIGNED,
-        Severity = DomainValidationErrorSeverityEnum.Error,
         Message = "Class section is missing an adviser."
       });
 
@@ -38,7 +37,6 @@ public class ClassSectionDataIntegrityValidator
         ClassSectionId = classSection.Id,
         OfferingId = null,
         Type = ClassSectionValidationIssueTypeEnum.NO_OFFERINGS,
-        Severity = DomainValidationErrorSeverityEnum.Error,
         Message = "Class section must have subject offerings."
       });
 
@@ -50,7 +48,6 @@ public class ClassSectionDataIntegrityValidator
           ClassSectionId = classSection.Id,
           OfferingId = offering.Id,
           Type = ClassSectionValidationIssueTypeEnum.TEACHER_NOT_ASSIGNED,
-          Severity = DomainValidationErrorSeverityEnum.Error,
           Message = "Subject offering must have a teacher assigned."
         });
 
@@ -60,7 +57,6 @@ public class ClassSectionDataIntegrityValidator
           ClassSectionId = classSection.Id,
           OfferingId = offering.Id,
           Type = ClassSectionValidationIssueTypeEnum.ROOM_NOT_ASSIGNED,
-          Severity = DomainValidationErrorSeverityEnum.Error,
           Message = "Subject offering must have a room assigned."
         });
 
@@ -70,7 +66,6 @@ public class ClassSectionDataIntegrityValidator
           ClassSectionId = classSection.Id,
           OfferingId = offering.Id,
           Type = ClassSectionValidationIssueTypeEnum.DAYS_PER_WEEK_DEFAULT,
-          Severity = DomainValidationErrorSeverityEnum.Info,
           Message = "Days per week is set to the default value of 1."
         });
 
@@ -80,7 +75,6 @@ public class ClassSectionDataIntegrityValidator
           ClassSectionId = classSection.Id,
           OfferingId = offering.Id,
           Type = ClassSectionValidationIssueTypeEnum.HOURS_PER_DAY_DEFAULT,
-          Severity = DomainValidationErrorSeverityEnum.Info,
           Message = "Hours per day is set to the default value of 1."
         });
 
@@ -90,7 +84,6 @@ public class ClassSectionDataIntegrityValidator
           ClassSectionId = classSection.Id,
           OfferingId = offering.Id,
           Type = ClassSectionValidationIssueTypeEnum.MAX_STUDENTS_AT_DEFAULT,
-          Severity = DomainValidationErrorSeverityEnum.Info,
           Message = "Max number of students is set to the default value of 0, which means no limit."
         });
 
@@ -100,7 +93,6 @@ public class ClassSectionDataIntegrityValidator
           ClassSectionId = classSection.Id,
           OfferingId = offering.Id,
           Type = ClassSectionValidationIssueTypeEnum.NO_SCHEDULES,
-          Severity = DomainValidationErrorSeverityEnum.Error,
           Message = "Subject offering must have a class schedules."
         });
 
@@ -110,7 +102,6 @@ public class ClassSectionDataIntegrityValidator
           ClassSectionId = classSection.Id,
           OfferingId = offering.Id,
           Type = ClassSectionValidationIssueTypeEnum.SCHEDULE_COUNT_MISMATCH,
-          Severity = DomainValidationErrorSeverityEnum.Error,
           Message = "Subject offering must have class schedules equal to expected days per week."
         });
 
@@ -122,7 +113,6 @@ public class ClassSectionDataIntegrityValidator
           ClassSectionId = classSection.Id,
           OfferingId = offering.Id,
           Type = ClassSectionValidationIssueTypeEnum.HOURS_MISMATCH,
-          Severity = DomainValidationErrorSeverityEnum.Error,
           Message = $"Subject offering has invalid class schedules: {scheduleValidationResult.ErrorMessage}"
         });
     }

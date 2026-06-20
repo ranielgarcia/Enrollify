@@ -3,7 +3,6 @@ using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
-using Enrollify.Core.Services.ClassSectionOpenForEnrollmentEligibilityValidation;
 using Enrollify.SharedKernel;
 using MediatR;
 
@@ -18,15 +17,18 @@ public static class OpenClassSectionForEnrollment
     private readonly IReadRepository<ClassSection> _classSectionReadRepository;
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IReadRepository<ClassSectionSubjectOffering> _offeringReadRepository;
+    private readonly IClassSectionValidationIssueRepository _classSectionValidationIssueRepository;
 
     public Handler(
       IReadRepository<ClassSection> classSectionReadRepository,
       IClassSectionRepository classSectionRepository,
-      IReadRepository<ClassSectionSubjectOffering> offeringReadRepository)
+      IReadRepository<ClassSectionSubjectOffering> offeringReadRepository,
+      IClassSectionValidationIssueRepository classSectionValidationIssueRepository)
     {
       _classSectionReadRepository = classSectionReadRepository;
       _classSectionRepository = classSectionRepository;
       _offeringReadRepository = offeringReadRepository;
+      _classSectionValidationIssueRepository = classSectionValidationIssueRepository;
     }
 
     public async Task<Result<ClassSectionId>> Handle(Command command, CancellationToken cancellationToken)
@@ -42,25 +44,25 @@ public static class OpenClassSectionForEnrollment
         return Result.Invalid(new ValidationError(
           "Cannot open a class section for enrollment with no subject offerings."));
 
+      bool hasValidationErrors =
+        await _classSectionValidationIssueRepository.HasValidationErrorsAsync(section.Id, cancellationToken);
+
+      if (hasValidationErrors)
+        return Result.Invalid(new ValidationError("This class section is not eligible for enrollment."));
+
       try
       {
-        ClassSectionOpenForEnrollmentEligibilityValidationContext validationContext =
-          ClassSectionEnrollmentEligibilityValidator.Validate(section, offerings);
-
-        if (!validationContext.IsEligible)
-          return Result.Invalid(new ValidationError("This class section is not eligible for enrollment."));
-
         section.OpenForEnrollment();
+        Result<ClassSectionId> result = await _classSectionRepository.Update(section, cancellationToken);
+
+        return result.IsSuccess
+          ? Result.Success(result.Value)
+          : Result.Error(string.Join("; ", result.Errors));
       }
       catch (ArgumentException ex)
       {
         return Result.Invalid(new ValidationError(ex.Message));
       }
-
-      Result<ClassSectionId> result = await _classSectionRepository.Update(section, cancellationToken);
-      return result.IsSuccess
-        ? Result.Success(result.Value)
-        : Result.Error(string.Join("; ", result.Errors));
     }
   }
 }

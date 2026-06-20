@@ -36,4 +36,9 @@ public class ClassSectionValidationIssueRepository : IClassSectionValidationIssu
       "Replaced validation issues for ClassSection {ClassSectionId}: removed {RemovedCount}, inserted {InsertedCount}",
       classSectionId.Value, deletedRows, freshIssues.Count);
   }
+
+  public async Task<bool> HasValidationErrorsAsync(ClassSectionId classSectionId, CancellationToken cancellationToken)
+  {
+    throw new NotImplementedException();
+  }
 }

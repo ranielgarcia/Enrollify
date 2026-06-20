@@ -58,7 +58,7 @@ public sealed class RefreshClassSectionValidationIssuesRequestedEventHandler(
 
     var dataIntegrityValidationIssues =
       dataIntegrityValidationResult.Select(r =>
-        new ClassSectionValidationIssue(section.Course!.CollegeId, section.CourseId, section.AcademicTermId, section.Id,
+        new ClassSectionValidationIssue(section.CourseId, section.AcademicTermId, section.Id,
           r)).ToList();
 
     IEnumerable<TeacherId> teacherIds = offerings.Where(o => o.TeacherId != null).Select(o => o.TeacherId!.Value);
@@ -93,7 +93,7 @@ public sealed class RefreshClassSectionValidationIssuesRequestedEventHandler(
 
     var conflictValidationIssues =
       conflictDetectionResults.Select(c =>
-        new ClassSectionValidationIssue(section.Course!.CollegeId, section.CourseId, section.AcademicTermId, section.Id,
+        new ClassSectionValidationIssue(section.CourseId, section.AcademicTermId, section.Id,
           c)).ToList();
 
     var validationIssues = conflictValidationIssues.Concat(dataIntegrityValidationIssues).ToList();

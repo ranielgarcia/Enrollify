@@ -20,25 +20,11 @@ public class ClassSectionDetailDto : BaseDto
   public ClassSectionStatusDto Status { get; set; } = null!;
 
   public IReadOnlyList<ClassSectionSubjectOfferingDto> Offerings { get; set; } = [];
-  public ClassSectionEnrollmentEligibilityValidationMessagesDto ValidationMessages { get; init; } = new();
-  public int UnresolvedErrorsCount { get; set; }
-
-  public bool IsEligibleForOpenEnrollment { get; set; }
 
   public static ClassSectionDetailDto FromEntities(
     ClassSection section,
-    List<ClassSectionEnrollmentEligibilityValidationMessage> allValidationMessages,
     List<ClassSectionSubjectOfferingDto> offeringDtos)
   {
-    var subjectOfferingsValidationMessages = allValidationMessages.Where(x => x.OfferingId != null)
-      .Select(ClassSectionSubjectOfferingValidationMessageDto.FromEntity).ToList();
-    var sectionValidationMessages = allValidationMessages.Where(x => x.OfferingId == null)
-      .Select(ClassSectionEnrollmentEligibilityValidationMessageDto.FromEntity)
-      .ToList();
-
-    var validationMessages = ClassSectionEnrollmentEligibilityValidationMessagesDto.FromEntities(section.Id,
-      sectionValidationMessages, subjectOfferingsValidationMessages);
-
     return new ClassSectionDetailDto
     {
       Id = section.Id,
@@ -46,10 +32,6 @@ public class ClassSectionDetailDto : BaseDto
       SectionCode = (char)section.SectionCode,
       IntendedYearLevel = (int)section.IntendedYearLevel,
       FullName = section.FullName,
-      ValidationMessages = validationMessages,
-      UnresolvedErrorsCount = allValidationMessages.Count(x => x.Severity == DomainValidationErrorSeverityEnum.Error),
-      IsEligibleForOpenEnrollment = allValidationMessages.All(m =>
-        m.Severity != DomainValidationErrorSeverityEnum.Error),
 
       Course = section.Course is not null
         ? new ClassSectionCourseDto

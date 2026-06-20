@@ -5,6 +5,7 @@ using Enrollify.Application.Features.ClassSectionScheduling.Specifications.Class
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Constants;
@@ -89,8 +90,7 @@ public static class UpdateClassSectionSubjectOffering
         return Result.Error("Unable to update the subject offering.");
       }
 
-      await _publisher.Publish(new ClassSectionValidationRecomputeRequestedEvent(offering.ClassSectionId),
-        cancellationToken);
+      await _publisher.Publish(new RefreshClassSectionValidationIssuesRequestedEvent(section.Id), cancellationToken);
 
       _logger.LogInformation("Updated subject offering {OfferingId}", command.Id.Value);
       return result;

@@ -2,6 +2,7 @@ using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
+using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.SharedKernel;
 using MediatR;
@@ -64,7 +65,7 @@ public static class UpdateClassSection
         return Result.Error("Unable to update the class section.");
       }
 
-      await _publisher.Publish(new ClassSectionValidationRecomputeRequestedEvent(section.Id), cancellationToken);
+      await _publisher.Publish(new RefreshClassSectionValidationIssuesRequestedEvent(section.Id), cancellationToken);
 
       _logger.LogInformation("Successfully updated class section {ClassSectionId}", command.Id.Value);
       return Result.Success(section.Id);
