@@ -52,6 +52,7 @@ public class ClassSectionDetailDto : BaseDto
       SectionCode = (char)section.SectionCode,
       IntendedYearLevel = (int)section.IntendedYearLevel,
       FullName = section.FullName,
+      ValidationIssues = classSectionLevelValidationIssues.Select(ClassSectionValidationIssueDto.FromEntity).ToList(),
 
       Course = section.Course is not null
         ? new ClassSectionCourseDto

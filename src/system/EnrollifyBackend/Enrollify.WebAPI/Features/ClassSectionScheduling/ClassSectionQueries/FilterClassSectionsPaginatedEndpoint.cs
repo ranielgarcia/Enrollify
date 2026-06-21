@@ -4,7 +4,7 @@ using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 using Enrollify.Application.Features.ClassSectionScheduling.Queries.ClassSections;
 using Enrollify.Application.Filtering;
 
-namespace Enrollify.WebAPI.Features.ClassSectionScheduling.ClassSectionMutations;
+namespace Enrollify.WebAPI.Features.ClassSectionScheduling.ClassSectionQueries;
 
 public class FilterClassSectionsPaginatedRequest
 {

@@ -3,7 +3,7 @@ using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 using Enrollify.Application.Features.ClassSectionScheduling.Queries.ClassSections;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 
-namespace Enrollify.WebAPI.Features.ClassSectionScheduling.ClassSectionMutations;
+namespace Enrollify.WebAPI.Features.ClassSectionScheduling.ClassSectionQueries;
 
 [HttpGet("{id:int}")]
 [Group<ClassSectionEndpointSubGroup>]

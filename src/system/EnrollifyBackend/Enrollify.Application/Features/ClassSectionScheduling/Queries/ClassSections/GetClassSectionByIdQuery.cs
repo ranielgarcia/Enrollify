@@ -41,7 +41,7 @@ public class GetClassSectionByIdQueryHandler
       return Result.NotFound($"Class section with id {request.Id.Value} was not found.");
 
     List<ClassSectionSubjectOffering> offerings = await _offeringReadRepository.ListAsync(
-      new GetClassSectionSubjectOfferingsWithFullDetailsByClassSectionIdSpec(request.Id), cancellationToken);
+      new GetClassSectionSubjectOfferingsWithFullDetailsByClassSectionIdSpec(section.Id), cancellationToken);
 
     List<ClassSectionValidationIssue> validationIssues =
       await _validationIssueReadRepository.ListAsync(new GetClassSectionValidationIssuesByClassSectionId(section.Id),
