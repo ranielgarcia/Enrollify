@@ -1,5 +1,6 @@
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
 using Enrollify.Core.Constants;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.DTOs;
@@ -20,11 +21,30 @@ public class ClassSectionDetailDto : BaseDto
   public ClassSectionStatusDto Status { get; set; } = null!;
 
   public IReadOnlyList<ClassSectionSubjectOfferingDto> Offerings { get; set; } = [];
+  public IReadOnlyList<ClassSectionValidationIssueDto> ValidationIssues { get; set; } = [];
 
   public static ClassSectionDetailDto FromEntities(
     ClassSection section,
-    List<ClassSectionSubjectOfferingDto> offeringDtos)
+    List<ClassSectionSubjectOffering> offerings,
+    List<ClassSectionValidationIssue> validationIssues)
   {
+    IEnumerable<ClassSectionValidationIssue> classSectionLevelValidationIssues =
+      validationIssues.Where(x => x.OfferingId == null);
+    var offeringValidationIssuesLookup = validationIssues
+      .Where(x => x.OfferingId != null)
+      .GroupBy(x => x.OfferingId!.Value)
+      .ToDictionary(g => g.Key, g => g.ToList());
+
+    // Convert offerings to DTOs
+    var offeringDtos = offerings.Select(o =>
+    {
+      List<ClassSectionValidationIssue> offeringValidationIssues =
+        offeringValidationIssuesLookup.TryGetValue(o.Id, out List<ClassSectionValidationIssue>? issues)
+          ? issues
+          : new List<ClassSectionValidationIssue>();
+      return ClassSectionSubjectOfferingDto.FromEntity(o, offeringValidationIssues);
+    }).ToList();
+
     return new ClassSectionDetailDto
     {
       Id = section.Id,

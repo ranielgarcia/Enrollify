@@ -2,9 +2,11 @@ using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
+using Enrollify.Application.Features.ClassSectionScheduling.Specifications.SchedulingStats;
 using Enrollify.Application.Filtering;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionSchedulingStatsAggregate;
 using Enrollify.SharedKernel;
 using MediatR;
 
@@ -24,13 +26,16 @@ public class FilterClassSectionsPaginatedQueryHandler
 {
   private readonly IReadRepository<ClassSection> _readRepository;
   private readonly IReadRepository<AcademicYear> _academicYearRepository;
+  private readonly IReadRepository<ClassSectionSchedulingStats> _schedulingStatsReadRepository;
 
   public FilterClassSectionsPaginatedQueryHandler(
     IReadRepository<ClassSection> readRepository,
-    IReadRepository<AcademicYear> academicYearRepository)
+    IReadRepository<AcademicYear> academicYearRepository,
+    IReadRepository<ClassSectionSchedulingStats> schedulingStatsReadRepository)
   {
     _readRepository = readRepository;
     _academicYearRepository = academicYearRepository;
+    _schedulingStatsReadRepository = schedulingStatsReadRepository;
   }
 
   public async Task<Result<PagedResult<ClassSectionDto>>> Handle(
@@ -65,10 +70,23 @@ public class FilterClassSectionsPaginatedQueryHandler
     List<ClassSection> sections = await _readRepository.ListAsync(spec, cancellationToken);
     int totalCount = await _readRepository.CountAsync(spec, cancellationToken);
 
+    var schedulingStatsSpec = new GetClassSchedulingStatsForClassSectionIdsSpec(sections.Select(s => s.Id).ToList());
+    List<ClassSectionSchedulingStats> schedulingStats =
+      await _schedulingStatsReadRepository.ListAsync(schedulingStatsSpec, cancellationToken);
+
+    var schedulingStatsPerClassSection = schedulingStats.Where(x => x.ClassSectionId != null)
+      .GroupBy(x => x.ClassSectionId)
+      .ToDictionary(g => g.Key!, g => g.ToList());
+
     var sectionsToReturn = new List<ClassSectionDto>();
     foreach (ClassSection section in sections)
     {
-      var sectionDto = ClassSectionDto.FromEntity(section);
+      List<ClassSectionSchedulingStats> sectionSchedulingStats =
+        schedulingStatsPerClassSection.TryGetValue(section.Id, out List<ClassSectionSchedulingStats>? stats)
+          ? stats
+          : new List<ClassSectionSchedulingStats>();
+
+      var sectionDto = ClassSectionDto.FromEntity(section, sectionSchedulingStats);
       sectionsToReturn.Add(sectionDto);
     }
 

@@ -7,8 +7,10 @@ import createQueryOptions from "@/hooks/create-query-options";
 import {
   ClassSectionSchema,
   ClassSectionWithOfferingsSchema,
+  CollegeCoursesWithClassSectionsSchema,
   type ClassSection,
   type ClassSectionWithOfferings,
+  type CollegeCoursesWithClassSections,
 } from "@/api/models/class-section";
 import { pagedResultSchema, type PagedResult } from "@/api/models/paged-result";
 import { toast } from "sonner";
@@ -42,6 +44,16 @@ const queryKeys = {
     sectionId,
     action,
   ],
+  collegeCoursesClassSchedulingStats: (collegeId: number) => [
+    ...queryKeys.base(),
+    "collegeCoursesClassSchedulingStats",
+    collegeId,
+  ],
+  collegeCoursesWithClassSectionsForScheduling: (collegeId: number) => [
+    ...queryKeys.base(),
+    "collegeCoursesWithClassSectionsForScheduling",
+    collegeId,
+  ],
 };
 
 const pagedSectionsSchema = pagedResultSchema(ClassSectionSchema);
@@ -57,7 +69,7 @@ export const filterClassSectionsPaginatedOptions = (
   // Handle invalid or missing academic year ID
   if (!academicYearId || academicYearId <= 0) {
     return createQueryOptions({
-      path: "/api/class-sections/filter/{page}/{pageSize}",
+      path: "/api/scheduling/class-sections/filter/{page}/{pageSize}",
       pathParams: { page, pageSize },
       params: {},
       options: {
@@ -85,7 +97,7 @@ export const filterClassSectionsPaginatedOptions = (
   }
 
   return createQueryOptions({
-    path: "/api/class-sections/filter/{page}/{pageSize}",
+    path: "/api/scheduling/class-sections/filter/{page}/{pageSize}",
     pathParams: { page, pageSize },
     params: {
       Filters: filters.length ? JSON.stringify(filters) : undefined,
@@ -123,7 +135,7 @@ export const filterClassSectionsPaginatedOptions = (
 
 export const getSectionWithOfferingsOptions = (sectionId: number) =>
   createQueryOptions({
-    path: "/api/class-sections/{id}",
+    path: "/api/scheduling/class-sections/{id}",
     pathParams: { id: sectionId },
     options: {
       queryKey: queryKeys.detail(sectionId),
@@ -136,7 +148,7 @@ export const getSectionWithOfferingsOptions = (sectionId: number) =>
 export const bulkInitializeClassSectionsOptions = () =>
   createMutationOptions({
     httpVerb: "post",
-    path: "/api/class-sections/bulk-initialize",
+    path: "/api/scheduling/class-sections/bulk-initialize",
     mutationKey: queryKeys.bulkInitializeSections(),
     options: {
       meta: { invalidateQueries: [queryKeys.base()] },
@@ -148,7 +160,7 @@ export const bulkInitializeClassSectionsOptions = () =>
 export const createNewClassSectionsOptions = () =>
   createMutationOptions({
     httpVerb: "post",
-    path: "/api/class-sections",
+    path: "/api/scheduling/class-sections",
     mutationKey: queryKeys.create(),
     options: {
       meta: { invalidateQueries: [queryKeys.base()] },
@@ -159,7 +171,7 @@ export const createNewClassSectionsOptions = () =>
 export const updateClassSectionOptions = (id: number) =>
   createMutationOptions({
     httpVerb: "put",
-    path: "/api/class-sections/{id}",
+    path: "/api/scheduling/class-sections/{id}",
     pathParams: { id },
     mutationKey: queryKeys.update(id),
     options: {
@@ -168,12 +180,12 @@ export const updateClassSectionOptions = (id: number) =>
     },
   });
 
-// Transition mutations — PUT /api/class-sections/{id}/[action]
+// Transition mutations — PUT /api/scheduling/class-sections/{id}/[action]
 
 export const openClassSectionOptions = (sectionId: number) =>
   createMutationOptions({
     httpVerb: "put",
-    path: "/api/class-sections/{id}/open",
+    path: "/api/scheduling/class-sections/{id}/open",
     pathParams: { id: sectionId },
     mutationKey: queryKeys.transition(sectionId, "open"),
     options: {
@@ -185,7 +197,7 @@ export const openClassSectionOptions = (sectionId: number) =>
 export const lockClassSectionOptions = (sectionId: number) =>
   createMutationOptions({
     httpVerb: "put",
-    path: "/api/class-sections/{id}/lock",
+    path: "/api/scheduling/class-sections/{id}/lock",
     pathParams: { id: sectionId },
     mutationKey: queryKeys.transition(sectionId, "lock"),
     options: {
@@ -197,7 +209,7 @@ export const lockClassSectionOptions = (sectionId: number) =>
 export const activateClassSectionOptions = (sectionId: number) =>
   createMutationOptions({
     httpVerb: "put",
-    path: "/api/class-sections/{id}/activate",
+    path: "/api/scheduling/class-sections/{id}/activate",
     pathParams: { id: sectionId },
     mutationKey: queryKeys.transition(sectionId, "activate"),
     options: {
@@ -209,7 +221,7 @@ export const activateClassSectionOptions = (sectionId: number) =>
 export const completeClassSectionOptions = (sectionId: number) =>
   createMutationOptions({
     httpVerb: "put",
-    path: "/api/class-sections/{id}/complete",
+    path: "/api/scheduling/class-sections/{id}/complete",
     pathParams: { id: sectionId },
     mutationKey: queryKeys.transition(sectionId, "complete"),
     options: {
@@ -221,11 +233,40 @@ export const completeClassSectionOptions = (sectionId: number) =>
 export const cancelClassSectionOptions = (sectionId: number) =>
   createMutationOptions({
     httpVerb: "put",
-    path: "/api/class-sections/{id}/cancel",
+    path: "/api/scheduling/class-sections/{id}/cancel",
     pathParams: { id: sectionId },
     mutationKey: queryKeys.transition(sectionId, "cancel"),
     options: {
       meta: { invalidateQueries: [queryKeys.base()] },
       onSuccess: () => toast.success("Section cancelled"),
+    },
+  });
+
+export const getClassSectionsStatsOptions = (collegeId: number) =>
+  createQueryOptions({
+    path: "/api/scheduling/colleges/{collegeId}/stats",
+    pathParams: { collegeId },
+    options: {
+      enabled: !!collegeId,
+      queryKey: queryKeys.collegeCoursesClassSchedulingStats(collegeId),
+      staleTime: 1000 * 60 * 5,
+      select: (data): object => {
+        return data;
+      },
+    },
+  });
+
+export const getClassSectionsListOptions = (collegeId: number) =>
+  createQueryOptions({
+    path: "/api/scheduling/colleges/{collegeId}/class-sections",
+    pathParams: { collegeId },
+    options: {
+      enabled: !!collegeId,
+      queryKey:
+        queryKeys.collegeCoursesWithClassSectionsForScheduling(collegeId),
+      staleTime: 1000 * 60 * 5,
+      select: (data): CollegeCoursesWithClassSections => {
+        return CollegeCoursesWithClassSectionsSchema.parse(data);
+      },
     },
   });

@@ -22,6 +22,10 @@ CREATE TABLE ClassSectionValidationIssues
     FOREIGN KEY (OfferingId) REFERENCES ClassSectionSubjectOffering (Id) ON DELETE CASCADE,
 );
 
+CREATE NONCLUSTERED INDEX IX_ClassSectionValidationIssues_ClassSectionId
+  ON ClassSectionValidationIssues (ClassSectionId);
+GO
+
 CREATE NONCLUSTERED INDEX IX_ClassSectionValidationIssues_Main
   ON ClassSectionValidationIssues
     (

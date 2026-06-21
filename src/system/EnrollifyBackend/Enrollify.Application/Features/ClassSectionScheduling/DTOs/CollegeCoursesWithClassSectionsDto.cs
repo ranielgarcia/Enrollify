@@ -9,9 +9,9 @@ public class CollegeCoursesWithClassSectionsDto
   public string Code { get; set; } = string.Empty;
   public string Name { get; set; } = string.Empty;
   public string Description { get; set; } = string.Empty;
-  public List<CourseWithClassSectionsDto> CourseWithClassSections { get; set; } = [];
+  public List<CoursesWithClassSectionsDto> CoursesWithClassSections { get; set; } = [];
 
-  public static CollegeCoursesWithClassSectionsDto FromEntity(College entity, List<CourseWithClassSectionsDto> courses)
+  public static CollegeCoursesWithClassSectionsDto FromEntity(College entity, List<CoursesWithClassSectionsDto> courses)
   {
     return new CollegeCoursesWithClassSectionsDto
     {
@@ -19,12 +19,12 @@ public class CollegeCoursesWithClassSectionsDto
       Code = entity.Code.Value,
       Name = entity.Name,
       Description = entity.Description,
-      CourseWithClassSections = courses
+      CoursesWithClassSections = courses
     };
   }
 }
 
-public class CourseWithClassSectionsDto
+public class CoursesWithClassSectionsDto
 {
   public CourseId Id { get; set; }
   public CourseCode Code { get; private set; }
@@ -32,9 +32,9 @@ public class CourseWithClassSectionsDto
 
   public List<ClassSectionDto> ClassSections { get; set; } = [];
 
-  public static CourseWithClassSectionsDto FromEntity(Course entity, List<ClassSectionDto> classSections)
+  public static CoursesWithClassSectionsDto FromEntity(Course entity, List<ClassSectionDto> classSections)
   {
-    return new CourseWithClassSectionsDto
+    return new CoursesWithClassSectionsDto
     {
       Id = entity.Id,
       Code = entity.Code,

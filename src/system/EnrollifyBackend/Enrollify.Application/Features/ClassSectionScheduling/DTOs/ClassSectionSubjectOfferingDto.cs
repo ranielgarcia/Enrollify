@@ -1,4 +1,5 @@
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 
@@ -22,14 +23,10 @@ public class ClassSectionSubjectOfferingDto : BaseDto
   public OfferingTeacherDto? Teacher { get; set; }
   public OfferingRoomDto? Room { get; set; }
   public IReadOnlyList<ClassScheduleDto> Schedules { get; set; } = [];
+  public IReadOnlyList<ClassSectionValidationIssueDto> ValidationIssues { get; set; } = [];
 
-  /// <summary>
-  /// Detected conflicts for this offering (populated in section detail queries).
-  /// Empty list if no conflicts detected.
-  /// </summary>
-  public List<ClassSectionValidationIssueDto> Conflicts { get; set; } = [];
-
-  public static ClassSectionSubjectOfferingDto FromEntity(ClassSectionSubjectOffering offering)
+  public static ClassSectionSubjectOfferingDto FromEntity(ClassSectionSubjectOffering offering,
+    List<ClassSectionValidationIssue> validationIssues)
   {
     return new ClassSectionSubjectOfferingDto
     {
@@ -71,6 +68,8 @@ public class ClassSectionSubjectOfferingDto : BaseDto
         .Select(ClassScheduleDto.FromEntity)
         .ToList()
         .AsReadOnly(),
+
+      ValidationIssues = validationIssues.Select(ClassSectionValidationIssueDto.FromEntity).ToList().AsReadOnly(),
 
       CreatedAt = offering.CreatedAt,
       CreatedBy = BaseUserDto.FromUser(offering.CreatedByUser),

@@ -117,3 +117,26 @@ export type ClassSectionWithOfferings = z.infer<
 >;
 export type ValidationMessage = z.infer<typeof ValidationMessageSchema>;
 export type ValidationMessages = z.infer<typeof ValidationMessagesSchema>;
+
+const CourseWithClassSectionsSchema = z.object({
+  id: z.number(),
+  code: z.string(),
+  name: z.string(),
+  classSections: z.array(ClassSectionSchema),
+});
+
+export type CourseWithClassSections = z.infer<
+  typeof CourseWithClassSectionsSchema
+>;
+
+export const CollegeCoursesWithClassSectionsSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  description: z.string(),
+  code: z.string(),
+  coursesWithClassSections: z.array(CourseWithClassSectionsSchema),
+});
+
+export type CollegeCoursesWithClassSections = z.infer<
+  typeof CollegeCoursesWithClassSectionsSchema
+>;

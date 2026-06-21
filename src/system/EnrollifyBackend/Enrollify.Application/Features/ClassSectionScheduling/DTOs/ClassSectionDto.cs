@@ -1,5 +1,6 @@
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionSchedulingStatsAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
@@ -21,7 +22,9 @@ public class ClassSectionDto : BaseDto
   public ClassSectionAdviserDto? Adviser { get; set; }
   public ClassSectionStatusDto Status { get; set; } = null!;
 
-  public static ClassSectionDto FromEntity(ClassSection section)
+  public Dictionary<string, int> ValidationSummary { get; set; } = new();
+
+  public static ClassSectionDto FromEntity(ClassSection section, List<ClassSectionSchedulingStats> schedulingStatsList)
   {
     return new ClassSectionDto
     {
@@ -30,6 +33,8 @@ public class ClassSectionDto : BaseDto
       FullName = section.FullName,
       SectionCode = (char)section.SectionCode,
       IntendedYearLevel = (int)section.IntendedYearLevel,
+      ValidationSummary = schedulingStatsList.GroupBy(x => x.AggregateType.Name)
+        .ToDictionary(g => g.Key, g => g.Sum(x => x.AggregateCount)),
 
       Course = section.Course is not null
         ? new ClassSectionCourseDto

@@ -30,7 +30,7 @@ public class UpdateClassSectionRequestValidator : Validator<UpdateClassSectionRe
 }
 
 [HttpPut("{id:int}")]
-[Group<ClassSectionSchedulingEndpointGroup>]
+[Group<ClassSectionEndpointSubGroup>]
 [Authorize(Policy = PolicyName.HasUpdateClassSectionPermission)]
 public class
   UpdateClassSectionEndpoint : Endpoint<UpdateClassSectionRequest, OkOrNotFoundApiResult<UpdateClassSectionResponse>>

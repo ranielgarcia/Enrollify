@@ -20,18 +20,10 @@ const queryKeys = {
     "section",
     sectionId,
   ],
-  stats: (collegeId?: string) => [
-    ...queryKeys.base(),
-    "stats",
-    collegeId ?? "all",
-  ],
-  list: (collegeId?: string) => [
-    ...queryKeys.base(),
-    "list",
-    collegeId ?? "all",
-  ],
+  stats: (collegeId: number) => [...queryKeys.base(), "stats", collegeId],
+  list: (collegeId: number) => [...queryKeys.base(), "list", collegeId],
   filter: (
-    collegeId: string | undefined,
+    collegeId: number,
     page: number,
     pageSize: number,
     filters: ExtendedColumnFilter<ClassSectionV2>[],
@@ -54,10 +46,10 @@ const queryKeys = {
   ],
 };
 
-export const getClassSectionsStatsOptions = (collegeId?: string) =>
+export const getClassSectionsStatsOptions = (collegeId: number) =>
   createQueryOptions({
-    path: "/api/scheduling/colleges/{collegeId}/class-sections/stats",
-    pathParams: { collegeId: collegeId ?? "1" },
+    path: "/api/scheduling/colleges/{collegeId}/stats",
+    pathParams: { collegeId },
     options: {
       enabled: !!collegeId,
       queryKey: queryKeys.stats(collegeId),
@@ -69,23 +61,23 @@ export const getClassSectionsStatsOptions = (collegeId?: string) =>
     },
   });
 
-export const getClassSectionsListOptions = (collegeId?: string) =>
+export const getClassSectionsListOptions = (collegeId: number) =>
   createQueryOptions({
     path: "/api/scheduling/colleges/{collegeId}/class-sections",
-    pathParams: { collegeId: collegeId ?? "1" },
+    pathParams: { collegeId },
     options: {
       enabled: !!collegeId,
       queryKey: queryKeys.list(collegeId),
       staleTime: 1000 * 60 * 5,
       select: (): ClassSectionV2[] => {
         // Mock response
-        return generateMockClassSections(collegeId ?? "1", 30);
+        return generateMockClassSections(collegeId, 30);
       },
     },
   });
 
 export const filterClassSectionsPaginatedOptions = (
-  collegeId: string | undefined,
+  collegeId: number,
   page: number,
   pageSize: number,
   filters: ExtendedColumnFilter<ClassSectionV2>[] = [],
@@ -94,7 +86,7 @@ export const filterClassSectionsPaginatedOptions = (
 ) => {
   return createQueryOptions({
     path: "/api/scheduling/colleges/{collegeId}/class-sections",
-    pathParams: { collegeId: collegeId ?? "1" },
+    pathParams: { collegeId },
     options: {
       enabled: !!collegeId && !!page && !!pageSize,
       queryKey: queryKeys.filter(
@@ -108,7 +100,7 @@ export const filterClassSectionsPaginatedOptions = (
       staleTime: 1000 * 60 * 2,
       select: (): PagedResult<ClassSectionV2> => {
         // Mock paginated response
-        const allSections = generateMockClassSections(collegeId ?? "1", 50);
+        const allSections = generateMockClassSections(collegeId, 50);
         const startIndex = (page - 1) * pageSize;
         const endIndex = startIndex + pageSize;
         const pagedSections = allSections.slice(startIndex, endIndex);
