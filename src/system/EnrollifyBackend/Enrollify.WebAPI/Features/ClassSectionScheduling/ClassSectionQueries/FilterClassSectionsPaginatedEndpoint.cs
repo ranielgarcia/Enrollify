@@ -4,7 +4,7 @@ using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 using Enrollify.Application.Features.ClassSectionScheduling.Queries.ClassSections;
 using Enrollify.Application.Filtering;
 
-namespace Enrollify.WebAPI.Features.ClassSections;
+namespace Enrollify.WebAPI.Features.ClassSectionScheduling.ClassSectionMutations;
 
 public class FilterClassSectionsPaginatedRequest
 {
@@ -74,10 +74,10 @@ public class FilterClassSectionsPaginatedRequestValidator : Validator<FilterClas
 }
 
 [HttpGet("filter/{page}/{pageSize}")]
-[Group<ClassSectionsEndpointGroup>]
+[Group<ClassSectionEndpointSubGroup>]
 [Authorize(Policy = PolicyName.HasViewClassSectionsPermission)]
 public class FilterClassSectionsPaginatedEndpoint(IMediator mediator)
-  : Endpoint<FilterClassSectionsPaginatedRequest, Application.PagedResult<ClassSectionDto>>
+  : Endpoint<FilterClassSectionsPaginatedRequest, PagedResult<ClassSectionDto>>
 {
   public override async Task HandleAsync(FilterClassSectionsPaginatedRequest req, CancellationToken ct)
   {

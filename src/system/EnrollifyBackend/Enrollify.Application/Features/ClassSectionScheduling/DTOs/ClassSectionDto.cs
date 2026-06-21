@@ -1,10 +1,8 @@
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
-using Enrollify.Core.Models;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 
