@@ -23,6 +23,8 @@ public class ClassSectionDetailDto : BaseDto
   public IReadOnlyList<ClassSectionSubjectOfferingDto> Offerings { get; set; } = [];
   public IReadOnlyList<ClassSectionValidationIssueDto> ValidationIssues { get; set; } = [];
 
+  public int TotalUnresolveValidationIssues { get; set; }
+
   public static ClassSectionDetailDto FromEntities(
     ClassSection section,
     List<ClassSectionSubjectOffering> offerings,
@@ -53,6 +55,7 @@ public class ClassSectionDetailDto : BaseDto
       IntendedYearLevel = (int)section.IntendedYearLevel,
       FullName = section.FullName,
       ValidationIssues = classSectionLevelValidationIssues.Select(ClassSectionValidationIssueDto.FromEntity).ToList(),
+      TotalUnresolveValidationIssues = validationIssues.Count(),
 
       Course = section.Course is not null
         ? new ClassSectionCourseDto

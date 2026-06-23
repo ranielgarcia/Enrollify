@@ -24,6 +24,7 @@ public class ClassSectionSubjectOfferingDto : BaseDto
   public OfferingRoomDto? Room { get; set; }
   public IReadOnlyList<ClassScheduleDto> Schedules { get; set; } = [];
   public IReadOnlyList<ClassSectionValidationIssueDto> ValidationIssues { get; set; } = [];
+  public int TotalIssues => ValidationIssues.Count;
 
   public static ClassSectionSubjectOfferingDto FromEntity(ClassSectionSubjectOffering offering,
     List<ClassSectionValidationIssue> validationIssues)

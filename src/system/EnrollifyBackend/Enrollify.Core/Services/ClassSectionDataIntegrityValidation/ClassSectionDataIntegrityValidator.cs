@@ -96,25 +96,28 @@ public class ClassSectionDataIntegrityValidator
           Message = "Subject offering must have a class schedules."
         });
 
-      if (!ClassScheduleValidationService.AreSchedulesSufficient(offering.ClassSchedules, offering.DaysPerWeek))
-        validationResults.Add(new ClassSectionDataIntegrityResult
-        {
-          ClassSectionId = classSection.Id,
-          OfferingId = offering.Id,
-          Type = ClassSectionValidationIssueTypeEnum.SCHEDULE_COUNT_MISMATCH,
-          Message = "Subject offering must have class schedules equal to expected days per week."
-        });
+      if (offering.ClassSchedules.Count > 0)
+      {
+        if (!ClassScheduleValidationService.AreSchedulesSufficient(offering.ClassSchedules, offering.DaysPerWeek))
+          validationResults.Add(new ClassSectionDataIntegrityResult
+          {
+            ClassSectionId = classSection.Id,
+            OfferingId = offering.Id,
+            Type = ClassSectionValidationIssueTypeEnum.SCHEDULE_COUNT_MISMATCH,
+            Message = "Subject offering must have class schedules equal to expected days per week."
+          });
 
-      if (ClassScheduleValidationService.ValidateAllSchedules(offering.ClassSchedules, offering.DaysPerWeek,
-            offering.HoursPerDay) is ClassScheduleValidationResult scheduleValidationResult &&
-          !scheduleValidationResult.IsValid)
-        validationResults.Add(new ClassSectionDataIntegrityResult
-        {
-          ClassSectionId = classSection.Id,
-          OfferingId = offering.Id,
-          Type = ClassSectionValidationIssueTypeEnum.HOURS_MISMATCH,
-          Message = $"Subject offering has invalid class schedules: {scheduleValidationResult.ErrorMessage}"
-        });
+        if (ClassScheduleValidationService.ValidateAllSchedules(offering.ClassSchedules, offering.DaysPerWeek,
+              offering.HoursPerDay) is ClassScheduleValidationResult scheduleValidationResult &&
+            !scheduleValidationResult.IsValid)
+          validationResults.Add(new ClassSectionDataIntegrityResult
+          {
+            ClassSectionId = classSection.Id,
+            OfferingId = offering.Id,
+            Type = ClassSectionValidationIssueTypeEnum.HOURS_MISMATCH,
+            Message = $"Subject offering has invalid class schedules: {scheduleValidationResult.ErrorMessage}"
+          });
+      }
     }
 
     return validationResults;

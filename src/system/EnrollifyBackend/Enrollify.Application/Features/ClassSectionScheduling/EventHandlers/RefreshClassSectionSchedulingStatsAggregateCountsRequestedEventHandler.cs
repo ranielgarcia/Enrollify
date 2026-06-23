@@ -34,6 +34,18 @@ public class RefreshClassSectionSchedulingStatsAggregateCountsRequestedEventHand
 
       await statsRepository.RefreshInformationalIssueCountsForClassSection(notification.TermId,
         notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+
+      await statsRepository.RefreshOfferingCountWithIssueForClassSection(notification.TermId,
+        notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+
+      await statsRepository.RefreshOfferingCountWithMissingTeacherIssueForClassSection(notification.TermId,
+        notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+
+      await statsRepository.RefreshOfferingCountWithMissingRoomIssueForClassSection(notification.TermId,
+        notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+
+      await statsRepository.RefreshOfferingCountWithNoScheduleIssueForClassSection(notification.TermId,
+        notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
     }
   }
 }

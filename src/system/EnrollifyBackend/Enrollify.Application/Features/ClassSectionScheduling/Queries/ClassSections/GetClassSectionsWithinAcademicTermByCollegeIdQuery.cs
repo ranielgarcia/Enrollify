@@ -8,6 +8,7 @@ using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSchedulingStatsAggregate;
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.SharedKernel;
 using MediatR;
 
@@ -50,10 +51,17 @@ public class GetClassSectionsWithinAcademicTermByCollegeIdQueryHandler :
     if (!courses.Any())
       return Result.NotFound("No courses found for college.");
 
-    // ### Class Section Scheduling Validation Issue Stats
-    var schedulingStatsSpec = new GetClassSchedulingStatsForCollegeWithinAcademicTermSpec(
+    // ### Class Section Level Scheduling Stats
+    var schedulingStatsSpec = new GetSpecificTypesClassSchedulingStatsForCollegeWithinAcademicTermSpec(
       courses.Select(c => c.Id).ToList(),
-      request.AcademicTermId);
+      request.AcademicTermId,
+      [
+        ClassSectionSchedulingStatsAggregateTypeEnum.OfferingsCount,
+        ClassSectionSchedulingStatsAggregateTypeEnum.OfferingWithIssueCount,
+        ClassSectionSchedulingStatsAggregateTypeEnum.OfferingMissingRoomCount,
+        ClassSectionSchedulingStatsAggregateTypeEnum.OfferingMissingTeacherCount,
+        ClassSectionSchedulingStatsAggregateTypeEnum.OfferingNoScheduleCount
+      ]);
 
     List<ClassSectionSchedulingStats> schedulingStatsList =
       await _schedulingStatsReadRepository.ListAsync(schedulingStatsSpec, cancellationToken);

@@ -28,4 +28,19 @@ public interface IClassSectionSchedulingStatsRepository
   Task RefreshInformationalIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
     ClassSectionId classSectionId,
     CancellationToken cancellationToken);
+
+  Task RefreshOfferingCountWithIssueForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId, CancellationToken cancellationToken);
+
+  Task RefreshOfferingCountWithMissingTeacherIssueForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId, CancellationToken cancellationToken);
+
+  Task RefreshOfferingCountWithMissingRoomIssueForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId, CancellationToken cancellationToken);
+
+  Task RefreshOfferingCountWithNoScheduleIssueForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId, CancellationToken cancellationToken);
+
+  Task RefreshOfferingsCountForClassSection(ClassSectionId classSectionId,
+    CancellationToken ct);
 }
