@@ -26,21 +26,21 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
     CancellationToken cancellationToken)
   {
     await RefreshSectionCountsForCourseAndClassSectionStatus(termId, courseId, ClassSectionStatusEnum.Draft,
-      ClassSectionSchedulingStatsAggregateTypeEnum.DraftSections, cancellationToken);
+      ClassSectionSchedulingStatsAggregateTypeEnum.DRAFT_SECTIONS, cancellationToken);
   }
 
   public async Task RefreshOpenSectionCountsForCourse(AcademicTermId termId, CourseId courseId,
     CancellationToken cancellationToken)
   {
     await RefreshSectionCountsForCourseAndClassSectionStatus(termId, courseId, ClassSectionStatusEnum.Open,
-      ClassSectionSchedulingStatsAggregateTypeEnum.OpenSections, cancellationToken);
+      ClassSectionSchedulingStatsAggregateTypeEnum.OPEN_SECTIONS, cancellationToken);
   }
 
   public async Task RefreshCancelledSectionCountsForCourse(AcademicTermId termId, CourseId courseId,
     CancellationToken cancellationToken)
   {
     await RefreshSectionCountsForCourseAndClassSectionStatus(termId, courseId, ClassSectionStatusEnum.Cancelled,
-      ClassSectionSchedulingStatsAggregateTypeEnum.CancelledSections, cancellationToken);
+      ClassSectionSchedulingStatsAggregateTypeEnum.CANCELLED_SECTIONS, cancellationToken);
   }
 
   public async Task RefreshHardConflictIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
@@ -48,7 +48,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
   {
     await RefreshSectionIssueTierAggregateCounts(termId, courseId, classSectionId,
       ClassSectionValidationIssueTierEnum.ConflictHard,
-      ClassSectionSchedulingStatsAggregateTypeEnum.HardConflictIssues, cancellationToken);
+      ClassSectionSchedulingStatsAggregateTypeEnum.HARD_CONFLICTS, cancellationToken);
   }
 
   public async Task RefreshSoftConflictIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
@@ -56,7 +56,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
   {
     await RefreshSectionIssueTierAggregateCounts(termId, courseId, classSectionId,
       ClassSectionValidationIssueTierEnum.ConflictSoft,
-      ClassSectionSchedulingStatsAggregateTypeEnum.SoftConflictIssues, cancellationToken);
+      ClassSectionSchedulingStatsAggregateTypeEnum.SOFT_CONFLICTS, cancellationToken);
   }
 
   public async Task RefreshDataIntegrityIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
@@ -64,7 +64,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
   {
     await RefreshSectionIssueTierAggregateCounts(termId, courseId, classSectionId,
       ClassSectionValidationIssueTierEnum.DataIntegrity,
-      ClassSectionSchedulingStatsAggregateTypeEnum.DataIntegrityIssue, cancellationToken);
+      ClassSectionSchedulingStatsAggregateTypeEnum.DATA_INTEGRITY, cancellationToken);
   }
 
   public async Task RefreshInformationalIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
@@ -72,7 +72,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
   {
     await RefreshSectionIssueTierAggregateCounts(termId, courseId, classSectionId,
       ClassSectionValidationIssueTierEnum.Informational,
-      ClassSectionSchedulingStatsAggregateTypeEnum.Informational, cancellationToken);
+      ClassSectionSchedulingStatsAggregateTypeEnum.INFORMATIONAL, cancellationToken);
   }
 
   public async Task RefreshOfferingCountWithIssueForClassSection(AcademicTermId termId, CourseId courseId,
@@ -81,8 +81,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
   {
     try
     {
-      string sql = @"""
-      MERGE [ClassSectionSchedulingStats] AS [Target]
+      string sql = @"MERGE [ClassSectionSchedulingStats] AS [Target]
           USING (
 	          SELECT COUNT(1)
 	          FROM (
@@ -95,10 +94,9 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
           ON [Target].[AcademicTermId]=@TermId AND [Target].[CourseId]=@CourseId AND [Target].[ClassSectionId]=@ClassSectionId AND [Target].[AggregateType]=@AggregateType
           WHEN NOT MATCHED THEN
 	          INSERT (AcademicTermId, CourseId, ClassSectionId, AggregateType, AggregateCount, ComputedAt)
-	          VALUES (@TermId, @CourseId, @ClassSectionId, @AggregateType, [Source].[AggregateCount], GETUTCDATE())
+	          VALUES (@TermId, @CourseId, @ClassSectionId, @AggregateType, [Source].[OfferingsWithIssuesCount], GETUTCDATE())
           WHEN MATCHED THEN
-	          UPDATE SET [Target].[AggregateCount]=[Source].[OfferingsWithIssuesCount], [Target].[ComputedAt]=GETUTCDATE();
-      """;
+	          UPDATE SET [Target].[AggregateCount]=[Source].[OfferingsWithIssuesCount], [Target].[ComputedAt]=GETUTCDATE();";
 
       using SqlConnection conn = await _connectionFactory.CreateOpenAsync(ct);
 
@@ -107,16 +105,15 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
         TermId = termId,
         CourseId = courseId,
         ClassSectionId = classSectionId,
-        AggregateType = ClassSectionSchedulingStatsAggregateTypeEnum.OfferingWithIssueCount.Name
+        AggregateType = ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_WITH_ISSUE_COUNT.Name
       });
     }
-    catch (Exception ex)
+    catch (SqlException ex)
     {
       _logger.LogError(ex,
         "Error refreshing offering with issue counts for CourseId {CourseId}, TermId {TermId}, ClassSectionStatus {ClassSectionStatus}, AggregateType {AggregateType}",
         courseId.Value, termId.Value, classSectionId.Value,
-        ClassSectionSchedulingStatsAggregateTypeEnum.OfferingWithIssueCount.Name);
-      throw;
+        ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_WITH_ISSUE_COUNT.Name);
     }
   }
 
@@ -126,8 +123,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
   {
     try
     {
-      string sql = @"""
-      MERGE [ClassSectionSchedulingStats] AS [Target]
+      string sql = @"MERGE [ClassSectionSchedulingStats] AS [Target]
       USING (
 	      SELECT O.ClassSectionId, CS.CourseId, CS.AcademicTermId , COUNT(1) AS NumberOfOfferings
 	      FROM ClassSectionSubjectOffering O
@@ -138,26 +134,24 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
       ON [Target].[AcademicTermId]=[Source].[TermId] AND [Target].[CourseId]=[Source].[CourseId] AND [Target].[ClassSectionId]=@ClassSectionId AND [Target].[AggregateType]=@AggregateType
       WHEN NOT MATCHED THEN
 	      INSERT (AcademicTermId, CourseId, ClassSectionId, AggregateType, AggregateCount, ComputedAt)
-	      VALUES ([Source].[TermId], [Source].[CourseId], @ClassSectionId, @AggregateType, [Source].[AggregateCount], GETUTCDATE())
+	      VALUES ([Source].[TermId], [Source].[CourseId], @ClassSectionId, @AggregateType, [Source].[NumberOfOfferings], GETUTCDATE())
       WHEN MATCHED THEN
-	      UPDATE SET [Target].[AggregateCount]=[Source].[NumberOfOfferings], [Target].[ComputedAt]=GETUTCDATE();
-      """;
+	      UPDATE SET [Target].[AggregateCount]=[Source].[NumberOfOfferings], [Target].[ComputedAt]=GETUTCDATE();";
 
       using SqlConnection conn = await _connectionFactory.CreateOpenAsync(ct);
 
       await conn.ExecuteAsync(sql, new
       {
         ClassSectionId = classSectionId,
-        AggregateType = ClassSectionSchedulingStatsAggregateTypeEnum.OfferingsCount.Name
+        AggregateType = ClassSectionSchedulingStatsAggregateTypeEnum.OFFERINGS_COUNT.Name
       });
     }
-    catch (Exception ex)
+    catch (SqlException ex)
     {
       _logger.LogError(ex,
-        "Error refreshing offering with issue counts for ClassSectionStatus {ClassSectionStatus}, AggregateType {AggregateType}",
+        "Error refreshing offering counts for ClassSectionStatus {ClassSectionStatus}, AggregateType {AggregateType}",
         classSectionId.Value,
-        ClassSectionSchedulingStatsAggregateTypeEnum.OfferingWithIssueCount.Name);
-      throw;
+        ClassSectionSchedulingStatsAggregateTypeEnum.OFFERINGS_COUNT.Name);
     }
   }
 
@@ -166,7 +160,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
   {
     await RefreshOfferingCountWithSpecificIssueForSection(termId, courseId, classSectionId,
       ClassSectionValidationIssueTypeEnum.TEACHER_NOT_ASSIGNED,
-      ClassSectionSchedulingStatsAggregateTypeEnum.OfferingMissingTeacherCount, cancellationToken);
+      ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_MISSING_TEACHER_COUNT, cancellationToken);
   }
 
   public async Task RefreshOfferingCountWithMissingRoomIssueForClassSection(AcademicTermId termId, CourseId courseId,
@@ -174,7 +168,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
   {
     await RefreshOfferingCountWithSpecificIssueForSection(termId, courseId, classSectionId,
       ClassSectionValidationIssueTypeEnum.ROOM_NOT_ASSIGNED,
-      ClassSectionSchedulingStatsAggregateTypeEnum.OfferingMissingRoomCount, cancellationToken);
+      ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_MISSING_ROOM_COUNT, cancellationToken);
   }
 
   public async Task RefreshOfferingCountWithNoScheduleIssueForClassSection(AcademicTermId termId, CourseId courseId,
@@ -182,7 +176,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
   {
     await RefreshOfferingCountWithSpecificIssueForSection(termId, courseId, classSectionId,
       ClassSectionValidationIssueTypeEnum.NO_SCHEDULES,
-      ClassSectionSchedulingStatsAggregateTypeEnum.OfferingNoScheduleCount, cancellationToken);
+      ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_NO_SCHEDULE_COUNT, cancellationToken);
   }
 
   private async Task RefreshSectionCountsForCourseAndClassSectionStatus(AcademicTermId termId, CourseId courseId,
@@ -191,8 +185,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
   {
     try
     {
-      string sql = @"""
-        MERGE [ClassSectionSchedulingStats] AS [Target]
+      string sql = @"MERGE [ClassSectionSchedulingStats] AS [Target]
         USING (
 	        SELECT COUNT(1) AggregateCount
 	        FROM [dbo].[ClassSections]
@@ -203,8 +196,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
 	        INSERT (AcademicTermId, CourseId, AggregateType, AggregateCount, ComputedAt)
 	        VALUES (@TermId, @CourseId, @AggregateType, [Source].[AggregateCount], GETUTCDATE())
         WHEN MATCHED THEN
-	        UPDATE SET [Target].[AggregateCount]=[Source].[AggregateCount], [Target].[ComputedAt]=GETUTCDATE();
-      """;
+	        UPDATE SET [Target].[AggregateCount]=[Source].[AggregateCount], [Target].[ComputedAt]=GETUTCDATE();";
 
       using SqlConnection conn = await _connectionFactory.CreateOpenAsync(ct);
 
@@ -216,12 +208,11 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
         AggregateType = aggregateType.Name
       });
     }
-    catch (Exception ex)
+    catch (SqlException ex)
     {
       _logger.LogError(ex,
         "Error refreshing section counts for CourseId {CourseId}, TermId {TermId}, ClassSectionStatus {ClassSectionStatus}, AggregateType {AggregateType}",
         courseId.Value, termId.Value, classSectionStatus.Value, aggregateType.Value);
-      throw;
     }
   }
 
@@ -234,8 +225,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
 
     try
     {
-      string sql = @"""
-      MERGE [ClassSectionSchedulingStats] AS [Target]
+      string sql = @"MERGE [ClassSectionSchedulingStats] AS [Target]
         USING (
 	        SELECT COUNT(1) AggregateCount
 	        FROM ClassSectionValidationIssues
@@ -246,8 +236,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
 	        INSERT (AcademicTermId, CourseId, ClassSectionId, AggregateType, AggregateCount, ComputedAt)
 	        VALUES (@TermId, @CourseId, @ClassSectionId, @AggregateType, [Source].[AggregateCount], GETUTCDATE())
         WHEN MATCHED THEN
-	        UPDATE SET [Target].[AggregateCount]=[Source].[AggregateCount], [Target].[ComputedAt]=GETUTCDATE();
-      """;
+	        UPDATE SET [Target].[AggregateCount]=[Source].[AggregateCount], [Target].[ComputedAt]=GETUTCDATE();";
 
       using SqlConnection conn = await _connectionFactory.CreateOpenAsync(cancellationToken);
 
@@ -260,12 +249,11 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
         IssueTypes = issueTypes
       });
     }
-    catch (Exception ex)
+    catch (SqlException ex)
     {
       _logger.LogError(ex,
         "Error refreshing {IssueTier} counts for CourseId {CourseId}, TermId {TermId}, ClassSectionId {ClassSectionId}, AggregateType {AggregateType}",
         issueTier.Name, courseId.Value, termId.Value, classSectionId.Value, aggregateType.Name);
-      throw;
     }
   }
 
@@ -275,8 +263,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
   {
     try
     {
-      string sql = @"""
-        MERGE [ClassSectionSchedulingStats] AS [Target]
+      string sql = @"MERGE [ClassSectionSchedulingStats] AS [Target]
           USING (
 	          SELECT COUNT(1)
 	          FROM (
@@ -289,10 +276,9 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
           ON [Target].[AcademicTermId]=@TermId AND [Target].[CourseId]=@CourseId AND [Target].[ClassSectionId]=@ClassSectionId AND [Target].[AggregateType]=@AggregateType
           WHEN NOT MATCHED THEN
 	          INSERT (AcademicTermId, CourseId, ClassSectionId, AggregateType, AggregateCount, ComputedAt)
-	          VALUES (@TermId, @CourseId, @ClassSectionId, @AggregateType, [Source].[AggregateCount], GETUTCDATE())
+	          VALUES (@TermId, @CourseId, @ClassSectionId, @AggregateType, [Source].[OfferingsWithIssuesCount], GETUTCDATE())
           WHEN MATCHED THEN
-	          UPDATE SET [Target].[AggregateCount]=[Source].[OfferingsWithIssuesCount], [Target].[ComputedAt]=GETUTCDATE();
-      """;
+	          UPDATE SET [Target].[AggregateCount]=[Source].[OfferingsWithIssuesCount], [Target].[ComputedAt]=GETUTCDATE();";
 
       using SqlConnection conn = await _connectionFactory.CreateOpenAsync(cancellationToken);
 
@@ -305,12 +291,11 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
         AggregateType = aggregateType.Name
       });
     }
-    catch (Exception ex)
+    catch (SqlException ex)
     {
       _logger.LogError(ex,
         "Error refreshing {AggregateType} counts for CourseId {CourseId}, TermId {TermId}, ClassSectionId {ClassSectionId}, ValidationIssueTypeToCount {ValidationIssueTypeToCount}",
         aggregateType.Name, courseId.Value, termId.Value, classSectionId.Value, validationIssueTypeToCount.Name);
-      throw;
     }
   }
 }

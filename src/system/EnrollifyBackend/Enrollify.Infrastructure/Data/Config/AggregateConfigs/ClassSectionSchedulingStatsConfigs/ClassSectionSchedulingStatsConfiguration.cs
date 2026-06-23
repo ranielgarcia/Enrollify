@@ -13,9 +13,6 @@ public class ClassSectionSchedulingStatsConfiguration : IEntityTypeConfiguration
       .UseIdentityColumn()
       .IsRequired();
 
-    builder.Property(e => e.CollegeId)
-      .IsRequired();
-
     builder.Property(e => e.CourseId)
       .IsRequired();
 

@@ -56,11 +56,11 @@ public class GetClassSectionsWithinAcademicTermByCollegeIdQueryHandler :
       courses.Select(c => c.Id).ToList(),
       request.AcademicTermId,
       [
-        ClassSectionSchedulingStatsAggregateTypeEnum.OfferingsCount,
-        ClassSectionSchedulingStatsAggregateTypeEnum.OfferingWithIssueCount,
-        ClassSectionSchedulingStatsAggregateTypeEnum.OfferingMissingRoomCount,
-        ClassSectionSchedulingStatsAggregateTypeEnum.OfferingMissingTeacherCount,
-        ClassSectionSchedulingStatsAggregateTypeEnum.OfferingNoScheduleCount
+        ClassSectionSchedulingStatsAggregateTypeEnum.OFFERINGS_COUNT,
+        ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_WITH_ISSUE_COUNT,
+        ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_MISSING_ROOM_COUNT,
+        ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_MISSING_TEACHER_COUNT,
+        ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_NO_SCHEDULE_COUNT
       ]);
 
     List<ClassSectionSchedulingStats> schedulingStatsList =

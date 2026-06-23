@@ -15,12 +15,11 @@ public class ClassSectionSchedulingStats : EntityBase<ClassSectionSchedulingStat
   {
   }
 
-  public ClassSectionSchedulingStats(AcademicTermId academicTermId, CollegeId collegeId, CourseId courseId,
+  public ClassSectionSchedulingStats(AcademicTermId academicTermId, CourseId courseId,
     ClassSectionId? classSectionId, ClassSectionSchedulingStatsAggregateTypeEnum AggregateType,
     int aggregateCount)
   {
     AcademicTermId = Guard.Against.Null(academicTermId);
-    CollegeId = Guard.Against.Null(collegeId);
     CourseId = Guard.Against.Null(courseId);
     ClassSectionId = classSectionId; // nullable for course-level aggregates
     AggregateType = Guard.Against.Null(AggregateType);
@@ -29,8 +28,6 @@ public class ClassSectionSchedulingStats : EntityBase<ClassSectionSchedulingStat
   }
 
   public AcademicTermId AcademicTermId { get; private set; }
-  public CollegeId CollegeId { get; private set; }
-
   public CourseId CourseId { get; private set; }
 
 
