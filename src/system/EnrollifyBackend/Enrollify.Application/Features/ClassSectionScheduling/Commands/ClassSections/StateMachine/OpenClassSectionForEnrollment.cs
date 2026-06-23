@@ -5,6 +5,7 @@ using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.SharedKernel;
 using MediatR;
 
@@ -73,7 +74,8 @@ public static class OpenClassSectionForEnrollment
       Result<List<ClassSectionValidationIssueDto>> validationIssues =
         await _mediator.Send(new ComputeAndGetClassSectionValidationIssue.Command(sectionId),
           cancellationToken);
-      return validationIssues.IsSuccess && validationIssues.Value.Count > 0;
+      return validationIssues.IsSuccess && validationIssues.Value
+        .Where(x => x.Type.Tier != ClassSectionValidationIssueTierEnum.INFORMATIONAL).ToList().Count > 0;
     }
   }
 }

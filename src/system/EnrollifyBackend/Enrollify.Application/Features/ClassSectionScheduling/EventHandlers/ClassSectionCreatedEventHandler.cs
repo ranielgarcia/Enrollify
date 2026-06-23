@@ -7,14 +7,11 @@ using MediatR;
 namespace Enrollify.Application.Features.ClassSectionScheduling.EventHandlers;
 
 public sealed class ClassSectionCreatedEventHandler(
-  IMediator mediator,
-  IClassSectionSchedulingStatsRepository statsRepository)
+  IMediator mediator)
   : IDomainEventHandler<ClassSectionCreatedEvent>
 {
   public async Task Handle(ClassSectionCreatedEvent notification, CancellationToken cancellationToken)
   {
-    await statsRepository.RefreshOfferingsCountForClassSection(notification.Id, cancellationToken);
-
     await mediator.Publish(new RefreshClassSectionValidationIssuesRequestedEvent(notification.Id),
       cancellationToken);
   }

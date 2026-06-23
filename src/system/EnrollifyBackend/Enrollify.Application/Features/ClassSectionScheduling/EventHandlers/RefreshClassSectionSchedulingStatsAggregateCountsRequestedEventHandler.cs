@@ -12,40 +12,70 @@ public class RefreshClassSectionSchedulingStatsAggregateCountsRequestedEventHand
   public async Task Handle(RefreshClassSectionSchedulingStatsAggregateCountsRequestedEvent notification,
     CancellationToken cancellationToken)
   {
-    await statsRepository.RefreshDraftSectionCountsForCourse(notification.TermId,
+    Task refreshDraftSectionCountsForCourseTask = statsRepository.RefreshDraftSectionCountsForCourse(
+      notification.TermId,
       notification.CourseId, cancellationToken);
 
-    await statsRepository.RefreshOpenSectionCountsForCourse(notification.TermId,
+    Task refreshOpenSectionCountsForCourseTask = statsRepository.RefreshOpenSectionCountsForCourse(notification.TermId,
       notification.CourseId, cancellationToken);
 
-    await statsRepository.RefreshCancelledSectionCountsForCourse(notification.TermId,
+    Task refreshCancelledSectionCountsForCourseTask = statsRepository.RefreshCancelledSectionCountsForCourse(
+      notification.TermId,
       notification.CourseId, cancellationToken);
+
+    await Task.WhenAll(
+      refreshDraftSectionCountsForCourseTask,
+      refreshOpenSectionCountsForCourseTask,
+      refreshCancelledSectionCountsForCourseTask);
 
     if (notification.ClassSectionId is not null)
     {
-      await statsRepository.RefreshHardConflictIssueCountsForClassSection(notification.TermId,
-        notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+      Task refreshOfferingsCountForClassSectionTask =
+        statsRepository.RefreshOfferingsCountForClassSection((ClassSectionId)notification.ClassSectionId,
+          cancellationToken);
 
-      await statsRepository.RefreshSoftConflictIssueCountsForClassSection(notification.TermId,
-        notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+      Task refreshHardConflictIssueCountsForClassSectionTask =
+        statsRepository.RefreshHardConflictIssueCountsForClassSection(notification.TermId,
+          notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
 
-      await statsRepository.RefreshDataIntegrityIssueCountsForClassSection(notification.TermId,
-        notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+      Task refreshSoftConflictIssueCountsForClassSectionTask =
+        statsRepository.RefreshSoftConflictIssueCountsForClassSection(notification.TermId,
+          notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
 
-      await statsRepository.RefreshInformationalIssueCountsForClassSection(notification.TermId,
-        notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+      Task refreshDataIntegrityIssueCountsForClassSectionTask =
+        statsRepository.RefreshDataIntegrityIssueCountsForClassSection(notification.TermId,
+          notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
 
-      await statsRepository.RefreshOfferingCountWithIssueForClassSection(notification.TermId,
-        notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+      Task refreshInformationalIssueCountsForClassSectionTask =
+        statsRepository.RefreshInformationalIssueCountsForClassSection(notification.TermId,
+          notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
 
-      await statsRepository.RefreshOfferingCountWithMissingTeacherIssueForClassSection(notification.TermId,
-        notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+      Task refreshOfferingCountWithIssueForClassSectionTask =
+        statsRepository.RefreshOfferingCountWithIssueForClassSection(notification.TermId,
+          notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
 
-      await statsRepository.RefreshOfferingCountWithMissingRoomIssueForClassSection(notification.TermId,
-        notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+      Task refreshOfferingCountWithMissingTeacherIssueForClassSectionTask =
+        statsRepository.RefreshOfferingCountWithMissingTeacherIssueForClassSection(notification.TermId,
+          notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
 
-      await statsRepository.RefreshOfferingCountWithNoScheduleIssueForClassSection(notification.TermId,
-        notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+      Task refreshOfferingCountWithMissingRoomIssueForClassSectionTask =
+        statsRepository.RefreshOfferingCountWithMissingRoomIssueForClassSection(notification.TermId,
+          notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+
+      Task refreshOfferingCountWithNoScheduleIssueForClassSectionTask =
+        statsRepository.RefreshOfferingCountWithNoScheduleIssueForClassSection(notification.TermId,
+          notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+
+      await Task.WhenAll(
+        refreshOfferingsCountForClassSectionTask,
+        refreshHardConflictIssueCountsForClassSectionTask,
+        refreshSoftConflictIssueCountsForClassSectionTask,
+        refreshDataIntegrityIssueCountsForClassSectionTask,
+        refreshInformationalIssueCountsForClassSectionTask,
+        refreshOfferingCountWithIssueForClassSectionTask,
+        refreshOfferingCountWithMissingTeacherIssueForClassSectionTask,
+        refreshOfferingCountWithMissingRoomIssueForClassSectionTask,
+        refreshOfferingCountWithNoScheduleIssueForClassSectionTask);
     }
   }
 }

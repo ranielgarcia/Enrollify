@@ -38,9 +38,18 @@ public class GetSchedulingStatsForCollegeInAcademicTermQueryHandler
     if (!coursesInCollege.Any())
       return Result.NotFound($"No courses found for college with ID {request.collegeId.Value}.");
 
-    var spec = new GetClassSchedulingStatsForCollegeWithinAcademicTermSpec(
+    var spec = new GetSpecificTypesClassSchedulingStatsForCollegeWithinAcademicTermSpec(
       coursesInCollege.Select(x => x.Id).ToList(),
-      request.TermId);
+      request.TermId,
+      [
+        ClassSectionSchedulingStatsAggregateTypeEnum.DRAFT_SECTIONS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.OPEN_SECTIONS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.CANCELLED_SECTIONS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.HARD_CONFLICTS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.SOFT_CONFLICTS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.DATA_INTEGRITY,
+        ClassSectionSchedulingStatsAggregateTypeEnum.INFORMATIONAL
+      ]);
 
     List<ClassSectionSchedulingStats> allStats =
       await _schedulingStatsReadRepository.ListAsync(spec, cancellationToken);

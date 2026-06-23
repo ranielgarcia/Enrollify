@@ -12,16 +12,16 @@ public class ClassSectionSchedulingStatsAggregateTypeEnum : SmartEnum<ClassSecti
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum CANCELLED_SECTIONS = new("CANCELLED_SECTIONS", 3);
 
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum HARD_CONFLICTS =
-    new("HARD_CONFLICTS", 4, ClassSectionValidationIssueTierEnum.ConflictHard);
+    new("HARD_CONFLICTS", 4, ClassSectionValidationIssueTierEnum.CONFLICT_HARD);
 
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum SOFT_CONFLICTS =
-    new("SOFT_CONFLICTS", 5, ClassSectionValidationIssueTierEnum.ConflictSoft);
+    new("SOFT_CONFLICTS", 5, ClassSectionValidationIssueTierEnum.CONFLICT_SOFT);
 
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum DATA_INTEGRITY =
-    new("DATA_INTEGRITY", 6, ClassSectionValidationIssueTierEnum.DataIntegrity);
+    new("DATA_INTEGRITY", 6, ClassSectionValidationIssueTierEnum.DATA_INTEGRITY);
 
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum INFORMATIONAL =
-    new("INFORMATIONAL", 7, ClassSectionValidationIssueTierEnum.Informational);
+    new("INFORMATIONAL", 7, ClassSectionValidationIssueTierEnum.INFORMATIONAL);
 
   // Class Level Stats
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum OFFERING_WITH_ISSUE_COUNT =

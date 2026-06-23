@@ -21,7 +21,6 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
     _logger = logger;
   }
 
-
   public async Task RefreshDraftSectionCountsForCourse(AcademicTermId termId, CourseId courseId,
     CancellationToken cancellationToken)
   {
@@ -47,7 +46,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
     ClassSectionId classSectionId, CancellationToken cancellationToken)
   {
     await RefreshSectionIssueTierAggregateCounts(termId, courseId, classSectionId,
-      ClassSectionValidationIssueTierEnum.ConflictHard,
+      ClassSectionValidationIssueTierEnum.CONFLICT_HARD,
       ClassSectionSchedulingStatsAggregateTypeEnum.HARD_CONFLICTS, cancellationToken);
   }
 
@@ -55,7 +54,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
     ClassSectionId classSectionId, CancellationToken cancellationToken)
   {
     await RefreshSectionIssueTierAggregateCounts(termId, courseId, classSectionId,
-      ClassSectionValidationIssueTierEnum.ConflictSoft,
+      ClassSectionValidationIssueTierEnum.CONFLICT_SOFT,
       ClassSectionSchedulingStatsAggregateTypeEnum.SOFT_CONFLICTS, cancellationToken);
   }
 
@@ -63,7 +62,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
     ClassSectionId classSectionId, CancellationToken cancellationToken)
   {
     await RefreshSectionIssueTierAggregateCounts(termId, courseId, classSectionId,
-      ClassSectionValidationIssueTierEnum.DataIntegrity,
+      ClassSectionValidationIssueTierEnum.DATA_INTEGRITY,
       ClassSectionSchedulingStatsAggregateTypeEnum.DATA_INTEGRITY, cancellationToken);
   }
 
@@ -71,7 +70,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
     ClassSectionId classSectionId, CancellationToken cancellationToken)
   {
     await RefreshSectionIssueTierAggregateCounts(termId, courseId, classSectionId,
-      ClassSectionValidationIssueTierEnum.Informational,
+      ClassSectionValidationIssueTierEnum.INFORMATIONAL,
       ClassSectionSchedulingStatsAggregateTypeEnum.INFORMATIONAL, cancellationToken);
   }
 

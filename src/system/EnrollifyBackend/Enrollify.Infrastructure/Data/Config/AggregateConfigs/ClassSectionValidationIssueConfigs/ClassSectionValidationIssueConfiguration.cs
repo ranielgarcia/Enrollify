@@ -18,7 +18,7 @@ public class ClassSectionValidationIssueConfiguration : IEntityTypeConfiguration
     builder.Property(e => e.CourseId).IsRequired();
     builder.Property(e => e.AcademicTermId).IsRequired();
     builder.Property(e => e.ClassSectionId).IsRequired();
-    builder.Property(e => e.OfferingId).IsRequired();
+    builder.Property(e => e.OfferingId).IsRequired(false);
 
     builder.Property(e => e.Type)
       .HasConversion(
@@ -36,7 +36,7 @@ public class ClassSectionValidationIssueConfiguration : IEntityTypeConfiguration
         v => v.Value,
         v => Core.Constants.DayOfWeekEnum.FromValue(v))
       .HasColumnType("char(3)")
-      .IsRequired();
+      .IsRequired(false);
 
     builder.Property(e => e.StartTime).IsRequired(false);
     builder.Property(e => e.EndTime).IsRequired(false);
