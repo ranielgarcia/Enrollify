@@ -7,16 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ardalis.SmartEnum" Version="8.2.0" />
-    <PackageReference Include="libphonenumber-csharp" Version="9.0.27" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
-    <PackageReference Include="Riok.Mapperly" Version="4.3.1" />
-    <PackageReference Include="Vogen" Version="8.0.5" />
+    <PackageReference Include="Ardalis.SmartEnum" Version="8.2.0"/>
+    <PackageReference Include="libphonenumber-csharp" Version="9.0.27"/>
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5"/>
+    <PackageReference Include="Riok.Mapperly" Version="4.3.1"/>
+    <PackageReference Include="Vogen" Version="8.0.5"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Enrollify.SharedKernel\Enrollify.SharedKernel.csproj" />
-    <ProjectReference Include="..\Enrollify.Analyzers\Enrollify.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Enrollify.SharedKernel\Enrollify.SharedKernel.csproj"/>
+    <ProjectReference Include="..\Enrollify.Analyzers\Enrollify.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
   </ItemGroup>
 
 </Project>

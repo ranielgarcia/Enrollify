@@ -1,5 +1,5 @@
 using Enrollify.Application.Behaviors;
-using Enrollify.Application.Features.ClassSections.Validators;
+using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections.Validators;
 using Enrollify.Application.Features.Users.Queries;
 using Enrollify.Infrastructure;
 using Enrollify.Infrastructure.Data;

@@ -1,5 +1,5 @@
-using Enrollify.Application.Features.ClassSectionSubjectOfferings.DTOs;
-using Enrollify.Application.Features.ClassSectionSubjectOfferings.Specifications;
+using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
+using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.SharedKernel;
 

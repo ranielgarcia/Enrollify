@@ -1,7 +1,6 @@
 using Ardalis.Result;
-using Enrollify.Application.Features.ClassSectionSubjectOfferings.Specifications;
-using Enrollify.Application.Features.ClassSections.Specifications;
-using Enrollify.Application.Features.Subjects;
+using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
+using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;

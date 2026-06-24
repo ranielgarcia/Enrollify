@@ -1,5 +1,4 @@
 using Ardalis.Result;
-using Enrollify.Application.Features.ClassSections.Commands;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
@@ -18,6 +17,7 @@ using Enrollify.IntegrationTests.Helpers;
 using Enrollify.IntegrationTests.Infrastructure;
 using Enrollify.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections.StateMachine;
 
 namespace Enrollify.IntegrationTests._Tests.Application.ClassSections;
 
