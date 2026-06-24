@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSectionValidationIssues;
 
-public static class ComputeAndGetClassSectionValidationIssue
+public static class ComputeAndGetValidationIssuesForClassSection
 {
   public sealed record Command(
     ClassSectionId ClassSectionId) : IRequest<Result<List<ClassSectionValidationIssueDto>>>;

@@ -44,4 +44,33 @@ public class ClassSectionValidationIssueRepository : IClassSectionValidationIssu
       throw;
     }
   }
+
+  public async Task ReplaceAllForSectionsAsync(List<ClassSectionId> classSectionIds,
+    IEnumerable<ClassSectionValidationIssue> validationIssues, CancellationToken cancellationToken = default)
+  {
+    try
+    {
+      int deletedRows = await _dbContext.ClassSectionValidationIssues
+        .Where(c => classSectionIds.Contains(c.ClassSectionId))
+        .ExecuteDeleteAsync(cancellationToken);
+
+      // Insert fresh validationIssues
+      var freshIssues = validationIssues.ToList();
+      if (freshIssues.Count > 0)
+        await _dbContext.ClassSectionValidationIssues
+          .AddRangeAsync(freshIssues, cancellationToken);
+
+      await _dbContext.SaveChangesAsync(cancellationToken);
+
+      _logger.LogDebug(
+        "Replaced validation issues for ClassSections {@ClassSectionIds}: removed {RemovedCount}, inserted {InsertedCount}",
+        classSectionIds.Select(x => x.Value), deletedRows, freshIssues.Count);
+    }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Error replacing validation issues for ClassSections {ClassSectionIds}",
+        classSectionIds.Select(x => x.Value));
+      throw;
+    }
+  }
 }

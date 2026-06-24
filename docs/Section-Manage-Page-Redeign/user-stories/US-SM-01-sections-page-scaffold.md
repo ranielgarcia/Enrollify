@@ -83,9 +83,9 @@ As a Scheduler, I want a new dedicated page route with frontend infrastructure a
 
 ## Definition of Done (Phase 2)
 
-- [ ] FastEndpoints endpoint for college-filtered list: `GET /api/scheduling/colleges/{collegeId}/class-sections?academicYearId={id}`
-- [ ] FastEndpoints endpoint for college-scoped stats: `GET /api/scheduling/colleges/{collegeId}/class-sections/stats?academicYearId={id}`
-- [ ] FastEndpoints endpoint for offering details: `GET /api/class-sections/{sectionId}/offerings`
+- [x] FastEndpoints endpoint for college-filtered list: `GET /api/scheduling/colleges/{collegeId}/class-sections?academicYearId={id}`
+- [x] FastEndpoints endpoint for college-scoped stats: `GET /api/scheduling/colleges/{collegeId}/class-sections/stats?academicYearId={id}`
+- [x] FastEndpoints endpoint for offering details: `GET /api/class-sections/{sectionId}/offerings`
 - [ ] FastEndpoints endpoint for bulk open: `POST /api/scheduling/colleges/class-sections/bulk/open`
 - [ ] FastEndpoints endpoint for bulk cancel: `POST /api/scheduling/colleges/class-sections/bulk/cancel`
 - [ ] FastEndpoints endpoint for bulk assign-adviser: `POST /api/scheduling/colleges/class-sections/bulk/assign-adviser`

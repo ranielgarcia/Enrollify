@@ -9,4 +9,8 @@ public interface IClassSectionValidationIssueRepository
     ClassSectionId classSectionId,
     IEnumerable<ClassSectionValidationIssue> validationIssues,
     CancellationToken cancellationToken);
+
+  Task ReplaceAllForSectionsAsync(List<ClassSectionId> classSectionIds,
+    IEnumerable<ClassSectionValidationIssue> validationIssues,
+    CancellationToken cancellationToken = default);
 }

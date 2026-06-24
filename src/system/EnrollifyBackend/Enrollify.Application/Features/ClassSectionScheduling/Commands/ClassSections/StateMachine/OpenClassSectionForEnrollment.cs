@@ -40,10 +40,10 @@ public static class OpenClassSectionForEnrollment
       if (section is null)
         return Result.NotFound($"Class section with ID {command.Id.Value} not found.");
 
-      List<ClassSectionSubjectOffering> offerings = await _offeringReadRepository.ListAsync(
-        new GetClassSectionSubjectOfferingsByClassSectionIdSpec(command.Id), cancellationToken);
+      int offeringsCount = await _offeringReadRepository.CountAsync(
+        new GetMinimalClassSectionSubjectOfferingsByClassSectionIdSpec(command.Id), cancellationToken);
 
-      if (offerings.Count == 0)
+      if (offeringsCount == 0)
         return Result.Invalid(new ValidationError("EnrollmentEligibilityCheckFailed",
           "Cannot open a class section for enrollment with no subject offerings."));
 
@@ -70,7 +70,7 @@ public static class OpenClassSectionForEnrollment
     private async Task<bool> HasValidationIssues(ClassSectionId sectionId, CancellationToken cancellationToken)
     {
       Result<List<ClassSectionValidationIssueDto>> validationIssues =
-        await _mediator.Send(new ComputeAndGetClassSectionValidationIssue.Command(sectionId),
+        await _mediator.Send(new ComputeAndGetValidationIssuesForClassSection.Command(sectionId),
           cancellationToken);
       return validationIssues.IsSuccess && validationIssues.Value
         .Where(x => x.Type.Tier != ClassSectionValidationIssueTierEnum.INFORMATIONAL).ToList().Count > 0;

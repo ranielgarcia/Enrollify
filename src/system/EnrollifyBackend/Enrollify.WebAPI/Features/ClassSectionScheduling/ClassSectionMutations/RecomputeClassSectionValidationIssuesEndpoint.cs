@@ -25,7 +25,7 @@ public class
     int id = Route<int>("id");
 
     Result<List<ClassSectionValidationIssueDto>> result = await _mediator.Send(
-      new ComputeAndGetClassSectionValidationIssue.Command(ClassSectionId.From(id)),
+      new ComputeAndGetValidationIssuesForClassSection.Command(ClassSectionId.From(id)),
       cancellationToken);
 
     return result.ToGetByIdResult(dto => dto);

@@ -22,7 +22,7 @@ public sealed class RefreshClassSectionValidationIssuesRequestedEventHandler(
   {
     ClassSectionId classSectionId = notification.ClassSectionId;
 
-    await mediator.Send(new ComputeAndGetClassSectionValidationIssue.Command(classSectionId),
+    await mediator.Send(new ComputeAndGetValidationIssuesForClassSection.Command(classSectionId),
       cancellationToken);
   }
 }

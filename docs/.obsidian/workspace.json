@@ -14,8 +14,18 @@
               "type": "markdown",
               "state": {
                 "file": "Section-Manage-Page-Redeign/user-stories/US-SM-01-sections-page-scaffold.md",
-                "mode": "source",
-                "source": false
+                "mode": "preview",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
               },
               "icon": "lucide-file",
               "title": "US-SM-01-sections-page-scaffold"
@@ -78,7 +88,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 387.5
+    "width": 221.5
   },
   "right": {
     "id": "727734fd25af5821",
@@ -155,7 +165,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -170,9 +181,10 @@
   },
   "active": "500a9d21adcec03e",
   "lastOpenFiles": [
+    "plans/class-section-validation-unified-table.md",
+    "EventStorming-Sticky-Notes-Reference.md",
     "Section-Manage-Page-Redeign/PRD-01-Overview.md",
     "Section-Manage-Page-Redeign/sections-management-page-redesign-proposal.md",
-    "EventStorming-Sticky-Notes-Reference.md",
     "frontend-modernization-plan.md",
     "EventStorming-Sticky-Notes-Reference.md.crdownload",
     "room-scheduler-page-design.md",
@@ -197,7 +209,6 @@
     "scheduling-architecture/pending/16-per-room-conflict-view.md",
     "scheduling-architecture/pending/15-per-teacher-conflict-view.md",
     "scheduling-architecture/pending/14-admin-conflict-dashboard.md",
-    "scheduling-architecture/pending/13-cross-term-booking-in02.md",
     "scheduling-architecture/research-document-base",
     "scheduling-architecture/scheduling",
     "scheduling-architecture/pending",
