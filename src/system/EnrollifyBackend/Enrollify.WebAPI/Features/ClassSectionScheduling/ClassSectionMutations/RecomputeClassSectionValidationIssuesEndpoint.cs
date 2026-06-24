@@ -5,7 +5,7 @@ using Enrollify.Core.Aggregates.ClassSectionAggregate;
 
 namespace Enrollify.WebAPI.Features.ClassSectionScheduling.ClassSectionMutations;
 
-[HttpPost("{id:int}/recompute-and-get-validation-issues")]
+[HttpPut("{id:int}/recompute-and-get-validation-issues")]
 [Group<ClassSectionEndpointSubGroup>]
 [Authorize(Policy = PolicyName.HasUpdateClassSectionPermission)]
 public class

@@ -4,31 +4,17 @@ using Enrollify.Core.Aggregates.ClassSectionAggregate;
 
 namespace Enrollify.WebAPI.Features.ClassSectionScheduling.ClassSectionMutations;
 
-public class ActivateClassSectionRequest
-{
-  public int Id { get; set; }
-}
-
-public class ActivateClassSectionRequestValidator : Validator<ActivateClassSectionRequest>
-{
-  public ActivateClassSectionRequestValidator()
-  {
-    RuleFor(x => x.Id)
-      .GreaterThan(0).WithMessage("Please provide a valid class section ID.");
-  }
-}
-
 [HttpPut("{id:int}/activate")]
 [Group<ClassSectionEndpointSubGroup>]
 [Authorize(Policy = PolicyName.HasUpdateClassSectionPermission)]
 public class ActivateClassSectionEndpoint(IMediator mediator)
-  : Endpoint<ActivateClassSectionRequest, OkOrNotFoundApiResult<int>>
+  : EndpointWithoutRequest<OkOrNotFoundApiResult<int>>
 {
-  public override async Task<OkOrNotFoundApiResult<int>> ExecuteAsync(
-    ActivateClassSectionRequest request, CancellationToken cancellationToken)
+  public override async Task<OkOrNotFoundApiResult<int>> ExecuteAsync(CancellationToken cancellationToken)
   {
+    int classSectionId = Route<int>("id");
     Result<ClassSectionId> result = await mediator.Send(
-      new ActivateClassSection.Command(ClassSectionId.From(request.Id)), cancellationToken);
+      new ActivateClassSection.Command(ClassSectionId.From(classSectionId)), cancellationToken);
     return result.ToUpdateResult(id => id.Value);
   }
 }

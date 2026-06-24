@@ -47,12 +47,13 @@ public static class OpenClassSectionForEnrollment
         new GetClassSectionSubjectOfferingsByClassSectionIdSpec(command.Id), cancellationToken);
 
       if (offerings.Count == 0)
-        return Result.Invalid(new ValidationError(
+        return Result.Invalid(new ValidationError("EnrollmentEligibilityCheckFailed",
           "Cannot open a class section for enrollment with no subject offerings."));
 
       bool hasValidationErrors = await HasValidationIssues(section.Id, cancellationToken);
       if (hasValidationErrors)
-        return Result.Invalid(new ValidationError("This class section is not eligible for enrollment."));
+        return Result.Invalid(new ValidationError("EnrollmentEligibilityCheckFailed",
+          "This class section is not eligible for enrollment."));
 
       try
       {
