@@ -64,7 +64,7 @@ public class CreateClassSectionEndpoint : Endpoint<CreateClassSectionRequest, Cr
         request.StudentCapacity), cancellationToken);
 
     return result.ToCreatedResult(
-      id => $"/class-sections/{id.Value}",
+      id => $"/scheduling/class-sections/{id.Value}",
       id => id.Value);
   }
 }

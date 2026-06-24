@@ -1,7 +1,7 @@
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
 using Vogen;
 
-namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.ClassSectionConflictConfigs;
+namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.ClassSectionValidationIssueConfigs;
 
 [EfCoreConverter<ClassSectionValidationIssueId>]
 internal partial class ClassSectionValidationIssueVogenEfCoreConverters;

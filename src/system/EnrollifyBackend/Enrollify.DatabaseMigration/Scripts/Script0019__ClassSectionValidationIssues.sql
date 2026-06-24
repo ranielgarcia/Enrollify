@@ -19,7 +19,7 @@ CREATE TABLE ClassSectionValidationIssues
   CONSTRAINT FK_ClassSectionValidationIssues_ClassSection
     FOREIGN KEY (ClassSectionId) REFERENCES ClassSections (Id) ON DELETE CASCADE,
   CONSTRAINT FK_ClassSectionValidationIssues_Offering
-    FOREIGN KEY (OfferingId) REFERENCES ClassSectionSubjectOffering (Id) ON DELETE CASCADE,
+    FOREIGN KEY (OfferingId) REFERENCES ClassSectionSubjectOffering (Id) ON DELETE CASCADE
 );
 
 CREATE NONCLUSTERED INDEX IX_ClassSectionValidationIssues_ClassSectionId

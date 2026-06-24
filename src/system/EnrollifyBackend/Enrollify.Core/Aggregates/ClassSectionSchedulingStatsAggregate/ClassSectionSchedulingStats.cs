@@ -1,7 +1,6 @@
 using Ardalis.GuardClauses;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.SharedKernel;
@@ -16,13 +15,13 @@ public class ClassSectionSchedulingStats : EntityBase<ClassSectionSchedulingStat
   }
 
   public ClassSectionSchedulingStats(AcademicTermId academicTermId, CourseId courseId,
-    ClassSectionId? classSectionId, ClassSectionSchedulingStatsAggregateTypeEnum AggregateType,
+    ClassSectionId? classSectionId, ClassSectionSchedulingStatsAggregateTypeEnum aggregateType,
     int aggregateCount)
   {
     AcademicTermId = Guard.Against.Null(academicTermId);
     CourseId = Guard.Against.Null(courseId);
     ClassSectionId = classSectionId; // nullable for course-level aggregates
-    AggregateType = Guard.Against.Null(AggregateType);
+    AggregateType = Guard.Against.Null(aggregateType);
     AggregateCount = aggregateCount;
     ComputedAt = DateTimeOffset.UtcNow;
   }

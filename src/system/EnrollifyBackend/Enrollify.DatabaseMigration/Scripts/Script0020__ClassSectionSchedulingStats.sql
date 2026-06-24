@@ -17,11 +17,12 @@ CREATE TABLE ClassSectionSchedulingStats
 
 CREATE
 UNIQUE
-NONCLUSTERED INDEX UX_ClassSectionSchedulingStats
-ON ClassSectionSchedulingStats
-(
-    AcademicTermId,
-    CourseId,
-    AggregateType,
-    ClassSectionId
-);
+NONCLUSTERED INDEX UX_ClassSectionSchedulingStats_CourseLevel
+   ON ClassSectionSchedulingStats (AcademicTermId, CourseId, AggregateType)
+   WHERE ClassSectionId IS NULL;
+
+ CREATE UNIQUE
+NONCLUSTERED INDEX UX_ClassSectionSchedulingStats_SectionLevel
+   ON ClassSectionSchedulingStats (AcademicTermId, CourseId, AggregateType, ClassSectionId)
+   WHERE ClassSectionId IS NOT NULL;
+

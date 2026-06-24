@@ -1,8 +1,9 @@
 using System.Text.Json;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Models;
+using Enrollify.Core.Constants;
 
-namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.ClassSectionConflictConfigs;
+namespace Enrollify.Infrastructure.Data.Config.AggregateConfigs.ClassSectionValidationIssueConfigs;
 
 public class ClassSectionValidationIssueConfiguration : IEntityTypeConfiguration<ClassSectionValidationIssue>
 {
@@ -23,7 +24,7 @@ public class ClassSectionValidationIssueConfiguration : IEntityTypeConfiguration
     builder.Property(e => e.Type)
       .HasConversion(
         v => v.Name,
-        v => Core.Constants.ClassSectionValidationIssueTypeEnum.FromName(v))
+        v => ClassSectionValidationIssueTypeEnum.FromName(v))
       .HasColumnType("varchar(50)")
       .IsRequired();
 
@@ -34,7 +35,7 @@ public class ClassSectionValidationIssueConfiguration : IEntityTypeConfiguration
     builder.Property(e => e.DayOfWeek)
       .HasConversion(
         v => v.Value,
-        v => Core.Constants.DayOfWeekEnum.FromValue(v))
+        v => DayOfWeekEnum.FromValue(v))
       .HasColumnType("char(3)")
       .IsRequired(false);
 

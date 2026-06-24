@@ -20,20 +20,17 @@ public static class OpenClassSectionForEnrollment
     private readonly IReadRepository<ClassSection> _classSectionReadRepository;
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IReadRepository<ClassSectionSubjectOffering> _offeringReadRepository;
-    private readonly IClassSectionValidationIssueRepository _classSectionValidationIssueRepository;
     private readonly IMediator _mediator;
 
     public Handler(
       IReadRepository<ClassSection> classSectionReadRepository,
       IClassSectionRepository classSectionRepository,
       IReadRepository<ClassSectionSubjectOffering> offeringReadRepository,
-      IClassSectionValidationIssueRepository classSectionValidationIssueRepository,
       IMediator mediator)
     {
       _classSectionReadRepository = classSectionReadRepository;
       _classSectionRepository = classSectionRepository;
       _offeringReadRepository = offeringReadRepository;
-      _classSectionValidationIssueRepository = classSectionValidationIssueRepository;
       _mediator = mediator;
     }
 
