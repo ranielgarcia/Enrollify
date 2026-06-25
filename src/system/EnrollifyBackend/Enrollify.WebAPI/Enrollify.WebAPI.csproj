@@ -30,6 +30,7 @@
     <ProjectReference Include="..\Enrollify.Application\Enrollify.Application.csproj"/>
     <ProjectReference Include="..\Enrollify.DatabaseMigration\Enrollify.DatabaseMigration.csproj"/>
     <ProjectReference Include="..\Enrollify.Infrastructure\Enrollify.Infrastructure.csproj"/>
+    <ProjectReference Include="..\EnrollifyBackend.ServiceDefaults\EnrollifyBackend.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

@@ -11,4 +11,6 @@
   <Project Path="Enrollify.Infrastructure/Enrollify.Infrastructure.csproj" Id="916e5a58-e152-4f52-9d32-0720fae79ed0" />
   <Project Path="Enrollify.SharedKernel/Enrollify.SharedKernel.csproj" Id="aef19405-03a0-4cf1-b965-362ebb65cfd3" />
   <Project Path="Enrollify.WebAPI/Enrollify.WebAPI.csproj" />
+  <Project Path="EnrollifyBackend.AppHost/EnrollifyBackend.AppHost.csproj" />
+  <Project Path="EnrollifyBackend.ServiceDefaults/EnrollifyBackend.ServiceDefaults.csproj" />
 </Solution>
