@@ -12,4 +12,11 @@
       <ProjectReference Include="..\Enrollify.WebAPI\Enrollify.WebAPI.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Aspire.Hosting" />
+      <PackageReference Include="Aspire.Hosting.NodeJs" />
+      <PackageReference Include="Aspire.Hosting.SqlServer" />
+      <PackageReference Include="Aspire.Hosting.Azure.Storage" />
+    </ItemGroup>
+
 </Project>
