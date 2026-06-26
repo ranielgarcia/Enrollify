@@ -60,7 +60,7 @@ public class ClassSectionValidationIssueTypeEnum : SmartEnum<ClassSectionValidat
     new("ROOM_NOT_ASSIGNED", 17, ClassSectionValidationIssueTierEnum.DATA_INTEGRITY);
 
   public static readonly ClassSectionValidationIssueTypeEnum DUPLICATE_SUBJECT_IN_SECTION =
-    new("DUPLICATE_SUBJECT_IN_SECTION", 18, ClassSectionValidationIssueTierEnum.DATA_INTEGRITY);
+    new("DUPLICATE_SUBJECT_IN_SECTION", 18, ClassSectionValidationIssueTierEnum.CONFLICT_HARD);
 
   public static readonly ClassSectionValidationIssueTypeEnum ROOM_TYPE_MISMATCH =
     new("ROOM_TYPE_MISMATCH", 19, ClassSectionValidationIssueTierEnum.INFORMATIONAL);

@@ -1,6 +1,7 @@
 using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.Infrastructure.Data;
 
 namespace Enrollify.Infrastructure.Repositories;
@@ -45,13 +46,13 @@ public class ClassSectionValidationIssueRepository : IClassSectionValidationIssu
     }
   }
 
-  public async Task ReplaceAllForSectionsAsync(List<ClassSectionId> classSectionIds,
-    IEnumerable<ClassSectionValidationIssue> validationIssues, CancellationToken cancellationToken = default)
+  public async Task ReplaceAllSpecificIssuesForSectionAsync(ClassSectionId classSectionId, IEnumerable<ClassSectionValidationIssue> validationIssues,
+    IEnumerable<ClassSectionValidationIssueTypeEnum> issueTypes, CancellationToken cancellationToken)
   {
     try
     {
       int deletedRows = await _dbContext.ClassSectionValidationIssues
-        .Where(c => classSectionIds.Contains(c.ClassSectionId))
+        .Where(c => c.ClassSectionId == classSectionId && issueTypes.Contains(c.Type))
         .ExecuteDeleteAsync(cancellationToken);
 
       // Insert fresh validationIssues
@@ -63,13 +64,12 @@ public class ClassSectionValidationIssueRepository : IClassSectionValidationIssu
       await _dbContext.SaveChangesAsync(cancellationToken);
 
       _logger.LogDebug(
-        "Replaced validation issues for ClassSections {@ClassSectionIds}: removed {RemovedCount}, inserted {InsertedCount}",
-        classSectionIds.Select(x => x.Value), deletedRows, freshIssues.Count);
+        "Replaced validation issues for ClassSection {ClassSectionId}: removed {RemovedCount}, inserted {InsertedCount}",
+        classSectionId.Value, deletedRows, freshIssues.Count);
     }
     catch (Exception ex)
     {
-      _logger.LogError(ex, "Error replacing validation issues for ClassSections {ClassSectionIds}",
-        classSectionIds.Select(x => x.Value));
+      _logger.LogError(ex, "Error replacing validation issues for ClassSection {ClassSectionId}", classSectionId.Value);
       throw;
     }
   }
