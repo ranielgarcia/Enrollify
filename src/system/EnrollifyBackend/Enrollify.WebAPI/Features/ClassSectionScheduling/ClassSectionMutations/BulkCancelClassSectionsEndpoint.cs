@@ -5,14 +5,14 @@ using Enrollify.Core.Aggregates.ClassSectionAggregate;
 
 namespace Enrollify.WebAPI.Features.ClassSectionScheduling.ClassSectionMutations;
 
-public class BulkOpenClassSectionsRequest
+public class BulkCancelClassSectionsRequest
 {
   public List<int> SectionIds { get; set; } = new();
 }
 
-public class BulkOpenClassSectionsRequestValidator : Validator<BulkOpenClassSectionsRequest>
+public class BulkCancelClassSectionsRequestValidator : Validator<BulkCancelClassSectionsRequest>
 {
-  public BulkOpenClassSectionsRequestValidator()
+  public BulkCancelClassSectionsRequestValidator()
   {
     RuleFor(x => x.SectionIds)
       .NotEmpty().WithMessage("At least one section ID is required.");
@@ -22,18 +22,18 @@ public class BulkOpenClassSectionsRequestValidator : Validator<BulkOpenClassSect
   }
 }
 
-[HttpPost("bulk/open")]
+[HttpPost("bulk/cancel")]
 [Group<ClassSectionEndpointSubGroup>]
 [Authorize(Policy = PolicyName.HasUpdateClassSectionPermission)]
-public class BulkOpenClassSectionsEndpoint(IMediator mediator)
-  : Endpoint<BulkOpenClassSectionsRequest, BulkApiResult<BulkStateChangeClassSectionsResultDto>>
+public class BulkCancelClassSectionsEndpoint (IMediator mediator)
+  : Endpoint<BulkCancelClassSectionsRequest, BulkApiResult<BulkStateChangeClassSectionsResultDto>>
 {
   public override async Task<BulkApiResult<BulkStateChangeClassSectionsResultDto>> ExecuteAsync(
-    BulkOpenClassSectionsRequest request,
+    BulkCancelClassSectionsRequest request,
     CancellationToken cancellationToken)
   {
     List<ClassSectionId> ids = request.SectionIds.Select(ClassSectionId.From).ToList();
-    var command = new BulkOpenClassSectionsForEnrollment.Command(ids);
+    var command = new BulkCancelClassSections.Command(ids);
     Result<BulkStateChangeClassSectionsResultDto> result = await mediator.Send(command, cancellationToken);
     return result.ToBulkResult(dto => dto);
   }

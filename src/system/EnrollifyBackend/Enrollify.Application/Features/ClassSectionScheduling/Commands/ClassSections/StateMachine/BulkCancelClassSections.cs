@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections.StateMachine;
 
-public static class BulkOpenClassSectionsForEnrollment
+public static class BulkCancelClassSections
 {
   public sealed record Command(List<ClassSectionId> Ids) : IRequest<Result<BulkStateChangeClassSectionsResultDto>>;
 
@@ -26,7 +26,7 @@ public static class BulkOpenClassSectionsForEnrollment
       foreach (var id in command.Ids)
       {
         Result<ClassSectionId> result = await _mediator.Send(
-          new OpenClassSectionForEnrollment.Command(id), cancellationToken);
+          new CancelClassSection.Command(id), cancellationToken);
 
         if (result.IsSuccess)
         {
@@ -53,6 +53,3 @@ public static class BulkOpenClassSectionsForEnrollment
     }
   }
 }
-
-// TODO: Replace toast summary with action history (notifications) so users can
-// review per-section results of all bulk operations in a dedicated UI.

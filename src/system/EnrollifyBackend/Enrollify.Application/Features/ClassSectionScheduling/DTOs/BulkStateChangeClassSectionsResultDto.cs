@@ -1,15 +1,8 @@
 namespace Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 
-public enum BulkOperationStatus
+public sealed record BulkStateChangeClassSectionsResultDto
 {
-  Success,
-  PartialSuccess,
-  Failed
-}
-
-public sealed record BulkOpenClassSectionsResultDto
-{
-  public BulkOperationStatus Status { get; init; }
+  public string Status { get; init; } = null!;
   public int TotalRequested { get; init; }
   public int Succeeded { get; init; }
   public int Failed { get; init; }
