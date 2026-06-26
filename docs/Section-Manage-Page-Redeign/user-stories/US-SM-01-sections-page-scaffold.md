@@ -87,7 +87,7 @@ As a Scheduler, I want a new dedicated page route with frontend infrastructure a
 - [x] FastEndpoints endpoint for college-scoped stats: `GET /api/scheduling/colleges/{collegeId}/class-sections/stats?academicYearId={id}`
 - [x] FastEndpoints endpoint for offering details: `GET /api/class-sections/{sectionId}/offerings`
 - [x] FastEndpoints endpoint for bulk open: `POST /api/scheduling/colleges/class-sections/bulk/open`
-- [ ] FastEndpoints endpoint for bulk cancel: `POST /api/scheduling/colleges/class-sections/bulk/cancel`
+- [x] FastEndpoints endpoint for bulk cancel: `POST /api/scheduling/colleges/class-sections/bulk/cancel`
 - [ ] FastEndpoints endpoint for bulk assign-adviser: `POST /api/scheduling/colleges/class-sections/bulk/assign-adviser`
 - [ ] Mediator command/query handlers for each operation
 - [ ] Business logic validates Draft eligibility and Error-severity conflicts

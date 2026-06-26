@@ -79,10 +79,7 @@ public static class BulkAssignClassSectionAdviser
           return Result.Error("Unable to bulk update the class sections.");
         }
 
-        foreach (ClassSection classSection in classSections)
-        {
-          await _publisher.Publish(new RefreshClassSectionValidationIssuesRequestedEvent(classSection.Id), cancellationToken);
-        }
+        await _publisher.Publish(new RefreshClassSectionDataIntegrityValidationIssuesRequestedEvent(classSections.Select(x => x.Id).ToList()), cancellationToken);
 
       }
       catch (ArgumentException ex)

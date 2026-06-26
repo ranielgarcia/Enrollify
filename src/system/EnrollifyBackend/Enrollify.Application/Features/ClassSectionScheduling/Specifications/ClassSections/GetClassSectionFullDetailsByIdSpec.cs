@@ -16,4 +16,19 @@ public class GetClassSectionFullDetailsByIdSpec : Specification<ClassSection>
       .Include(cs => cs.UpdatedByUser)
       .Where(cs => cs.Id == id);
   }
+
+  public GetClassSectionFullDetailsByIdSpec(List<ClassSectionId> ids)
+  {
+    Query
+      .AsNoTracking()
+      .AsSplitQuery()
+      .Include(cs => cs.Course)
+      .Include(cs => cs.Curriculum)
+      .Include(cs => cs.Adviser)
+      .Include(cs => cs.AcademicTerm)
+      .Include(cs => cs.CohortAcademicYear)
+      .Include(cs => cs.CreatedByUser)
+      .Include(cs => cs.UpdatedByUser)
+      .Where(cs => ids.Contains(cs.Id));
+  }
 }

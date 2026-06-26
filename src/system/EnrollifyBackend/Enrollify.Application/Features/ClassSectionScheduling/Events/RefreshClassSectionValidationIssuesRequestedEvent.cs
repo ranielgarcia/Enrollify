@@ -1,6 +1,3 @@
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.SharedKernel;
-
 namespace Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 
 /// <summary>

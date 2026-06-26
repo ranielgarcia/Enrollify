@@ -8,4 +8,11 @@ public class GetClassSectionSubjectOfferingsByClassSectionIdSpec : Specification
       .Include(o => o.ClassSchedules.Where(s => s.IsActive))
       .Where(o => o.ClassSectionId == classSectionId && o.IsActive);
   }
+
+  public GetClassSectionSubjectOfferingsByClassSectionIdSpec(List<ClassSectionId> classSectionIds)
+  {
+    Query
+      .Include(o => o.ClassSchedules.Where(s => s.IsActive))
+      .Where(o => classSectionIds.Contains(o.ClassSectionId) && o.IsActive);
+  }
 }
