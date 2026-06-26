@@ -1,7 +1,3 @@
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.CourseAggregate;
-
 namespace Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 
 public interface IClassSectionSchedulingStatsRepository

@@ -1,23 +1,10 @@
-using Ardalis.Result;
-using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Application.Features.ClassSectionScheduling.Extensions;
-using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
-using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
-using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
-using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
-using Enrollify.Core.Aggregates.CurriculumAggregate;
-using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.ValueObjects;
-using Enrollify.SharedKernel;
-using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
 

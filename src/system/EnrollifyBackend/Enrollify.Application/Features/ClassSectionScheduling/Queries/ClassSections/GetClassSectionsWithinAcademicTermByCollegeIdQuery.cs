@@ -1,16 +1,7 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
-using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.SchedulingStats;
 using Enrollify.Application.Features.Courses.Specifications;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSchedulingStatsAggregate;
-using Enrollify.Core.Aggregates.CollegeAggregate;
-using Enrollify.Core.Aggregates.CourseAggregate;
-using Enrollify.Core.Constants;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Queries.ClassSections;
 

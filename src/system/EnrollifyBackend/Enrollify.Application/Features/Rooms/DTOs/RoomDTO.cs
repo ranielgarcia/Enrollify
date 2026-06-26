@@ -1,6 +1,5 @@
 using Enrollify.Application.Features.Rooms.Models;
 using Enrollify.Application.SharedDTOs;
-using Enrollify.Core.Aggregates.RoomAggregate;
 
 namespace Enrollify.Application.Features.Rooms.DTOs;
 

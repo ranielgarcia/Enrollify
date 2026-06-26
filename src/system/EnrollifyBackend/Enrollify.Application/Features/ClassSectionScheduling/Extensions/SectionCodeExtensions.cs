@@ -1,5 +1,3 @@
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-
 namespace Enrollify.Application.Features.ClassSectionScheduling.Extensions;
 
 public static class SectionCodeExtensions

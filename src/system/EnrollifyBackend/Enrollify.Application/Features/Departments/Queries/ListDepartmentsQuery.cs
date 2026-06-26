@@ -1,9 +1,6 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.Departments.Specifications;
 using Enrollify.Application.Features.Departments.DTOs;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.Departments.Queries;
 

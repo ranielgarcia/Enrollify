@@ -1,7 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Core.Aggregates.CollegeAggregate;
-using MediatR;
-
 namespace Enrollify.Application.Features.Colleges.Commands;
 
 public static class CreateCollege

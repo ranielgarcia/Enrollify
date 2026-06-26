@@ -1,6 +1,5 @@
 using Enrollify.Application.Storage;
 using Enrollify.Application.Storage.Blob;
-using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.ValueObjects.Storage;
 
 namespace Enrollify.Application.Features.Teachers.Storage;

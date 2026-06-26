@@ -1,12 +1,6 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.Subjects.Specifications;
 using Enrollify.Application.Features.Teachers.Models;
 using Enrollify.Application.Features.Teachers.Storage;
-using Enrollify.Core.Aggregates.SubjectAggregate;
-using Enrollify.Core.Aggregates.TeacherAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.Teachers.Commands;
 

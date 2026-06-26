@@ -1,5 +1,3 @@
-using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
-
 namespace Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 
 public class ClassScheduleDto

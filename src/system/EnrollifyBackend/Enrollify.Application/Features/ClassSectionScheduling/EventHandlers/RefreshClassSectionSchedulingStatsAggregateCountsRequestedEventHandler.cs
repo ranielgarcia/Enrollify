@@ -1,7 +1,4 @@
-using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSchedulingStatsAggregate.Events;
-using Enrollify.SharedKernel;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.EventHandlers;
 

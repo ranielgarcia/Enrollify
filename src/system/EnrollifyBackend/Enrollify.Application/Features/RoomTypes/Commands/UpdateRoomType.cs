@@ -1,8 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Core.Aggregates.RoomTypeAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
-
 namespace Enrollify.Application.Features.RoomTypes.Commands;
 
 public static class UpdateRoomType

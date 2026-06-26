@@ -1,9 +1,5 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.RoomTypes.DTOs;
 using Enrollify.Application.Features.RoomTypes.Specifications;
-using Enrollify.Core.Aggregates.RoomTypeAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.RoomTypes.Queries;
 

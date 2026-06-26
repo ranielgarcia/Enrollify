@@ -1,8 +1,5 @@
-using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.EventHandlers;
 

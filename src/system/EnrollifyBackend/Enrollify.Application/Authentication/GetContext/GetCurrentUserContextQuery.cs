@@ -1,6 +1,4 @@
-﻿using Ardalis.Result;
-using Enrollify.Core.Authentication;
-using MediatR;
+﻿using Enrollify.Core.Authentication;
 
 namespace Enrollify.Application.Authentication.GetContext;
 

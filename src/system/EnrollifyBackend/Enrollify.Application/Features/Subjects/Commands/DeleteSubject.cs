@@ -1,11 +1,5 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
 using Enrollify.Application.Features.Curriculums.Specifications;
-using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
-using Enrollify.Core.Aggregates.CurriculumAggregate;
-using Enrollify.Core.Aggregates.SubjectAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.Subjects.Commands;
 

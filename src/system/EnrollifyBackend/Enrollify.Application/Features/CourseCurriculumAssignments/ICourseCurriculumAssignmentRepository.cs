@@ -1,4 +1,3 @@
-using Ardalis.Result;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 
 namespace Enrollify.Application.Features.CourseCurriculumAssignments;

@@ -1,5 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Models.Views;
 
 namespace Enrollify.Application.Features.Curriculums;

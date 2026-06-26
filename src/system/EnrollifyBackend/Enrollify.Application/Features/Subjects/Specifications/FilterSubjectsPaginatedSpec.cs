@@ -1,7 +1,5 @@
 using System.Linq.Expressions;
-using Ardalis.Specification;
 using Enrollify.Application.Filtering;
-using Enrollify.Core.Aggregates.SubjectAggregate;
 
 namespace Enrollify.Application.Features.Subjects.Specifications;
 

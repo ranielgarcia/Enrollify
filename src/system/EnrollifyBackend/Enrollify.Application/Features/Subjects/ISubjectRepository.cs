@@ -1,6 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Core.Aggregates.SubjectAggregate;
-
 namespace Enrollify.Application.Features.Subjects;
 
 public interface ISubjectRepository

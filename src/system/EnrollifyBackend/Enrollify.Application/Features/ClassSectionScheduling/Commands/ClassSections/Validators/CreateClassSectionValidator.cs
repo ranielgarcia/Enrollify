@@ -1,15 +1,8 @@
-using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
 using Enrollify.Application.Features.ClassSectionScheduling.Extensions;
-using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
-using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.ValueObjects;
-using Enrollify.SharedKernel;
 using FluentValidation;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections.Validators;

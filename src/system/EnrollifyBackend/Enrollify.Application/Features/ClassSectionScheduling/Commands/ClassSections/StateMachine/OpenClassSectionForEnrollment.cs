@@ -1,14 +1,6 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSectionValidationIssues;
 using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
-using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
-using Enrollify.Core.Constants;
-using Enrollify.SharedKernel;
-using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections.StateMachine;
 

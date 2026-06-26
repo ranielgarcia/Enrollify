@@ -1,6 +1,3 @@
-using Ardalis.Specification;
-using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
-
 namespace Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
 
 public class GetClassSectionSubjectOfferingByIdSpec : Specification<ClassSectionSubjectOffering>

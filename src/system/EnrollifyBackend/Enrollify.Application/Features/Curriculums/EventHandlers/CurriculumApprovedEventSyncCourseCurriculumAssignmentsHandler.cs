@@ -1,10 +1,5 @@
-using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Application.Features.Curriculums.Events;
-using Enrollify.SharedKernel;
-using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.Curriculums.EventHandlers;
 

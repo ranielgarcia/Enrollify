@@ -1,5 +1,3 @@
-using Enrollify.Core.Aggregates.BuildingAggregate;
-
 namespace Enrollify.Application.Features.Rooms.Models;
 
 public class BuildingProjection

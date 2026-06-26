@@ -1,9 +1,4 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
-using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.AcademicYearAndTerm.Queries;
 

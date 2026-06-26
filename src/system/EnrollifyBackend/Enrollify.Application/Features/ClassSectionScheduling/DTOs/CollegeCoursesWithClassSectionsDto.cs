@@ -1,6 +1,3 @@
-using Enrollify.Core.Aggregates.CollegeAggregate;
-using Enrollify.Core.Aggregates.CourseAggregate;
-
 namespace Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 
 public class CollegeCoursesWithClassSectionsDto

@@ -1,11 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
-using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
-
 namespace Enrollify.Application.Features.AcademicYearAndTerm.Commands;
 
 public static class DeleteAcademicYearAndTerms

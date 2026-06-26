@@ -1,6 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Core.Aggregates.CourseAggregate;
-
 namespace Enrollify.Application.Features.Courses;
 
 public interface ICourseRepository

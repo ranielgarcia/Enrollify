@@ -1,4 +1,3 @@
-using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 
 namespace Enrollify.Application.Features.Rooms.Models;

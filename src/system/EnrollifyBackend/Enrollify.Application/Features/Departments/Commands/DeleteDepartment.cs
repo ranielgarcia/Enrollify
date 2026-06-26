@@ -1,6 +1,4 @@
-using Ardalis.Result;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
-using MediatR;
 
 namespace Enrollify.Application.Features.Departments.Commands;
 

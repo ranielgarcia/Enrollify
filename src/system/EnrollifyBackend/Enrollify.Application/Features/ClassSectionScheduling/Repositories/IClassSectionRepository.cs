@@ -1,6 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-
 namespace Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 
 public interface IClassSectionRepository

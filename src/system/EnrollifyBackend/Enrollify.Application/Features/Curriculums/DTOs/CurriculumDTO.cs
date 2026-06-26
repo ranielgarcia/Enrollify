@@ -1,6 +1,4 @@
 using Enrollify.Application.SharedDTOs;
-using Enrollify.Core.Aggregates.CurriculumAggregate;
-using Enrollify.Core.Constants;
 
 namespace Enrollify.Application.Features.Curriculums.DTOs;
 

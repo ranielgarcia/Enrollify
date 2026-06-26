@@ -1,20 +1,10 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
-using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
-using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSchedulingStatsAggregate.Events;
-using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Models;
-using Enrollify.Core.Aggregates.RoomAggregate;
-using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Services.ClassSectionDataIntegrityValidation;
 using Enrollify.Core.Services.ScheduleConflictDetection;
-using Enrollify.SharedKernel;
-using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSectionValidationIssues;
 

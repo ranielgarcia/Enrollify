@@ -1,8 +1,4 @@
-using Ardalis.Specification;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSchedulingStatsAggregate;
-using Enrollify.Core.Aggregates.CourseAggregate;
-using Enrollify.Core.Constants;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Specifications.SchedulingStats;
 

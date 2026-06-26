@@ -1,10 +1,5 @@
-using Ardalis.Result;
-using Enrollify.Core.Aggregates.CourseAggregate;
-using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.ValueObjects;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.Curriculums.Commands;
 

@@ -1,9 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
-
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections.StateMachine;
 
 public static class CancelClassSection

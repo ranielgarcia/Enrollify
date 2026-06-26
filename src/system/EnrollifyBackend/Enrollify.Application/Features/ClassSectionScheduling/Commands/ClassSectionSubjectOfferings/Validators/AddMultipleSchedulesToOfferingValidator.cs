@@ -1,10 +1,4 @@
-using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
-using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
-using Enrollify.Core.Constants;
-using Enrollify.SharedKernel;
 using FluentValidation;
 using static Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSectionSubjectOfferings.AddMultipleSchedulesToOffering;
 

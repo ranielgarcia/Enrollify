@@ -1,6 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Core.Aggregates.BuildingAggregate;
-
 namespace Enrollify.Application.Features.Buildings;
 
 public interface IBuildingRepository

@@ -1,5 +1,4 @@
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
-using Enrollify.Core.Constants;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 

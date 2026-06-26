@@ -1,9 +1,6 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.SubjectEquivalences.DTOs;
 using Enrollify.Application.Features.SubjectEquivalences.Specifications;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.SubjectEquivalences.Queries;
 

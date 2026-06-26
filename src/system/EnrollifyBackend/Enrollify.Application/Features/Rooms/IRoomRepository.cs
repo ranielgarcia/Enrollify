@@ -1,6 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Core.Aggregates.RoomAggregate;
-
 namespace Enrollify.Application.Features.Rooms;
 
 public interface IRoomRepository

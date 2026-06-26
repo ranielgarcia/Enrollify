@@ -1,6 +1,3 @@
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Ardalis.Specification;
-
 namespace Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 
 public class GetOverlappingAcademicYearByDateRangeSpec : Specification<AcademicYear>

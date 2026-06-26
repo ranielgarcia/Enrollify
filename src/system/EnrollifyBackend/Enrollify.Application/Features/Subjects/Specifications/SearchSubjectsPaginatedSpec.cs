@@ -1,6 +1,3 @@
-using Ardalis.Specification;
-using Enrollify.Core.Aggregates.SubjectAggregate;
-
 namespace Enrollify.Application.Features.Subjects.Specifications;
 
 public class SearchSubjectsPaginatedSpec : Specification<Subject>

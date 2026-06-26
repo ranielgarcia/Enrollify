@@ -1,10 +1,6 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.Subjects.DTOs;
 using Enrollify.Application.Features.Subjects.Specifications;
 using Enrollify.Application.Filtering;
-using Enrollify.Core.Aggregates.SubjectAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.Subjects.Queries;
 

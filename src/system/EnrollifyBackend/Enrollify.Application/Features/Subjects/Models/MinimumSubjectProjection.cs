@@ -1,5 +1,3 @@
-using Enrollify.Core.Aggregates.SubjectAggregate;
-
 namespace Enrollify.Application.Features.Subjects.Models;
 
 public class MinimumSubjectProjection

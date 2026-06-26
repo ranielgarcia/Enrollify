@@ -1,7 +1,3 @@
-using Ardalis.Specification;
-using Enrollify.Core.Aggregates.CurriculumAggregate;
-using Enrollify.Core.Aggregates.SubjectAggregate;
-
 namespace Enrollify.Application.Features.Curriculums.Specifications;
 
 public class GetCurriculumBySubjectIdSpec : Specification<Curriculum>

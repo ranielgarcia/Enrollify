@@ -1,6 +1,4 @@
-using Ardalis.Specification;
 using Enrollify.Application.Features.Rooms.Models;
-using Enrollify.Core.Aggregates.RoomAggregate;
 
 namespace Enrollify.Application.Features.Rooms.Specifications;
 

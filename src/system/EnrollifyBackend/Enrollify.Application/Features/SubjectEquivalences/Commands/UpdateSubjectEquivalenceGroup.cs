@@ -1,7 +1,4 @@
-using Ardalis.Result;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.SubjectEquivalences.Commands;
 
