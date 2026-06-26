@@ -1,70 +1,58 @@
 using Ardalis.Result;
-using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
-using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
+using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
-using Enrollify.SharedKernel;
 using MediatR;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections.StateMachine;
 
 public static class BulkOpenClassSectionsForEnrollment
 {
-  public sealed record Command(List<ClassSectionId> Ids) : IRequest<Result<Unit>>;
+  public sealed record Command(List<ClassSectionId> Ids) : IRequest<Result<BulkOpenClassSectionsResultDto>>;
 
-  public sealed class Handler : IRequestHandler<Command, Result<Unit>>
+  public sealed class Handler : IRequestHandler<Command, Result<BulkOpenClassSectionsResultDto>>
   {
-    private readonly IReadRepository<ClassSection> _classSectionReadRepository;
-    private readonly IClassSectionRepository _classSectionRepository;
-    private readonly IReadRepository<ClassSectionSubjectOffering> _offeringReadRepository;
-    private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
     private readonly IMediator _mediator;
 
-    public Handler(
-      IReadRepository<ClassSection> classSectionReadRepository,
-      IClassSectionRepository classSectionRepository,
-      IReadRepository<ClassSectionSubjectOffering> offeringReadRepository,
-      IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
-      IMediator mediator)
+    public Handler(IMediator mediator)
     {
-      _classSectionReadRepository = classSectionReadRepository;
-      _classSectionRepository = classSectionRepository;
-      _offeringReadRepository = offeringReadRepository;
-      _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
       _mediator = mediator;
     }
 
-    public async Task<Result<Unit>> Handle(Command command, CancellationToken cancellationToken)
+    public async Task<Result<BulkOpenClassSectionsResultDto>> Handle(Command command, CancellationToken cancellationToken)
     {
-      List<ClassSection> sections = await _classSectionReadRepository.ListAsync(
-        new GetClassSectionsByIdSpec(command.Ids), cancellationToken);
+      var errors = new Dictionary<string, string>();
+      var succeeded = 0;
 
-      var missingClassSections = sections.Where(s => !command.Ids.Contains(s.Id)).Select(s => s.Id).ToList();
-      if (missingClassSections.Any())
-        return Result.NotFound(
-          $"Class sections with IDs {string.Join(", ", missingClassSections.Select(id => id.Value))} not found.");
-
-      Dictionary<ClassSectionId, int> subjectOfferingsCountByClassSection =
-        await _classSectionSubjectOfferingRepository.GetSubjectOfferingsCountPerClassSection(
-          sections.Select(s => s.Id).ToList(), cancellationToken);
-
-      foreach (ClassSection classSection in sections)
+      foreach (var id in command.Ids)
       {
-        int offeringsCount =
-          subjectOfferingsCountByClassSection.TryGetValue(classSection.Id, out int count) ? count : 0;
+        Result<ClassSectionId> result = await _mediator.Send(
+          new OpenClassSectionForEnrollment.Command(id), cancellationToken);
 
-        if (offeringsCount == 0)
-          return Result.Invalid(new ValidationError("EnrollmentEligibilityCheckFailed",
-            $"Cannot open a {classSection.FullName} class section for enrollment with no subject offerings."));
-
-        classSection.OpenForEnrollment();
+        if (result.IsSuccess)
+        {
+          succeeded++;
+        }
+        else
+        {
+          errors[id.Value.ToString()] = result.Errors.FirstOrDefault() ?? result.ValidationErrors.FirstOrDefault()?.ErrorMessage ?? "An unexpected error occurred.";
+        }
       }
 
-      Result result = await _classSectionRepository.BulkUpdate(sections, cancellationToken);
+      var status = succeeded == 0 ? BulkOperationStatus.Failed
+        : succeeded < command.Ids.Count ? BulkOperationStatus.PartialSuccess
+        : BulkOperationStatus.Success;
 
-      return result.IsSuccess
-        ? Result.Success(Unit.Value)
-        : Result.Error(string.Join("; ", result.Errors));
+      return Result.Success(new BulkOpenClassSectionsResultDto
+      {
+        Status = status,
+        TotalRequested = command.Ids.Count,
+        Succeeded = succeeded,
+        Failed = command.Ids.Count - succeeded,
+        Errors = errors
+      });
     }
   }
 }
+
+// TODO: Replace toast summary with action history (notifications) so users can
+// review per-section results of all bulk operations in a dedicated UI.

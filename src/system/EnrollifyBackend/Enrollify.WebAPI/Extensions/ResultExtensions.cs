@@ -170,4 +170,33 @@ public static class ResultExtensions
     {
         return TypedResults.Ok(mapResponse(result.Value));
     }
+
+    /// <summary>
+    /// Maps Result to TypedResults for Bulk endpoints that return 200 OK with a result body,
+    /// or appropriate error responses. Unlike ToBulkCreatedResult (which returns 204 NoContent),
+    /// this returns the full result DTO for partial-success reporting.
+    /// </summary>
+    public static BulkApiResult<TResponse> ToBulkResult<TValue, TResponse>(
+      this Result<TValue> result,
+      Func<TValue, TResponse> mapResponse)
+    {
+        return result.Status switch
+        {
+            ResultStatus.Ok => TypedResults.Ok(mapResponse(result.Value)),
+            ResultStatus.NotFound => TypedResults.NotFound(),
+            ResultStatus.Invalid => TypedResults.ValidationProblem(
+              result.ValidationErrors
+                .GroupBy(e => e.Identifier ?? string.Empty)
+                .ToDictionary(
+                  g => g.Key,
+                  g => g.Select(e => e.ErrorMessage).ToArray()
+                )
+            ),
+            ResultStatus.Conflict => TypedResults.Conflict(result.Errors.ToArray()),
+            _ => TypedResults.Problem(
+              title: "Bulk operation failed",
+              detail: string.Join("; ", result.Errors),
+              statusCode: StatusCodes.Status400BadRequest)
+        };
+    }
 }

@@ -8,6 +8,7 @@ using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.SharedKernel;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections.StateMachine;
 
@@ -21,17 +22,20 @@ public static class OpenClassSectionForEnrollment
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IReadRepository<ClassSectionSubjectOffering> _offeringReadRepository;
     private readonly IMediator _mediator;
+    private readonly ILogger<Handler> _logger;
 
     public Handler(
       IReadRepository<ClassSection> classSectionReadRepository,
       IClassSectionRepository classSectionRepository,
       IReadRepository<ClassSectionSubjectOffering> offeringReadRepository,
-      IMediator mediator)
+      IMediator mediator,
+      ILogger<Handler> logger)
     {
       _classSectionReadRepository = classSectionReadRepository;
       _classSectionRepository = classSectionRepository;
       _offeringReadRepository = offeringReadRepository;
       _mediator = mediator;
+      _logger = logger;
     }
 
     public async Task<Result<ClassSectionId>> Handle(Command command, CancellationToken cancellationToken)
@@ -45,12 +49,12 @@ public static class OpenClassSectionForEnrollment
 
       if (offeringsCount == 0)
         return Result.Invalid(new ValidationError("EnrollmentEligibilityCheckFailed",
-          "Cannot open a class section for enrollment with no subject offerings."));
+          "Cannot open a class section for enrollment without any subject offerings. Please add at least one subject offering before opening for enrollment."));
 
       bool hasValidationErrors = await HasValidationIssues(section.Id, cancellationToken);
       if (hasValidationErrors)
         return Result.Invalid(new ValidationError("EnrollmentEligibilityCheckFailed",
-          "This class section is not eligible for enrollment."));
+          "This class section is not eligible for enrollment due to validation issues. Please resolve the issues before opening for enrollment."));
 
       try
       {
@@ -61,8 +65,9 @@ public static class OpenClassSectionForEnrollment
           ? Result.Success(result.Value)
           : Result.Error(string.Join("; ", result.Errors));
       }
-      catch (ArgumentException ex)
+      catch (Exception ex)
       {
+        _logger.LogError(ex, ex.Message);
         return Result.Invalid(new ValidationError(ex.Message));
       }
     }

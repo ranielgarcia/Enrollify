@@ -58,3 +58,18 @@ public readonly struct DeleteApiResult(IResult inner) : IResult
     public static implicit operator DeleteApiResult(Conflict<string[]> r) => new(r);
     public static implicit operator DeleteApiResult(ProblemHttpResult r) => new(r);
 }
+
+/// <summary>
+/// Centralized result type for Bulk endpoints that return a result body (e.g., partial success details).
+/// Add or remove constituent types here to update all Bulk endpoints at once.
+/// </summary>
+public readonly struct BulkApiResult<TResponse>(IResult inner) : IResult
+{
+    public Task ExecuteAsync(HttpContext httpContext) => inner.ExecuteAsync(httpContext);
+
+    public static implicit operator BulkApiResult<TResponse>(Ok<TResponse> r) => new(r);
+    public static implicit operator BulkApiResult<TResponse>(NotFound r) => new(r);
+    public static implicit operator BulkApiResult<TResponse>(ValidationProblem r) => new(r);
+    public static implicit operator BulkApiResult<TResponse>(Conflict<string[]> r) => new(r);
+    public static implicit operator BulkApiResult<TResponse>(ProblemHttpResult r) => new(r);
+}

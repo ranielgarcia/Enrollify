@@ -1,5 +1,6 @@
 import createQueryOptions from "@/hooks/create-query-options";
 import createMutationOptions from "@/hooks/create-mutation-options";
+import type { paths as ApiPaths } from "@/api/generated/api";
 import type { ClassSectionV2 } from "../models/class-section-v2";
 import type { SectionStats } from "../models/section-stats";
 import type { PagedResult } from "../models/paged-result";
@@ -44,7 +45,16 @@ const queryKeys = {
     sectionId,
     "offerings",
   ],
+  bulk: () => [...queryKeys.base(), "bulk"],
 };
+
+interface BulkOpenClassSectionsResultDto {
+  status: "Success" | "PartialSuccess" | "Failed";
+  totalRequested: number;
+  succeeded: number;
+  failed: number;
+  errors: Record<string, string>;
+}
 
 export const getClassSectionsStatsOptions = (collegeId: number) =>
   createQueryOptions({
@@ -173,19 +183,33 @@ export const cancelClassSectionMutationOptions = () =>
 
 export const bulkOpenSectionsMutationOptions = () =>
   createMutationOptions({
-    path: "/api/scheduling/colleges/class-sections/bulk/open",
-    method: "POST",
+    httpVerb: "post",
+    // Path type resolved after API regeneration — matches POST /api/scheduling/class-sections/bulk/open
+    path: "/api/scheduling/class-sections/bulk/open" as keyof ApiPaths,
+    mutationKey: queryKeys.bulk(),
     options: {
-      onSuccess: () => {
-        toast.success("Sections opened for enrollment");
-        queryKeys.base();
+      meta: { invalidateQueries: [queryKeys.base()] },
+      onSuccess: (data) => {
+        const result = data as BulkOpenClassSectionsResultDto;
+        if (result.status === "Success") {
+          toast.success("All sections opened for enrollment");
+        } else if (result.status === "PartialSuccess") {
+          toast.warning(`${result.succeeded} of ${result.totalRequested} sections opened`, {
+            description: `${result.failed} section(s) failed. Check action history for details.`,
+          });
+        } else {
+          toast.error("Failed to open any sections");
+        }
       },
-      onError: (error: unknown) => {
+      onError: (error) => {
         toast.error("Failed to open sections");
         console.error(error);
       },
     },
   });
+
+// TODO: Replace toast summary with action history (notifications) so users can
+// review per-section results of all bulk operations in a dedicated UI.
 
 export const bulkCancelSectionsMutationOptions = () =>
   createMutationOptions({

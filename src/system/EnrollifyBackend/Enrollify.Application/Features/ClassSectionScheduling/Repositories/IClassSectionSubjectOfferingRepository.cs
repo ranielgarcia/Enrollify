@@ -13,7 +13,4 @@ public interface IClassSectionSubjectOfferingRepository
     CancellationToken cancellationToken);
 
   Task<Result> Delete(ClassSectionSubjectOffering classSectionSubjectOffering, CancellationToken cancellationToken);
-
-  Task<Dictionary<ClassSectionId, int>> GetSubjectOfferingsCountPerClassSection(
-    List<ClassSectionId> classSectionIds, CancellationToken cancellationToken);
 }
