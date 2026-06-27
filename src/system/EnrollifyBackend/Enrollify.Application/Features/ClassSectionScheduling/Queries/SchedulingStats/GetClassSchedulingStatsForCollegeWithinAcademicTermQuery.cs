@@ -38,10 +38,13 @@ public class GetSchedulingStatsForCollegeInAcademicTermQueryHandler
         ClassSectionSchedulingStatsAggregateTypeEnum.DRAFT_SECTIONS,
         ClassSectionSchedulingStatsAggregateTypeEnum.OPEN_SECTIONS,
         ClassSectionSchedulingStatsAggregateTypeEnum.CANCELLED_SECTIONS,
-        ClassSectionSchedulingStatsAggregateTypeEnum.HARD_CONFLICTS,
-        ClassSectionSchedulingStatsAggregateTypeEnum.SOFT_CONFLICTS,
-        ClassSectionSchedulingStatsAggregateTypeEnum.DATA_INTEGRITY,
-        ClassSectionSchedulingStatsAggregateTypeEnum.INFORMATIONAL
+        ClassSectionSchedulingStatsAggregateTypeEnum.SCHEDULE_CONFLICTS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.SCHEDULE_POLICY_VIOLATIONS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.CAPACITY_CONSTRAINTS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.RESOURCE_MISALIGNMENTS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.MISSING_REQUIREMENTS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.DATA_INCONSISTENCIES,
+        ClassSectionSchedulingStatsAggregateTypeEnum.DEFAULT_VALUES
       ]);
 
     List<ClassSectionSchedulingStats> allStats =

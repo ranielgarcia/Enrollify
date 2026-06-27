@@ -31,20 +31,32 @@ public class RefreshClassSectionSchedulingStatsAggregateCountsRequestedEventHand
         statsRepository.RefreshOfferingsCountForClassSection((ClassSectionId)notification.ClassSectionId,
           cancellationToken);
 
-      Task refreshHardConflictIssueCountsForClassSectionTask =
-        statsRepository.RefreshHardConflictIssueCountsForClassSection(notification.TermId,
+      Task refreshScheduleConflictIssueCountsForClassSectionTask =
+        statsRepository.RefreshScheduleConflictIssueCountsForClassSection(notification.TermId,
           notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
 
-      Task refreshSoftConflictIssueCountsForClassSectionTask =
-        statsRepository.RefreshSoftConflictIssueCountsForClassSection(notification.TermId,
+      Task refreshSchedulePolicyViolationIssueCountsForClassSectionTask =
+        statsRepository.RefreshSchedulePolicyViolationIssueCountsForClassSection(notification.TermId,
           notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
 
-      Task refreshDataIntegrityIssueCountsForClassSectionTask =
-        statsRepository.RefreshDataIntegrityIssueCountsForClassSection(notification.TermId,
+      Task refreshCapacityConstraintIssueCountsForClassSectionTask =
+        statsRepository.RefreshCapacityConstraintIssueCountsForClassSection(notification.TermId,
           notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
 
-      Task refreshInformationalIssueCountsForClassSectionTask =
-        statsRepository.RefreshInformationalIssueCountsForClassSection(notification.TermId,
+      Task refreshResourceMisalignmentIssueCountsForClassSectionTask =
+        statsRepository.RefreshResourceMisalignmentIssueCountsForClassSection(notification.TermId,
+          notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+
+      Task refreshMissingRequirementIssueCountsForClassSectionTask =
+        statsRepository.RefreshMissingRequirementIssueCountsForClassSection(notification.TermId,
+          notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+
+      Task refreshDataInconsistencyIssueCountsForClassSectionTask =
+        statsRepository.RefreshDataInconsistencyIssueCountsForClassSection(notification.TermId,
+          notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
+
+      Task refreshDefaultValueIssueCountsForClassSectionTask =
+        statsRepository.RefreshDefaultValueIssueCountsForClassSection(notification.TermId,
           notification.CourseId, (ClassSectionId)notification.ClassSectionId, cancellationToken);
 
       Task refreshOfferingCountWithIssueForClassSectionTask =
@@ -65,10 +77,13 @@ public class RefreshClassSectionSchedulingStatsAggregateCountsRequestedEventHand
 
       await Task.WhenAll(
         refreshOfferingsCountForClassSectionTask,
-        refreshHardConflictIssueCountsForClassSectionTask,
-        refreshSoftConflictIssueCountsForClassSectionTask,
-        refreshDataIntegrityIssueCountsForClassSectionTask,
-        refreshInformationalIssueCountsForClassSectionTask,
+        refreshScheduleConflictIssueCountsForClassSectionTask,
+        refreshSchedulePolicyViolationIssueCountsForClassSectionTask,
+        refreshCapacityConstraintIssueCountsForClassSectionTask,
+        refreshResourceMisalignmentIssueCountsForClassSectionTask,
+        refreshMissingRequirementIssueCountsForClassSectionTask,
+        refreshDataInconsistencyIssueCountsForClassSectionTask,
+        refreshDefaultValueIssueCountsForClassSectionTask,
         refreshOfferingCountWithIssueForClassSectionTask,
         refreshOfferingCountWithMissingTeacherIssueForClassSectionTask,
         refreshOfferingCountWithMissingRoomIssueForClassSectionTask,

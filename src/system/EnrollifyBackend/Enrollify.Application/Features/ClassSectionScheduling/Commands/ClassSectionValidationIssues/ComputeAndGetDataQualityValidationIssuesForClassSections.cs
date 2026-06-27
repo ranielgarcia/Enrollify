@@ -8,7 +8,7 @@ using Enrollify.Core.Services.ClassSectionDataIntegrityValidation;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSectionValidationIssues;
 
-public class ComputeAndGetDataIntegrityValidationIssuesForClassSections
+public class ComputeAndGetDataQualityValidationIssuesForClassSections
 {
   public sealed record Command(
     List<ClassSectionId> ClassSectionIds) : IRequest<Result<List<ClassSectionValidationIssueDto>>>;
@@ -73,23 +73,25 @@ public class ComputeAndGetDataIntegrityValidationIssuesForClassSections
         }
       });
 
-      var dataIntegrityValidationIssueTypes =
+      var dataQualityValidationIssueTypes =
         ClassSectionValidationIssueTypeEnum.List.Where(x =>
-          x.Tier == ClassSectionValidationIssueTierEnum.DATA_INTEGRITY);
+          x.Category == ClassSectionValidationIssueCategoryEnum.MISSING_REQUIREMENT ||
+          x.Category == ClassSectionValidationIssueCategoryEnum.DATA_INCONSISTENCY ||
+          x.Category == ClassSectionValidationIssueCategoryEnum.DEFAULT_VALUE);
 
       var validationIssuesPerClassSection = allDataIntegrityValidationIssues.GroupBy(x => x.ClassSectionId)
         .ToDictionary(g => g.Key, g => g.ToList());
       foreach (var section in sections)
       {
         validationIssuesPerClassSection.TryGetValue(section.Id, out List<ClassSectionValidationIssue> validationIssuesForCurrentSection);
-        await _validationIssueRepository.ReplaceAllSpecificIssuesForSectionAsync(section.Id, validationIssuesForCurrentSection, dataIntegrityValidationIssueTypes, cancellationToken);
+        await _validationIssueRepository.ReplaceAllSpecificIssuesForSectionAsync(section.Id, validationIssuesForCurrentSection, dataQualityValidationIssueTypes, cancellationToken);
 
         await _publisher.Publish(
           new RefreshClassSectionSchedulingStatsAggregateCountsRequestedEvent(section.AcademicTermId, section.CourseId,
             section.Id), cancellationToken);
 
         _logger.LogInformation(
-          "Computed {DataIntegrityIssueCount} data integrity validation issues for class section {ClassSectionId}",
+          "Computed {DataQualityIssueCount} data quality validation issues for class section {ClassSectionId}",
           validationIssuesForCurrentSection.Count, section.Id.Value);
       }
 

@@ -42,36 +42,60 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
       ClassSectionSchedulingStatsAggregateTypeEnum.CANCELLED_SECTIONS, cancellationToken);
   }
 
-  public async Task RefreshHardConflictIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
+  public async Task RefreshScheduleConflictIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
     ClassSectionId classSectionId, CancellationToken cancellationToken)
   {
-    await RefreshSectionIssueTierAggregateCounts(termId, courseId, classSectionId,
-      ClassSectionValidationIssueTierEnum.CONFLICT_HARD,
-      ClassSectionSchedulingStatsAggregateTypeEnum.HARD_CONFLICTS, cancellationToken);
+    await RefreshSectionIssueCategoryAggregateCounts(termId, courseId, classSectionId,
+      ClassSectionValidationIssueCategoryEnum.SCHEDULE_CONFLICT,
+      ClassSectionSchedulingStatsAggregateTypeEnum.SCHEDULE_CONFLICTS, cancellationToken);
   }
 
-  public async Task RefreshSoftConflictIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
+  public async Task RefreshSchedulePolicyViolationIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
     ClassSectionId classSectionId, CancellationToken cancellationToken)
   {
-    await RefreshSectionIssueTierAggregateCounts(termId, courseId, classSectionId,
-      ClassSectionValidationIssueTierEnum.CONFLICT_SOFT,
-      ClassSectionSchedulingStatsAggregateTypeEnum.SOFT_CONFLICTS, cancellationToken);
+    await RefreshSectionIssueCategoryAggregateCounts(termId, courseId, classSectionId,
+      ClassSectionValidationIssueCategoryEnum.SCHEDULE_POLICY_VIOLATION,
+      ClassSectionSchedulingStatsAggregateTypeEnum.SCHEDULE_POLICY_VIOLATIONS, cancellationToken);
   }
 
-  public async Task RefreshDataIntegrityIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
+  public async Task RefreshCapacityConstraintIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
     ClassSectionId classSectionId, CancellationToken cancellationToken)
   {
-    await RefreshSectionIssueTierAggregateCounts(termId, courseId, classSectionId,
-      ClassSectionValidationIssueTierEnum.DATA_INTEGRITY,
-      ClassSectionSchedulingStatsAggregateTypeEnum.DATA_INTEGRITY, cancellationToken);
+    await RefreshSectionIssueCategoryAggregateCounts(termId, courseId, classSectionId,
+      ClassSectionValidationIssueCategoryEnum.CAPACITY_CONSTRAINT,
+      ClassSectionSchedulingStatsAggregateTypeEnum.CAPACITY_CONSTRAINTS, cancellationToken);
   }
 
-  public async Task RefreshInformationalIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
+  public async Task RefreshResourceMisalignmentIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
     ClassSectionId classSectionId, CancellationToken cancellationToken)
   {
-    await RefreshSectionIssueTierAggregateCounts(termId, courseId, classSectionId,
-      ClassSectionValidationIssueTierEnum.INFORMATIONAL,
-      ClassSectionSchedulingStatsAggregateTypeEnum.INFORMATIONAL, cancellationToken);
+    await RefreshSectionIssueCategoryAggregateCounts(termId, courseId, classSectionId,
+      ClassSectionValidationIssueCategoryEnum.RESOURCE_MISALIGNMENT,
+      ClassSectionSchedulingStatsAggregateTypeEnum.RESOURCE_MISALIGNMENTS, cancellationToken);
+  }
+
+  public async Task RefreshMissingRequirementIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId, CancellationToken cancellationToken)
+  {
+    await RefreshSectionIssueCategoryAggregateCounts(termId, courseId, classSectionId,
+      ClassSectionValidationIssueCategoryEnum.MISSING_REQUIREMENT,
+      ClassSectionSchedulingStatsAggregateTypeEnum.MISSING_REQUIREMENTS, cancellationToken);
+  }
+
+  public async Task RefreshDataInconsistencyIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId, CancellationToken cancellationToken)
+  {
+    await RefreshSectionIssueCategoryAggregateCounts(termId, courseId, classSectionId,
+      ClassSectionValidationIssueCategoryEnum.DATA_INCONSISTENCY,
+      ClassSectionSchedulingStatsAggregateTypeEnum.DATA_INCONSISTENCIES, cancellationToken);
+  }
+
+  public async Task RefreshDefaultValueIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId, CancellationToken cancellationToken)
+  {
+    await RefreshSectionIssueCategoryAggregateCounts(termId, courseId, classSectionId,
+      ClassSectionValidationIssueCategoryEnum.DEFAULT_VALUE,
+      ClassSectionSchedulingStatsAggregateTypeEnum.DEFAULT_VALUES, cancellationToken);
   }
 
   public async Task RefreshOfferingCountWithIssueForClassSection(AcademicTermId termId, CourseId courseId,
@@ -215,12 +239,12 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
     }
   }
 
-  private async Task RefreshSectionIssueTierAggregateCounts(AcademicTermId termId, CourseId courseId,
-    ClassSectionId classSectionId, ClassSectionValidationIssueTierEnum issueTier,
+  private async Task RefreshSectionIssueCategoryAggregateCounts(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId, ClassSectionValidationIssueCategoryEnum issueCategory,
     ClassSectionSchedulingStatsAggregateTypeEnum aggregateType, CancellationToken cancellationToken)
   {
     string[] issueTypes = ClassSectionValidationIssueTypeEnum.List
-      .Where(t => t.Tier == issueTier).Select(t => t.Name).ToArray();
+      .Where(t => t.Category == issueCategory).Select(t => t.Name).ToArray();
 
     try
     {
@@ -251,8 +275,8 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
     catch (SqlException ex)
     {
       _logger.LogError(ex,
-        "Error refreshing {IssueTier} counts for CourseId {CourseId}, TermId {TermId}, ClassSectionId {ClassSectionId}, AggregateType {AggregateType}",
-        issueTier.Name, courseId.Value, termId.Value, classSectionId.Value, aggregateType.Name);
+        "Error refreshing {IssueCategory} counts for CourseId {CourseId}, TermId {TermId}, ClassSectionId {ClassSectionId}, AggregateType {AggregateType}",
+        issueCategory.Name, courseId.Value, termId.Value, classSectionId.Value, aggregateType.Name);
     }
   }
 

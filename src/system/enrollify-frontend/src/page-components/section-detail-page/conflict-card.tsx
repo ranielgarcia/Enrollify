@@ -1,4 +1,5 @@
 import type { ConflictResult } from "@/api/models/offering";
+import { TYPE_LABELS } from "@/api/models/offering";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@tanstack/react-router";
 import { AlertCircle, AlertTriangle, Info, ArrowRight } from "lucide-react";
@@ -28,12 +29,7 @@ const SEVERITY_CONFIG = {
   },
 };
 
-const TYPE_LABELS: Record<string, string> = {
-  TEACHER_DOUBLE_BOOKED: "Teacher Double-Booked",
-  ROOM_DOUBLE_BOOKED: "Room Double-Booked",
-  SECTION_OVERLAP: "Section Overlap",
-  TEACHER_OVERLOAD: "Teacher Overload",
-};
+
 
 export function ConflictCard({ conflict }: ConflictCardProps) {
   const config = SEVERITY_CONFIG[conflict.severity];
