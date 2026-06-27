@@ -6,6 +6,7 @@ import {
   ValidationSeverities,
   type ValidationSeverityName,
 } from "../validation-severity";
+import { ValidationSummarySchema } from "../validation-summary";
 
 const SeveritySchema = z.object({
   value: z.enum(ValidationSeverities),
@@ -103,7 +104,7 @@ export const ClassSectionSchema = z
     cohortAcademicYear: CohortAcademicYearSchema.optional().nullable(),
     adviser: AdviserSummarySchema.optional().nullable(),
     status: ClassSectionStatusSchema,
-    validationSummary: z.record(z.string(), z.number()).optional().nullable(),
+    validationSummary: ValidationSummarySchema.optional().nullable(),
   })
   .extend(AuditInfoSchema.shape);
 
@@ -129,7 +130,7 @@ export const ClassSectionMinimalSchema = z.object({
   fullName: z.string(),
   adviser: AdviserSummarySchema.optional().nullable(),
   status: ClassSectionStatusSchema,
-  validationSummary: z.record(z.string(), z.number()).optional().nullable(),
+  validationSummary: ValidationSummarySchema.optional().nullable(),
 });
 
 export type ClassSectionMinimal = z.infer<typeof ClassSectionMinimalSchema>;

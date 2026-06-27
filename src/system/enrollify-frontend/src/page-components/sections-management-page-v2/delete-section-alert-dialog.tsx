@@ -1,4 +1,4 @@
-import type { ClassSectionV2 } from "@/api/models/class-section-v2";
+import type { ClassSectionMinimal } from "@/api/models/class-scheduling/class-section";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,7 +12,7 @@ import {
 interface DeleteSectionAlertDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  sectionToDelete?: ClassSectionV2;
+  sectionToDelete?: ClassSectionMinimal | null;
 }
 
 export function DeleteSectionAlertDialog({
