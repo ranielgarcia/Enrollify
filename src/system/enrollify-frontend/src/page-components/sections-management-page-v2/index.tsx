@@ -1,6 +1,7 @@
 import {
   getClassSectionsStatsOptions,
   filterClassSectionsPaginatedOptions,
+  getCollegeCoursesWithClassSectionsForSchedulingOptions,
 } from "@/api/collections/class-section-collection";
 import { Button } from "@/components/ui/button";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -17,11 +18,14 @@ import { SectionsTable } from "./sections-table";
 import { SectionFormDrawer } from "./section-form-drawer";
 import { DeleteSectionAlertDialog } from "./delete-section-alert-dialog";
 import { SectionsSkeleton } from "./sections-skeleton";
-import type { ClassSection } from "@/api/models/class-scheduling/class-section";
+import type { ClassSectionMinimal } from "@/api/models/class-scheduling/class-section";
+import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 function SectionsPageContent() {
   const [{ collegeId, page, perPage, filters, sort, joinOperator }] =
     useQueryStates(searchParams);
+
+  const { selectedAcademicTerm } = useEnrollmentContext();
 
   const {
     isFormOpen,
@@ -31,25 +35,23 @@ function SectionsPageContent() {
     handleDelete,
     handleFormOpenChange,
     handleDeleteDialogOpenChange,
-  } = useCrudState<ClassSection>();
+  } = useCrudState<ClassSectionMinimal>();
 
   const currentPage = page ? Number(page) : 1;
   const currentPageSize = perPage ? Number(perPage) : 10;
 
   // Stats query (for selected college only)
   const { data: stats } = useSuspenseQuery(
-    getClassSectionsStatsOptions(undefined),
+    getClassSectionsStatsOptions(
+      collegeId ?? undefined,
+      selectedAcademicTerm?.id,
+    ),
   );
 
-  // Sections list query (paginated, with filters)
-  const { data: pagedSections } = useSuspenseQuery(
-    filterClassSectionsPaginatedOptions(
-      0,
-      currentPage,
-      currentPageSize,
-      filters,
-      sort,
-      joinOperator,
+  const { data: classSections } = useSuspenseQuery(
+    getCollegeCoursesWithClassSectionsForSchedulingOptions(
+      collegeId ?? undefined,
+      selectedAcademicTerm?.id,
     ),
   );
 
@@ -67,15 +69,17 @@ function SectionsPageContent() {
     >
       <div className="flex flex-col space-y-6">
         {/* College Selector */}
-        <CollegeSelector selectedCollegeId={collegeId} />
+        <CollegeSelector />
 
         {/* Stats Panel */}
         <StatsPanel stats={stats} />
 
         {/* Sections Table */}
         <SectionsTable
-          sections={pagedSections.data}
-          totalRecords={pagedSections.totalRecords}
+          sections={
+            classSections?.coursesWithClassSections[0]?.classSections ?? []
+          }
+          totalRecords={0}
           currentPage={currentPage}
           pageSize={currentPageSize}
           onEdit={handleEdit}
@@ -88,7 +92,6 @@ function SectionsPageContent() {
           onOpenChange={handleFormOpenChange}
           sectionToUpdate={entityToEdit}
           isOpen={isFormOpen}
-          setIsOpen={handleFormOpenChange}
         />
 
         {/* Delete Dialog */}

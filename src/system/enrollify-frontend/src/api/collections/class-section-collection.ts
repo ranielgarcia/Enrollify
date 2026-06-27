@@ -54,7 +54,7 @@ const queryKeys = {
     "collegeCoursesClassSchedulingStats",
     collegeId ?? 0,
   ],
-  collegeCoursesWithClassSectionsForScheduling: (collegeId: number) => [
+  collegeCoursesWithClassSectionsForScheduling: (collegeId?: number) => [
     ...queryKeys.base(),
     "collegeCoursesWithClassSectionsForScheduling",
     collegeId,
@@ -270,28 +270,38 @@ export const cancelClassSectionOptions = (sectionId: number) =>
     },
   });
 
-export const getClassSectionsStatsOptions = (collegeId?: number) =>
+export const getClassSectionsStatsOptions = (
+  collegeId?: number,
+  academicTermId?: number,
+) =>
   createQueryOptions({
     path: "/api/scheduling/colleges/{collegeId}/stats",
     pathParams: { collegeId: collegeId ?? 0 },
+    params: {
+      AcademicTermId: academicTermId!,
+    },
     options: {
-      enabled: !!collegeId,
+      enabled: !!collegeId && !!academicTermId,
       queryKey: queryKeys.collegeCoursesClassSchedulingStats(collegeId),
       staleTime: 1000 * 60 * 5,
-      select: (data): object => {
+      select: (data): Record<string, number> => {
         return data;
       },
     },
   });
 
 export const getCollegeCoursesWithClassSectionsForSchedulingOptions = (
-  collegeId: number,
+  collegeId?: number,
+  academicTermId?: number,
 ) =>
   createQueryOptions({
     path: "/api/scheduling/colleges/{collegeId}/class-sections",
-    pathParams: { collegeId },
+    pathParams: { collegeId: collegeId ?? 0 },
+    params: {
+      AcademicTermId: academicTermId!,
+    },
     options: {
-      enabled: !!collegeId,
+      enabled: !!collegeId && !!academicTermId,
       queryKey:
         queryKeys.collegeCoursesWithClassSectionsForScheduling(collegeId),
       staleTime: 1000 * 60 * 5,

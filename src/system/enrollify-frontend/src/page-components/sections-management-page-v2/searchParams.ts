@@ -3,7 +3,7 @@ import { getFiltersStateParser, getSortingStateParser } from "@/lib/parsers";
 import type { ClassSection } from "@/api/models/class-scheduling/class-section";
 
 export const searchParams = {
-  collegeId: parseAsString,
+  collegeId: parseAsInteger,
   page: parseAsInteger.withDefault(1),
   perPage: parseAsInteger.withDefault(10),
   view: parseAsString.withDefault("card"),

@@ -9,8 +9,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { ClassSectionV2 } from "@/api/models/class-section-v2";
-import { ClassSectionStatusEnum } from "@/api/models/class-scheduling/class-section";
+import {
+  ClassSectionStatusEnum,
+  type ClassSectionMinimal,
+} from "@/api/models/class-scheduling/class-section";
 import { MoreHorizontal, Edit2, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
@@ -20,12 +22,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface SectionsTableProps {
-  sections: ClassSectionV2[];
+  sections: ClassSectionMinimal[];
   totalRecords: number;
   currentPage: number;
   pageSize: number;
-  onEdit: (section: ClassSectionV2) => void;
-  onDelete: (section: ClassSectionV2) => void;
+  onEdit: (section: ClassSectionMinimal) => void;
+  onDelete: (section: ClassSectionMinimal) => void;
 }
 
 function getStatusBadgeColor(statusValue: number) {
@@ -41,7 +43,7 @@ function getStatusBadgeColor(statusValue: number) {
   }
 }
 
-function getErrorIndicator(section: ClassSectionV2) {
+function getErrorIndicator(section: ClassSectionMinimal) {
   const { offeringsWithErrors, offeringsWithConflicts } =
     section.validationSummary;
   const totalIssues = offeringsWithErrors + offeringsWithConflicts;
