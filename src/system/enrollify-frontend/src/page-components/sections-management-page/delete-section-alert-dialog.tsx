@@ -1,4 +1,4 @@
-import type { ClassSection } from "@/api/models/class-section";
+import type { ClassSection } from "@/api/models/class-scheduling/class-section";
 import { DeleteAlertDialog } from "@/components/delete-alert-dialog";
 
 interface DeleteSectionAlertDialogProps {

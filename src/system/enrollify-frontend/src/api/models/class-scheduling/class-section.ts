@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { AuditInfoSchema } from "@/api/models/audit-info";
 import { OfferingSchema } from "./offering";
-import { dateTransformer } from "./date-transformer";
+import { dateTransformer } from "../date-transformer";
 import {
   ValidationSeverities,
   type ValidationSeverityName,
-} from "./validation-severity";
+} from "../validation-severity";
 
 const SeveritySchema = z.object({
   value: z.enum(ValidationSeverities),
@@ -103,6 +103,10 @@ export const ClassSectionSchema = z
     cohortAcademicYear: CohortAcademicYearSchema.optional().nullable(),
     adviser: AdviserSummarySchema.optional().nullable(),
     status: ClassSectionStatusSchema,
+    validationSummary: z
+      .object({ key: z.string(), value: z.number() })
+      .optional()
+      .nullable(),
   })
   .extend(AuditInfoSchema.shape);
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Offering } from "@/api/models/offering";
-import type { OfferingValidationMessage } from "@/api/models/class-section";
+import type { OfferingValidationMessage } from "@/api/models/class-scheduling/class-section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

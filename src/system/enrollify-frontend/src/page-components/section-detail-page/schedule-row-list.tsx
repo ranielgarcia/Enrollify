@@ -1,5 +1,5 @@
 import { deleteScheduleRowOptions } from "@/api/collections/offering-collection";
-import type { ClassSchedule } from "@/api/models/class-schedule";
+import type { ClassSchedule } from "@/api/models/class-scheduling/class-schedule";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMutation } from "@tanstack/react-query";

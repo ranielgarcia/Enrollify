@@ -26,7 +26,7 @@ public record ClassSectionValidationIssueDto
   {
     return new ClassSectionValidationIssueDto
     {
-      Type = new (issue.Type.Name,  issue.Type.Category.Name),
+      Type = new (issue.Type.Name, issue.Type.Label, issue.Type.Category.Name, issue.Type.Severity.Name),
       Message = issue.Message,
       DayOfWeek = issue.DayOfWeek?.Value,
       StartTime = issue.StartTime?.ToString("HH:mm:ss"),
@@ -44,7 +44,7 @@ public record ClassSectionValidationIssueDto
   }
 }
 
-public record ClassSectionValidationIssueTypeDto(string Name, string Category);
+public record ClassSectionValidationIssueTypeDto(string Code, string Label, string Category, string Severity);
 
 /// <summary>
 /// Summary of an offering affected by a conflict

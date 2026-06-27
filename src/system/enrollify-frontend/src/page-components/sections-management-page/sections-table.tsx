@@ -1,5 +1,5 @@
 import type { PagedResult } from "@/api/models/paged-result";
-import type { ClassSection } from "@/api/models/class-section";
+import type { ClassSection } from "@/api/models/class-scheduling/class-section";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableAdvancedToolbar } from "@/components/data-table/data-table-advanced-toolbar";

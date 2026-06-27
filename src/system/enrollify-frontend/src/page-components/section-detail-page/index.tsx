@@ -18,8 +18,8 @@ import { OfferingsTab } from "./offerings-tab";
 import { WeeklyGridTab } from "./weekly-grid-tab";
 import { ConflictsTab } from "./conflicts-tab";
 import type { ConflictResult } from "@/api/models/offering";
-import type { ClassSectionWithOfferings } from "@/api/models/class-section";
-import { ClassSectionStatusEnum } from "@/api/models/class-section";
+import type { ClassSectionWithOfferings } from "@/api/models/class-scheduling/class-section";
+import { ClassSectionStatusEnum } from "@/api/models/class-scheduling/class-section";
 import { SectionStatusBadge } from "../sections-management-page/section-status-badge";
 
 interface SectionDetailPageProps {

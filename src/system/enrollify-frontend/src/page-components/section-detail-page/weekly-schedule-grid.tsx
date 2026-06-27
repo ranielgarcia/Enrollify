@@ -1,7 +1,7 @@
 import type { OfferingWithSchedules } from "@/api/models/offering";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ScheduleCell } from "./schedule-cell";
-import type { DayOfWeek } from "@/api/models/class-schedule";
+import type { DayOfWeek } from "@/api/models/class-scheduling/class-schedule";
 
 interface WeeklyScheduleGridProps {
   offerings: OfferingWithSchedules[];

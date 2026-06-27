@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { ClassSectionV2 } from "@/api/models/class-section-v2";
-import { ClassSectionStatusEnum } from "@/api/models/class-section";
+import { ClassSectionStatusEnum } from "@/api/models/class-scheduling/class-section";
 import { MoreHorizontal, Edit2, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
@@ -42,7 +42,8 @@ function getStatusBadgeColor(statusValue: number) {
 }
 
 function getErrorIndicator(section: ClassSectionV2) {
-  const { offeringsWithErrors, offeringsWithConflicts } = section.validationSummary;
+  const { offeringsWithErrors, offeringsWithConflicts } =
+    section.validationSummary;
   const totalIssues = offeringsWithErrors + offeringsWithConflicts;
 
   if (totalIssues === 0) {
@@ -94,7 +95,9 @@ export function SectionsTable({
         <TableBody>
           {sections.map((section) => (
             <TableRow key={section.id}>
-              <TableCell className="font-medium">{section.sectionCode}</TableCell>
+              <TableCell className="font-medium">
+                {section.sectionCode}
+              </TableCell>
               <TableCell className="text-sm">{section.fullName}</TableCell>
               <TableCell>
                 <Badge className={getStatusBadgeColor(section.status.value)}>
@@ -139,7 +142,8 @@ export function SectionsTable({
       </Table>
       <div className="border-t px-4 py-3 text-sm text-muted-foreground">
         Showing {(currentPage - 1) * pageSize + 1} to{" "}
-        {Math.min(currentPage * pageSize, totalRecords)} of {totalRecords} sections
+        {Math.min(currentPage * pageSize, totalRecords)} of {totalRecords}{" "}
+        sections
       </div>
     </Card>
   );

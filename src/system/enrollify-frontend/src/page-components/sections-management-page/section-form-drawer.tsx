@@ -1,4 +1,4 @@
-import type { ClassSection } from "@/api/models/class-section";
+import type { ClassSection } from "@/api/models/class-scheduling/class-section";
 import type { Course } from "@/api/models/course";
 import type { Teacher } from "@/api/models/teacher";
 import { FormField } from "@/components/form/form-field";

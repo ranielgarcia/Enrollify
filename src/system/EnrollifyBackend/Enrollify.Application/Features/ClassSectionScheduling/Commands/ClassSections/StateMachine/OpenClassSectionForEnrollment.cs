@@ -71,7 +71,7 @@ public static class OpenClassSectionForEnrollment
         await _mediator.Send(new ComputeAndGetValidationIssuesForClassSection.Command(sectionId),
           cancellationToken);
       return validationIssues.IsSuccess && validationIssues.Value
-        .Where(x => x.Type.Category != ClassSectionValidationIssueCategoryEnum.DEFAULT_VALUE).ToList().Count > 0;
+        .Where(x => x.Type.Severity != DomainValidationErrorSeverityEnum.Info).ToList().Count > 0;
     }
   }
 }

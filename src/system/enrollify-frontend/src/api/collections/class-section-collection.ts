@@ -12,9 +12,13 @@ import {
   type ClassSection,
   type ClassSectionWithOfferings,
   type CollegeCoursesWithClassSections,
-} from "@/api/models/class-section";
+} from "@/api/models/class-scheduling/class-section";
 import { pagedResultSchema, type PagedResult } from "@/api/models/paged-result";
 import { toast } from "sonner";
+import {
+  OfferingSchema,
+  type Offering,
+} from "../models/class-scheduling/offering";
 
 const queryKeys = {
   base: () => ["sections"],
@@ -153,13 +157,7 @@ export const getOfferingDetailsForClassSectionOptions = (sectionId: number) =>
       enabled: !!sectionId,
       queryKey: queryKeys.offerings(sectionId),
       staleTime: 1000 * 60 * 5,
-      select: () => {
-        // Mock response: return empty offering details
-        return {
-          offerings: [],
-          conflicts: [],
-        };
-      },
+      select: (data): Offering[] => OfferingSchema.array().parse(data),
     },
   });
 

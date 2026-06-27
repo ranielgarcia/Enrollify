@@ -1,5 +1,5 @@
 import type { Offering } from "@/api/models/offering";
-import type { ValidationMessages } from "@/api/models/class-section";
+import type { ValidationMessages } from "@/api/models/class-scheduling/class-section";
 import { OfferingCard } from "./offering-card";
 import { LayoutGrid } from "lucide-react";
 
@@ -45,9 +45,8 @@ export function OfferingsTab({
               offering={o}
               sectionId={sectionId}
               validationMessages={
-                validationMessages?.offeringsValidationMessages[
-                  String(o.id)
-                ] ?? []
+                validationMessages?.offeringsValidationMessages[String(o.id)] ??
+                []
               }
             />
           ))}

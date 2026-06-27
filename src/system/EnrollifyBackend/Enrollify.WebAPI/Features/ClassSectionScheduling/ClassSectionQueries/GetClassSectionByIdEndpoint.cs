@@ -29,3 +29,14 @@ public class GetClassSectionByIdEndpoint : EndpointWithoutRequest<OkOrNotFoundAp
     return result.ToGetByIdResult(dto => dto);
   }
 }
+//
+// public class GetClassSectionByIdEndpointSummary : Summary<GetClassSectionByIdEndpoint>
+// {
+//   public GetClassSectionByIdEndpointSummary()
+//   {
+//     Summary = "Get a class section by its ID.";
+//     Description = "Returns the details of a class section, including its subject offerings and schedule.";
+//     Response<ClassSectionDetailDto>(200, "Returns the class section details if found.");
+//     Response<ClassSectionDetailDto>(404, "Class section not found.");
+//   }
+// }

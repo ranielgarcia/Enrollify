@@ -17,7 +17,7 @@ import { SectionsTable } from "./sections-table";
 import { SectionFormDrawer } from "./section-form-drawer";
 import { DeleteSectionAlertDialog } from "./delete-section-alert-dialog";
 import { SectionsSkeleton } from "./sections-skeleton";
-import type { ClassSection } from "@/api/models/class-section";
+import type { ClassSection } from "@/api/models/class-scheduling/class-section";
 
 function SectionsPageContent() {
   const [{ collegeId, page, perPage, filters, sort, joinOperator }] =
