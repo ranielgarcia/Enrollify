@@ -88,12 +88,12 @@ As a Scheduler, I want a new dedicated page route with frontend infrastructure a
 - [x] FastEndpoints endpoint for offering details: `GET /api/class-sections/{sectionId}/offerings`
 - [x] FastEndpoints endpoint for bulk open: `POST /api/scheduling/colleges/class-sections/bulk/open`
 - [x] FastEndpoints endpoint for bulk cancel: `POST /api/scheduling/colleges/class-sections/bulk/cancel`
-- [ ] FastEndpoints endpoint for bulk assign-adviser: `POST /api/scheduling/colleges/class-sections/bulk/assign-adviser`
-- [ ] Mediator command/query handlers for each operation
-- [ ] Business logic validates Draft eligibility and Error-severity conflicts
-- [ ] Database queries correctly compute `validationSummary` and stats
-- [ ] All responses return correct DTO shapes (with `validationSummary`, `succeeded`/`failed`/`errors`, etc.)
-- [ ] Authorization policies applied to all endpoints
+- [x] FastEndpoints endpoint for bulk assign-adviser: `POST /api/scheduling/colleges/class-sections/bulk/assign-adviser`
+- [x] Mediator command/query handlers for each operation
+- [x] Business logic validates Draft eligibility and Error-severity conflicts
+- [x] Database queries correctly compute `validationSummary` and stats
+- [x] All responses return correct DTO shapes (with `validationSummary`, `succeeded`/`failed`/`errors`, etc.)
+- [x] Authorization policies applied to all endpoints
 - [ ] Integration tests verify each endpoint behavior
 - [ ] API types regenerated via `npm run generate:api:win` and frontend collection updated to use real endpoints
 
