@@ -7,8 +7,6 @@ export type QuickFilter =
   | "draft"
   | "open"
   | "cancelled"
-  | "errors"
-  | "conflicts"
   | "needs-attention";
 
 export const searchParams = {

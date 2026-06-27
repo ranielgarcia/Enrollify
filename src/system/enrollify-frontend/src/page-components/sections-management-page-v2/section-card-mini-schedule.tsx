@@ -1,12 +1,15 @@
+import type { CSSProperties } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { AlertTriangle, ArrowUpRight, Loader2 } from "lucide-react";
+
 import { getOfferingDetailsForClassSectionOptions } from "@/api/collections/class-section-collection";
 import type { ClassSectionMinimal } from "@/api/models/class-scheduling/class-section";
 import type { Offering } from "@/api/models/class-scheduling/offering";
-import { Loader2, AlertTriangle, ArrowUpRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-const DAYS: Array<{ key: string; label: string }> = [
+const DAYS: ReadonlyArray<{ key: string; label: string }> = [
   { key: "MON", label: "Mon" },
   { key: "TUE", label: "Tue" },
   { key: "WED", label: "Wed" },
@@ -15,20 +18,18 @@ const DAYS: Array<{ key: string; label: string }> = [
   { key: "SAT", label: "Sat" },
 ];
 
-// Time slots from 07:00 to 20:00 in 30-min intervals
-const TIME_SLOTS: string[] = [];
-for (let h = 7; h < 20; h++) {
-  TIME_SLOTS.push(`${String(h).padStart(2, "0")}:00`);
-  TIME_SLOTS.push(`${String(h).padStart(2, "0")}:30`);
-}
+const SLOT_HEIGHT_PX = 24; // pixels per 30-minute slot
+const DEFAULT_START_HOUR = 7;
+const DEFAULT_END_HOUR = 19;
+const ABS_MIN_HOUR = 6;
+const ABS_MAX_HOUR = 21;
+const GRID_WIDTH_PX = 360;
+const TIME_AXIS_PX = 44;
 
 function timeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
   return (h ?? 0) * 60 + (m ?? 0);
 }
-
-const SLOT_HEIGHT_PX = 20; // px per 30-min slot
-const GRID_START_MINUTES = 7 * 60; // 07:00
 
 interface OfferingBlock {
   offering: Offering;
@@ -41,22 +42,15 @@ interface OfferingBlock {
 function buildOfferingBlocks(offerings: Offering[]): OfferingBlock[] {
   const blocks: OfferingBlock[] = [];
   for (const offering of offerings) {
-    const schedules = offering.schedules ?? [];
     const hasConflict =
-      (offering.conflicts?.filter((c) => c.type?.severity === "Error")
-        .length ?? 0) > 0;
-
-    for (const schedule of schedules) {
-      const day = schedule.dayOfWeekAbbreviation;
-      const startMinutes = timeToMinutes(
-        schedule.startTime.substring(0, 5),
-      );
-      const endMinutes = timeToMinutes(schedule.endTime.substring(0, 5));
+      (offering.conflicts?.filter((c) => c.type?.severity === "Error").length ??
+        0) > 0;
+    for (const schedule of offering.schedules ?? []) {
       blocks.push({
         offering,
-        day,
-        startMinutes,
-        endMinutes,
+        day: schedule.dayOfWeekAbbreviation,
+        startMinutes: timeToMinutes(schedule.startTime.substring(0, 5)),
+        endMinutes: timeToMinutes(schedule.endTime.substring(0, 5)),
         hasConflict,
       });
     }
@@ -64,151 +58,174 @@ function buildOfferingBlocks(offerings: Offering[]): OfferingBlock[] {
   return blocks;
 }
 
+/**
+ * Decide the visible time range. Defaults to 07:00–19:00 but expands outward
+ * (capped to ABS_MIN/MAX) if any offering falls outside the default range.
+ */
+function computeVisibleRange(blocks: OfferingBlock[]): {
+  startHour: number;
+  endHour: number;
+} {
+  if (blocks.length === 0) {
+    return { startHour: DEFAULT_START_HOUR, endHour: DEFAULT_END_HOUR };
+  }
+  let minStart = DEFAULT_START_HOUR * 60;
+  let maxEnd = DEFAULT_END_HOUR * 60;
+  for (const b of blocks) {
+    if (b.startMinutes < minStart) minStart = b.startMinutes;
+    if (b.endMinutes > maxEnd) maxEnd = b.endMinutes;
+  }
+  const startHour = Math.max(ABS_MIN_HOUR, Math.floor(minStart / 60));
+  const endHour = Math.min(ABS_MAX_HOUR, Math.ceil(maxEnd / 60));
+  return { startHour, endHour };
+}
+
+function formatHour(h: number): string {
+  return `${String(h).padStart(2, "0")}:00`;
+}
+
+function formatHoursPerWeek(blocks: OfferingBlock[]): number {
+  let totalMin = 0;
+  for (const b of blocks) totalMin += b.endMinutes - b.startMinutes;
+  return Math.round((totalMin / 60) * 10) / 10;
+}
+
 interface MiniScheduleGridProps {
-  offerings: Offering[];
-  sectionName: string;
-  onViewDetails?: () => void;
+  blocks: OfferingBlock[];
+  startHour: number;
+  endHour: number;
 }
 
 function MiniScheduleGrid({
-  offerings,
-  sectionName,
-  onViewDetails,
+  blocks,
+  startHour,
+  endHour,
 }: MiniScheduleGridProps) {
-  const blocks = buildOfferingBlocks(offerings);
-  const daysWithData = new Set(blocks.map((b) => b.day));
-  const visibleDays = DAYS.filter(
-    (d) =>
-      daysWithData.has(d.key) ||
-      ["MON", "TUE", "WED", "THU", "FRI"].includes(d.key),
-  );
-  const totalMinutes = TIME_SLOTS.length * 30;
-  const gridHeight = (totalMinutes / 30) * SLOT_HEIGHT_PX;
+  const gridStartMinutes = startHour * 60;
+  const slotsPerHour = 2;
+  const totalSlots = (endHour - startHour) * slotsPerHour;
+  const gridHeight = totalSlots * SLOT_HEIGHT_PX;
+  const dayColumnWidth = (GRID_WIDTH_PX - TIME_AXIS_PX) / DAYS.length;
+
+  const hourLabels: number[] = [];
+  for (let h = startHour; h <= endHour; h++) hourLabels.push(h);
 
   return (
-    <div className="w-full">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2 pb-2 border-b">
-        <div>
-          <div className="font-semibold text-sm">{sectionName}</div>
-          <div className="text-xs text-muted-foreground">Weekly Schedule</div>
-        </div>
-        {onViewDetails && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onViewDetails}
-            className="h-7 gap-1 text-xs"
-          >
-            <ArrowUpRight className="size-3" />
-            Full View
-          </Button>
-        )}
-      </div>
-
+    <div
+      style={
+        {
+          "--grid-w": `${GRID_WIDTH_PX}px`,
+          "--grid-h": `${gridHeight}px`,
+          "--axis-w": `${TIME_AXIS_PX}px`,
+          "--col-w": `${dayColumnWidth}px`,
+          "--slot-h": `${SLOT_HEIGHT_PX}px`,
+        } as CSSProperties
+      }
+      className="w-(--grid-w)"
+    >
       {/* Day headers */}
-      <div className="flex gap-px mb-1">
-        <div className="w-10 shrink-0" />
-        {visibleDays.map((d) => (
-          <div
-            key={d.key}
-            className="flex-1 text-center text-xs font-medium text-muted-foreground py-1"
-          >
-            {d.label}
-          </div>
-        ))}
-      </div>
-
-      {/* Grid body */}
-      <div className="flex gap-px relative">
-        {/* Time labels */}
-        <div
-          className="w-10 shrink-0 relative"
-          style={{ height: gridHeight }}
-        >
-          {TIME_SLOTS.filter((_, i) => i % 2 === 0).map((time, i) => (
+      <div className="mb-1 flex">
+        <div className="w-(--axis-w) shrink-0" />
+        <div className="flex flex-1">
+          {DAYS.map((d) => (
             <div
-              key={time}
-              className="absolute right-1 text-[10px] text-muted-foreground leading-none"
-              style={{
-                top: i * SLOT_HEIGHT_PX * 2 - 4,
-              }}
+              key={d.key}
+              className="flex-1 py-1 text-center text-[11px] font-semibold text-muted-foreground"
             >
-              {time}
+              {d.label}
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Body */}
+      <div className="relative flex">
+        {/* Time axis */}
+        <div className="relative w-(--axis-w) shrink-0 h-(--grid-h)">
+          {hourLabels.map((h) => {
+            const topPx = (h - startHour) * slotsPerHour * SLOT_HEIGHT_PX;
+            return (
+              <div
+                key={h}
+                style={{ top: `${topPx}px` }}
+                className="absolute right-1 -translate-y-1/2 text-[10px] leading-none text-muted-foreground"
+              >
+                {formatHour(h)}
+              </div>
+            );
+          })}
+        </div>
 
         {/* Day columns */}
-        {visibleDays.map((d) => {
+        {DAYS.map((d) => {
           const dayBlocks = blocks.filter((b) => b.day === d.key);
           return (
             <div
               key={d.key}
-              className="flex-1 relative bg-muted/20 rounded-sm"
-              style={{ height: gridHeight }}
+              className="relative h-(--grid-h) w-(--col-w) shrink-0 border-l border-border/40 first:border-l-0"
             >
-              {/* Slot lines */}
-              {TIME_SLOTS.map((time, i) => (
-                <div
-                  key={time}
-                  className={cn(
-                    "absolute inset-x-0 border-t",
-                    i % 2 === 0
-                      ? "border-border/60"
-                      : "border-border/20",
-                  )}
-                  style={{ top: i * SLOT_HEIGHT_PX }}
-                />
-              ))}
-
-              {/* Lunch break highlight */}
-              <div
-                className="absolute inset-x-0 bg-muted/40"
-                style={{
-                  top: ((12 * 60 - GRID_START_MINUTES) / 30) * SLOT_HEIGHT_PX,
-                  height: (60 / 30) * SLOT_HEIGHT_PX,
-                }}
-              />
+              {/* Hour gridlines (strong) and half-hour gridlines (faint) */}
+              {Array.from({ length: totalSlots + 1 }, (_, i) => i).map((i) => {
+                const isHour = i % 2 === 0;
+                const topPx = i * SLOT_HEIGHT_PX;
+                return (
+                  <div
+                    key={i}
+                    style={{ top: `${topPx}px` }}
+                    className={cn(
+                      "absolute inset-x-0 border-t",
+                      isHour ? "border-border/60" : "border-border/20",
+                    )}
+                  />
+                );
+              })}
 
               {/* Offering blocks */}
               {dayBlocks.map((block, idx) => {
-                const top =
-                  ((block.startMinutes - GRID_START_MINUTES) / 30) *
+                const topPx =
+                  ((block.startMinutes - gridStartMinutes) / 30) *
                   SLOT_HEIGHT_PX;
-                const height =
+                const heightPx = Math.max(
                   ((block.endMinutes - block.startMinutes) / 30) *
-                  SLOT_HEIGHT_PX;
-                const subjectCode =
-                  block.offering.snapshotSubjectCode ?? "—";
-                const teacherName = block.offering.teacher
-                  ? block.offering.teacher.lastName
-                  : "—";
-                const roomNum =
-                  block.offering.room?.roomNumber ?? "—";
+                    SLOT_HEIGHT_PX,
+                  SLOT_HEIGHT_PX,
+                );
+                const subjectCode = block.offering.snapshotSubjectCode ?? "—";
+                const teacherName = block.offering.teacher?.lastName ?? "—";
+                const roomNum = block.offering.room?.roomNumber ?? "—";
 
                 return (
                   <div
                     key={`${block.offering.id}-${block.day}-${idx}`}
+                    style={{ top: `${topPx}px`, height: `${heightPx}px` }}
+                    title={`${subjectCode} · ${teacherName} · Rm ${roomNum}`}
                     className={cn(
-                      "absolute inset-x-0.5 rounded-sm px-1 py-0.5 overflow-hidden",
-                      "flex flex-col justify-start text-[9px] leading-tight font-medium",
+                      "absolute inset-x-0.5 overflow-hidden rounded-sm border px-1 py-0.5 text-[11px] font-medium leading-tight",
                       block.hasConflict
-                        ? "bg-rose-100 text-rose-900 border border-rose-400 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-700"
-                        : "bg-blue-100 text-blue-900 border border-blue-300 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-700",
+                        ? "border-rose-400 bg-rose-100 text-rose-900 dark:border-rose-700 dark:bg-rose-950/60 dark:text-rose-200"
+                        : "border-blue-300 bg-blue-100 text-blue-900 dark:border-blue-700 dark:bg-blue-950/60 dark:text-blue-200",
                     )}
-                    style={{ top, height: Math.max(height, SLOT_HEIGHT_PX) }}
-                    title={`${subjectCode} — ${teacherName} (Room ${roomNum})`}
                   >
-                    <div className="truncate font-semibold">{subjectCode}</div>
-                    {height >= SLOT_HEIGHT_PX * 2 && (
-                      <div className="truncate opacity-80">{teacherName}</div>
+                    {block.hasConflict && (
+                      <div
+                        aria-hidden
+                        style={{
+                          backgroundImage:
+                            "repeating-linear-gradient(45deg, rgba(244,63,94,0.25) 0 4px, transparent 4px 8px)",
+                        }}
+                        className="pointer-events-none absolute inset-0"
+                      />
                     )}
-                    {height >= SLOT_HEIGHT_PX * 3 && (
-                      <div className="truncate opacity-70">Rm {roomNum}</div>
+                    <div className="relative truncate font-semibold">
+                      {subjectCode}
+                    </div>
+                    {heightPx >= SLOT_HEIGHT_PX * 1.5 && (
+                      <div className="relative truncate text-[10px] opacity-80">
+                        {roomNum} · {teacherName}
+                      </div>
                     )}
                     {block.hasConflict && (
-                      <AlertTriangle className="size-2 text-rose-500 absolute top-0.5 right-0.5" />
+                      <AlertTriangle className="absolute right-0.5 top-0.5 size-3 text-rose-500" />
                     )}
                   </div>
                 );
@@ -217,20 +234,6 @@ function MiniScheduleGrid({
           );
         })}
       </div>
-
-      {/* Conflict legend */}
-      {blocks.some((b) => b.hasConflict) && (
-        <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground pt-2 border-t">
-          <div className="flex items-center gap-1">
-            <div className="size-2.5 rounded-sm bg-blue-200 border border-blue-400" />
-            Offering
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="size-2.5 rounded-sm bg-rose-200 border border-rose-400" />
-            Conflict
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -241,6 +244,11 @@ interface SectionCardMiniScheduleProps {
   onViewDetails?: () => void;
 }
 
+/**
+ * Lazy-loading weekly schedule preview shown inside a HoverCard. Renders a
+ * compact static summary instantly (from `validationSummary`) and fetches the
+ * offering details only after the parent flags `isHovered`.
+ */
 export function SectionCardMiniSchedule({
   section,
   isHovered,
@@ -251,58 +259,124 @@ export function SectionCardMiniSchedule({
     enabled: isHovered && !!section.id,
   });
 
-  const validationSummary = section.validationSummary;
+  const vs = section.validationSummary;
+  const totalOfferings = vs?.OFFERINGS_COUNT ?? 0;
+  const withIssues = vs?.OFFERING_WITH_ISSUE_COUNT ?? 0;
 
-  // Phase 1: Static summary (always available)
-  const staticSummary = validationSummary
-    ? [
-        validationSummary.totalOfferings > 0
-          ? `${validationSummary.totalOfferings} offering${validationSummary.totalOfferings !== 1 ? "s" : ""}`
-          : "No offerings",
-        validationSummary.offeringsWithConflicts > 0
-          ? `${validationSummary.offeringsWithConflicts} conflict${validationSummary.offeringsWithConflicts !== 1 ? "s" : ""}`
-          : null,
-        validationSummary.offeringsWithErrors > 0
-          ? `${validationSummary.offeringsWithErrors} error${validationSummary.offeringsWithErrors !== 1 ? "s" : ""}`
-          : null,
-      ]
-        .filter(Boolean)
-        .join(" · ")
-    : "No schedule data";
+  const blocks = offerings ? buildOfferingBlocks(offerings) : [];
+  const conflictBlocks = blocks.filter((b) => b.hasConflict);
+  const hoursPerWeek = formatHoursPerWeek(blocks);
+  const { startHour, endHour } = computeVisibleRange(blocks);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-2 w-64">
-        <div className="text-xs text-muted-foreground">{staticSummary}</div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+  // Header summary chips — always visible.
+  const summaryChips: { label: string; tone: "neutral" | "danger" | "warn" }[] =
+    [];
+  if (totalOfferings > 0)
+    summaryChips.push({
+      label: `${totalOfferings} offering${totalOfferings === 1 ? "" : "s"}`,
+      tone: "neutral",
+    });
+  if (offerings && conflictBlocks.length > 0)
+    summaryChips.push({
+      label: `${conflictBlocks.length} conflict${conflictBlocks.length === 1 ? "" : "s"}`,
+      tone: "danger",
+    });
+  if (offerings && hoursPerWeek > 0)
+    summaryChips.push({
+      label: `${hoursPerWeek} hr/wk`,
+      tone: "neutral",
+    });
+  if (!offerings && withIssues > 0)
+    summaryChips.push({
+      label: `${withIssues} need${withIssues === 1 ? "s" : ""} attention`,
+      tone: "warn",
+    });
+
+  const chipToneClass: Record<"neutral" | "danger" | "warn", string> = {
+    neutral: "border-border bg-muted text-foreground",
+    danger:
+      "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-400",
+    warn: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400",
+  };
+
+  return (
+    <div className="space-y-2">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="truncate text-sm font-semibold">
+            {section.fullName ?? section.name}
+          </div>
+          <div className="text-[11px] text-muted-foreground">
+            Weekly schedule
+          </div>
+        </div>
+        {onViewDetails && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onViewDetails}
+            className="-mr-1 h-7 gap-1 px-2 text-[11px]"
+          >
+            <ArrowUpRight className="size-3" />
+            Open
+          </Button>
+        )}
+      </div>
+
+      {/* Summary chips */}
+      {summaryChips.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {summaryChips.map((c) => (
+            <Badge
+              key={c.label}
+              variant="outline"
+              className={cn(
+                "h-5 px-1.5 text-[10px] font-medium",
+                chipToneClass[c.tone],
+              )}
+            >
+              {c.label}
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {/* Body */}
+      {isLoading && (
+        <div className="flex items-center gap-2 py-3 text-xs text-muted-foreground">
           <Loader2 className="size-3 animate-spin" />
           Loading weekly schedule…
         </div>
-      </div>
-    );
-  }
+      )}
 
-  if (!offerings || offerings.length === 0) {
-    return (
-      <div className="w-64 space-y-1">
-        <div className="text-sm font-semibold">{section.name}</div>
-        <div className="text-xs text-muted-foreground">
+      {!isLoading && (!offerings || offerings.length === 0) && (
+        <div className="rounded-md border border-dashed bg-muted/30 px-3 py-4 text-center text-xs text-muted-foreground">
           No offerings scheduled yet.
         </div>
-        {staticSummary && (
-          <div className="text-xs text-muted-foreground">{staticSummary}</div>
-        )}
-      </div>
-    );
-  }
+      )}
 
-  return (
-    <div style={{ width: 340 }}>
-      <MiniScheduleGrid
-        offerings={offerings}
-        sectionName={section.name}
-        onViewDetails={onViewDetails}
-      />
+      {!isLoading && offerings && offerings.length > 0 && (
+        <MiniScheduleGrid
+          blocks={blocks}
+          startHour={startHour}
+          endHour={endHour}
+        />
+      )}
+
+      {/* Conflict legend */}
+      {conflictBlocks.length > 0 && (
+        <div className="flex items-center gap-3 border-t pt-2 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <span className="inline-block size-2.5 rounded-sm border border-blue-400 bg-blue-200" />
+            Offering
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="inline-block size-2.5 rounded-sm border border-rose-400 bg-rose-200" />
+            Conflict
+          </div>
+        </div>
+      )}
     </div>
   );
 }

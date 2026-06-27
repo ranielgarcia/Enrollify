@@ -1,64 +1,60 @@
-import { Suspense, useState, useCallback } from "react";
+import { Suspense, useCallback } from "react";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryStates } from "nuqs";
+
 import {
+  bulkCancelSectionsMutationOptions,
+  bulkOpenSectionsMutationOptions,
   getClassSectionsStatsOptions,
   getCollegeCoursesWithClassSectionsForSchedulingOptions,
-  openClassSectionOptions,
-  bulkOpenSectionsMutationOptions,
-  bulkCancelSectionsMutationOptions,
 } from "@/api/collections/class-section-collection";
-import { useSuspenseQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useQueryStates } from "nuqs";
-import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
-import { searchParams } from "./searchParams";
-import type { QuickFilter } from "./searchParams";
-import { ModuleIcons } from "@/config/module-icons";
-import { CollegeSelector } from "./college-selector";
-import { StatsBar } from "./stats-bar";
-import { QuickFilters } from "./quick-filters";
-import { SectionsCardView } from "./sections-card-view";
-import { SectionsTable } from "./sections-table";
-import { SectionFormDrawer } from "./section-form-drawer";
-import { CancelSectionAlertDialog } from "./cancel-section-alert-dialog";
-import { BulkStatusTransitionDialog } from "./bulk-status-transition-dialog";
-import { BulkAdviserAssignDrawer } from "./bulk-adviser-assign-drawer";
-import { ConflictPreviewDrawer } from "./conflict-preview-drawer";
-import { SectionsSkeleton } from "./sections-skeleton";
-import { EmptyState } from "./empty-state";
-import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  LayoutGrid,
-  TableIcon,
-  Plus,
-} from "lucide-react";
 import type { ClassSectionMinimal } from "@/api/models/class-scheduling/class-section";
+
+import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
+import { ModuleIcons } from "@/config/module-icons";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import { useCrudState } from "@/hooks/use-crud-state";
 
-// ─── Dialog/Drawer state types ───────────────────────────────────────────────
+import { BulkAdviserAssignDrawer } from "./bulk-adviser-assign-drawer";
+import { BulkStatusTransitionDialog } from "./bulk-status-transition-dialog";
+import { CancelSectionAlertDialog } from "./cancel-section-alert-dialog";
+import { ConflictPreviewDrawer } from "./conflict-preview-drawer";
+import { EmptyState } from "./empty-state";
+import { SectionFormDrawer } from "./section-form-drawer";
+import { SectionsCardView } from "./sections-card-view";
+import { SectionsContextBar } from "./sections-context-bar";
+import { SectionsSkeleton } from "./sections-skeleton";
+import { SectionsTable } from "./sections-table";
+import { SectionStatsStrip } from "./stats-bar";
+import { useSectionsDialogs } from "./hooks/use-sections-dialogs";
+import { useSectionSelection } from "./hooks/use-section-selection";
+import { searchParams, type QuickFilter } from "./searchParams";
 
-interface BulkTransitionState {
-  action: "open" | "cancel";
-  sectionIds: number[];
+export default function SectionsManagementPageV2() {
+  return (
+    <ManagementPageLayout
+      title="Class Sections"
+      description="Plan, schedule, and open class sections for the active term."
+      icon={<ModuleIcons.sections className="size-6 text-primary" />}
+      createNewItemButton={null}
+    >
+      <Suspense fallback={<SectionsSkeleton />}>
+        <SectionsPageContent />
+      </Suspense>
+    </ManagementPageLayout>
+  );
 }
-
-interface ConflictPreviewState {
-  sectionId: number;
-  sectionName: string;
-}
-
-// ─── Page Content (inside Suspense) ──────────────────────────────────────────
 
 function SectionsPageContent() {
   const [{ collegeId, view, quickFilter }, setParams] =
     useQueryStates(searchParams);
+  const { selectedAcademicTerm, selectedAcademicYear } = useEnrollmentContext();
+  const dialogs = useSectionsDialogs();
+  const selection = useSectionSelection();
 
-  const { selectedAcademicTerm } = useEnrollmentContext();
-  const queryClient = useQueryClient();
+  const noCollegeSelected = !collegeId;
+  const hasTerm = !!selectedAcademicTerm;
 
-  // ── Data queries ────────────────────────────────────────────────────────────
   const { data: stats } = useSuspenseQuery(
     getClassSectionsStatsOptions(
       collegeId ?? undefined,
@@ -73,7 +69,6 @@ function SectionsPageContent() {
     ),
   );
 
-  // ── CRUD state (edit / delete) ────────────────────────────────────────────
   const {
     isFormOpen,
     entityToEdit,
@@ -84,211 +79,122 @@ function SectionsPageContent() {
     handleDeleteDialogOpenChange: handleCancelDialogOpenChange,
   } = useCrudState<ClassSectionMinimal>();
 
-  // ── Single-section open mutation ──────────────────────────────────────────
-  const [openPendingId, setOpenPendingId] = useState<number | null>(null);
-  const openMutation = useMutation(
-    openClassSectionOptions(openPendingId ?? 0),
-  );
-
-  // ── Bulk mutations ────────────────────────────────────────────────────────
   const { mutateAsync: bulkOpen, isPending: isBulkOpenPending } = useMutation(
     bulkOpenSectionsMutationOptions(),
   );
   const { mutateAsync: bulkCancel, isPending: isBulkCancelPending } =
     useMutation(bulkCancelSectionsMutationOptions());
 
-  // ── Bulk transition dialog ────────────────────────────────────────────────
-  const [bulkTransitionState, setBulkTransitionState] =
-    useState<BulkTransitionState | null>(null);
-
-  // ── Bulk adviser drawer ───────────────────────────────────────────────────
-  const [adviserAssignState, setAdviserAssignState] = useState<{
-    sectionIds: number[];
-  } | null>(null);
-
-  // ── Conflict preview drawer ────────────────────────────────────────────────
-  const [conflictPreview, setConflictPreview] =
-    useState<ConflictPreviewState | null>(null);
-
-  // ── Handlers ──────────────────────────────────────────────────────────────
-
-  const handleOpenSection = useCallback(
-    async (section: ClassSectionMinimal) => {
-      setOpenPendingId(section.id);
-      try {
-        await openMutation.mutateAsync({});
-        await queryClient.invalidateQueries({ queryKey: ["sections"] });
-      } finally {
-        setOpenPendingId(null);
-      }
-    },
-    [openMutation, queryClient],
-  );
+  const handleBulkTransitionConfirm = useCallback(async () => {
+    if (dialogs.state.type === "bulk-open") {
+      await bulkOpen({ sectionIds: [...dialogs.state.sectionIds] });
+    } else if (dialogs.state.type === "bulk-cancel") {
+      await bulkCancel({ sectionIds: [...dialogs.state.sectionIds] });
+    }
+    dialogs.close();
+  }, [dialogs, bulkOpen, bulkCancel]);
 
   const handleViewDetails = useCallback((section: ClassSectionMinimal) => {
-    // Navigate to section detail page — placeholder for now
-    // In a real app: router.navigate({ to: "/scheduling/sections/$sectionId", params: { sectionId: section.id.toString() } });
+    // Navigate to section detail page — placeholder for now.
     console.info("Navigate to section detail:", section.id);
   }, []);
 
-  const handleViewConflicts = useCallback((section: ClassSectionMinimal) => {
-    setConflictPreview({ sectionId: section.id, sectionName: section.name });
-  }, []);
+  const handleViewConflicts = useCallback(
+    (section: ClassSectionMinimal) =>
+      dialogs.openViewConflicts(section.id, section.name),
+    [dialogs],
+  );
 
-  const handleBulkOpen = useCallback((sectionIds: number[]) => {
-    setBulkTransitionState({ action: "open", sectionIds });
-  }, []);
+  const handleQuickFilterChange = useCallback(
+    (filter: QuickFilter) => {
+      setParams({ quickFilter: filter });
+    },
+    [setParams],
+  );
 
-  const handleBulkCancel = useCallback((sectionIds: number[]) => {
-    setBulkTransitionState({ action: "cancel", sectionIds });
-  }, []);
-
-  const handleBulkAssignAdviser = useCallback((sectionIds: number[]) => {
-    setAdviserAssignState({ sectionIds });
-  }, []);
-
-  const handleBulkTransitionConfirm = async () => {
-    if (!bulkTransitionState) return;
-    const { action, sectionIds } = bulkTransitionState;
-    if (action === "open") {
-      await bulkOpen({ sectionIds });
-    } else {
-      await bulkCancel({ sectionIds });
-    }
-    setBulkTransitionState(null);
-  };
-
-  const handleQuickFilterChange = (filter: QuickFilter) => {
-    setParams({ quickFilter: filter });
-  };
-
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     setParams({ quickFilter: "all" });
-  };
+  }, [setParams]);
 
-  const handleViewChange = (v: string) => {
-    if (v === "card" || v === "table") {
-      setParams({ view: v });
-    }
-  };
+  const handleViewChange = useCallback(
+    (next: "card" | "table") => {
+      setParams({ view: next });
+    },
+    [setParams],
+  );
 
   const coursesWithSections = collegeData?.coursesWithClassSections ?? [];
   const collegeName = collegeData?.name ?? "";
-  const noCollegeSelected = !collegeId;
+  const showContent = !noCollegeSelected && hasTerm;
+  const currentView = view === "table" ? "table" : "card";
+
+  const bulkTransitionAction =
+    dialogs.state.type === "bulk-open"
+      ? "open"
+      : dialogs.state.type === "bulk-cancel"
+        ? "cancel"
+        : null;
+  const bulkTransitionCount =
+    dialogs.state.type === "bulk-open" || dialogs.state.type === "bulk-cancel"
+      ? dialogs.state.sectionIds.length
+      : 0;
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* ── Top bar: College selector ── */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <CollegeSelector />
-        {selectedAcademicTerm && (
-          <span className="text-sm text-muted-foreground">
-            {selectedAcademicTerm.termName}
-          </span>
-        )}
-      </div>
+    <div className="flex flex-col gap-4">
+      <SectionsContextBar
+        view={currentView}
+        onViewChange={handleViewChange}
+        academicTerm={
+          selectedAcademicTerm
+            ? {
+                termName: selectedAcademicTerm.termName,
+                termNumber: selectedAcademicTerm.termNumber,
+                academicYearTitle: selectedAcademicYear?.academicYearTitle,
+              }
+            : null
+        }
+      />
 
-      {/* ── No academic term warning ── */}
-      {!selectedAcademicTerm && (
-        <Alert variant="destructive">
-          <AlertCircle className="size-4" />
-          <AlertTitle>Academic Term Not Selected</AlertTitle>
-          <AlertDescription>
-            Please select an academic year and term to view class sections.
-          </AlertDescription>
-        </Alert>
-      )}
+      {noCollegeSelected && <EmptyState variant="no-college" />}
 
-      {/* ── Stats bar ── */}
-      {!noCollegeSelected && selectedAcademicTerm && (
-        <StatsBar
+      {!noCollegeSelected && hasTerm && (
+        <SectionStatsStrip
           stats={stats ?? {}}
           activeFilter={quickFilter as QuickFilter}
           onFilterChange={handleQuickFilterChange}
         />
       )}
 
-      {/* ── No college selected ── */}
-      {noCollegeSelected && <EmptyState variant="no-college" />}
-
-      {/* ── Content area (college selected) ── */}
-      {!noCollegeSelected && selectedAcademicTerm && (
+      {showContent && (
         <>
-          {/* Toolbar row: view toggle + quick filters */}
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            {/* View toggle */}
-            <ToggleGroup
-              type="single"
-              value={view}
-              onValueChange={handleViewChange}
-              className="h-8"
-            >
-              <ToggleGroupItem
-                value="card"
-                aria-label="Card view"
-                className="h-8 gap-1.5 text-xs px-3"
-              >
-                <LayoutGrid className="size-3.5" />
-                Cards
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="table"
-                aria-label="Table view"
-                className="h-8 gap-1.5 text-xs px-3"
-              >
-                <TableIcon className="size-3.5" />
-                Table
-              </ToggleGroupItem>
-            </ToggleGroup>
-
-            {/* Quick filters */}
-            <QuickFilters
-              activeFilter={quickFilter as QuickFilter}
-              onFilterChange={handleQuickFilterChange}
-            />
-          </div>
-
-          {/* ── Card view ── */}
-          {view === "card" && (
+          {currentView === "card" && (
             <SectionsCardView
               coursesWithSections={coursesWithSections}
               collegeName={collegeName}
               quickFilter={quickFilter as QuickFilter}
+              selection={selection}
               onClearFilters={handleClearFilters}
-              onOpenSection={handleOpenSection}
               onCancelSection={handleCancelSection}
               onViewDetails={handleViewDetails}
               onChangeAdviser={handleEdit}
               onViewConflicts={handleViewConflicts}
-              onBulkOpen={handleBulkOpen}
-              onBulkCancel={handleBulkCancel}
-              onBulkAssignAdviser={handleBulkAssignAdviser}
-              openSectionPendingId={openPendingId}
             />
           )}
 
-          {/* ── Table view ── */}
-          {view === "table" && (
+          {currentView === "table" && (
             <SectionsTable
               coursesWithSections={coursesWithSections}
               quickFilter={quickFilter as QuickFilter}
+              selection={selection}
               onClearFilters={handleClearFilters}
-              onOpenSection={handleOpenSection}
               onCancelSection={handleCancelSection}
               onViewDetails={handleViewDetails}
               onViewConflicts={handleViewConflicts}
-              onBulkOpen={handleBulkOpen}
-              onBulkCancel={handleBulkCancel}
-              onBulkAssignAdviser={handleBulkAssignAdviser}
-              openSectionPendingId={openPendingId}
             />
           )}
         </>
       )}
 
-      {/* ── Dialogs & Drawers ── */}
-
-      {/* Edit section drawer */}
       <SectionFormDrawer
         key={entityToEdit?.id ?? "new"}
         isOpen={isFormOpen}
@@ -296,70 +202,52 @@ function SectionsPageContent() {
         sectionToUpdate={entityToEdit}
       />
 
-      {/* Cancel single section */}
       <CancelSectionAlertDialog
         sectionToCancel={sectionToCancel}
         isOpen={!!sectionToCancel}
         onOpenChange={handleCancelDialogOpenChange}
       />
 
-      {/* Bulk transition dialog */}
-      {bulkTransitionState && (
+      {bulkTransitionAction && (
         <BulkStatusTransitionDialog
-          isOpen={!!bulkTransitionState}
+          isOpen
           onOpenChange={(open) => {
-            if (!open) setBulkTransitionState(null);
+            if (!open) dialogs.close();
           }}
-          action={bulkTransitionState.action}
-          sectionCount={bulkTransitionState.sectionIds.length}
+          action={bulkTransitionAction}
+          sectionCount={bulkTransitionCount}
           onConfirm={handleBulkTransitionConfirm}
           isPending={isBulkOpenPending || isBulkCancelPending}
         />
       )}
 
-      {/* Bulk adviser assignment */}
-      {adviserAssignState && (
+      {dialogs.state.type === "bulk-assign-adviser" && (
         <BulkAdviserAssignDrawer
-          isOpen={!!adviserAssignState}
+          isOpen
           onOpenChange={(open) => {
-            if (!open) setAdviserAssignState(null);
+            if (!open) dialogs.close();
           }}
-          sectionIds={adviserAssignState.sectionIds}
-          onSuccess={() => setAdviserAssignState(null)}
+          sectionIds={[...dialogs.state.sectionIds]}
+          onSuccess={dialogs.close}
         />
       )}
 
-      {/* Conflict preview */}
       <ConflictPreviewDrawer
-        sectionId={conflictPreview?.sectionId ?? null}
-        sectionName={conflictPreview?.sectionName ?? ""}
-        isOpen={!!conflictPreview}
+        sectionId={
+          dialogs.state.type === "view-conflicts"
+            ? dialogs.state.sectionId
+            : null
+        }
+        sectionName={
+          dialogs.state.type === "view-conflicts"
+            ? dialogs.state.sectionName
+            : ""
+        }
+        isOpen={dialogs.state.type === "view-conflicts"}
         onOpenChange={(open) => {
-          if (!open) setConflictPreview(null);
+          if (!open) dialogs.close();
         }}
       />
     </div>
-  );
-}
-
-// ─── Page Root ────────────────────────────────────────────────────────────────
-
-export default function SectionsManagementPageV2() {
-  return (
-    <ManagementPageLayout
-      title="Class Sections"
-      description="Manage scheduling for class sections by college and course"
-      icon={<ModuleIcons.sections />}
-      createNewItemButton={
-        <Button variant="outline" size="sm" disabled className="gap-1.5">
-          <Plus className="size-4" />
-          Bulk Initialize
-        </Button>
-      }
-    >
-      <Suspense fallback={<SectionsSkeleton />}>
-        <SectionsPageContent />
-      </Suspense>
-    </ManagementPageLayout>
   );
 }
