@@ -8,7 +8,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useMsal } from "@azure/msal-react";
 import { getAcademicYearTimeLineWindowOptions } from "@/api/collections/academic-year-collection";
 import { useQueryState } from "nuqs";
-import { ACADEMIC_YEAR_QUERY_KEY } from "@/constants/global-query-strings";
+import {
+  ACADEMIC_YEAR_QUERY_KEY,
+  ACADEMIC_TERM_QUERY_KEY,
+} from "@/constants/global-query-strings";
 import { getAcademicCoreSettingsQueryOptions } from "@/api/collections/academic-settings-collection";
 
 export const EnrollmentContextProvider = ({
@@ -26,6 +29,18 @@ export const EnrollmentContextProvider = ({
       return value;
     },
     serialize: (value) => value ?? "",
+    defaultValue: null,
+    clearOnDefault: true,
+    shallow: false,
+    eq: (a, b) => (!a && !b) || a === b,
+  });
+
+  const [selectedAcademicTermId, setSelectedAcademicTermId] = useQueryState<
+    number | null
+  >(ACADEMIC_TERM_QUERY_KEY, {
+    parse: (value) => {
+      return parseInt(value, 10) || null;
+    },
     defaultValue: null,
     clearOnDefault: true,
     shallow: false,
@@ -66,11 +81,17 @@ export const EnrollmentContextProvider = ({
       setSelectedAcademicYearSlug(
         academicYearTimelineWindow.current.academicYearSlug,
       );
+
+      // Default academic term to the first term of the current academic year if none is set
+      setSelectedAcademicTermId(
+        academicYearTimelineWindow.current.academicTerms?.[0]?.id ?? null,
+      );
     }
   }, [
     academicYearTimelineWindow,
     selectedAcademicYearSlug,
     setSelectedAcademicYearSlug,
+    setSelectedAcademicTermId,
   ]);
 
   const selectedAcademicYear = React.useMemo(() => {
@@ -81,6 +102,18 @@ export const EnrollmentContextProvider = ({
     );
   }, [academicYears, selectedAcademicYearSlug]);
 
+  const selectedAcademicTerm = React.useMemo(() => {
+    if (!selectedAcademicYear || !selectedAcademicYear.academicTerms) {
+      return null;
+    }
+
+    return (
+      selectedAcademicYear.academicTerms.find(
+        (t) => t.id === selectedAcademicTermId,
+      ) ?? null
+    );
+  }, [selectedAcademicYear, selectedAcademicTermId]);
+
   const contextValue = React.useMemo<EnrollmentContextValue>(
     () => ({
       academicCoreSettings:
@@ -89,7 +122,9 @@ export const EnrollmentContextProvider = ({
       academicYears,
       selectedAcademicYearSlug: selectedAcademicYearSlug,
       selectedAcademicYear,
+      selectedAcademicTerm: selectedAcademicTerm,
       setSelectedAcademicYearSlug: setSelectedAcademicYearSlug,
+      setSelectedAcademicTermId: setSelectedAcademicTermId,
     }),
     [
       academicSettings,
@@ -97,7 +132,9 @@ export const EnrollmentContextProvider = ({
       academicYears,
       selectedAcademicYearSlug,
       selectedAcademicYear,
+      selectedAcademicTerm,
       setSelectedAcademicYearSlug,
+      setSelectedAcademicTermId,
     ],
   );
 

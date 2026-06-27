@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { ACADEMIC_TERM_SYSTEMS } from "@/constants/academic-term-systems";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
+import { formatDate } from "@/lib/format";
 import {
   CalendarClock,
   CalendarDays,
@@ -31,26 +32,42 @@ export function EnrollmentContextDialog() {
     activeAcademicYear,
     selectedAcademicYear,
     selectedAcademicYearSlug,
+    selectedAcademicTerm,
     academicCoreSettings: { academicTermSystem },
     setSelectedAcademicYearSlug,
+    setSelectedAcademicTermId,
   } = useEnrollmentContext();
 
   const termSystemName =
     ACADEMIC_TERM_SYSTEMS[academicTermSystem] || "Unknown Term System";
 
-  const [localSlug, setLocalSlug] = React.useState<string>(
+  const [academicYearSlug, setAcademicYearSlug] = React.useState<string>(
     selectedAcademicYearSlug ?? "",
   );
+
+  const [academicTermId, setAcademicTermId] = React.useState<number | null>(
+    selectedAcademicTerm?.id ?? null,
+  );
+
+  const localSelectedAcademicYear = React.useMemo(
+    () =>
+      academicYears.find((y) => y.academicYearSlug === academicYearSlug) ??
+      null,
+    [academicYears, academicYearSlug],
+  );
+
   const [open, setOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (open) {
-      setLocalSlug(selectedAcademicYearSlug ?? "");
+      setAcademicYearSlug(selectedAcademicYearSlug ?? "");
+      setAcademicTermId(selectedAcademicTerm?.id ?? null);
     }
-  }, [open, selectedAcademicYearSlug]);
+  }, [open, selectedAcademicYearSlug, selectedAcademicTerm]);
 
   const handleSave = () => {
-    setSelectedAcademicYearSlug(localSlug || null);
+    setSelectedAcademicYearSlug(academicYearSlug || null);
+    setSelectedAcademicTermId(academicTermId || null);
     setOpen(false);
   };
 
@@ -58,6 +75,9 @@ export function EnrollmentContextDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <Button variant="link" size="sm" onClick={() => setOpen(true)}>
         {selectedAcademicYear?.academicYearTitle ?? "Select academic year"}{" "}
+        {selectedAcademicTerm?.termName
+          ? `(${selectedAcademicTerm.termName})`
+          : ""}
         <Edit2Icon className="size-3.5" />
       </Button>
 
@@ -156,7 +176,25 @@ export function EnrollmentContextDialog() {
               </div>
             </div>
 
-            <Select value={localSlug} onValueChange={setLocalSlug}>
+            <Select
+              value={academicYearSlug}
+              onValueChange={(slug) => {
+                setAcademicYearSlug(slug);
+                const year = academicYears.find(
+                  (y) => y.academicYearSlug === slug,
+                );
+                if (year?.academicTerms?.length) {
+                  const termExists = year.academicTerms.some(
+                    (t) => t.id === academicTermId,
+                  );
+                  setAcademicTermId(
+                    termExists ? academicTermId : year.academicTerms[0].id,
+                  );
+                } else {
+                  setAcademicTermId(null);
+                }
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select an academic year…" />
               </SelectTrigger>
@@ -171,13 +209,59 @@ export function EnrollmentContextDialog() {
               </SelectContent>
             </Select>
           </section>
+
+          {/* Dashed divider */}
+          <div className="relative pb-2">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-dashed" />
+            </div>
+          </div>
+
+          {/* Change academic term form section */}
+          <section className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
+                <CalendarRange className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold leading-none">
+                  Change Academic Term
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Select the term you want to work in
+                </p>
+              </div>
+            </div>
+
+            <Select
+              value={academicTermId?.toString() || ""}
+              onValueChange={(value) =>
+                setAcademicTermId(value ? parseInt(value) : null)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select an academic term…" />
+              </SelectTrigger>
+              <SelectContent>
+                {localSelectedAcademicYear?.academicTerms?.map((term) => (
+                  <SelectItem key={term.id} value={term.id.toString()}>
+                    {term.termName} ({formatDate(term.startDate)} -{" "}
+                    {formatDate(term.endDate)})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </section>
         </div>
 
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button onClick={handleSave} disabled={!localSlug}>
+          <Button
+            onClick={handleSave}
+            disabled={!academicYearSlug || !academicTermId}
+          >
             Apply
           </Button>
         </DialogFooter>

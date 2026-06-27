@@ -1,5 +1,5 @@
 import type { AcademicCoreSettings } from "@/api/models/academic-core-settings";
-import type { AcademicYear } from "@/api/models/academic-year";
+import type { AcademicTerm, AcademicYear } from "@/api/models/academic-year";
 import React from "react";
 
 export interface EnrollmentContextValue {
@@ -8,7 +8,9 @@ export interface EnrollmentContextValue {
   academicYears: AcademicYear[];
   selectedAcademicYearSlug?: string;
   selectedAcademicYear: AcademicYear | null;
+  selectedAcademicTerm: AcademicTerm | null;
   setSelectedAcademicYearSlug: (slug: string | null) => void;
+  setSelectedAcademicTermId: (id: number | null) => void;
 }
 
 export const defaultEnrollmentContextValue: EnrollmentContextValue = {
@@ -21,7 +23,9 @@ export const defaultEnrollmentContextValue: EnrollmentContextValue = {
   academicYears: [],
   selectedAcademicYearSlug: undefined,
   selectedAcademicYear: null,
+  selectedAcademicTerm: null,
   setSelectedAcademicYearSlug: () => {},
+  setSelectedAcademicTermId: () => {},
 };
 
 export const EnrollmentContext = React.createContext<EnrollmentContextValue>(
