@@ -8,6 +8,7 @@ import {
   ClassSectionSchema,
   ClassSectionWithOfferingsSchema,
   CollegeCoursesWithClassSectionsSchema,
+  type BulkStateChangeClassSectionsResult,
   type ClassSection,
   type ClassSectionWithOfferings,
   type CollegeCoursesWithClassSections,
@@ -44,15 +45,26 @@ const queryKeys = {
     sectionId,
     action,
   ],
-  collegeCoursesClassSchedulingStats: (collegeId: number) => [
+  collegeCoursesClassSchedulingStats: (collegeId?: number) => [
     ...queryKeys.base(),
     "collegeCoursesClassSchedulingStats",
-    collegeId,
+    collegeId ?? 0,
   ],
   collegeCoursesWithClassSectionsForScheduling: (collegeId: number) => [
     ...queryKeys.base(),
     "collegeCoursesWithClassSectionsForScheduling",
     collegeId,
+  ],
+  bulkOpen: () => [...queryKeys.base(), "open-class-sections"],
+  bulkCancel: () => [...queryKeys.base(), "cancel-class-sections"],
+  bulkAssignAdviser: () => [
+    ...queryKeys.base(),
+    "assign-adviser-class-sections",
+  ],
+  offerings: (sectionId: number) => [
+    ...queryKeys.base(),
+    "class-section-subject-offerings",
+    sectionId,
   ],
 };
 
@@ -132,6 +144,24 @@ export const filterClassSectionsPaginatedOptions = (
     },
   });
 };
+
+export const getOfferingDetailsForClassSectionOptions = (sectionId: number) =>
+  createQueryOptions({
+    path: "/api/scheduling/class-sections/{sectionId}/subject-offerings",
+    pathParams: { sectionId },
+    options: {
+      enabled: !!sectionId,
+      queryKey: queryKeys.offerings(sectionId),
+      staleTime: 1000 * 60 * 5,
+      select: () => {
+        // Mock response: return empty offering details
+        return {
+          offerings: [],
+          conflicts: [],
+        };
+      },
+    },
+  });
 
 export const getSectionWithOfferingsOptions = (sectionId: number) =>
   createQueryOptions({
@@ -242,10 +272,10 @@ export const cancelClassSectionOptions = (sectionId: number) =>
     },
   });
 
-export const getClassSectionsStatsOptions = (collegeId: number) =>
+export const getClassSectionsStatsOptions = (collegeId?: number) =>
   createQueryOptions({
     path: "/api/scheduling/colleges/{collegeId}/stats",
-    pathParams: { collegeId },
+    pathParams: { collegeId: collegeId ?? 0 },
     options: {
       enabled: !!collegeId,
       queryKey: queryKeys.collegeCoursesClassSchedulingStats(collegeId),
@@ -256,7 +286,9 @@ export const getClassSectionsStatsOptions = (collegeId: number) =>
     },
   });
 
-export const getClassSectionsListOptions = (collegeId: number) =>
+export const getCollegeCoursesWithClassSectionsForSchedulingOptions = (
+  collegeId: number,
+) =>
   createQueryOptions({
     path: "/api/scheduling/colleges/{collegeId}/class-sections",
     pathParams: { collegeId },
@@ -267,6 +299,71 @@ export const getClassSectionsListOptions = (collegeId: number) =>
       staleTime: 1000 * 60 * 5,
       select: (data): CollegeCoursesWithClassSections => {
         return CollegeCoursesWithClassSectionsSchema.parse(data);
+      },
+    },
+  });
+
+export const bulkOpenSectionsMutationOptions = () =>
+  createMutationOptions({
+    httpVerb: "post",
+    path: "/api/scheduling/class-sections/bulk/open",
+    mutationKey: queryKeys.bulkOpen(),
+    options: {
+      meta: { invalidateQueries: [queryKeys.base()] },
+      onSuccess: (data) => {
+        const result = data as BulkStateChangeClassSectionsResult;
+        if (result.status === "Success") {
+          toast.success("All sections opened for enrollment");
+        } else if (result.status === "PartialSuccess") {
+          toast.warning(
+            `${result.succeeded} of ${result.totalRequested} sections opened`,
+            {
+              description: `${result.failed} section(s) failed. Check action history for details.`,
+            },
+          );
+        } else {
+          toast.error("Failed to open any sections");
+        }
+      },
+      onError: (error) => {
+        toast.error("Failed to open sections");
+        console.error(error);
+      },
+    },
+  });
+
+export const bulkCancelSectionsMutationOptions = () =>
+  createMutationOptions({
+    httpVerb: "post",
+    path: "/api/scheduling/class-sections/bulk/cancel",
+    mutationKey: queryKeys.bulkCancel(),
+    options: {
+      meta: { invalidateQueries: [queryKeys.base()] },
+      onSuccess: () => {
+        toast.success("Sections cancelled");
+        queryKeys.base();
+      },
+      onError: (error: unknown) => {
+        toast.error("Failed to cancel sections");
+        console.error(error);
+      },
+    },
+  });
+
+export const bulkAssignAdviserMutationOptions = () =>
+  createMutationOptions({
+    httpVerb: "post",
+    path: "/api/scheduling/class-sections/bulk/assign-adviser",
+    mutationKey: queryKeys.bulkAssignAdviser(),
+    options: {
+      meta: { invalidateQueries: [queryKeys.base()] },
+      onSuccess: () => {
+        toast.success("Adviser assigned to sections");
+        queryKeys.base();
+      },
+      onError: (error: unknown) => {
+        toast.error("Failed to assign adviser");
+        console.error(error);
       },
     },
   });

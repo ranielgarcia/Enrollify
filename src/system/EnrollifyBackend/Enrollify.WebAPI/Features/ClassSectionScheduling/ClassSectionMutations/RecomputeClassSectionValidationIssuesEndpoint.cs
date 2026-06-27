@@ -2,6 +2,7 @@ using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSectionValidationIssues;
 using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
+using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
 
 namespace Enrollify.WebAPI.Features.ClassSectionScheduling.ClassSectionMutations;
 
@@ -24,10 +25,10 @@ public class
   {
     int id = Route<int>("id");
 
-    Result<List<ClassSectionValidationIssueDto>> result = await _mediator.Send(
+    Result<List<ClassSectionValidationIssue>> result = await _mediator.Send(
       new ComputeAndGetValidationIssuesForClassSection.Command(ClassSectionId.From(id)),
       cancellationToken);
 
-    return result.ToGetByIdResult(dto => dto);
+    return result.ToGetByIdResult(dto => dto.Select(ClassSectionValidationIssueDto.FromEntity).ToList());
   }
 }

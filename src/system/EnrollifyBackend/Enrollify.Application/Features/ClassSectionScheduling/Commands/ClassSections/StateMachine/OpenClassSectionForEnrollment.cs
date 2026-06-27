@@ -1,6 +1,7 @@
 using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSectionValidationIssues;
 using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
+using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections.StateMachine;
 
@@ -66,7 +67,7 @@ public static class OpenClassSectionForEnrollment
 
     private async Task<bool> HasValidationIssues(ClassSectionId sectionId, CancellationToken cancellationToken)
     {
-      Result<List<ClassSectionValidationIssueDto>> validationIssues =
+      Result<List<ClassSectionValidationIssue>> validationIssues =
         await _mediator.Send(new ComputeAndGetValidationIssuesForClassSection.Command(sectionId),
           cancellationToken);
       return validationIssues.IsSuccess && validationIssues.Value

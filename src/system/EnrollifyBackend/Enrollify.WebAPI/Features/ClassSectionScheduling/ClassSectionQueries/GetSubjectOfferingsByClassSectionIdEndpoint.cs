@@ -10,7 +10,7 @@ namespace Enrollify.WebAPI.Features.ClassSectionScheduling.ClassSectionQueries;
 [Authorize(Policy = PolicyName.HasViewClassSectionsPermission)]
 public class
   GetSubjectOfferingsByClassSectionIdEndpoint : EndpointWithoutRequest<
-  OkOrNotFoundApiResult<List<ClassSectionSubjectOfferingDto>>>
+  List<ClassSectionSubjectOfferingDto>>
 {
   private readonly IMediator _mediator;
 
@@ -19,7 +19,7 @@ public class
     _mediator = mediator;
   }
 
-  public override async Task<OkOrNotFoundApiResult<List<ClassSectionSubjectOfferingDto>>> ExecuteAsync(
+  public override async Task<List<ClassSectionSubjectOfferingDto>> ExecuteAsync(
     CancellationToken cancellationToken)
   {
     int sectionId = Route<int>("sectionId");
@@ -28,6 +28,6 @@ public class
       new GetSubjectOfferingsByClassSectionIdQuery(ClassSectionId.From(sectionId)),
       cancellationToken);
 
-    return result.ToGetByIdResult(dto => dto);
+    return result.Value;
   }
 }

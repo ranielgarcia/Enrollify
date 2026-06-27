@@ -11,9 +11,9 @@ namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSe
 public static class ComputeAndGetValidationIssuesForClassSection
 {
   public sealed record Command(
-    ClassSectionId ClassSectionId) : IRequest<Result<List<ClassSectionValidationIssueDto>>>;
+    ClassSectionId ClassSectionId) : IRequest<Result<List<ClassSectionValidationIssue>>>;
 
-  public sealed class Handler : IRequestHandler<Command, Result<List<ClassSectionValidationIssueDto>>>
+  public sealed class Handler : IRequestHandler<Command, Result<List<ClassSectionValidationIssue>>>
   {
     private readonly IReadRepository<ClassSectionSubjectOffering> _offeringReadRepository;
     private readonly ClassScheduleConflictDetector _conflictDetector;
@@ -44,7 +44,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
       _logger = logger;
     }
 
-    public async Task<Result<List<ClassSectionValidationIssueDto>>> Handle(Command request,
+    public async Task<Result<List<ClassSectionValidationIssue>>> Handle(Command request,
       CancellationToken cancellationToken)
     {
       ClassSectionId classSectionId = request.ClassSectionId;
@@ -117,7 +117,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
         "Computed {ConflictIssueCount} conflict validation issues and {DataIntegrityIssueCount} data integrity validation issues for class section {ClassSectionId}",
         conflictValidationIssues.Count, dataIntegrityValidationIssues.Count, section.Id.Value);
 
-      return Result.Success(validationIssues.Select(ClassSectionValidationIssueDto.FromEntity).ToList());
+      return Result.Success(validationIssues);
     }
   }
 }

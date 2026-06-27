@@ -140,3 +140,15 @@ export const CollegeCoursesWithClassSectionsSchema = z.object({
 export type CollegeCoursesWithClassSections = z.infer<
   typeof CollegeCoursesWithClassSectionsSchema
 >;
+
+export const BulkStateChangeClassSectionsResultSchema = z.object({
+  status: z.enum(["Success", "PartialSuccess", "Failed"]),
+  totalRequested: z.number(),
+  succeeded: z.number(),
+  failed: z.number(),
+  errors: z.record(z.string(), z.string()),
+});
+
+export type BulkStateChangeClassSectionsResult = z.infer<
+  typeof BulkStateChangeClassSectionsResultSchema
+>;

@@ -1,8 +1,7 @@
 import {
   getClassSectionsStatsOptions,
   filterClassSectionsPaginatedOptions,
-} from "@/api/collections/class-section-collection-v2";
-import type { ClassSectionV2 } from "@/api/models/class-section-v2";
+} from "@/api/collections/class-section-collection";
 import { Button } from "@/components/ui/button";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
@@ -18,6 +17,7 @@ import { SectionsTable } from "./sections-table";
 import { SectionFormDrawer } from "./section-form-drawer";
 import { DeleteSectionAlertDialog } from "./delete-section-alert-dialog";
 import { SectionsSkeleton } from "./sections-skeleton";
+import type { ClassSection } from "@/api/models/class-section";
 
 function SectionsPageContent() {
   const [{ collegeId, page, perPage, filters, sort, joinOperator }] =
@@ -31,20 +31,20 @@ function SectionsPageContent() {
     handleDelete,
     handleFormOpenChange,
     handleDeleteDialogOpenChange,
-  } = useCrudState<ClassSectionV2>();
+  } = useCrudState<ClassSection>();
 
   const currentPage = page ? Number(page) : 1;
   const currentPageSize = perPage ? Number(perPage) : 10;
 
   // Stats query (for selected college only)
   const { data: stats } = useSuspenseQuery(
-    getClassSectionsStatsOptions(collegeId),
+    getClassSectionsStatsOptions(undefined),
   );
 
   // Sections list query (paginated, with filters)
   const { data: pagedSections } = useSuspenseQuery(
     filterClassSectionsPaginatedOptions(
-      collegeId,
+      0,
       currentPage,
       currentPageSize,
       filters,
