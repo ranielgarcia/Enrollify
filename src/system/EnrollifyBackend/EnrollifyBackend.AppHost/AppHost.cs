@@ -5,7 +5,8 @@ var sqlPassword = builder.AddParameter("sql-password", value: "YourStrongPasswor
 // WithDataVolume() = a convenience method provided by Aspire for resources that have a well-known data directory (e.g., SQL Server, PostgreSQL).
 // WithVolume() = a generic Docker volume mount that you can use with any container.
 var sql = builder.AddSqlServer("sql", port: 59480, password: sqlPassword)
-  .WithDataVolume(name: "enrollify-sql-data");
+  .WithDataVolume(name: "enrollify-sql-data")
+  .WithLifetime(ContainerLifetime.Persistent);
 
 var db = sql.AddDatabase("appdb", databaseName: "enrollify-db");
 
@@ -15,7 +16,8 @@ var azurite = builder.AddContainer(
   .WithVolume("enrollify-azurite-data", "/data")
   .WithEndpoint(10000, 10000, "blob")
   .WithEndpoint(10001, 10001, "queue")
-  .WithEndpoint(10002, 10002, "table");
+  .WithEndpoint(10002, 10002, "table")
+  .WithLifetime(ContainerLifetime.Persistent);
 
 var storageConnectionString =
   "DefaultEndpointsProtocol=http;" +
@@ -26,7 +28,8 @@ var storageConnectionString =
   "TableEndpoint=http://localhost:10002/devstoreaccount1;";
 
 var webapi = builder.AddProject<Projects.Enrollify_WebAPI>("enrollify-webapi", "https")
-  .WithReference(db).WaitForStart(db)
+  .WithReference(db)
+  .WaitForStart(db)
   .WaitForStart(azurite)
   .WithEnvironment(
     "ConnectionStrings__DefaultConnection",
