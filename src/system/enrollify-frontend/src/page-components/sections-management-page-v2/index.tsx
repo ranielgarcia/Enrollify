@@ -275,6 +275,12 @@ function SectionsPageContent({
             if (!open) dialogs.close();
           }}
           sectionIds={[...dialogs.state.sectionIds]}
+          sectionNames={dialogs.state.sectionIds.map((id) => {
+            const section = coursesWithSections
+              .flatMap((c) => c.classSections ?? [])
+              .find((s) => s.id === id);
+            return section?.fullName ?? `Section ${id}`;
+          })}
           onSuccess={dialogs.close}
         />
       )}

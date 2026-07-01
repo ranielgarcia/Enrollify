@@ -55,12 +55,18 @@ public class ComputeAndGetDataQualityValidationIssuesForClassSections
       List<ClassSectionSubjectOffering> offerings = await _offeringReadRepository.ListAsync(
         new GetClassSectionSubjectOfferingsByClassSectionIdSpec(request.ClassSectionIds), cancellationToken);
 
+      Dictionary<ClassSectionId, List<ClassSectionSubjectOffering>> offeringsBySectionId =
+        offerings.GroupBy(o => o.ClassSectionId)
+          .ToDictionary(g => g.Key, g => g.ToList());
+
       ConcurrentBag<ClassSectionValidationIssue> allDataIntegrityValidationIssues = new();
 
       Parallel.ForEach(sections, section =>
       {
+        offeringsBySectionId.TryGetValue(section.Id, out List<ClassSectionSubjectOffering> offeringsForSection);
+
         List<ClassSectionDataIntegrityResult> results =
-          _dataIntegrityValidator.Validate(section, offerings);
+          _dataIntegrityValidator.Validate(section, offeringsForSection);
 
         foreach (var result in results)
         {

@@ -1,22 +1,32 @@
 import { useQuery } from "@tanstack/react-query";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   Drawer,
   DrawerContent,
+  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getOfferingDetailsForClassSectionOptions } from "@/api/collections/class-section-collection";
 import type { Offering } from "@/api/models/class-scheduling/offering";
 import {
   AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Siren,
   BookOpen,
+  CheckCircle2,
+  ChevronDown,
+  Clock,
   DoorOpen,
+  Map,
+  Siren,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -73,8 +83,7 @@ function ConflictItem({
           {conflict.DayOfWeek && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
               <Clock className="size-3" />
-              {conflict.DayOfWeek}{" "}
-              {conflict.startTime?.substring(0, 5)}–
+              {conflict.DayOfWeek} {conflict.startTime?.substring(0, 5)}–
               {conflict.endTime?.substring(0, 5)}
             </div>
           )}
@@ -94,9 +103,7 @@ function ConflictItem({
                 className="flex items-center gap-2 text-xs rounded border bg-background px-2 py-1.5"
               >
                 <BookOpen className="size-3 text-muted-foreground shrink-0" />
-                <span className="font-medium">
-                  {co.subject.code}
-                </span>
+                <span className="font-medium">{co.subject.code}</span>
                 <span className="text-muted-foreground">
                   {co.subject.title}
                 </span>
@@ -121,32 +128,35 @@ function ConflictItem({
 
 function OfferingConflictSection({ offering }: { offering: Offering }) {
   const hasConflicts = (offering.conflicts?.length ?? 0) > 0;
-  const subjectLabel = offering.snapshotSubjectCode ?? `Offering #${offering.id}`;
+  const subjectLabel =
+    offering.snapshotSubjectCode ?? `Offering #${offering.id}`;
+  const conflictCount = offering.conflicts?.length ?? 0;
 
   if (!hasConflicts) return null;
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <BookOpen className="size-4 text-muted-foreground" />
-        <span className="text-sm font-semibold">{subjectLabel}</span>
+    <Collapsible defaultOpen>
+      <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 text-sm transition-colors hover:bg-muted/50 [&[data-state=closed]>svg:first-child]:-rotate-90 [&[data-state=open]>svg:first-child]:rotate-0">
+        <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform" />
+        <BookOpen className="size-4 shrink-0 text-muted-foreground" />
+        <span className="font-semibold">{subjectLabel}</span>
         {offering.snapshotSubjectTitle && (
           <span className="text-xs text-muted-foreground">
             — {offering.snapshotSubjectTitle}
           </span>
         )}
-        <Badge variant="destructive" className="text-xs ml-auto">
-          {offering.conflicts?.length}{" "}
-          {(offering.conflicts?.length ?? 0) === 1 ? "conflict" : "conflicts"}
+        <Badge variant="destructive" className="ml-auto text-xs">
+          {conflictCount} {conflictCount === 1 ? "conflict" : "conflicts"}
         </Badge>
-      </div>
-
-      <div className="space-y-2 pl-4">
-        {offering.conflicts?.map((conflict, idx) => (
-          <ConflictItem key={conflict.id ?? idx} conflict={conflict} />
-        ))}
-      </div>
-    </div>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="mt-2 space-y-2">
+          {offering.conflicts?.map((conflict, idx) => (
+            <ConflictItem key={conflict.id ?? idx} conflict={conflict} />
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
@@ -209,6 +219,17 @@ export function ConflictPreviewDrawer({
             </div>
           ) : (
             <>
+              {errorConflicts > 0 && (
+                <Alert variant="destructive">
+                  <AlertTitle>Cannot open for enrollment</AlertTitle>
+                  <AlertDescription>
+                    {errorConflicts} Error-severity conflict
+                    {errorConflicts !== 1 ? "s" : ""} must be resolved in the
+                    Room Scheduler before this section can be opened.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {/* Summary */}
               <div className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3">
                 <div className="flex items-center gap-2 text-sm">
@@ -241,20 +262,22 @@ export function ConflictPreviewDrawer({
                   />
                 ))}
               </div>
-
-              {errorConflicts > 0 && (
-                <div className="rounded-lg border border-rose-200 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/20 p-3 text-sm text-rose-700 dark:text-rose-400">
-                  <span className="font-medium">
-                    Cannot open for enrollment:
-                  </span>{" "}
-                  {errorConflicts} Error-severity conflict
-                  {errorConflicts !== 1 ? "s" : ""} must be resolved in the
-                  Room Scheduler before this section can be opened.
-                </div>
-              )}
             </>
           )}
         </div>
+
+        <DrawerFooter className="border-t pt-4">
+          <Button
+            variant="outline"
+            onClick={() => {
+              // stub: navigation to room scheduler TBD
+            }}
+            className="w-full gap-2"
+          >
+            <Map className="size-4" />
+            Open Room Scheduler
+          </Button>
+        </DrawerFooter>
       </DrawerContent>
     </Drawer>
   );

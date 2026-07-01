@@ -67,17 +67,13 @@ export function SectionFormDrawer({
         direction="right"
         dismissible={!isPending}
       >
-        <DrawerContent className="data-[vaul-drawer-direction=right]:w-[440px] data-[vaul-drawer-direction=right]:sm:max-w-none h-full overflow-y-auto overflow-x-hidden">
+        <DrawerContent className="data-[vaul-drawer-direction=right]:w-[480px] data-[vaul-drawer-direction=right]:sm:max-w-none h-full overflow-y-auto overflow-x-hidden">
           <DrawerHeader className="border-b pb-4">
             <DrawerTitle>
-              {isUpdating
-                ? `Edit "${sectionToUpdate.name}"`
-                : "Section"}
+              {`Edit "${sectionToUpdate?.name ?? "Section"}"`}
             </DrawerTitle>
             <DrawerDescription>
-              {isUpdating
-                ? "Update the adviser assignment for this section."
-                : "Section management"}
+              Update the adviser assignment for this section.
             </DrawerDescription>
           </DrawerHeader>
 
@@ -102,8 +98,7 @@ export function SectionFormDrawer({
               {/* Adviser field */}
               <div className="space-y-2">
                 <Label>
-                  Adviser{" "}
-                  <span className="text-destructive ml-0.5">*</span>
+                  Adviser <span className="text-destructive ml-0.5">*</span>
                 </Label>
                 <Button
                   type="button"
@@ -142,16 +137,6 @@ export function SectionFormDrawer({
             </div>
           )}
 
-          {!isUpdating && (
-            <div className="flex flex-col items-center justify-center gap-4 p-8 flex-1 text-center">
-              <p className="text-sm text-muted-foreground">
-                Use the Bulk Initialize feature to create new sections in
-                bulk, or edit an existing section by clicking the Edit button
-                on its card.
-              </p>
-            </div>
-          )}
-
           <DrawerFooter className="border-t">
             {isUpdating && (
               <Button
@@ -168,7 +153,7 @@ export function SectionFormDrawer({
               onClick={handleClose}
               disabled={isPending}
             >
-              {isUpdating ? "Cancel" : "Close"}
+              Cancel
             </Button>
           </DrawerFooter>
         </DrawerContent>

@@ -20,6 +20,42 @@ interface BulkAdviserAssignDrawerProps {
   onOpenChange: (open: boolean) => void;
   sectionIds: number[];
   onSuccess: () => void;
+  sectionNames?: string[];
+}
+
+const MAX_NAMES_VISIBLE = 5;
+
+function SelectedSectionsList({ names }: { names: string[] }) {
+  const [showAll, setShowAll] = useState(false);
+  const visible = showAll ? names : names.slice(0, MAX_NAMES_VISIBLE);
+  const extra = names.length - MAX_NAMES_VISIBLE;
+
+  return (
+    <div className="space-y-1.5">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        Selected sections ({names.length})
+      </p>
+      <div className="space-y-1">
+        {visible.map((name, idx) => (
+          <div
+            key={idx}
+            className="rounded-md border bg-muted/30 px-2.5 py-1 text-sm"
+          >
+            {name}
+          </div>
+        ))}
+      </div>
+      {!showAll && extra > 0 && (
+        <button
+          type="button"
+          onClick={() => setShowAll(true)}
+          className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+        >
+          +{extra} more
+        </button>
+      )}
+    </div>
+  );
 }
 
 export function BulkAdviserAssignDrawer({
@@ -27,6 +63,7 @@ export function BulkAdviserAssignDrawer({
   onOpenChange,
   sectionIds,
   onSuccess,
+  sectionNames,
 }: BulkAdviserAssignDrawerProps) {
   const [selectedAdviser, setSelectedAdviser] = useState<Teacher | null>(null);
   const [isTeacherDialogOpen, setIsTeacherDialogOpen] = useState(false);
@@ -59,7 +96,7 @@ export function BulkAdviserAssignDrawer({
   return (
     <>
       <Drawer open={isOpen} onOpenChange={onOpenChange} direction="right">
-        <DrawerContent className="data-[vaul-drawer-direction=right]:w-[440px] data-[vaul-drawer-direction=right]:sm:max-w-none h-full overflow-y-auto overflow-x-hidden">
+        <DrawerContent className="data-[vaul-drawer-direction=right]:w-[480px] data-[vaul-drawer-direction=right]:sm:max-w-none h-full overflow-y-auto overflow-x-hidden">
           <DrawerHeader className="border-b pb-4">
             <DrawerTitle>Assign Adviser</DrawerTitle>
             <DrawerDescription>
@@ -78,6 +115,10 @@ export function BulkAdviserAssignDrawer({
               {sectionIds.length !== 1 ? "s" : ""}. Existing advisers will be
               replaced.
             </div>
+
+            {sectionNames && sectionNames.length > 0 && (
+              <SelectedSectionsList names={sectionNames} />
+            )}
 
             {/* Adviser selector */}
             <div className="space-y-2">

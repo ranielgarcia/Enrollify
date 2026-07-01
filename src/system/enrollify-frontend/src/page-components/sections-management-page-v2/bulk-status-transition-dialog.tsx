@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,7 +34,11 @@ export function BulkStatusTransitionDialog({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent
+        onEscapeKeyDown={(e) => {
+          if (isPending) e.preventDefault();
+        }}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             {isOpen_ ? (
@@ -63,36 +68,36 @@ export function BulkStatusTransitionDialog({
               </p>
 
               {isOpen_ && (
-                <div className="rounded-md border bg-muted/50 p-3 text-sm space-y-1">
-                  <p className="font-medium text-foreground">
-                    Before opening:
-                  </p>
-                  <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
-                    <li>
-                      Each section is validated individually by the backend
-                    </li>
-                    <li>
-                      Sections with Error-severity issues will not be opened
-                    </li>
-                    <li>
-                      Successfully opened sections will be available for
-                      student enrollment
-                    </li>
-                  </ul>
-                </div>
+                <Alert>
+                  <AlertTitle>Before opening:</AlertTitle>
+                  <AlertDescription>
+                    <ul className="list-disc list-inside space-y-0.5 mt-1">
+                      <li>
+                        Each section is validated individually by the backend
+                      </li>
+                      <li>
+                        Sections with Error-severity issues will not be opened
+                      </li>
+                      <li>
+                        Successfully opened sections will be available for
+                        student enrollment
+                      </li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
               )}
 
               {!isOpen_ && (
-                <div className="rounded-md border border-destructive/20 bg-destructive/5 p-3 text-sm space-y-1">
-                  <p className="font-medium text-foreground">
-                    Effect of cancelling:
-                  </p>
-                  <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
-                    <li>Teacher and room assignments will be released</li>
-                    <li>Sections will be removed from conflict detection</li>
-                    <li>This action cannot be undone</li>
-                  </ul>
-                </div>
+                <Alert variant="destructive">
+                  <AlertTitle>Effect of cancelling:</AlertTitle>
+                  <AlertDescription>
+                    <ul className="list-disc list-inside space-y-0.5 mt-1">
+                      <li>Teacher and room assignments will be released</li>
+                      <li>Sections will be removed from conflict detection</li>
+                      <li>This action cannot be undone</li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
               )}
             </div>
           </AlertDialogDescription>

@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { type ClassSectionMinimal } from "@/api/models/class-scheduling/class-section";
 import { cancelClassSectionOptions } from "@/api/collections/class-section-collection";
 import { useMutation } from "@tanstack/react-query";
@@ -48,16 +49,22 @@ export function CancelSectionAlertDialog({
                 </span>
                 ?
               </p>
-              <p className="text-sm">
-                Cancelling a section will release all teacher and room
-                assignments from its offerings. This action removes the section
-                from conflict detection. This cannot be undone.
-              </p>
+              <Alert variant="destructive">
+                <AlertDescription>
+                  <ul className="list-disc list-inside space-y-0.5">
+                    <li>Teacher and room assignments will be released</li>
+                    <li>Section will be removed from conflict detection</li>
+                    <li>This cannot be undone</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Keep Section</AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>
+            Keep Section
+          </AlertDialogCancel>
           <AlertDialogAction
             disabled={isPending}
             onClick={(e) => {
