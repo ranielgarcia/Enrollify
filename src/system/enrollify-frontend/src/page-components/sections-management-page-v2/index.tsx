@@ -34,6 +34,7 @@ import { useSectionsDialogs } from "./hooks/use-sections-dialogs";
 import { useSectionSelection } from "./hooks/use-section-selection";
 import { searchParams, type QuickFilter } from "./searchParams";
 import { BulkInitializeSectionsDrawer } from "./bulk-initialize-sections-drawer";
+import { FloatingSelectionToolbar } from "./floating-selection-toolbar";
 
 export default function SectionsManagementPageV2() {
   const [isBulkInitializeOpen, setIsBulkInitializeOpen] = useState(false);
@@ -154,6 +155,19 @@ function SectionsPageContent({
       setParams({ view: next });
     },
     [setParams],
+  );
+
+  const handleBulkOpen = useCallback(
+    (sectionIds: number[]) => dialogs.openBulkOpen(sectionIds),
+    [dialogs],
+  );
+  const handleBulkCancel = useCallback(
+    (sectionIds: number[]) => dialogs.openBulkCancel(sectionIds),
+    [dialogs],
+  );
+  const handleBulkAssignAdviser = useCallback(
+    (sectionIds: number[]) => dialogs.openBulkAssignAdviser(sectionIds),
+    [dialogs],
   );
 
   const coursesWithSections = collegeData?.coursesWithClassSections ?? [];
@@ -280,6 +294,13 @@ function SectionsPageContent({
         onOpenChange={(open) => {
           if (!open) dialogs.close();
         }}
+      />
+
+      <FloatingSelectionToolbar
+        selection={selection}
+        onBulkOpen={handleBulkOpen}
+        onBulkCancel={handleBulkCancel}
+        onBulkAssignAdviser={handleBulkAssignAdviser}
       />
     </div>
   );
