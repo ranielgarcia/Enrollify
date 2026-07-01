@@ -1,4 +1,4 @@
-import type { Offering } from "@/api/models/offering";
+import type { Offering } from "@/api/models/class-scheduling/offering";
 import type { ValidationMessages } from "@/api/models/class-scheduling/class-section";
 import { OfferingCard } from "./offering-card";
 import { LayoutGrid } from "lucide-react";
@@ -14,6 +14,7 @@ export function OfferingsTab({
   offerings,
   validationMessages,
 }: OfferingsTabProps) {
+  console.log(offerings);
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">

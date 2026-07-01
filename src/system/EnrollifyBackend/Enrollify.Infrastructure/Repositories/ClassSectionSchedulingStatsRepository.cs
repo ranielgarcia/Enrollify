@@ -284,6 +284,10 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
     ClassSectionId classSectionId, ClassSectionValidationIssueTypeEnum validationIssueTypeToCount,
     ClassSectionSchedulingStatsAggregateTypeEnum aggregateType, CancellationToken cancellationToken)
   {
+
+    _logger.LogDebug("Refreshing offering count for ClassSectionId {ClassSectionId} with issue type {ValidationIssueTypeToCount} for aggregate {AggregateType}",
+      classSectionId.Value, validationIssueTypeToCount.Name, aggregateType.Name);
+
     try
     {
       string sql = @"MERGE [ClassSectionSchedulingStats] AS [Target]

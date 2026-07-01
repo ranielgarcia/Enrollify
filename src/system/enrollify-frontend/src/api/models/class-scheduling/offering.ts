@@ -19,18 +19,19 @@ const RoomSummarySchema = z.object({
 
 const ValidationIssueTypeSchema = z.object({
   code: z.string(),
-  message: z.string(),
+  category: z.string(),
+  label: z.string(),
   severity: z.enum(["Error", "Warning", "Info"]),
 });
 
-export const ConflictResultSchema = z.object({
+export const ValidationIssueSchema = z.object({
   id: z.string().nullable().optional(),
   type: ValidationIssueTypeSchema,
   message: z.string(),
-  DayOfWeek: z.string().nullable().optional(),
+  dayOfWeek: z.string().nullable().optional(),
   startTime: z.string().nullable().optional(),
   endTime: z.string().nullable().optional(),
-  ConflictingOfferings: z
+  conflictingOfferings: z
     .array(
       z.object({
         id: z.number().nullable().optional(),
@@ -45,7 +46,7 @@ export const ConflictResultSchema = z.object({
     .optional(),
 });
 
-export type ConflictResult = z.infer<typeof ConflictResultSchema>;
+export type ValidationIssue = z.infer<typeof ValidationIssueSchema>;
 
 export const OfferingSchema = z
   .object({
@@ -64,7 +65,7 @@ export const OfferingSchema = z
     teacher: TeacherSummarySchema.nullable().optional(),
     room: RoomSummarySchema.nullable().optional(),
     schedules: z.array(ClassScheduleSchema).optional(),
-    conflicts: z.array(ConflictResultSchema).optional(),
+    validationIssues: z.array(ValidationIssueSchema).optional(),
   })
   .extend(AuditInfoSchema.shape);
 

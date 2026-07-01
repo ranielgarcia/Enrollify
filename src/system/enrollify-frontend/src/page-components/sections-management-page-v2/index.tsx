@@ -1,9 +1,8 @@
-import { Suspense, useCallback, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import {
   QueryErrorResetBoundary,
   useMutation,
   useQuery,
-  useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useQueryStates } from "nuqs";
 
@@ -13,10 +12,7 @@ import {
   getClassSectionsStatsOptions,
   getCollegeCoursesWithClassSectionsForSchedulingOptions,
 } from "@/api/collections/class-section-collection";
-import type {
-  ClassSectionMinimal,
-  CollegeCoursesWithClassSections,
-} from "@/api/models/class-scheduling/class-section";
+import type { ClassSectionMinimal } from "@/api/models/class-scheduling/class-section";
 
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { ModuleIcons } from "@/config/module-icons";
@@ -44,21 +40,7 @@ import { FloatingSelectionToolbar } from "./floating-selection-toolbar";
 
 export default function SectionsManagementPageV2() {
   const [isBulkInitializeOpen, setIsBulkInitializeOpen] = useState(false);
-  const [{ collegeId }] = useQueryStates(searchParams);
-  const { selectedAcademicTerm } = useEnrollmentContext();
-
-  const { data: collegeData } = useQuery(
-    getCollegeCoursesWithClassSectionsForSchedulingOptions(
-      collegeId ?? undefined,
-      selectedAcademicTerm?.id,
-    ),
-  );
-
-  const courses = collegeData?.coursesWithClassSections.map((x) => ({
-    id: x.id,
-    code: x.code,
-    name: x.name,
-  })) as Course[];
+  const [courses, setCourses] = useState<Course[]>([]);
 
   return (
     <ManagementPageLayout
@@ -80,7 +62,7 @@ export default function SectionsManagementPageV2() {
         {({ reset }) => (
           <SectionsErrorBoundary onReset={reset}>
             <Suspense fallback={<SectionsSkeleton />}>
-              <SectionsPageContent collegeData={collegeData} />
+              <SectionsPageContent setCourses={setCourses} />
             </Suspense>
           </SectionsErrorBoundary>
         )}
@@ -89,11 +71,10 @@ export default function SectionsManagementPageV2() {
   );
 }
 
-function SectionsPageContent({
-  collegeData,
-}: {
-  collegeData: CollegeCoursesWithClassSections;
-}) {
+interface SectionsPageContentProps {
+  setCourses: (courses: Course[]) => void;
+}
+function SectionsPageContent({ setCourses }: SectionsPageContentProps) {
   const [{ collegeId, view, quickFilter }, setParams] =
     useQueryStates(searchParams);
   const { selectedAcademicTerm, selectedAcademicYear } = useEnrollmentContext();
@@ -104,12 +85,31 @@ function SectionsPageContent({
   const noCollegeSelected = !collegeId;
   const hasTerm = !!selectedAcademicTerm;
 
-  const { data: stats } = useSuspenseQuery(
+  const { data: collegeData } = useQuery(
+    getCollegeCoursesWithClassSectionsForSchedulingOptions(
+      collegeId ?? undefined,
+      selectedAcademicTerm?.id,
+    ),
+  );
+
+  const { data: stats } = useQuery(
     getClassSectionsStatsOptions(
       collegeId ?? undefined,
       selectedAcademicTerm?.id,
     ),
   );
+
+  useEffect(() => {
+    if (collegeData?.coursesWithClassSections) {
+      const courses = collegeData?.coursesWithClassSections.map((x) => ({
+        id: x.id,
+        code: x.code,
+        name: x.name,
+      })) as Course[];
+
+      setCourses(courses);
+    }
+  }, [collegeData, setCourses]);
 
   const {
     isFormOpen,

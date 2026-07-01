@@ -1,10 +1,10 @@
-import type { OfferingWithSchedules } from "@/api/models/offering";
+import type { Offering } from "@/api/models/class-scheduling/offering";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ScheduleCell } from "./schedule-cell";
 import type { DayOfWeek } from "@/api/models/class-scheduling/class-schedule";
 
 interface WeeklyScheduleGridProps {
-  offerings: OfferingWithSchedules[];
+  offerings: Offering[];
 }
 
 const DAYS: { key: DayOfWeek; label: string }[] = [
@@ -37,8 +37,10 @@ function formatTimeLabel(slot: string): string {
 
 export function WeeklyScheduleGrid({ offerings }: WeeklyScheduleGridProps) {
   const activeDays = DAYS.filter((d) =>
-    offerings.some((o) =>
-      o.schedules.some((s) => s.dayOfWeekAbbreviation === d.key),
+    offerings.some(
+      (o) =>
+        o.schedules &&
+        o.schedules.some((s) => s.dayOfWeekAbbreviation === d.key),
     ),
   );
   const displayDays = activeDays.length > 0 ? activeDays : DAYS.slice(0, 5);

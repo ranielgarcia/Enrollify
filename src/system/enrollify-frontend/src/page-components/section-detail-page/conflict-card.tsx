@@ -1,10 +1,10 @@
-import type { ConflictResult } from "@/api/models/class-scheduling/offering";
+import type { ValidationIssue } from "@/api/models/class-scheduling/offering";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@tanstack/react-router";
 import { AlertCircle, AlertTriangle, Info, ArrowRight } from "lucide-react";
 
 interface ConflictCardProps {
-  conflict: ConflictResult;
+  validationIssue: ValidationIssue;
 }
 
 const SEVERITY_CONFIG = {
@@ -28,10 +28,10 @@ const SEVERITY_CONFIG = {
   },
 };
 
-export function ConflictCard({ conflict }: ConflictCardProps) {
-  const config = SEVERITY_CONFIG[conflict.type.severity];
+export function ConflictCard({ validationIssue }: ConflictCardProps) {
+  const config = SEVERITY_CONFIG[validationIssue.type.severity];
   const Icon = config.icon;
-  const typeLabel = conflict.type.message;
+  const typeLabel = validationIssue.type.label;
 
   return (
     <div className={`rounded-lg border p-4 space-y-3 ${config.containerClass}`}>
@@ -42,23 +42,26 @@ export function ConflictCard({ conflict }: ConflictCardProps) {
             <Badge variant={config.badgeVariant} className="text-xs">
               {typeLabel}
             </Badge>
-            {conflict.DayOfWeek && conflict.startTime && conflict.endTime && (
-              <span className="text-xs text-muted-foreground font-mono">
-                {conflict.DayOfWeek} · {conflict.startTime}–{conflict.endTime}
-              </span>
-            )}
+            {validationIssue.dayOfWeek &&
+              validationIssue.startTime &&
+              validationIssue.endTime && (
+                <span className="text-xs text-muted-foreground font-mono">
+                  {validationIssue.dayOfWeek} · {validationIssue.startTime}–
+                  {validationIssue.endTime}
+                </span>
+              )}
           </div>
-          <p className="text-sm text-foreground">{conflict.message}</p>
+          <p className="text-sm text-foreground">{validationIssue.message}</p>
         </div>
       </div>
 
-      {conflict.ConflictingOfferings &&
-        conflict.ConflictingOfferings.length > 0 && (
+      {validationIssue.conflictingOfferings &&
+        validationIssue.conflictingOfferings.length > 0 && (
           <div className="pl-8 space-y-1.5">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Affected Offerings
             </p>
-            {conflict.ConflictingOfferings.map((o) => (
+            {validationIssue.conflictingOfferings.map((o) => (
               <div
                 key={o.id}
                 className="flex items-center gap-2 text-xs text-muted-foreground"

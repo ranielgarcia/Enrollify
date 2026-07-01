@@ -1,17 +1,22 @@
-import type { ConflictResult } from "@/api/models/offering";
+import type { ValidationIssue } from "@/api/models/class-scheduling/offering";
 import { CheckCircle, AlertCircle, AlertTriangle } from "lucide-react";
 import { ConflictCard } from "./conflict-card";
 
 interface ConflictsTabProps {
-  conflicts: ConflictResult[];
+  validationIssues: ValidationIssue[];
 }
 
-export function ConflictsTab({ conflicts }: ConflictsTabProps) {
-  const hardConflicts = conflicts.filter((c) => c.severity === "Error");
-  const warnings = conflicts.filter((c) => c.severity === "Warning");
-  const infos = conflicts.filter((c) => c.severity === "Info");
+export function ConflictsTab({ validationIssues }: ConflictsTabProps) {
+  console.log(validationIssues);
+  const hardConflicts = validationIssues.filter(
+    (c) => c.type.severity === "Error",
+  );
+  const warnings = validationIssues.filter(
+    (c) => c.type.severity === "Warning",
+  );
+  const infos = validationIssues.filter((c) => c.type.severity === "Info");
 
-  if (conflicts.length === 0) {
+  if (validationIssues.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center gap-4">
         <div className="rounded-full bg-green-100 dark:bg-green-950/30 p-4">
@@ -44,7 +49,7 @@ export function ConflictsTab({ conflicts }: ConflictsTabProps) {
           </p>
           <div className="space-y-3">
             {hardConflicts.map((c, i) => (
-              <ConflictCard key={c.id ?? i} conflict={c} />
+              <ConflictCard key={c.id ?? i} validationIssue={c} />
             ))}
           </div>
         </section>
@@ -63,7 +68,7 @@ export function ConflictsTab({ conflicts }: ConflictsTabProps) {
           </p>
           <div className="space-y-3">
             {warnings.map((c, i) => (
-              <ConflictCard key={c.id ?? i} conflict={c} />
+              <ConflictCard key={c.id ?? i} validationIssue={c} />
             ))}
           </div>
         </section>
@@ -76,7 +81,7 @@ export function ConflictsTab({ conflicts }: ConflictsTabProps) {
           </h3>
           <div className="space-y-3">
             {infos.map((c, i) => (
-              <ConflictCard key={c.id ?? i} conflict={c} />
+              <ConflictCard key={c.id ?? i} validationIssue={c} />
             ))}
           </div>
         </section>

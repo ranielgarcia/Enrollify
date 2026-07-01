@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { updateOfferingOptions } from "@/api/collections/offering-collection";
-import type { Offering } from "@/api/models/offering";
+import type { Offering } from "@/api/models/class-scheduling/offering";
 import type { Room } from "@/api/models/room";
 import type { Teacher } from "@/api/models/teacher";
 import type { components } from "@/api/generated/api";
