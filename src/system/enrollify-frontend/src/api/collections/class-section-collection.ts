@@ -289,7 +289,8 @@ export const getClassSectionsStatsOptions = (
       AcademicTermId: academicTermId!,
     },
     options: {
-      enabled: !!collegeId && !!academicTermId,
+      enabled:
+        !!collegeId && !!academicTermId && collegeId > 0 && academicTermId > 0,
       queryKey: queryKeys.collegeCoursesClassSchedulingStats(
         collegeId,
         academicTermId,
@@ -311,7 +312,8 @@ export const getCollegeCoursesWithClassSectionsForSchedulingOptions = (
       AcademicTermId: academicTermId!,
     },
     options: {
-      enabled: !!collegeId && !!academicTermId,
+      enabled:
+        !!collegeId && !!academicTermId && collegeId > 0 && academicTermId > 0,
       queryKey: queryKeys.collegeCoursesWithClassSectionsForScheduling(
         collegeId,
         academicTermId,

@@ -7,6 +7,7 @@ type EmptyStateVariant = "no-college" | "no-sections" | "filtered-empty";
 interface EmptyStateProps {
   variant: EmptyStateVariant;
   onClearFilters?: () => void;
+  onOpenCollegeSelector?: () => void;
   className?: string;
 }
 
@@ -41,6 +42,7 @@ const config: Record<
 export function EmptyState({
   variant,
   onClearFilters,
+  onOpenCollegeSelector,
   className,
 }: EmptyStateProps) {
   const { icon, title, description } = config[variant];
@@ -59,6 +61,12 @@ export function EmptyState({
         <h3 className="text-base font-semibold">{title}</h3>
         <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
       </div>
+      {variant === "no-college" && onOpenCollegeSelector && (
+        <Button size="sm" onClick={onOpenCollegeSelector} className="gap-2">
+          <Building2 className="size-4" />
+          Open college selector
+        </Button>
+      )}
       {variant === "filtered-empty" && onClearFilters && (
         <Button
           variant="outline"

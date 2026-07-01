@@ -93,33 +93,11 @@ function CourseGroupSkeleton() {
 export function SectionsSkeleton() {
   return (
     <div className="flex flex-col gap-6 p-1">
-      {/* College selector skeleton */}
-      <div className="flex items-center gap-2">
-        <Skeleton className="h-4 w-12" />
-        <Skeleton className="h-9 w-64 rounded-md" />
-      </div>
-
       {/* Stats bar skeleton */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
         {Array.from({ length: 6 }).map((_, i) => (
           <StatPillSkeleton key={i} />
         ))}
-      </div>
-
-      {/* Toolbar skeleton */}
-      <div className="flex items-center justify-between gap-4">
-        {/* View toggle */}
-        <div className="flex items-center gap-1">
-          <Skeleton className="h-8 w-20 rounded-md" />
-          <Skeleton className="h-8 w-20 rounded-md" />
-        </div>
-        {/* Quick filters */}
-        <div className="flex items-center gap-1.5">
-          <Skeleton className="h-4 w-10" />
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-7 w-16 rounded-md" />
-          ))}
-        </div>
       </div>
 
       {/* Course groups */}

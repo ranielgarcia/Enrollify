@@ -1,5 +1,10 @@
 import { Suspense, useCallback, useState } from "react";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import {
+  QueryErrorResetBoundary,
+  useMutation,
+  useQuery,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { useQueryStates } from "nuqs";
 
 import {
@@ -22,6 +27,7 @@ import type { Course } from "@/api/models/course";
 import { BulkAdviserAssignDrawer } from "./bulk-adviser-assign-drawer";
 import { BulkStatusTransitionDialog } from "./bulk-status-transition-dialog";
 import { CancelSectionAlertDialog } from "./cancel-section-alert-dialog";
+import { SectionsErrorBoundary } from "./components/sections-error-boundary";
 import { ConflictPreviewDrawer } from "./conflict-preview-drawer";
 import { EmptyState } from "./empty-state";
 import { SectionFormDrawer } from "./section-form-drawer";
@@ -41,22 +47,12 @@ export default function SectionsManagementPageV2() {
   const [{ collegeId }] = useQueryStates(searchParams);
   const { selectedAcademicTerm } = useEnrollmentContext();
 
-  const { data: stats } = useSuspenseQuery(
-    getClassSectionsStatsOptions(
-      collegeId ?? undefined,
-      selectedAcademicTerm?.id,
-    ),
-  );
-
-  const { data: collegeData } = useSuspenseQuery(
+  const { data: collegeData } = useQuery(
     getCollegeCoursesWithClassSectionsForSchedulingOptions(
       collegeId ?? undefined,
       selectedAcademicTerm?.id,
     ),
   );
-
-  console.log(collegeId);
-  console.log("collegeData", collegeData);
 
   const courses = collegeData?.coursesWithClassSections.map((x) => ({
     id: x.id,
@@ -80,28 +76,40 @@ export default function SectionsManagementPageV2() {
         </div>
       }
     >
-      <Suspense fallback={<SectionsSkeleton />}>
-        <SectionsPageContent collegeData={collegeData} stats={stats} />
-      </Suspense>
+      <QueryErrorResetBoundary>
+        {({ reset }) => (
+          <SectionsErrorBoundary onReset={reset}>
+            <Suspense fallback={<SectionsSkeleton />}>
+              <SectionsPageContent collegeData={collegeData} />
+            </Suspense>
+          </SectionsErrorBoundary>
+        )}
+      </QueryErrorResetBoundary>
     </ManagementPageLayout>
   );
 }
 
 function SectionsPageContent({
   collegeData,
-  stats,
 }: {
   collegeData: CollegeCoursesWithClassSections;
-  stats: Record<string, number>;
 }) {
   const [{ collegeId, view, quickFilter }, setParams] =
     useQueryStates(searchParams);
   const { selectedAcademicTerm, selectedAcademicYear } = useEnrollmentContext();
   const dialogs = useSectionsDialogs();
   const selection = useSectionSelection();
+  const [collegeSelectorOpen, setCollegeSelectorOpen] = useState(false);
 
   const noCollegeSelected = !collegeId;
   const hasTerm = !!selectedAcademicTerm;
+
+  const { data: stats } = useSuspenseQuery(
+    getClassSectionsStatsOptions(
+      collegeId ?? undefined,
+      selectedAcademicTerm?.id,
+    ),
+  );
 
   const {
     isFormOpen,
@@ -191,6 +199,8 @@ function SectionsPageContent({
       <SectionsContextBar
         view={currentView}
         onViewChange={handleViewChange}
+        collegeSelectorOpen={collegeSelectorOpen}
+        onCollegeSelectorOpenChange={setCollegeSelectorOpen}
         academicTerm={
           selectedAcademicTerm
             ? {
@@ -202,7 +212,12 @@ function SectionsPageContent({
         }
       />
 
-      {noCollegeSelected && <EmptyState variant="no-college" />}
+      {noCollegeSelected && (
+        <EmptyState
+          variant="no-college"
+          onOpenCollegeSelector={() => setCollegeSelectorOpen(true)}
+        />
+      )}
 
       {!noCollegeSelected && hasTerm && (
         <SectionStatsStrip

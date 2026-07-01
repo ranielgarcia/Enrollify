@@ -34,6 +34,8 @@ interface SectionsContextBarProps {
   onCreateClick?: () => void;
   createDisabled?: boolean;
   createLabel?: string;
+  collegeSelectorOpen?: boolean;
+  onCollegeSelectorOpenChange?: (open: boolean) => void;
   className?: string;
 }
 
@@ -51,6 +53,8 @@ export function SectionsContextBar({
   onCreateClick,
   createDisabled = true,
   createLabel = "Bulk Initialize",
+  collegeSelectorOpen,
+  onCollegeSelectorOpenChange,
   className,
 }: SectionsContextBarProps) {
   return (
@@ -62,7 +66,10 @@ export function SectionsContextBar({
     >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 py-3">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-          <CollegeSelector />
+          <CollegeSelector
+            dialogOpen={collegeSelectorOpen}
+            onDialogOpenChange={onCollegeSelectorOpenChange}
+          />
           {academicTerm ? (
             <Tooltip>
               <TooltipTrigger asChild>

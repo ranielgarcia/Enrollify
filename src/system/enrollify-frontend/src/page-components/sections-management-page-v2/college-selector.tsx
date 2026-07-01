@@ -10,11 +10,22 @@ import type { College } from "@/api/models/college";
 
 interface CollegeSelectorProps {
   className?: string;
+  dialogOpen?: boolean;
+  onDialogOpenChange?: (open: boolean) => void;
 }
 
-export function CollegeSelector({ className }: CollegeSelectorProps) {
+export function CollegeSelector({
+  className,
+  dialogOpen,
+  onDialogOpenChange,
+}: CollegeSelectorProps) {
   const [collegeId, setCollegeId] = useQueryState("collegeId");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isDialogOpen = dialogOpen ?? internalOpen;
+  const handleDialogOpenChange = (open: boolean) => {
+    setInternalOpen(open);
+    onDialogOpenChange?.(open);
+  };
 
   const { data: colleges = [] } = useSuspenseQuery({
     ...getAllCollegesOptions(),
@@ -36,7 +47,7 @@ export function CollegeSelector({ className }: CollegeSelectorProps) {
       <Button
         type="button"
         variant="outline"
-        onClick={() => setIsDialogOpen(true)}
+        onClick={() => handleDialogOpenChange(true)}
         className={cn(
           "h-9 min-w-56 justify-start gap-2 pl-2.5 pr-2 font-medium",
           !selectedCollege && "text-muted-foreground",
@@ -68,7 +79,7 @@ export function CollegeSelector({ className }: CollegeSelectorProps) {
       )}
       <SearchCollegesDialog
         isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        onOpenChange={handleDialogOpenChange}
         title="Select College"
         description="Search and select a college to filter sections."
         maxSelections={1}

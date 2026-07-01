@@ -1,5 +1,4 @@
-import type { ConflictResult } from "@/api/models/offering";
-import { TYPE_LABELS } from "@/api/models/offering";
+import type { ConflictResult } from "@/api/models/class-scheduling/offering";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@tanstack/react-router";
 import { AlertCircle, AlertTriangle, Info, ArrowRight } from "lucide-react";
@@ -29,12 +28,10 @@ const SEVERITY_CONFIG = {
   },
 };
 
-
-
 export function ConflictCard({ conflict }: ConflictCardProps) {
-  const config = SEVERITY_CONFIG[conflict.severity];
+  const config = SEVERITY_CONFIG[conflict.type.severity];
   const Icon = config.icon;
-  const typeLabel = TYPE_LABELS[conflict.type] ?? conflict.type;
+  const typeLabel = conflict.type.message;
 
   return (
     <div className={`rounded-lg border p-4 space-y-3 ${config.containerClass}`}>
@@ -45,9 +42,9 @@ export function ConflictCard({ conflict }: ConflictCardProps) {
             <Badge variant={config.badgeVariant} className="text-xs">
               {typeLabel}
             </Badge>
-            {conflict.day && conflict.startTime && conflict.endTime && (
+            {conflict.DayOfWeek && conflict.startTime && conflict.endTime && (
               <span className="text-xs text-muted-foreground font-mono">
-                {conflict.day} · {conflict.startTime}–{conflict.endTime}
+                {conflict.DayOfWeek} · {conflict.startTime}–{conflict.endTime}
               </span>
             )}
           </div>
@@ -55,31 +52,32 @@ export function ConflictCard({ conflict }: ConflictCardProps) {
         </div>
       </div>
 
-      {conflict.affectedOfferings && conflict.affectedOfferings.length > 0 && (
-        <div className="pl-8 space-y-1.5">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Affected Offerings
-          </p>
-          {conflict.affectedOfferings.map((o) => (
-            <div
-              key={o.id}
-              className="flex items-center gap-2 text-xs text-muted-foreground"
-            >
-              <ArrowRight className="size-3 shrink-0" />
-              <span className="font-mono font-medium">{o.subject.code}</span>
-              <span>{o.subject.title}</span>
-              <span className="text-muted-foreground/60">·</span>
-              <Link
-                to={`/portal/curriculum-and-scheduling/sections-details/$sectionId`}
-                params={{ sectionId: o.section.id.toString() }}
-                className="font-medium text-primary underline underline-offset-2 hover:text-primary/80"
+      {conflict.ConflictingOfferings &&
+        conflict.ConflictingOfferings.length > 0 && (
+          <div className="pl-8 space-y-1.5">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Affected Offerings
+            </p>
+            {conflict.ConflictingOfferings.map((o) => (
+              <div
+                key={o.id}
+                className="flex items-center gap-2 text-xs text-muted-foreground"
               >
-                {o.section.name}
-              </Link>
-            </div>
-          ))}
-        </div>
-      )}
+                <ArrowRight className="size-3 shrink-0" />
+                <span className="font-mono font-medium">{o.subject.code}</span>
+                <span>{o.subject.title}</span>
+                <span className="text-muted-foreground/60">·</span>
+                <Link
+                  to={`/portal/curriculum-and-scheduling/sections-details/$sectionId`}
+                  params={{ sectionId: o.section.id.toString() }}
+                  className="font-medium text-primary underline underline-offset-2 hover:text-primary/80"
+                >
+                  {o.section.name}
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
     </div>
   );
 }
