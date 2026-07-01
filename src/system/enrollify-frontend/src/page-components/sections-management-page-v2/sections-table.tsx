@@ -188,7 +188,7 @@ function SectionTableRow({
 
       <TableCell>
         <IssuesChip
-          validation={validation}
+          section={section}
           onClick={
             validation?.hasIssues ? () => onViewConflicts(section) : undefined
           }

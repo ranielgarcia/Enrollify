@@ -1,4 +1,4 @@
-import { Suspense, useCallback } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { useQueryStates } from "nuqs";
 
@@ -8,12 +8,16 @@ import {
   getClassSectionsStatsOptions,
   getCollegeCoursesWithClassSectionsForSchedulingOptions,
 } from "@/api/collections/class-section-collection";
-import type { ClassSectionMinimal } from "@/api/models/class-scheduling/class-section";
+import type {
+  ClassSectionMinimal,
+  CollegeCoursesWithClassSections,
+} from "@/api/models/class-scheduling/class-section";
 
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { ModuleIcons } from "@/config/module-icons";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 import { useCrudState } from "@/hooks/use-crud-state";
+import type { Course } from "@/api/models/course";
 
 import { BulkAdviserAssignDrawer } from "./bulk-adviser-assign-drawer";
 import { BulkStatusTransitionDialog } from "./bulk-status-transition-dialog";
@@ -29,31 +33,12 @@ import { SectionStatsStrip } from "./stats-bar";
 import { useSectionsDialogs } from "./hooks/use-sections-dialogs";
 import { useSectionSelection } from "./hooks/use-section-selection";
 import { searchParams, type QuickFilter } from "./searchParams";
+import { BulkInitializeSectionsDrawer } from "./bulk-initialize-sections-drawer";
 
 export default function SectionsManagementPageV2() {
-  return (
-    <ManagementPageLayout
-      title="Class Sections"
-      description="Plan, schedule, and open class sections for the active term."
-      icon={<ModuleIcons.sections className="size-6 text-primary" />}
-      createNewItemButton={null}
-    >
-      <Suspense fallback={<SectionsSkeleton />}>
-        <SectionsPageContent />
-      </Suspense>
-    </ManagementPageLayout>
-  );
-}
-
-function SectionsPageContent() {
-  const [{ collegeId, view, quickFilter }, setParams] =
-    useQueryStates(searchParams);
-  const { selectedAcademicTerm, selectedAcademicYear } = useEnrollmentContext();
-  const dialogs = useSectionsDialogs();
-  const selection = useSectionSelection();
-
-  const noCollegeSelected = !collegeId;
-  const hasTerm = !!selectedAcademicTerm;
+  const [isBulkInitializeOpen, setIsBulkInitializeOpen] = useState(false);
+  const [{ collegeId }] = useQueryStates(searchParams);
+  const { selectedAcademicTerm } = useEnrollmentContext();
 
   const { data: stats } = useSuspenseQuery(
     getClassSectionsStatsOptions(
@@ -68,6 +53,54 @@ function SectionsPageContent() {
       selectedAcademicTerm?.id,
     ),
   );
+
+  console.log(collegeId);
+  console.log("collegeData", collegeData);
+
+  const courses = collegeData?.coursesWithClassSections.map((x) => ({
+    id: x.id,
+    code: x.code,
+    name: x.name,
+  })) as Course[];
+
+  return (
+    <ManagementPageLayout
+      title="Class Sections"
+      description="Plan, schedule, and open class sections for the active term."
+      icon={<ModuleIcons.sections className="size-6 text-primary" />}
+      createNewItemButton={
+        <div className="flex gap-2">
+          <BulkInitializeSectionsDrawer
+            isOpen={isBulkInitializeOpen}
+            setIsOpen={setIsBulkInitializeOpen}
+            onOpenChange={setIsBulkInitializeOpen}
+            courses={courses ?? []}
+          />
+        </div>
+      }
+    >
+      <Suspense fallback={<SectionsSkeleton />}>
+        <SectionsPageContent collegeData={collegeData} stats={stats} />
+      </Suspense>
+    </ManagementPageLayout>
+  );
+}
+
+function SectionsPageContent({
+  collegeData,
+  stats,
+}: {
+  collegeData: CollegeCoursesWithClassSections;
+  stats: Record<string, number>;
+}) {
+  const [{ collegeId, view, quickFilter }, setParams] =
+    useQueryStates(searchParams);
+  const { selectedAcademicTerm, selectedAcademicYear } = useEnrollmentContext();
+  const dialogs = useSectionsDialogs();
+  const selection = useSectionSelection();
+
+  const noCollegeSelected = !collegeId;
+  const hasTerm = !!selectedAcademicTerm;
 
   const {
     isFormOpen,

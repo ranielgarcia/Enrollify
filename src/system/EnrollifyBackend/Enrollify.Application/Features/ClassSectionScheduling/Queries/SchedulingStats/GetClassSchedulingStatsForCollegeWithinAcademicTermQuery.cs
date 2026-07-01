@@ -51,8 +51,19 @@ public class GetSchedulingStatsForCollegeInAcademicTermQueryHandler
       await _schedulingStatsReadRepository.ListAsync(spec, cancellationToken);
 
     if (!allStats.Any())
-      return Result.NotFound(
-        $"No scheduling stats found for college {request.collegeId.Value} in term {request.TermId.Value}.");
+      return new Dictionary<string, int>()
+      {
+        { ClassSectionSchedulingStatsAggregateTypeEnum.DRAFT_SECTIONS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.OPEN_SECTIONS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.CANCELLED_SECTIONS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.SCHEDULE_CONFLICTS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.SCHEDULE_POLICY_VIOLATIONS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.CAPACITY_CONSTRAINTS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.RESOURCE_MISALIGNMENTS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.MISSING_REQUIREMENTS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.DATA_INCONSISTENCIES.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.DEFAULT_VALUES.Name, 0 },
+      };
 
     var stats = allStats
       .GroupBy(x => x.AggregateType)

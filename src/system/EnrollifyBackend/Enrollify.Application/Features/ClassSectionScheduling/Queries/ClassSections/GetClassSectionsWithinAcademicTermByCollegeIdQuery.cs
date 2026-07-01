@@ -67,9 +67,6 @@ public class GetClassSectionsWithinAcademicTermByCollegeIdQueryHandler :
         new GetClassSectionsWithinAcademicTermAndByCourseIdsSpec(request.AcademicTermId,
           courses.Select(c => c.Id).ToList()), cancellationToken);
 
-    if (!allClassSectionsForCourses.Any())
-      return Result.NotFound("No class-sections found for college.");
-
     var classSectionsPerCourse = allClassSectionsForCourses.GroupBy(cs => cs.CourseId)
       .ToDictionary(g => g.Key, g => g.ToList());
 

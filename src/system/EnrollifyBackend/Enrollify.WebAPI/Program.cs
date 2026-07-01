@@ -15,7 +15,7 @@ try
     builder.Services.AddControllers();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
-    builder.Services.AddSerilogLogging(builder.Configuration);
+    // builder.Services.AddSerilogLogging(builder.Configuration);
 
     // Currently remove App Insights logging
     // Due the following:
@@ -52,7 +52,7 @@ try
         app.MapOpenApi();
     }
 
-    app.UseSerilogLogging();
+    //app.UseSerilogLogging();
     app.UseExceptionHandler();
     app.UseRouting();
     app.UseHttpsRedirection();

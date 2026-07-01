@@ -49,15 +49,23 @@ const queryKeys = {
     sectionId,
     action,
   ],
-  collegeCoursesClassSchedulingStats: (collegeId?: number) => [
+  collegeCoursesClassSchedulingStats: (
+    collegeId?: number,
+    academicTermId?: number,
+  ) => [
     ...queryKeys.base(),
     "collegeCoursesClassSchedulingStats",
     collegeId ?? 0,
+    academicTermId ?? 0,
   ],
-  collegeCoursesWithClassSectionsForScheduling: (collegeId?: number) => [
+  collegeCoursesWithClassSectionsForScheduling: (
+    collegeId?: number,
+    academicTermId?: number,
+  ) => [
     ...queryKeys.base(),
     "collegeCoursesWithClassSectionsForScheduling",
     collegeId,
+    academicTermId,
   ],
   bulkOpen: () => [...queryKeys.base(), "open-class-sections"],
   bulkCancel: () => [...queryKeys.base(), "cancel-class-sections"],
@@ -282,8 +290,10 @@ export const getClassSectionsStatsOptions = (
     },
     options: {
       enabled: !!collegeId && !!academicTermId,
-      queryKey: queryKeys.collegeCoursesClassSchedulingStats(collegeId),
-      staleTime: 1000 * 60 * 5,
+      queryKey: queryKeys.collegeCoursesClassSchedulingStats(
+        collegeId,
+        academicTermId,
+      ),
       select: (data): Record<string, number> => {
         return data;
       },
@@ -302,10 +312,12 @@ export const getCollegeCoursesWithClassSectionsForSchedulingOptions = (
     },
     options: {
       enabled: !!collegeId && !!academicTermId,
-      queryKey:
-        queryKeys.collegeCoursesWithClassSectionsForScheduling(collegeId),
-      staleTime: 1000 * 60 * 5,
+      queryKey: queryKeys.collegeCoursesWithClassSectionsForScheduling(
+        collegeId,
+        academicTermId,
+      ),
       select: (data): CollegeCoursesWithClassSections => {
+        console.log(data);
         return CollegeCoursesWithClassSectionsSchema.parse(data);
       },
     },

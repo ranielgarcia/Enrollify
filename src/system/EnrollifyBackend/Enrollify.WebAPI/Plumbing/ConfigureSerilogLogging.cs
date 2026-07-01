@@ -5,6 +5,15 @@ using Serilog.Extensions.Hosting;
 
 namespace Enrollify.WebAPI.Plumbing;
 
+// I would only bring Serilog back if you later need capabilities such as:
+//
+// Writing to Seq
+// Rolling file logs
+// Elasticsearch, Loki, Splunk, etc.
+// Advanced enrichers
+// JSON log formatting
+// Complex object destructuring
+// Specialized filtering
 public static class ConfigureSerilogLogging
 {
     public static ReloadableLogger BootstrapLogger => new LoggerConfiguration()
@@ -30,7 +39,7 @@ public static class ConfigureSerilogLogging
                     .Enrich.FromLogContext()
                     .Enrich.WithProperty("Application", "Enrollify.WebAPI")
                     .WriteTo.Console()
-                    .WriteTo.Debug());
+                    .WriteTo.Debug(), writeToProviders: true);
 
         return services;
     }
