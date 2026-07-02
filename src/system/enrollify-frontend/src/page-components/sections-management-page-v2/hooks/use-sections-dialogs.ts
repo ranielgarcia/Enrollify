@@ -13,7 +13,8 @@ export type SectionsDialogState =
   | { type: "bulk-open"; sectionIds: readonly number[] }
   | { type: "bulk-cancel"; sectionIds: readonly number[] }
   | { type: "bulk-assign-adviser"; sectionIds: readonly number[] }
-  | { type: "view-conflicts"; sectionId: number; sectionName: string };
+  | { type: "view-conflicts"; sectionId: number; sectionName: string }
+  | { type: "view-section-details"; sectionId: number };
 
 type Action =
   | { kind: "open"; state: Exclude<SectionsDialogState, { type: "closed" }> }
@@ -42,6 +43,7 @@ export type UseSectionsDialogsReturn = {
   openBulkCancel: (sectionIds: readonly number[]) => void;
   openBulkAssignAdviser: (sectionIds: readonly number[]) => void;
   openViewConflicts: (sectionId: number, sectionName: string) => void;
+  openViewSectionDetails: (sectionId: number) => void;
 };
 
 export function useSectionsDialogs(): UseSectionsDialogsReturn {
@@ -85,6 +87,14 @@ export function useSectionsDialogs(): UseSectionsDialogsReturn {
       }),
     [],
   );
+  const openViewSectionDetails = useCallback(
+    (sectionId: number) =>
+      dispatch({
+        kind: "open",
+        state: { type: "view-section-details", sectionId },
+      }),
+    [],
+  );
 
   return {
     state,
@@ -95,5 +105,6 @@ export function useSectionsDialogs(): UseSectionsDialogsReturn {
     openBulkCancel,
     openBulkAssignAdviser,
     openViewConflicts,
+    openViewSectionDetails,
   };
 }

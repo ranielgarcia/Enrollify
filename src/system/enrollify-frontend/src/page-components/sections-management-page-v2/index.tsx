@@ -37,6 +37,7 @@ import { useSectionSelection } from "./hooks/use-section-selection";
 import { searchParams, type QuickFilter } from "./searchParams";
 import { BulkInitializeSectionsDrawer } from "./bulk-initialize-sections-drawer";
 import { FloatingSelectionToolbar } from "./floating-selection-toolbar";
+import { ClassSectionOfferingsDetailDrawer } from "./class-section-offerings-detail-drawer";
 
 export default function SectionsManagementPageV2() {
   const [isBulkInitializeOpen, setIsBulkInitializeOpen] = useState(false);
@@ -136,10 +137,12 @@ function SectionsPageContent({ setCourses }: SectionsPageContentProps) {
     dialogs.close();
   }, [dialogs, bulkOpen, bulkCancel]);
 
-  const handleViewDetails = useCallback((section: ClassSectionMinimal) => {
-    // Navigate to section detail page — placeholder for now.
-    console.info("Navigate to section detail:", section.id);
-  }, []);
+  const handleViewDetails = useCallback(
+    (section: ClassSectionMinimal) => {
+      dialogs.openViewSectionDetails(section.id);
+    },
+    [dialogs],
+  );
 
   const handleViewConflicts = useCallback(
     (section: ClassSectionMinimal) =>
@@ -312,6 +315,18 @@ function SectionsPageContent({ setCourses }: SectionsPageContentProps) {
             : ""
         }
         isOpen={dialogs.state.type === "view-conflicts"}
+        onOpenChange={(open) => {
+          if (!open) dialogs.close();
+        }}
+      />
+
+      <ClassSectionOfferingsDetailDrawer
+        sectionId={
+          dialogs.state.type === "view-section-details"
+            ? dialogs.state.sectionId
+            : null
+        }
+        isOpen={dialogs.state.type === "view-section-details"}
         onOpenChange={(open) => {
           if (!open) dialogs.close();
         }}
