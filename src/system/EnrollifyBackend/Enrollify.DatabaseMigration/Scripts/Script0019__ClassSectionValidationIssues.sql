@@ -54,6 +54,7 @@ CREATE UNIQUE NONCLUSTERED INDEX UX_ClassSectionValidationIssues_Offering
      CourseId,
      ClassSectionId,
      OfferingId,
-     Type
+     Type,
+      DayOfWeek
       )
   WHERE OfferingId IS NOT NULL;

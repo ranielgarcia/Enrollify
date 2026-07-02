@@ -1,35 +1,15 @@
 import type { ValidationIssue } from "@/api/models/class-scheduling/offering";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@tanstack/react-router";
-import { AlertCircle, AlertTriangle, Info, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import SeverityConfig from "@/config/severity-config";
 
 interface ConflictCardProps {
   validationIssue: ValidationIssue;
 }
 
-const SEVERITY_CONFIG = {
-  Error: {
-    icon: AlertCircle,
-    iconClass: "text-destructive",
-    badgeVariant: "destructive" as const,
-    containerClass: "border-destructive/50 bg-destructive/5",
-  },
-  Warning: {
-    icon: AlertTriangle,
-    iconClass: "text-amber-600",
-    badgeVariant: "secondary" as const,
-    containerClass: "border-amber-400/50 bg-amber-50 dark:bg-amber-950/20",
-  },
-  Info: {
-    icon: Info,
-    iconClass: "text-blue-500",
-    badgeVariant: "outline" as const,
-    containerClass: "border-blue-300/50 bg-blue-50 dark:bg-blue-950/20",
-  },
-};
-
 export function ConflictCard({ validationIssue }: ConflictCardProps) {
-  const config = SEVERITY_CONFIG[validationIssue.type.severity];
+  const config = SeverityConfig[validationIssue.type.severity];
   const Icon = config.icon;
   const typeLabel = validationIssue.type.label;
 
@@ -59,7 +39,7 @@ export function ConflictCard({ validationIssue }: ConflictCardProps) {
         validationIssue.conflictingOfferings.length > 0 && (
           <div className="pl-8 space-y-1.5">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Affected Offerings
+              Conflicting Offering
             </p>
             {validationIssue.conflictingOfferings.map((o) => (
               <div
