@@ -102,6 +102,10 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
     ClassSectionId classSectionId,
     CancellationToken ct)
   {
+    var excludedValidationIssueTypes = ClassSectionValidationIssueTypeEnum
+      .List.Where(x => x.Severity == DomainValidationErrorSeverityEnum.Info)
+      .Select(x => x.Name).ToArray();
+
     try
     {
       string sql = @"MERGE [ClassSectionSchedulingStats] AS [Target]
@@ -110,7 +114,7 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
 	          FROM (
 		          SELECT DISTINCT OfferingId
 		          FROM [ClassSectionValidationIssues]
-		          WHERE ClassSectionId=@ClassSectionId AND OfferingId IS NOT NULL
+		          WHERE ClassSectionId=@ClassSectionId AND OfferingId IS NOT NULL AND Type NOT IN @ExcludedValidationIssueTypes
 		          GROUP BY OfferingId
 	          ) AS O
           ) AS [Source] (OfferingsWithIssuesCount)
@@ -128,7 +132,8 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
         TermId = termId,
         CourseId = courseId,
         ClassSectionId = classSectionId,
-        AggregateType = ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_WITH_ISSUE_COUNT.Name
+        AggregateType = ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_WITH_ISSUE_COUNT.Name,
+        ExcludedValidationIssueTypes = excludedValidationIssueTypes,
       });
     }
     catch (SqlException ex)
@@ -140,6 +145,49 @@ public class ClassSectionSchedulingStatsRepository : IClassSectionSchedulingStat
     }
   }
 
+  public async Task RefreshTotalValidationIssuesCountAcrossOfferingsForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId,
+    CancellationToken ct)
+  {
+    var excludedValidationIssueTypes = ClassSectionValidationIssueTypeEnum
+      .List.Where(x => x.Severity == DomainValidationErrorSeverityEnum.Info)
+      .Select(x => x.Name).ToArray();
+
+    try
+    {
+      string sql = @"
+MERGE [ClassSectionSchedulingStats] AS [Target]
+	USING (
+		SELECT COUNT(1)
+		FROM [ClassSectionValidationIssues]
+		WHERE ClassSectionId=@ClassSectionId AND Type NOT IN @ExcludedValidationIssueTypes
+	) AS [Source] (TotalClassSectionIssuesAcrossOfferingsCount)
+ON [Target].[AcademicTermId]=@TermId AND [Target].[CourseId]=@CourseId AND [Target].[ClassSectionId]=@ClassSectionId AND [Target].[AggregateType]=@AggregateType
+WHEN NOT MATCHED THEN
+	INSERT (AcademicTermId, CourseId, ClassSectionId, AggregateType, AggregateCount, ComputedAt)
+	VALUES (@TermId, @CourseId, @ClassSectionId, @AggregateType, [Source].[TotalClassSectionIssuesAcrossOfferingsCount], GETUTCDATE())
+WHEN MATCHED THEN
+	UPDATE SET [Target].[AggregateCount]=[Source].[TotalClassSectionIssuesAcrossOfferingsCount], [Target].[ComputedAt]=GETUTCDATE();";
+
+      using SqlConnection conn = await _connectionFactory.CreateOpenAsync(ct);
+
+      await conn.ExecuteAsync(sql, new
+      {
+        TermId = termId,
+        CourseId = courseId,
+        ClassSectionId = classSectionId,
+        AggregateType = ClassSectionSchedulingStatsAggregateTypeEnum.TOTAL_VALIDATION_ISSUES_ACROSS_OFFERINGS_COUNT.Name,
+        ExcludedValidationIssueTypes = excludedValidationIssueTypes,
+      });
+    }
+    catch (SqlException ex)
+    {
+      _logger.LogError(ex,
+        "Error refreshing offering with issue counts for CourseId {CourseId}, TermId {TermId}, ClassSectionStatus {ClassSectionStatus}, AggregateType {AggregateType}",
+        courseId.Value, termId.Value, classSectionId.Value,
+        ClassSectionSchedulingStatsAggregateTypeEnum.TOTAL_VALIDATION_ISSUES_ACROSS_OFFERINGS_COUNT.Name);
+    }
+  }
 
   public async Task RefreshOfferingsCountForClassSection(ClassSectionId classSectionId,
     CancellationToken ct)

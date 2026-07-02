@@ -129,6 +129,7 @@ export type SectionValidationView = {
   missingRoom: number;
   hasIssues: boolean;
   hasOfferings: boolean;
+  totalValidationIssues: number;
 };
 
 export function getValidationSummary(
@@ -142,7 +143,8 @@ export function getValidationSummary(
     missingTeacher: vs.OFFERING_MISSING_TEACHER_COUNT,
     missingSchedule: vs.OFFERING_NO_SCHEDULE_COUNT,
     missingRoom: vs.OFFERING_MISSING_ROOM_COUNT,
-    hasIssues: vs.OFFERING_WITH_ISSUE_COUNT > 0,
+    totalValidationIssues: vs.TOTAL_VALIDATION_ISSUES_ACROSS_OFFERINGS_COUNT,
+    hasIssues: vs.TOTAL_VALIDATION_ISSUES_ACROSS_OFFERINGS_COUNT > 0,
     hasOfferings: vs.OFFERINGS_COUNT > 0,
   };
 }

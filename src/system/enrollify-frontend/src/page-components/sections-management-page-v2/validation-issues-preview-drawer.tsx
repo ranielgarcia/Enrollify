@@ -29,20 +29,22 @@ import {
   Siren,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import SeverityConfig from "@/config/severity-config";
 
-interface ConflictPreviewDrawerProps {
+interface ValidationIssuesPreviewDrawerProps {
   sectionId: number | null;
   sectionName: string;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-function ConflictItem({
-  conflict,
+function ValidationIssueItem({
+  issue,
 }: {
-  conflict: NonNullable<Offering["conflicts"]>[number];
+  issue: NonNullable<Offering["validationIssues"]>[number];
 }) {
-  const severity = conflict.type?.severity ?? "Error";
+  const severity = issue.type?.severity ?? "Error";
+  const severityConfig = SeverityConfig[severity];
   const isError = severity === "Error";
 
   return (
@@ -55,11 +57,7 @@ function ConflictItem({
       )}
     >
       <div className="flex items-start gap-2">
-        {isError ? (
-          <Siren className="size-4 text-rose-500 mt-0.5 shrink-0" />
-        ) : (
-          <AlertTriangle className="size-4 text-amber-500 mt-0.5 shrink-0" />
-        )}
+        <severityConfig.icon className={`${severityConfig.textColor} size-4`} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <Badge
@@ -74,65 +72,62 @@ function ConflictItem({
               {severity}
             </Badge>
             <span className="text-xs font-mono text-muted-foreground">
-              {conflict.type?.code}
+              {issue.type?.code}
             </span>
           </div>
-          <p className="text-sm font-medium">{conflict.message}</p>
+          <p className="text-sm font-medium">{issue.message}</p>
 
           {/* Conflict time info */}
-          {conflict.DayOfWeek && (
+          {issue.dayOfWeek && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
               <Clock className="size-3" />
-              {conflict.DayOfWeek} {conflict.startTime?.substring(0, 5)}–
-              {conflict.endTime?.substring(0, 5)}
+              {issue.dayOfWeek} {issue.startTime?.substring(0, 5)}–
+              {issue.endTime?.substring(0, 5)}
             </div>
           )}
         </div>
       </div>
 
       {/* Conflicting offerings */}
-      {conflict.ConflictingOfferings &&
-        conflict.ConflictingOfferings.length > 0 && (
-          <div className="pl-6 space-y-1">
-            <div className="text-xs font-medium text-muted-foreground">
-              Conflicts with:
-            </div>
-            {conflict.ConflictingOfferings.map((co, idx) => (
-              <div
-                key={co.id ?? idx}
-                className="flex items-center gap-2 text-xs rounded border bg-background px-2 py-1.5"
-              >
-                <BookOpen className="size-3 text-muted-foreground shrink-0" />
-                <span className="font-medium">{co.subject.code}</span>
-                <span className="text-muted-foreground">
-                  {co.subject.title}
-                </span>
-                <span className="text-muted-foreground">·</span>
-                <span className="text-muted-foreground">{co.section.name}</span>
-                {co.room && (
-                  <>
-                    <span className="text-muted-foreground">·</span>
-                    <span className="flex items-center gap-1 text-muted-foreground">
-                      <DoorOpen className="size-3" />
-                      {co.room.roomNumber}
-                    </span>
-                  </>
-                )}
-              </div>
-            ))}
+      {issue.conflictingOfferings && issue.conflictingOfferings.length > 0 && (
+        <div className="pl-6 space-y-1">
+          <div className="text-xs font-medium text-muted-foreground">
+            Conflicts with:
           </div>
-        )}
+          {issue.conflictingOfferings.map((co, idx) => (
+            <div
+              key={co.id ?? idx}
+              className="flex items-center gap-2 text-xs rounded border bg-background px-2 py-1.5"
+            >
+              <BookOpen className="size-3 text-muted-foreground shrink-0" />
+              <span className="font-medium">{co.subject.code}</span>
+              <span className="text-muted-foreground">{co.subject.title}</span>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-muted-foreground">{co.section.name}</span>
+              {co.room && (
+                <>
+                  <span className="text-muted-foreground">·</span>
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    <DoorOpen className="size-3" />
+                    {co.room.roomNumber}
+                  </span>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-function OfferingConflictSection({ offering }: { offering: Offering }) {
-  const hasConflicts = (offering.conflicts?.length ?? 0) > 0;
+function OfferingValidationIssueSection({ offering }: { offering: Offering }) {
+  const hasValidationIssues = (offering.validationIssues?.length ?? 0) > 0;
   const subjectLabel =
     offering.snapshotSubjectCode ?? `Offering #${offering.id}`;
-  const conflictCount = offering.conflicts?.length ?? 0;
+  const validationIssueCount = offering.validationIssues?.length ?? 0;
 
-  if (!hasConflicts) return null;
+  if (!hasValidationIssues) return null;
 
   return (
     <Collapsible defaultOpen>
@@ -146,13 +141,16 @@ function OfferingConflictSection({ offering }: { offering: Offering }) {
           </span>
         )}
         <Badge variant="destructive" className="ml-auto text-xs">
-          {conflictCount} {conflictCount === 1 ? "conflict" : "conflicts"}
+          {validationIssueCount}{" "}
+          {validationIssueCount === 1
+            ? "validation issue"
+            : "validation issues"}
         </Badge>
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="mt-2 space-y-2">
-          {offering.conflicts?.map((conflict, idx) => (
-            <ConflictItem key={conflict.id ?? idx} conflict={conflict} />
+          {offering.validationIssues?.map((issue, idx) => (
+            <ValidationIssueItem key={issue.id ?? idx} issue={issue} />
           ))}
         </div>
       </CollapsibleContent>
@@ -165,24 +163,25 @@ export function ConflictPreviewDrawer({
   sectionName,
   isOpen,
   onOpenChange,
-}: ConflictPreviewDrawerProps) {
+}: ValidationIssuesPreviewDrawerProps) {
   const { data: offerings, isLoading } = useQuery({
     ...getOfferingDetailsForClassSectionOptions(sectionId ?? 0),
     enabled: isOpen && !!sectionId,
   });
 
-  const offeringsWithConflicts =
-    offerings?.filter((o) => (o.conflicts?.length ?? 0) > 0) ?? [];
+  const offeringsWithValidationIssues =
+    offerings?.filter((o) => (o.validationIssues?.length ?? 0) > 0) ?? [];
 
-  const totalConflicts = offeringsWithConflicts.reduce(
-    (sum, o) => sum + (o.conflicts?.length ?? 0),
+  const totalValidationIssues = offeringsWithValidationIssues.reduce(
+    (sum, o) => sum + (o.validationIssues?.length ?? 0),
     0,
   );
 
-  const errorConflicts = offeringsWithConflicts.reduce(
+  const errorValidationIssues = offeringsWithValidationIssues.reduce(
     (sum, o) =>
       sum +
-      (o.conflicts?.filter((c) => c.type?.severity === "Error").length ?? 0),
+      (o.validationIssues?.filter((issue) => issue.type.severity === "Error")
+        .length ?? 0),
     0,
   );
 
@@ -192,10 +191,10 @@ export function ConflictPreviewDrawer({
         <DrawerHeader className="border-b pb-4">
           <DrawerTitle className="flex items-center gap-2">
             <Siren className="size-5 text-rose-500" />
-            Conflict Details
+            Validation Issues Details
           </DrawerTitle>
           <DrawerDescription>
-            Scheduling conflicts for{" "}
+            Scheduling validation issues for{" "}
             <span className="font-semibold text-foreground">{sectionName}</span>
           </DrawerDescription>
         </DrawerHeader>
@@ -207,25 +206,27 @@ export function ConflictPreviewDrawer({
                 <Skeleton key={i} className="h-24 w-full rounded-lg" />
               ))}
             </div>
-          ) : offeringsWithConflicts.length === 0 ? (
+          ) : offeringsWithValidationIssues.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-12 text-center">
               <CheckCircle2 className="size-10 text-emerald-400" />
               <div>
-                <p className="font-medium text-sm">No Conflicts Detected</p>
+                <p className="font-medium text-sm">
+                  No Validation Issues Detected
+                </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  This section has no scheduling conflicts.
+                  This section has no scheduling validation issues.
                 </p>
               </div>
             </div>
           ) : (
             <>
-              {errorConflicts > 0 && (
+              {errorValidationIssues > 0 && (
                 <Alert variant="destructive">
                   <AlertTitle>Cannot open for enrollment</AlertTitle>
                   <AlertDescription>
-                    {errorConflicts} Error-severity conflict
-                    {errorConflicts !== 1 ? "s" : ""} must be resolved in the
-                    Room Scheduler before this section can be opened.
+                    {errorValidationIssues} Error-severity conflict
+                    {errorValidationIssues !== 1 ? "s" : ""} must be resolved in
+                    the Room Scheduler before this section can be opened.
                   </AlertDescription>
                 </Alert>
               )}
@@ -235,17 +236,18 @@ export function ConflictPreviewDrawer({
                 <div className="flex items-center gap-2 text-sm">
                   <Siren className="size-4 text-rose-500" />
                   <span className="font-semibold tabular-nums text-rose-600 dark:text-rose-400">
-                    {totalConflicts}
+                    {totalValidationIssues}
                   </span>
                   <span className="text-muted-foreground">
-                    total conflict{totalConflicts !== 1 ? "s" : ""}
+                    total validation issue
+                    {totalValidationIssues !== 1 ? "s" : ""}
                   </span>
                 </div>
                 <div className="h-4 w-px bg-border" />
                 <div className="flex items-center gap-2 text-sm">
                   <AlertTriangle className="size-4 text-rose-500" />
                   <span className="font-semibold tabular-nums text-rose-600 dark:text-rose-400">
-                    {errorConflicts}
+                    {errorValidationIssues}
                   </span>
                   <span className="text-muted-foreground">
                     blocking enrollment
@@ -253,10 +255,10 @@ export function ConflictPreviewDrawer({
                 </div>
               </div>
 
-              {/* Conflict list by offering */}
+              {/* Validation issue list by offering */}
               <div className="space-y-4">
-                {offeringsWithConflicts.map((offering) => (
-                  <OfferingConflictSection
+                {offeringsWithValidationIssues.map((offering) => (
+                  <OfferingValidationIssueSection
                     key={offering.id}
                     offering={offering}
                   />

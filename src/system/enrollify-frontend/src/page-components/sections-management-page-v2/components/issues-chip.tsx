@@ -36,8 +36,8 @@ export function IssuesChip({ section, onClick, className }: IssuesChipProps) {
     );
   }
 
-  const label = `${v.withIssues} issue${v.withIssues === 1 ? "" : "s"}`;
-  const a11yLabel = `View ${v.withIssues} validation ${v.withIssues === 1 ? "issue" : "issues"}`;
+  const label = `${v.totalValidationIssues} issue${v.totalValidationIssues === 1 ? "" : "s"}`;
+  const a11yLabel = `View ${v.totalValidationIssues} validation ${v.totalValidationIssues === 1 ? "issue" : "issues"}`;
 
   const chipClasses = cn(
     "inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700",

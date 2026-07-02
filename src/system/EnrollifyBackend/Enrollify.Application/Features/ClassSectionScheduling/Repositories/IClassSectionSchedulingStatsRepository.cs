@@ -35,6 +35,10 @@ public interface IClassSectionSchedulingStatsRepository
   Task RefreshOfferingCountWithIssueForClassSection(AcademicTermId termId, CourseId courseId,
     ClassSectionId classSectionId, CancellationToken cancellationToken);
 
+  Task RefreshTotalValidationIssuesCountAcrossOfferingsForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId,
+    CancellationToken ct);
+
   Task RefreshOfferingCountWithMissingTeacherIssueForClassSection(AcademicTermId termId, CourseId courseId,
     ClassSectionId classSectionId, CancellationToken cancellationToken);
 

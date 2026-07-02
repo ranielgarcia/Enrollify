@@ -24,7 +24,7 @@ import { BulkAdviserAssignDrawer } from "./bulk-adviser-assign-drawer";
 import { BulkStatusTransitionDialog } from "./bulk-status-transition-dialog";
 import { CancelSectionAlertDialog } from "./cancel-section-alert-dialog";
 import { SectionsErrorBoundary } from "./components/sections-error-boundary";
-import { ConflictPreviewDrawer } from "./conflict-preview-drawer";
+import { ConflictPreviewDrawer } from "./validation-issues-preview-drawer";
 import { EmptyState } from "./empty-state";
 import { SectionFormDrawer } from "./section-form-drawer";
 import { SectionsCardView } from "./sections-card-view";

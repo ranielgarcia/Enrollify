@@ -51,7 +51,8 @@ public class GetClassSectionsWithinAcademicTermByCollegeIdQueryHandler :
         ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_WITH_ISSUE_COUNT,
         ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_MISSING_ROOM_COUNT,
         ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_MISSING_TEACHER_COUNT,
-        ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_NO_SCHEDULE_COUNT
+        ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_NO_SCHEDULE_COUNT,
+        ClassSectionSchedulingStatsAggregateTypeEnum.TOTAL_VALIDATION_ISSUES_ACROSS_OFFERINGS_COUNT
       ]);
 
     List<ClassSectionSchedulingStats> schedulingStatsList =

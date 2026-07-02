@@ -8,8 +8,8 @@ import {
   DrawerFooter,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, AlertTriangle, Info } from "lucide-react";
 import { ConflictCard } from "./conflict-card";
+import SeverityConfig from "@/config/severity-config";
 
 interface OfferingConflictsDrawerProps {
   isOpen: boolean;
@@ -17,27 +17,6 @@ interface OfferingConflictsDrawerProps {
   offeringSubjectCode: string;
   validationIssues: ValidationIssue[];
 }
-
-const severityConfig = {
-  Error: {
-    label: "Hard Conflicts",
-    icon: AlertCircle,
-    textColor: "text-destructive",
-    description: "These must be resolved before the schedule can be published.",
-  },
-  Warning: {
-    label: "Warnings",
-    icon: AlertTriangle,
-    textColor: "text-amber-600 dark:text-amber-500",
-    description: "These are advisory — review before publishing.",
-  },
-  Info: {
-    label: "Information",
-    icon: Info,
-    textColor: "text-blue-600 dark:text-blue-500",
-    description: "Additional information about this offering.",
-  },
-} as const;
 
 export function OfferingConflictsDrawer({
   isOpen,
@@ -65,9 +44,8 @@ export function OfferingConflictsDrawer({
   ) => {
     if (validationIssueList.length === 0) return null;
 
-    const config = severityConfig[severity];
+    const config = SeverityConfig[severity];
     const Icon = config.icon;
-    console.log(severity, config);
 
     return (
       <section key={severity} className="space-y-3">

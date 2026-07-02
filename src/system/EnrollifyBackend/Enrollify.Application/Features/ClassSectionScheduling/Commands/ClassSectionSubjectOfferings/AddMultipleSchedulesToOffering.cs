@@ -154,12 +154,14 @@ public static class AddMultipleSchedulesToOffering
           if (scheduleId is not null) addedIds.Add(scheduleId.Value);
         }
 
-        await _publisher.Publish(new RefreshClassSectionValidationIssuesRequestedEvent(section.Id), cancellationToken);
-
         _logger.LogInformation("Added {Count} schedule(s) to offering {OfferingId}", addedIds.Count,
           command.OfferingId.Value);
 
         await transaction.CommitAsync(cancellationToken);
+
+        // should happen after commit above transaction
+        await _publisher.Publish(new RefreshClassSectionValidationIssuesRequestedEvent(section.Id), cancellationToken);
+
         return Result.Success(new Response(addedIds));
       }
       catch (Exception e)

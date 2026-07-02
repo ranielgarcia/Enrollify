@@ -319,7 +319,6 @@ export const getCollegeCoursesWithClassSectionsForSchedulingOptions = (
         academicTermId,
       ),
       select: (data): CollegeCoursesWithClassSections => {
-        console.log(data);
         return CollegeCoursesWithClassSectionsSchema.parse(data);
       },
     },

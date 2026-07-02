@@ -49,6 +49,9 @@ public class ClassSectionSchedulingStatsAggregateTypeEnum : SmartEnum<ClassSecti
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum OFFERINGS_COUNT =
     new("OFFERINGS_COUNT", 15);
 
+  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum TOTAL_VALIDATION_ISSUES_ACROSS_OFFERINGS_COUNT =
+    new("TOTAL_VALIDATION_ISSUES_ACROSS_OFFERINGS_COUNT", 16);
+
   public ClassSectionSchedulingStatsAggregateTypeEnum(string name, int value,
     ClassSectionValidationIssueCategoryEnum? issueCategory = null) : base(name, value)
   {
