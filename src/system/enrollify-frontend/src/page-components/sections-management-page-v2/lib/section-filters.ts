@@ -7,12 +7,7 @@ import type {
  * Single source of truth for the page-level "quick filter" enum.
  * Mirrors the values produced by `searchParams.ts`.
  */
-export type QuickFilter =
-  | "all"
-  | "draft"
-  | "open"
-  | "cancelled"
-  | "needs-attention";
+export type QuickFilter = "all" | "draft" | "open" | "cancelled";
 
 /**
  * Pure quick-filter predicate. Removes the duplicate `applyQuickFilter` blocks
@@ -32,8 +27,6 @@ export function filterSectionsByQuickFilter(
         return s.status.name === "Open";
       case "cancelled":
         return s.status.name === "Cancelled";
-      case "needs-attention":
-        return (s.validationSummary?.OFFERING_WITH_ISSUE_COUNT ?? 0) > 0;
       default:
         return true;
     }
