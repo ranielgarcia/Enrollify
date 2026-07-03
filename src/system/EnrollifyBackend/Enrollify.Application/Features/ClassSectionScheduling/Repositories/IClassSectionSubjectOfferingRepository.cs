@@ -1,6 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
-
 namespace Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 
 public interface IClassSectionSubjectOfferingRepository
@@ -12,5 +9,4 @@ public interface IClassSectionSubjectOfferingRepository
     CancellationToken cancellationToken);
 
   Task<Result> Delete(ClassSectionSubjectOffering classSectionSubjectOffering, CancellationToken cancellationToken);
-
 }

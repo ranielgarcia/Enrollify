@@ -1,6 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Core.Aggregates.CollegeAggregate;
-
 namespace Enrollify.Application.Features.Colleges;
 
 public interface ICollegeRepository

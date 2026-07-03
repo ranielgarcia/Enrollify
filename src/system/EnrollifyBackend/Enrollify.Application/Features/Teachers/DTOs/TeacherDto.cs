@@ -1,6 +1,4 @@
 using Enrollify.Application.SharedDTOs;
-using Enrollify.Core.Aggregates.SubjectAggregate;
-using Enrollify.Core.Aggregates.TeacherAggregate;
 
 namespace Enrollify.Application.Features.Teachers.DTOs;
 

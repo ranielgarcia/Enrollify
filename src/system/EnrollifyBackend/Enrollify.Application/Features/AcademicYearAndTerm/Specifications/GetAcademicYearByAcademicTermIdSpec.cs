@@ -1,6 +1,3 @@
-using Ardalis.Specification;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-
 namespace Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 
 public class GetAcademicYearByAcademicTermIdSpec : Specification<AcademicYear>

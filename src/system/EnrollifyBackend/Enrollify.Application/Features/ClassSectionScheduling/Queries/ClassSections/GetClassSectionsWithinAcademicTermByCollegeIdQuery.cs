@@ -1,16 +1,7 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
-using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.SchedulingStats;
 using Enrollify.Application.Features.Courses.Specifications;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSchedulingStatsAggregate;
-using Enrollify.Core.Aggregates.CollegeAggregate;
-using Enrollify.Core.Aggregates.CourseAggregate;
-using Enrollify.Core.Constants;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Queries.ClassSections;
 
@@ -60,7 +51,8 @@ public class GetClassSectionsWithinAcademicTermByCollegeIdQueryHandler :
         ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_WITH_ISSUE_COUNT,
         ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_MISSING_ROOM_COUNT,
         ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_MISSING_TEACHER_COUNT,
-        ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_NO_SCHEDULE_COUNT
+        ClassSectionSchedulingStatsAggregateTypeEnum.OFFERING_NO_SCHEDULE_COUNT,
+        ClassSectionSchedulingStatsAggregateTypeEnum.TOTAL_VALIDATION_ISSUES_ACROSS_OFFERINGS_COUNT
       ]);
 
     List<ClassSectionSchedulingStats> schedulingStatsList =
@@ -75,9 +67,6 @@ public class GetClassSectionsWithinAcademicTermByCollegeIdQueryHandler :
       .ListAsync(
         new GetClassSectionsWithinAcademicTermAndByCourseIdsSpec(request.AcademicTermId,
           courses.Select(c => c.Id).ToList()), cancellationToken);
-
-    if (!allClassSectionsForCourses.Any())
-      return Result.NotFound("No class-sections found for college.");
 
     var classSectionsPerCourse = allClassSectionsForCourses.GroupBy(cs => cs.CourseId)
       .ToDictionary(g => g.Key, g => g.ToList());

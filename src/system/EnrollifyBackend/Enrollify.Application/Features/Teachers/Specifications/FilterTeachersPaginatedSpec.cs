@@ -1,7 +1,5 @@
 using System.Linq.Expressions;
-using Ardalis.Specification;
 using Enrollify.Application.Filtering;
-using Enrollify.Core.Aggregates.TeacherAggregate;
 
 namespace Enrollify.Application.Features.Teachers.Specifications;
 
@@ -61,7 +59,7 @@ public class FilterTeachersPaginatedSpec : Specification<Teacher>
                 "fullname" => FilterExpressionBuilder.ForString<Teacher>(t => t.FirstName + " " + t.MiddleName + " " + t.LastName, filter),
 
                 "department" => FilterExpressionBuilder.ForNullableString<Teacher>(t => t.Department != null ? t.Department.Name : null, filter),
-                
+
                 // Vogen value objects (explicit cast to string)
                 "teacheridentifier" => FilterExpressionBuilder.ForString<Teacher>(t => (string)t.TeacherIdentifier, filter),
                 "email"             => FilterExpressionBuilder.ForString<Teacher>(t => (string)t.Email, filter),

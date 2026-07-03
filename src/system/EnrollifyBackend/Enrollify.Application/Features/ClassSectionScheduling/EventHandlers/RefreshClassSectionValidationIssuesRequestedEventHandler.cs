@@ -1,9 +1,5 @@
 using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSectionValidationIssues;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.EventHandlers;
 
@@ -22,7 +18,7 @@ public sealed class RefreshClassSectionValidationIssuesRequestedEventHandler(
   {
     ClassSectionId classSectionId = notification.ClassSectionId;
 
-    await mediator.Send(new ComputeAndGetClassSectionValidationIssue.Command(classSectionId),
+    await mediator.Send(new ComputeAndGetValidationIssuesForClassSection.Command(classSectionId),
       cancellationToken);
   }
 }

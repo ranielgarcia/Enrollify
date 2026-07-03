@@ -1,6 +1,6 @@
 import { getAllCoursesOptions } from "@/api/collections/course-collection";
 import { filterClassSectionsPaginatedOptions } from "@/api/collections/class-section-collection";
-import type { ClassSection } from "@/api/models/class-section";
+import type { ClassSection } from "@/api/models/class-scheduling/class-section";
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { ModuleIcons } from "@/config/module-icons";
 import { useCrudState } from "@/hooks/use-crud-state";

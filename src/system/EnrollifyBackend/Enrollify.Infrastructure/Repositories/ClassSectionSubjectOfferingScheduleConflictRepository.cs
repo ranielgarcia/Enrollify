@@ -54,6 +54,7 @@ public class
             INNER JOIN ClassSections sec ON sec.Id = o.ClassSectionId
             WHERE o.TeacherId = @TeacherId
               AND sec.AcademicTermId = @AcademicTermId
+              AND sec.StatusId != @ExcludeCancelledStatus
               AND cs.DayOfWeek = @DayOfWeek
               AND cs.StartTime < @NewEndTime
               AND cs.EndTime > @NewStartTime
@@ -71,7 +72,8 @@ public class
         DayOfWeek = dayOfWeek.Value,
         NewStartTime = newStartTime,
         NewEndTime = newEndTime,
-        ExcludeOfferingId = excludeOfferingId.HasValue ? (int?)excludeOfferingId.Value.Value : null
+        ExcludeOfferingId = excludeOfferingId.HasValue ? (int?)excludeOfferingId.Value.Value : null,
+        ExcludeCancelledStatus = ClassSectionStatusEnum.Cancelled.Value
       });
 
     return exists.HasValue;
@@ -99,6 +101,7 @@ public class
             INNER JOIN ClassSections sec ON sec.Id = o.ClassSectionId
             WHERE o.RoomId = @RoomId
               AND sec.AcademicTermId = @AcademicTermId
+              AND sec.StatusId != @ExcludeCancelledStatus
               AND cs.DayOfWeek = @DayOfWeek
               AND cs.StartTime < @NewEndTime
               AND cs.EndTime > @NewStartTime
@@ -116,7 +119,8 @@ public class
         DayOfWeek = dayOfWeek.Value,
         NewStartTime = newStartTime,
         NewEndTime = newEndTime,
-        ExcludeOfferingId = excludeOfferingId.HasValue ? (int?)excludeOfferingId.Value.Value : null
+        ExcludeOfferingId = excludeOfferingId.HasValue ? (int?)excludeOfferingId.Value.Value : null,
+        ExcludeCancelledStatus = ClassSectionStatusEnum.Cancelled.Value
       });
 
     return exists.HasValue;
@@ -216,6 +220,7 @@ public class
               AND sec.IsActive = 1
               AND sec.AcademicTermId = @AcademicTermId
               AND sec.Id != @ExcludeSectionId
+              AND sec.StatusId != @ExcludeCancelledStatus
               AND (
                   (@HasTeachers = 1 AND o.TeacherId IN @TeacherIds)
                   OR (@HasRooms = 1 AND o.RoomId IN @RoomIds)
@@ -230,7 +235,8 @@ public class
         HasTeachers = teacherIdList.Any() ? 1 : 0,
         TeacherIds = teacherIdList.Any() ? teacherIdList.Select(t => t.Value) : new List<int> { -1 },
         HasRooms = roomIdList.Any() ? 1 : 0,
-        RoomIds = roomIdList.Any() ? roomIdList.Select(r => r.Value) : new List<int> { -1 }
+        RoomIds = roomIdList.Any() ? roomIdList.Select(r => r.Value) : new List<int> { -1 },
+        ExcludeCancelledStatus = ClassSectionStatusEnum.Cancelled.Value
       });
 
     return results.ToList();

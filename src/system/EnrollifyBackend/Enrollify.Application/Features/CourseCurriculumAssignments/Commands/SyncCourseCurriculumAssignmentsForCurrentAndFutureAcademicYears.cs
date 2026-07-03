@@ -1,10 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
-using Microsoft.Extensions.Logging;
-
 namespace Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 
 public static class SyncCourseCurriculumAssignmentsForCurrentAndFutureAcademicYears

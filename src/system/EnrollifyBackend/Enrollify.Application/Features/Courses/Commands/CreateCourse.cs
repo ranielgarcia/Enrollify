@@ -1,9 +1,4 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.Courses.Events;
-using Enrollify.Core.Aggregates.CollegeAggregate;
-using Enrollify.Core.Aggregates.CourseAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.Courses.Commands;
 

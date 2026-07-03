@@ -1,14 +1,6 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
-using Enrollify.Core.Aggregates.CurriculumAggregate;
-using Enrollify.Core.Constants;
 using Enrollify.Core.Services;
-using Enrollify.SharedKernel;
-using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 

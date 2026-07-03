@@ -1,6 +1,4 @@
 using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
-using Enrollify.Core.Aggregates.TeacherAggregate;
-using Enrollify.SharedKernel;
 using FluentValidation;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections.Validators;

@@ -1,13 +1,6 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.SchedulingStats;
 using Enrollify.Application.Features.Courses.Specifications;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSchedulingStatsAggregate;
-using Enrollify.Core.Aggregates.CollegeAggregate;
-using Enrollify.Core.Aggregates.CourseAggregate;
-using Enrollify.Core.Constants;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Queries.SchedulingStats;
 
@@ -45,18 +38,32 @@ public class GetSchedulingStatsForCollegeInAcademicTermQueryHandler
         ClassSectionSchedulingStatsAggregateTypeEnum.DRAFT_SECTIONS,
         ClassSectionSchedulingStatsAggregateTypeEnum.OPEN_SECTIONS,
         ClassSectionSchedulingStatsAggregateTypeEnum.CANCELLED_SECTIONS,
-        ClassSectionSchedulingStatsAggregateTypeEnum.HARD_CONFLICTS,
-        ClassSectionSchedulingStatsAggregateTypeEnum.SOFT_CONFLICTS,
-        ClassSectionSchedulingStatsAggregateTypeEnum.DATA_INTEGRITY,
-        ClassSectionSchedulingStatsAggregateTypeEnum.INFORMATIONAL
+        ClassSectionSchedulingStatsAggregateTypeEnum.SCHEDULE_CONFLICTS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.SCHEDULE_POLICY_VIOLATIONS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.CAPACITY_CONSTRAINTS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.RESOURCE_MISALIGNMENTS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.MISSING_REQUIREMENTS,
+        ClassSectionSchedulingStatsAggregateTypeEnum.DATA_INCONSISTENCIES,
+        ClassSectionSchedulingStatsAggregateTypeEnum.DEFAULT_VALUES
       ]);
 
     List<ClassSectionSchedulingStats> allStats =
       await _schedulingStatsReadRepository.ListAsync(spec, cancellationToken);
 
     if (!allStats.Any())
-      return Result.NotFound(
-        $"No scheduling stats found for college {request.collegeId.Value} in term {request.TermId.Value}.");
+      return new Dictionary<string, int>()
+      {
+        { ClassSectionSchedulingStatsAggregateTypeEnum.DRAFT_SECTIONS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.OPEN_SECTIONS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.CANCELLED_SECTIONS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.SCHEDULE_CONFLICTS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.SCHEDULE_POLICY_VIOLATIONS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.CAPACITY_CONSTRAINTS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.RESOURCE_MISALIGNMENTS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.MISSING_REQUIREMENTS.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.DATA_INCONSISTENCIES.Name, 0 },
+        { ClassSectionSchedulingStatsAggregateTypeEnum.DEFAULT_VALUES.Name, 0 },
+      };
 
     var stats = allStats
       .GroupBy(x => x.AggregateType)

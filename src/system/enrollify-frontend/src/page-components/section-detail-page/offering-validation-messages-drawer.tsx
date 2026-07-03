@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { OfferingValidationMessage } from "@/api/models/class-section";
+import type { OfferingValidationMessage } from "@/api/models/class-scheduling/class-section";
 import {
   Drawer,
   DrawerContent,
@@ -8,8 +8,7 @@ import {
   DrawerFooter,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, AlertCircle, Info, X } from "lucide-react";
+import { AlertTriangle, AlertCircle, Info } from "lucide-react";
 
 interface OfferingValidationMessagesDrawerProps {
   isOpen: boolean;
@@ -73,8 +72,7 @@ export function OfferingValidationMessagesDrawer({
     Object.keys(grouped).forEach((key) => {
       grouped[key as "error" | "warning" | "info"].sort(
         (a, b) =>
-          new Date(a.computedAt).getTime() -
-          new Date(b.computedAt).getTime(),
+          new Date(a.computedAt!).getTime() - new Date(b.computedAt!).getTime(),
       );
     });
 

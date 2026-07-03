@@ -1,7 +1,4 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.Queries;
-using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 

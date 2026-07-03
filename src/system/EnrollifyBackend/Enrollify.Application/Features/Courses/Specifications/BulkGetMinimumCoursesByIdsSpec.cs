@@ -1,6 +1,3 @@
-using Ardalis.Specification;
-using Enrollify.Core.Aggregates.CourseAggregate;
-
 namespace Enrollify.Application.Features.Courses.Specifications;
 
 public class BulkGetMinimumCoursesByIdsSpec : Specification<Course>

@@ -1,5 +1,3 @@
-import { OfferingSchema, type Offering } from "../models/offering";
-import createQueryOptions from "@/hooks/create-query-options";
 import createMutationOptions from "@/hooks/create-mutation-options";
 import { toast } from "sonner";
 
@@ -35,18 +33,18 @@ const sectionDetailKey = (sectionId: number) => [
   sectionId,
 ];
 
-export const createOfferingOptions = (sectionId: number) =>
-  createMutationOptions({
-    httpVerb: "post",
-    path: "/api/subject-offerings",
-    mutationKey: queryKeys.create(),
-    options: {
-      meta: {
-        invalidateQueries: [queryKeys.base(), sectionDetailKey(sectionId)],
-      },
-      onSuccess: () => toast.success("Subject offering assigned successfully"),
-    },
-  });
+// export const createOfferingOptions = (sectionId: number) =>
+//   createMutationOptions({
+//     httpVerb: "post",
+//     path: "/api/subject-offerings",
+//     mutationKey: queryKeys.create(),
+//     options: {
+//       meta: {
+//         invalidateQueries: [queryKeys.base(), sectionDetailKey(sectionId)],
+//       },
+//       onSuccess: () => toast.success("Subject offering assigned successfully"),
+//     },
+//   });
 
 export const updateOfferingOptions = (id: number, sectionId: number) =>
   createMutationOptions({
@@ -56,10 +54,7 @@ export const updateOfferingOptions = (id: number, sectionId: number) =>
     mutationKey: queryKeys.update(id),
     options: {
       meta: {
-        invalidateQueries: [
-          queryKeys.base(),
-          sectionDetailKey(sectionId),
-        ],
+        invalidateQueries: [queryKeys.base(), sectionDetailKey(sectionId)],
       },
       onSuccess: () => toast.success("Offering updated successfully"),
     },
@@ -76,10 +71,7 @@ export const createScheduleRowsOptions = (
     mutationKey: queryKeys.createSchedule(offeringId),
     options: {
       meta: {
-        invalidateQueries: [
-          queryKeys.base(),
-          sectionDetailKey(sectionId),
-        ],
+        invalidateQueries: [queryKeys.base(), sectionDetailKey(sectionId)],
       },
       onSuccess: () => toast.success("Schedule row(s) added successfully"),
     },
@@ -97,10 +89,7 @@ export const deleteScheduleRowOptions = (
     mutationKey: queryKeys.deleteSchedule(offeringId, scheduleId),
     options: {
       meta: {
-        invalidateQueries: [
-          queryKeys.base(),
-          sectionDetailKey(sectionId),
-        ],
+        invalidateQueries: [queryKeys.base(), sectionDetailKey(sectionId)],
       },
       onSuccess: () => toast.success("Schedule row removed successfully"),
     },

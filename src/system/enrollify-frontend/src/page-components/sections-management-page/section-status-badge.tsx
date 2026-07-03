@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   ClassSectionStatusEnum,
   type ClassSectionStatus,
-} from "@/api/models/class-section";
+} from "@/api/models/class-scheduling/class-section";
 import { cn } from "@/lib/utils";
 
 interface SectionStatusBadgeProps {

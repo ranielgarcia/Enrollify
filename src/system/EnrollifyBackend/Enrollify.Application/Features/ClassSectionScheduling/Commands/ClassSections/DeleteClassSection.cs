@@ -1,11 +1,4 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionScheduling.Extensions;
-using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
-using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
 

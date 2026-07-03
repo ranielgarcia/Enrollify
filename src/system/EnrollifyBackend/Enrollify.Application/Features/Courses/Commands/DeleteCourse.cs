@@ -1,10 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.CourseAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
-
 namespace Enrollify.Application.Features.Courses.Commands;
 
 public static class DeleteCourse

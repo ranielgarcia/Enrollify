@@ -1,5 +1,3 @@
-using Enrollify.Core.Aggregates.RoomAggregate;
-using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.WebAPI.Authentication;
 using Enrollify.WebAPI.Infrastructure.Exceptions;
 using Enrollify.WebAPI.Plumbing;
@@ -12,10 +10,12 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
+    builder.AddServiceDefaults();
+
     builder.Services.AddControllers();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
-    builder.Services.AddSerilogLogging(builder.Configuration);
+    // builder.Services.AddSerilogLogging(builder.Configuration);
 
     // Currently remove App Insights logging
     // Due the following:
@@ -44,13 +44,15 @@ try
 
     var app = builder.Build();
 
+    app.MapDefaultEndpoints();
+
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
     }
 
-    app.UseSerilogLogging();
+    //app.UseSerilogLogging();
     app.UseExceptionHandler();
     app.UseRouting();
     app.UseHttpsRedirection();

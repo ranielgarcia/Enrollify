@@ -1,7 +1,3 @@
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.CourseAggregate;
-
 namespace Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 
 public interface IClassSectionSchedulingStatsRepository
@@ -15,22 +11,33 @@ public interface IClassSectionSchedulingStatsRepository
   Task RefreshCancelledSectionCountsForCourse(AcademicTermId termId, CourseId courseId,
     CancellationToken cancellationToken);
 
-  Task RefreshHardConflictIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
+  Task RefreshScheduleConflictIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
     ClassSectionId classSectionId, CancellationToken cancellationToken);
 
-  Task RefreshSoftConflictIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
+  Task RefreshSchedulePolicyViolationIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
     ClassSectionId classSectionId, CancellationToken cancellationToken);
 
-  Task RefreshDataIntegrityIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
-    ClassSectionId classSectionId,
-    CancellationToken cancellationToken);
+  Task RefreshCapacityConstraintIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId, CancellationToken cancellationToken);
 
-  Task RefreshInformationalIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
-    ClassSectionId classSectionId,
-    CancellationToken cancellationToken);
+  Task RefreshResourceMisalignmentIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId, CancellationToken cancellationToken);
+
+  Task RefreshMissingRequirementIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId, CancellationToken cancellationToken);
+
+  Task RefreshDataInconsistencyIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId, CancellationToken cancellationToken);
+
+  Task RefreshDefaultValueIssueCountsForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId, CancellationToken cancellationToken);
 
   Task RefreshOfferingCountWithIssueForClassSection(AcademicTermId termId, CourseId courseId,
     ClassSectionId classSectionId, CancellationToken cancellationToken);
+
+  Task RefreshTotalValidationIssuesCountAcrossOfferingsForClassSection(AcademicTermId termId, CourseId courseId,
+    ClassSectionId classSectionId,
+    CancellationToken ct);
 
   Task RefreshOfferingCountWithMissingTeacherIssueForClassSection(AcademicTermId termId, CourseId courseId,
     ClassSectionId classSectionId, CancellationToken cancellationToken);

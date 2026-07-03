@@ -1,12 +1,6 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.Subjects;
-using Enrollify.Core.Aggregates.CourseAggregate;
-using Enrollify.Core.Aggregates.RoomTypeAggregate;
-using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate.Models;
 using Enrollify.Core.Constants.AcademicBuiltInData;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.Subjects.Commands;
 

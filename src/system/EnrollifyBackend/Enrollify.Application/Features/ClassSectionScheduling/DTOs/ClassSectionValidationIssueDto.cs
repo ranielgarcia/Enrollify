@@ -1,5 +1,4 @@
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
-using Enrollify.Core.Constants;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 
@@ -12,7 +11,7 @@ public record ClassSectionValidationIssueDto
 {
   public string? Id { get; init; }
 
-  public ClassSectionValidationIssueTypeEnum Type { get; init; }
+  public ClassSectionValidationIssueTypeDto Type { get; init; }
 
   public string Message { get; init; } = string.Empty;
 
@@ -27,7 +26,7 @@ public record ClassSectionValidationIssueDto
   {
     return new ClassSectionValidationIssueDto
     {
-      Type = issue.Type,
+      Type = new (issue.Type.Name, issue.Type.Label, issue.Type.Category.Name, issue.Type.Severity.Name),
       Message = issue.Message,
       DayOfWeek = issue.DayOfWeek?.Value,
       StartTime = issue.StartTime?.ToString("HH:mm:ss"),
@@ -44,6 +43,8 @@ public record ClassSectionValidationIssueDto
     };
   }
 }
+
+public record ClassSectionValidationIssueTypeDto(string Code, string Label, string Category, string Severity);
 
 /// <summary>
 /// Summary of an offering affected by a conflict

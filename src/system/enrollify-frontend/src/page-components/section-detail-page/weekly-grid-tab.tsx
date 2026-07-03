@@ -1,13 +1,15 @@
-import type { OfferingWithSchedules } from "@/api/models/offering";
+import type { Offering } from "@/api/models/class-scheduling/offering";
 import { WeeklyScheduleGrid } from "./weekly-schedule-grid";
 import { CalendarClock } from "lucide-react";
 
 interface WeeklyGridTabProps {
-  offerings: OfferingWithSchedules[];
+  offerings: Offering[];
 }
 
 export function WeeklyGridTab({ offerings }: WeeklyGridTabProps) {
-  const hasSchedules = offerings.some((o) => o.schedules.length > 0);
+  const hasSchedules = offerings.some(
+    (o) => o.schedules && o.schedules.length > 0,
+  );
 
   if (!hasSchedules) {
     return (

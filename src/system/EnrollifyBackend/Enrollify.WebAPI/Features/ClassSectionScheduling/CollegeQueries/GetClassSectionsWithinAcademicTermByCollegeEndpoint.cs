@@ -30,15 +30,16 @@ public class
 [Group<CollegesEndpointSubGroup>]
 [Authorize(Policy = PolicyName.HasViewClassSectionsPermission)]
 public class GetClassSectionsWithinAcademicTermByCollegeEndpoint(IMediator mediator)
-  : Endpoint<GetClassSectionsWithinAcademicTermByCollegeRequest, CollegeCoursesWithClassSectionsDto>
+  : Endpoint<GetClassSectionsWithinAcademicTermByCollegeRequest, OkOrNotFoundApiResult<CollegeCoursesWithClassSectionsDto>>
 {
-  public override async Task HandleAsync(GetClassSectionsWithinAcademicTermByCollegeRequest req, CancellationToken ct)
+  public override async Task<OkOrNotFoundApiResult<CollegeCoursesWithClassSectionsDto>>
+    ExecuteAsync(GetClassSectionsWithinAcademicTermByCollegeRequest req, CancellationToken ct)
   {
     Result<CollegeCoursesWithClassSectionsDto> toReturn = await mediator.Send(
       new GetClassSectionsWithinAcademicTermByCollegeIdQuery(
         CollegeId.From(req.CollegeId),
         AcademicTermId.From(req.AcademicTermId)), ct);
 
-    await Send.OkAsync(toReturn, ct);
+    return toReturn.ToGetByIdResult(dto => dto);
   }
 }

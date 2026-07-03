@@ -1,6 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Core.Aggregates.TeacherAggregate;
-
 namespace Enrollify.Application.Features.Teachers;
 
 public interface ITeacherRepository

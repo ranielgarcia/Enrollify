@@ -1,6 +1,5 @@
 using Enrollify.Application.Features.AcademicYearAndTerm.Events;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
-using MediatR;
 
 namespace Enrollify.Application.Features.AcademicYearAndTerm.EventHandlers;
 

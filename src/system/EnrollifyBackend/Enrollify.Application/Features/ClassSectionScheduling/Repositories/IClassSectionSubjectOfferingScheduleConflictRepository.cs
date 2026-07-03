@@ -1,9 +1,3 @@
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
-using Enrollify.Core.Aggregates.RoomAggregate;
-using Enrollify.Core.Aggregates.TeacherAggregate;
-using Enrollify.Core.Constants;
 using Enrollify.Core.Services.ScheduleConflictDetection;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Repositories;

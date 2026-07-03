@@ -80,8 +80,6 @@ The `src/api/collections/` file for each entity defines `queryKeys`, `createQuer
 
 **Use the `enrollify-management-page` skill** (`.github/skills/enrollify-management-page/SKILL.md`) when implementing any new management page — it encodes the full phase-by-phase process.
 
-**Use the `enrollify-ui-redesign` skill** (`.github/skills/enrollify-ui-redesign/SKILL.md`) when redesigning or improving any frontend component's visual design.
-
 ---
 
 ## Backend
@@ -286,7 +284,6 @@ Additional scoped instruction files exist in `.github/`:
 Project-level Copilot skills for complex, multi-step workflows:
 
 - `.github/skills/enrollify-management-page/SKILL.md` — Step-by-step guide for implementing CRUD management pages in the React frontend (model schema, API collection, table, form drawer, delete dialog)
-- `.github/skills/enrollify-ui-redesign/SKILL.md` — Design language guide for redesigning frontend components (hero-card pattern, icon chips, status badges, form sections, empty states)
 - `.github/skills/enrollify-integration-tests/SKILL.md` — Comprehensive guide for creating integration tests (WebAPI tests via TestServer, Application tests via Mediator, test data strategies, fixtures, helpers)
 - `.github/skills/enrollify-resize-dialog/SKILL.md` — Quick reference for resizing Dialog components (width classes, height control, scrollable body, when to switch from Dialog to Drawer)
 - `.github/skills/enrollify-resize-drawer/SKILL.md` — Step-by-step guide for resizing right-side Drawer components (vaul data-attribute override pattern, half-screen, near-full, full-screen widths)

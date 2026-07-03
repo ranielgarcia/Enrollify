@@ -1,5 +1,4 @@
 using Enrollify.Application.SharedDTOs;
-using Enrollify.Core.Aggregates.SubjectAggregate;
 
 namespace Enrollify.Application.Features.Subjects.DTOs;
 

@@ -1,7 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Core.Aggregates.RoomAggregate;
-using MediatR;
-
 namespace Enrollify.Application.Features.Rooms.Commands;
 
 public static class DeleteRoom

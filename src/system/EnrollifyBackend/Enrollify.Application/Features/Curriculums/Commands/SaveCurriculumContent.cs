@@ -1,13 +1,7 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.Curriculums.DTOs;
 using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Application.Features.Subjects.Specifications;
-using Enrollify.Core.Aggregates.CurriculumAggregate;
-using Enrollify.Core.Aggregates.SubjectAggregate;
-using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
-using Enrollify.SharedKernel;
-using MediatR;
 using Term = int;
 using Year = int;
 

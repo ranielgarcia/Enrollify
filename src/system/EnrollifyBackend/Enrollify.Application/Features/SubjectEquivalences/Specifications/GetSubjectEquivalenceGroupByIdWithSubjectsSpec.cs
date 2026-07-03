@@ -1,4 +1,3 @@
-using Ardalis.Specification;
 using Enrollify.Core.Aggregates.SubjectEquivalenceGroupAggregate;
 
 namespace Enrollify.Application.Features.SubjectEquivalences.Specifications;

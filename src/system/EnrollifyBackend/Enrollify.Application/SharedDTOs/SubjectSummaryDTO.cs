@@ -1,5 +1,3 @@
-using Enrollify.Core.Aggregates.SubjectAggregate;
-
 namespace Enrollify.Application.SharedDTOs;
 
 public class SubjectSummaryDto

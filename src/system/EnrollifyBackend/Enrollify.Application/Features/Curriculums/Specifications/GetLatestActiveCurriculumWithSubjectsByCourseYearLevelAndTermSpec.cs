@@ -1,8 +1,3 @@
-using Ardalis.Specification;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.Core.Aggregates.CourseAggregate;
-using Enrollify.Core.Aggregates.CurriculumAggregate;
-using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 
 namespace Enrollify.Application.Features.Curriculums.Specifications;

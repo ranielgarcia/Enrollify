@@ -1,13 +1,9 @@
 import { parseAsInteger, parseAsString } from "nuqs";
-import { getFiltersStateParser, getSortingStateParser } from "@/lib/parsers";
-import type { ClassSectionV2 } from "@/api/models/class-section-v2";
+
+export type QuickFilter = "all" | "draft" | "open" | "cancelled";
 
 export const searchParams = {
-  collegeId: parseAsString,
-  page: parseAsInteger.withDefault(1),
-  perPage: parseAsInteger.withDefault(10),
+  collegeId: parseAsInteger,
   view: parseAsString.withDefault("card"),
-  filters: getFiltersStateParser<ClassSectionV2>().withDefault([]),
-  sort: getSortingStateParser<ClassSectionV2>().withDefault([]),
-  joinOperator: parseAsString.withDefault("and"),
+  quickFilter: parseAsString.withDefault("all"),
 };

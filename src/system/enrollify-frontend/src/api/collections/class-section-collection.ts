@@ -8,12 +8,17 @@ import {
   ClassSectionSchema,
   ClassSectionWithOfferingsSchema,
   CollegeCoursesWithClassSectionsSchema,
+  type BulkStateChangeClassSectionsResult,
   type ClassSection,
   type ClassSectionWithOfferings,
   type CollegeCoursesWithClassSections,
-} from "@/api/models/class-section";
+} from "@/api/models/class-scheduling/class-section";
 import { pagedResultSchema, type PagedResult } from "@/api/models/paged-result";
 import { toast } from "sonner";
+import {
+  OfferingSchema,
+  type Offering,
+} from "../models/class-scheduling/offering";
 
 const queryKeys = {
   base: () => ["sections"],
@@ -44,15 +49,34 @@ const queryKeys = {
     sectionId,
     action,
   ],
-  collegeCoursesClassSchedulingStats: (collegeId: number) => [
+  collegeCoursesClassSchedulingStats: (
+    collegeId?: number,
+    academicTermId?: number,
+  ) => [
     ...queryKeys.base(),
     "collegeCoursesClassSchedulingStats",
-    collegeId,
+    collegeId ?? 0,
+    academicTermId ?? 0,
   ],
-  collegeCoursesWithClassSectionsForScheduling: (collegeId: number) => [
+  collegeCoursesWithClassSectionsForScheduling: (
+    collegeId?: number,
+    academicTermId?: number,
+  ) => [
     ...queryKeys.base(),
     "collegeCoursesWithClassSectionsForScheduling",
     collegeId,
+    academicTermId,
+  ],
+  bulkOpen: () => [...queryKeys.base(), "open-class-sections"],
+  bulkCancel: () => [...queryKeys.base(), "cancel-class-sections"],
+  bulkAssignAdviser: () => [
+    ...queryKeys.base(),
+    "assign-adviser-class-sections",
+  ],
+  offerings: (sectionId: number) => [
+    ...queryKeys.base(),
+    "class-section-subject-offerings",
+    sectionId,
   ],
 };
 
@@ -132,6 +156,18 @@ export const filterClassSectionsPaginatedOptions = (
     },
   });
 };
+
+export const getOfferingDetailsForClassSectionOptions = (sectionId: number) =>
+  createQueryOptions({
+    path: "/api/scheduling/class-sections/{sectionId}/subject-offerings",
+    pathParams: { sectionId },
+    options: {
+      enabled: !!sectionId,
+      queryKey: queryKeys.offerings(sectionId),
+      staleTime: 1000 * 60 * 5,
+      select: (data): Offering[] => OfferingSchema.array().parse(data),
+    },
+  });
 
 export const getSectionWithOfferingsOptions = (sectionId: number) =>
   createQueryOptions({
@@ -242,31 +278,113 @@ export const cancelClassSectionOptions = (sectionId: number) =>
     },
   });
 
-export const getClassSectionsStatsOptions = (collegeId: number) =>
+export const getClassSectionsStatsOptions = (
+  collegeId?: number,
+  academicTermId?: number,
+) =>
   createQueryOptions({
     path: "/api/scheduling/colleges/{collegeId}/stats",
-    pathParams: { collegeId },
+    pathParams: { collegeId: collegeId ?? 0 },
+    params: {
+      AcademicTermId: academicTermId!,
+    },
     options: {
-      enabled: !!collegeId,
-      queryKey: queryKeys.collegeCoursesClassSchedulingStats(collegeId),
-      staleTime: 1000 * 60 * 5,
-      select: (data): object => {
+      enabled:
+        !!collegeId && !!academicTermId && collegeId > 0 && academicTermId > 0,
+      queryKey: queryKeys.collegeCoursesClassSchedulingStats(
+        collegeId,
+        academicTermId,
+      ),
+      select: (data): Record<string, number> => {
         return data;
       },
     },
   });
 
-export const getClassSectionsListOptions = (collegeId: number) =>
+export const getCollegeCoursesWithClassSectionsForSchedulingOptions = (
+  collegeId?: number,
+  academicTermId?: number,
+) =>
   createQueryOptions({
     path: "/api/scheduling/colleges/{collegeId}/class-sections",
-    pathParams: { collegeId },
+    pathParams: { collegeId: collegeId ?? 0 },
+    params: {
+      AcademicTermId: academicTermId!,
+    },
     options: {
-      enabled: !!collegeId,
-      queryKey:
-        queryKeys.collegeCoursesWithClassSectionsForScheduling(collegeId),
-      staleTime: 1000 * 60 * 5,
+      enabled:
+        !!collegeId && !!academicTermId && collegeId > 0 && academicTermId > 0,
+      queryKey: queryKeys.collegeCoursesWithClassSectionsForScheduling(
+        collegeId,
+        academicTermId,
+      ),
       select: (data): CollegeCoursesWithClassSections => {
         return CollegeCoursesWithClassSectionsSchema.parse(data);
+      },
+    },
+  });
+
+export const bulkOpenSectionsMutationOptions = () =>
+  createMutationOptions({
+    httpVerb: "post",
+    path: "/api/scheduling/class-sections/bulk/open",
+    mutationKey: queryKeys.bulkOpen(),
+    options: {
+      meta: { invalidateQueries: [queryKeys.base()] },
+      onSuccess: (data) => {
+        const result = data as BulkStateChangeClassSectionsResult;
+        if (result.status === "Success") {
+          toast.success("All sections opened for enrollment");
+        } else if (result.status === "PartialSuccess") {
+          toast.warning(
+            `${result.succeeded} of ${result.totalRequested} sections opened`,
+            {
+              description: `${result.failed} section(s) failed. Check action history for details.`,
+            },
+          );
+        } else {
+          toast.error("Failed to open any sections");
+        }
+      },
+      onError: (error) => {
+        toast.error("Failed to open sections");
+        console.error(error);
+      },
+    },
+  });
+
+export const bulkCancelSectionsMutationOptions = () =>
+  createMutationOptions({
+    httpVerb: "post",
+    path: "/api/scheduling/class-sections/bulk/cancel",
+    mutationKey: queryKeys.bulkCancel(),
+    options: {
+      meta: { invalidateQueries: [queryKeys.base()] },
+      onSuccess: () => {
+        toast.success("Sections cancelled");
+        queryKeys.base();
+      },
+      onError: (error: unknown) => {
+        toast.error("Failed to cancel sections");
+        console.error(error);
+      },
+    },
+  });
+
+export const bulkAssignAdviserMutationOptions = () =>
+  createMutationOptions({
+    httpVerb: "post",
+    path: "/api/scheduling/class-sections/bulk/assign-adviser",
+    mutationKey: queryKeys.bulkAssignAdviser(),
+    options: {
+      meta: { invalidateQueries: [queryKeys.base()] },
+      onSuccess: () => {
+        toast.success("Adviser assigned to sections");
+        queryKeys.base();
+      },
+      onError: (error: unknown) => {
+        toast.error("Failed to assign adviser");
+        console.error(error);
       },
     },
   });

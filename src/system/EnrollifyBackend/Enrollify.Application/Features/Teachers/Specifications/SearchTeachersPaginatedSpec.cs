@@ -1,6 +1,3 @@
-using Ardalis.Specification;
-using Enrollify.Core.Aggregates.TeacherAggregate;
-
 namespace Enrollify.Application.Features.Teachers.Specifications;
 
 public class SearchTeachersPaginatedSpec : Specification<Teacher>

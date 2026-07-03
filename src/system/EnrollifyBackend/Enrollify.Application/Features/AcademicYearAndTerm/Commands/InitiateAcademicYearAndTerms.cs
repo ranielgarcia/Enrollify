@@ -1,14 +1,8 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.DTOs;
 using Enrollify.Application.Features.AcademicYearAndTerm.Events;
 using Enrollify.Application.Features.AcademicYearAndTerm.Models;
-using Enrollify.Application.Features.AcademicYearAndTerm.Specifications;
 using Enrollify.Core;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.DomainExceptions;
-using Enrollify.SharedKernel;
-using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.AcademicYearAndTerm.Commands;
 

@@ -1,15 +1,7 @@
-using Ardalis.Result;
-using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
-using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
-using Enrollify.Core.Constants;
 using Enrollify.Core.DomainExceptions;
-using Enrollify.SharedKernel;
-using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSectionSubjectOfferings;
 
@@ -162,12 +154,14 @@ public static class AddMultipleSchedulesToOffering
           if (scheduleId is not null) addedIds.Add(scheduleId.Value);
         }
 
-        await _publisher.Publish(new RefreshClassSectionValidationIssuesRequestedEvent(section.Id), cancellationToken);
-
         _logger.LogInformation("Added {Count} schedule(s) to offering {OfferingId}", addedIds.Count,
           command.OfferingId.Value);
 
         await transaction.CommitAsync(cancellationToken);
+
+        // should happen after commit above transaction
+        await _publisher.Publish(new RefreshClassSectionValidationIssuesRequestedEvent(section.Id), cancellationToken);
+
         return Result.Success(new Response(addedIds));
       }
       catch (Exception e)

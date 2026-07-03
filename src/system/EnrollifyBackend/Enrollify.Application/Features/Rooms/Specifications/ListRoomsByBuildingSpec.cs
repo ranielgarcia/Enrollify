@@ -1,7 +1,3 @@
-using Ardalis.Specification;
-using Enrollify.Core.Aggregates.BuildingAggregate;
-using Enrollify.Core.Aggregates.RoomAggregate;
-
 namespace Enrollify.Application.Features.Rooms.Specifications;
 
 public class ListRoomsByBuildingSpec : Specification<Room>

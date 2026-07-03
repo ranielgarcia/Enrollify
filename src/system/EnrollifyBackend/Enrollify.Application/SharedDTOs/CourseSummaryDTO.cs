@@ -1,5 +1,3 @@
-using Enrollify.Core.Aggregates.CourseAggregate;
-
 namespace Enrollify.Application.SharedDTOs;
 
 public class CourseSummaryDto

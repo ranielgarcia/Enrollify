@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
+using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate;
 using Enrollify.Infrastructure.Data;
 
@@ -51,6 +52,18 @@ public class ClassSectionSubjectOfferingRepository : IClassSectionSubjectOfferin
       return Result.Error("Unable to delete class section subject offering due to internal error");
     }
   }
+  //
+  // public async Task<Dictionary<ClassSectionId, int>> GetSubjectOfferingsCountPerClassSection(
+  //   List<ClassSectionId> classSectionIds, CancellationToken cancellationToken)
+  // {
+  //   Dictionary<ClassSectionId, int> counts = await _dbContext.ClassSectionSubjectOfferings
+  //     .Where(x => classSectionIds.Contains(x.ClassSectionId))
+  //     .GroupBy(x => x.ClassSectionId)
+  //     .Select(g => new { ClassSectionId = g.Key, Count = g.Count() })
+  //     .ToDictionaryAsync(x => x.ClassSectionId, x => x.Count, cancellationToken);
+  //
+  //   return counts;
+  // }
 
   public async Task<Result<ClassSectionSubjectOfferingId>> Update(
     ClassSectionSubjectOffering updatedClassSectionSubjectOffering, CancellationToken cancellationToken)

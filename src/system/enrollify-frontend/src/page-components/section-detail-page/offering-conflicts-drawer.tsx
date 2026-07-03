@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { ConflictResult } from "@/api/models/offering";
+import type { ValidationIssue } from "@/api/models/class-scheduling/offering";
 import {
   Drawer,
   DrawerContent,
@@ -8,66 +8,43 @@ import {
   DrawerFooter,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, AlertTriangle, Info, X } from "lucide-react";
 import { ConflictCard } from "./conflict-card";
+import SeverityConfig from "@/config/severity-config";
 
 interface OfferingConflictsDrawerProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   offeringSubjectCode: string;
-  conflicts: ConflictResult[];
+  validationIssues: ValidationIssue[];
 }
-
-const severityConfig = {
-  Error: {
-    label: "Hard Conflicts",
-    icon: AlertCircle,
-    textColor: "text-destructive",
-    description: "These must be resolved before the schedule can be published.",
-  },
-  Warning: {
-    label: "Warnings",
-    icon: AlertTriangle,
-    textColor: "text-amber-600 dark:text-amber-500",
-    description: "These are advisory — review before publishing.",
-  },
-  Info: {
-    label: "Information",
-    icon: Info,
-    textColor: "text-blue-600 dark:text-blue-500",
-    description: "Additional information about this offering.",
-  },
-} as const;
 
 export function OfferingConflictsDrawer({
   isOpen,
   onOpenChange,
   offeringSubjectCode,
-  conflicts,
+  validationIssues,
 }: OfferingConflictsDrawerProps) {
   const groupedConflicts = useMemo(() => {
-    const grouped: Record<"Error" | "Warning" | "Info", ConflictResult[]> = {
+    const grouped: Record<"Error" | "Warning" | "Info", ValidationIssue[]> = {
       Error: [],
       Warning: [],
       Info: [],
     };
 
-    conflicts.forEach((conflict) => {
-      grouped[conflict.severity as "Error" | "Warning" | "Info"].push(
-        conflict,
-      );
+    validationIssues.forEach((issue) => {
+      grouped[issue.type.severity as "Error" | "Warning" | "Info"].push(issue);
     });
 
     return grouped;
-  }, [conflicts]);
+  }, [validationIssues]);
 
   const renderSeverityGroup = (
     severity: "Error" | "Warning" | "Info",
-    conflictList: ConflictResult[],
+    validationIssueList: ValidationIssue[],
   ) => {
-    if (conflictList.length === 0) return null;
+    if (validationIssueList.length === 0) return null;
 
-    const config = severityConfig[severity];
+    const config = SeverityConfig[severity];
     const Icon = config.icon;
 
     return (
@@ -76,13 +53,15 @@ export function OfferingConflictsDrawer({
           <Icon className={`size-5 ${config.textColor}`} />
           <h3 className="font-semibold">
             {config.label}
-            {conflictList.length > 1 ? ` (${conflictList.length})` : ""}
+            {validationIssueList.length > 1
+              ? ` (${validationIssueList.length})`
+              : ""}
           </h3>
         </div>
         <p className="text-xs text-muted-foreground">{config.description}</p>
         <div className="space-y-3">
-          {conflictList.map((conflict, idx) => (
-            <ConflictCard key={conflict.id ?? idx} conflict={conflict} />
+          {validationIssueList.map((issue, idx) => (
+            <ConflictCard key={issue.id ?? idx} validationIssue={issue} />
           ))}
         </div>
       </section>

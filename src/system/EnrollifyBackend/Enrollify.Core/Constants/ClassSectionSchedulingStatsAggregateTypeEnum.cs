@@ -4,44 +4,58 @@ namespace Enrollify.Core.Constants;
 
 public class ClassSectionSchedulingStatsAggregateTypeEnum : SmartEnum<ClassSectionSchedulingStatsAggregateTypeEnum>
 {
-  public ClassSectionValidationIssueTierEnum? IssueTier { get; private set; }
+  public ClassSectionValidationIssueCategoryEnum? IssueCategory { get; private set; }
 
   // College Level Stats
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum DRAFT_SECTIONS = new("DRAFT_SECTIONS", 1);
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum OPEN_SECTIONS = new("OPEN_SECTIONS", 2);
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum CANCELLED_SECTIONS = new("CANCELLED_SECTIONS", 3);
 
-  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum HARD_CONFLICTS =
-    new("HARD_CONFLICTS", 4, ClassSectionValidationIssueTierEnum.CONFLICT_HARD);
+  // Section-level category stats
+  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum SCHEDULE_CONFLICTS =
+    new("SCHEDULE_CONFLICTS", 4, ClassSectionValidationIssueCategoryEnum.SCHEDULE_CONFLICT);
 
-  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum SOFT_CONFLICTS =
-    new("SOFT_CONFLICTS", 5, ClassSectionValidationIssueTierEnum.CONFLICT_SOFT);
+  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum SCHEDULE_POLICY_VIOLATIONS =
+    new("SCHEDULE_POLICY_VIOLATIONS", 5, ClassSectionValidationIssueCategoryEnum.SCHEDULE_POLICY_VIOLATION);
 
-  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum DATA_INTEGRITY =
-    new("DATA_INTEGRITY", 6, ClassSectionValidationIssueTierEnum.DATA_INTEGRITY);
+  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum CAPACITY_CONSTRAINTS =
+    new("CAPACITY_CONSTRAINTS", 6, ClassSectionValidationIssueCategoryEnum.CAPACITY_CONSTRAINT);
 
-  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum INFORMATIONAL =
-    new("INFORMATIONAL", 7, ClassSectionValidationIssueTierEnum.INFORMATIONAL);
+  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum RESOURCE_MISALIGNMENTS =
+    new("RESOURCE_MISALIGNMENTS", 7, ClassSectionValidationIssueCategoryEnum.RESOURCE_MISALIGNMENT);
 
-  // Class Level Stats
+  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum MISSING_REQUIREMENTS =
+    new("MISSING_REQUIREMENTS", 8, ClassSectionValidationIssueCategoryEnum.MISSING_REQUIREMENT);
+
+  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum DATA_INCONSISTENCIES =
+    new("DATA_INCONSISTENCIES", 9, ClassSectionValidationIssueCategoryEnum.DATA_INCONSISTENCY);
+
+  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum DEFAULT_VALUES =
+    new("DEFAULT_VALUES", 10, ClassSectionValidationIssueCategoryEnum.DEFAULT_VALUE);
+
+  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum TOTAL_VALIDATION_ISSUES_ACROSS_OFFERINGS_COUNT =
+    new("TOTAL_VALIDATION_ISSUES_ACROSS_OFFERINGS_COUNT", 11);
+
+  // Class Subject Offering Level Stats
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum OFFERING_WITH_ISSUE_COUNT =
-    new("OFFERING_WITH_ISSUE_COUNT", 8);
+    new("OFFERING_WITH_ISSUE_COUNT", 12);
 
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum OFFERING_MISSING_TEACHER_COUNT =
-    new("OFFERING_MISSING_TEACHER_COUNT", 9);
+    new("OFFERING_MISSING_TEACHER_COUNT", 13);
 
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum OFFERING_MISSING_ROOM_COUNT =
-    new("OFFERING_MISSING_ROOM_COUNT", 10);
+    new("OFFERING_MISSING_ROOM_COUNT", 14);
 
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum OFFERING_NO_SCHEDULE_COUNT =
-    new("OFFERING_NO_SCHEDULE_COUNT", 11);
+    new("OFFERING_NO_SCHEDULE_COUNT", 15);
 
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum OFFERINGS_COUNT =
-    new("OFFERINGS_COUNT", 12);
+    new("OFFERINGS_COUNT", 16);
+
 
   public ClassSectionSchedulingStatsAggregateTypeEnum(string name, int value,
-    ClassSectionValidationIssueTierEnum? issueTier = null) : base(name, value)
+    ClassSectionValidationIssueCategoryEnum? issueCategory = null) : base(name, value)
   {
-    IssueTier = issueTier;
+    IssueCategory = issueCategory;
   }
 }

@@ -1,8 +1,5 @@
 using System.Linq.Expressions;
-using Ardalis.Specification;
 using Enrollify.Application.Filtering;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
 

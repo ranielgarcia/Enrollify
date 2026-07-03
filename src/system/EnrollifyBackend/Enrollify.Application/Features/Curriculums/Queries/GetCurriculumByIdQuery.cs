@@ -1,10 +1,5 @@
-using Ardalis.Result;
-using Ardalis.Specification;
 using Enrollify.Application.Features.Curriculums.Specifications;
 using Enrollify.Application.Features.Curriculums.DTOs;
-using Enrollify.Core.Aggregates.CurriculumAggregate;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.Curriculums.Queries;
 

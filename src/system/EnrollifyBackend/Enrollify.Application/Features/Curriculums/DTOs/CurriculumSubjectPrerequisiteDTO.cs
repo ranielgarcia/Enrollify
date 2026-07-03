@@ -1,5 +1,3 @@
-using Enrollify.Core.Aggregates.CurriculumAggregate;
-
 namespace Enrollify.Application.Features.Curriculums.DTOs;
 
 public class CurriculumSubjectPrerequisiteDto

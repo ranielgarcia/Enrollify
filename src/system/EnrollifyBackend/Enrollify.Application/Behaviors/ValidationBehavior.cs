@@ -1,6 +1,4 @@
 using FluentValidation;
-using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Enrollify.Application.Behaviors;
 

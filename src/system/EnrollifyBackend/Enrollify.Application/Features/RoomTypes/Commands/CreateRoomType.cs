@@ -1,7 +1,3 @@
-using Ardalis.Result;
-using Enrollify.Core.Aggregates.RoomTypeAggregate;
-using MediatR;
-
 namespace Enrollify.Application.Features.RoomTypes.Commands;
 
 public static class CreateRoomType

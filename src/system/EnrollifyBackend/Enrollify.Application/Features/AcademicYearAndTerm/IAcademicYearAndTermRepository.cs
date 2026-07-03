@@ -1,6 +1,4 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.AcademicYearAndTerm.Models;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
 
 namespace Enrollify.Application.Features.AcademicYearAndTerm;
 

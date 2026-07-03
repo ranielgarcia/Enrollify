@@ -1,7 +1,3 @@
-using Ardalis.Specification;
-using Enrollify.Core.Aggregates.AcademicYearAggregate;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.ValueObjects;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;

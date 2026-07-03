@@ -1,5 +1,3 @@
-using Enrollify.Core.Aggregates.RoomTypeAggregate;
-
 namespace Enrollify.Application.Features.Rooms.Models;
 
 public class RoomTypeProjection

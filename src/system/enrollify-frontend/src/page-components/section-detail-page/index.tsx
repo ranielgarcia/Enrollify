@@ -17,9 +17,9 @@ import { LayoutGrid, CalendarClock, AlertCircle } from "lucide-react";
 import { OfferingsTab } from "./offerings-tab";
 import { WeeklyGridTab } from "./weekly-grid-tab";
 import { ConflictsTab } from "./conflicts-tab";
-import type { ConflictResult } from "@/api/models/offering";
-import type { ClassSectionWithOfferings } from "@/api/models/class-section";
-import { ClassSectionStatusEnum } from "@/api/models/class-section";
+import type { ValidationIssue } from "@/api/models/class-scheduling/offering";
+import type { ClassSectionWithOfferings } from "@/api/models/class-scheduling/class-section";
+import { ClassSectionStatusEnum } from "@/api/models/class-scheduling/class-section";
 import { SectionStatusBadge } from "../sections-management-page/section-status-badge";
 
 interface SectionDetailPageProps {
@@ -60,12 +60,12 @@ export default function SectionDetailPage({
     sessionStorage.setItem(storageKey, value);
   };
 
-  const allConflicts: ConflictResult[] = section.offerings.flatMap(
-    (o) => o.conflicts ?? [],
+  const allValidationIssues: ValidationIssue[] = section.offerings.flatMap(
+    (o) => o.validationIssues ?? [],
   );
-  const hardConflictCount = allConflicts.filter(
-    (c) => c.severity === "error",
-  ).length;
+  const hardValidationIssues = allValidationIssues.filter(
+    (c) => c.type.severity === "Error",
+  );
 
   const statusValue = section.status?.value;
 
@@ -160,15 +160,15 @@ export default function SectionDetailPage({
           <TabsTrigger value="conflicts" className="gap-2">
             <AlertCircle className="size-4" />
             Conflicts
-            {allConflicts.length > 0 && (
+            {allValidationIssues.length > 0 && (
               <Badge
                 className={
-                  hardConflictCount > 0
+                  hardValidationIssues.length > 0
                     ? "text-[11px] px-1.5 py-0 font-semibold bg-red-500/15 text-red-600 border border-red-500/25 hover:bg-red-500/15 h-4"
                     : "text-[11px] px-1.5 py-0 font-semibold bg-amber-500/15 text-amber-600 border border-amber-500/25 hover:bg-amber-500/15 h-4"
                 }
               >
-                {allConflicts.length}
+                {allValidationIssues.length}
               </Badge>
             )}
           </TabsTrigger>
@@ -193,7 +193,7 @@ export default function SectionDetailPage({
           value="conflicts"
           className="flex min-h-0 flex-col space-y-4"
         >
-          <ConflictsTab conflicts={allConflicts} />
+          <ConflictsTab offerings={section.offerings} />
         </TabsContent>
       </Tabs>
     </ManagementPageLayout>

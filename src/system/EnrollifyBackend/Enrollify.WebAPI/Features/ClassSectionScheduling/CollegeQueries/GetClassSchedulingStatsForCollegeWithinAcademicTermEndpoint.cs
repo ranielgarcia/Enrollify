@@ -28,16 +28,17 @@ public class GetClassSchedulingStatsForCollegeWithinAcademicTermRequestValidator
 [Group<CollegesEndpointSubGroup>]
 [Authorize(Policy = PolicyName.HasViewClassSectionsPermission)]
 public class GetClassSchedulingStatsForCollegeWithinAcademicTermEndpoint(IMediator mediator)
-  : Endpoint<GetClassSchedulingStatsForCollegeWithinAcademicTermRequest, Dictionary<string, int>>
+  : Endpoint<GetClassSchedulingStatsForCollegeWithinAcademicTermRequest, OkOrNotFoundApiResult<Dictionary<string, int>>>
 {
-  public override async Task HandleAsync(GetClassSchedulingStatsForCollegeWithinAcademicTermRequest req,
-    CancellationToken ct)
+  public override async Task<OkOrNotFoundApiResult<Dictionary<string, int>>>
+    ExecuteAsync(GetClassSchedulingStatsForCollegeWithinAcademicTermRequest req, CancellationToken ct)
   {
+
     Result<Dictionary<string, int>> toReturn = await mediator.Send(
       new GetClassSchedulingStatsForCollegeWithinAcademicTermQuery(
         CollegeId.From(req.CollegeId),
         AcademicTermId.From(req.AcademicTermId)), ct);
 
-    await Send.OkAsync(toReturn, ct);
+    return toReturn.ToGetByIdResult(dto => dto);
   }
 }

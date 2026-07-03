@@ -1,7 +1,3 @@
-using Ardalis.Specification;
-using Enrollify.Core.Aggregates.BuildingAggregate;
-using Enrollify.Core.Aggregates.CollegeAggregate;
-
 namespace Enrollify.Application.Features.Buildings.Specifications;
 
 public class ListBuildingsByCollegeSpec : Specification<Building>

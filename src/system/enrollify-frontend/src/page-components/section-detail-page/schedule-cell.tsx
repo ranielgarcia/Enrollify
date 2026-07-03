@@ -1,5 +1,5 @@
-import type { OfferingWithSchedules } from "@/api/models/offering";
-import type { DayOfWeek } from "@/api/models/class-schedule";
+import type { Offering } from "@/api/models/class-scheduling/offering";
+import type { DayOfWeek } from "@/api/models/class-scheduling/class-schedule";
 import {
   Tooltip,
   TooltipContent,
@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 interface ScheduleCellProps {
   day: DayOfWeek;
   timeSlot: string;
-  offerings: OfferingWithSchedules[];
+  offerings: Offering[];
 }
 
 function timeToMinutes(time: string): number {
@@ -34,7 +34,7 @@ export function ScheduleCell({ day, timeSlot, offerings }: ScheduleCellProps) {
     return <td className="border border-border/40 h-8 min-w-[80px]" />;
   }
 
-  const isStartSlot = (o: OfferingWithSchedules) =>
+  const isStartSlot = (o: Offering) =>
     o.schedules?.some(
       (s) =>
         s.dayOfWeekAbbreviation === day &&

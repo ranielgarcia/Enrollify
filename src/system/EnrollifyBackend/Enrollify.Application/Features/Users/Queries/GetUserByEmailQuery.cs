@@ -1,8 +1,5 @@
-using Ardalis.Result;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.Aggregates.UserAggregate.Specifications;
-using Enrollify.SharedKernel;
-using MediatR;
 
 namespace Enrollify.Application.Features.Users.Queries;
 

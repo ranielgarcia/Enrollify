@@ -1,7 +1,4 @@
-using Ardalis.Result;
 using Enrollify.Application.Features.Buildings.Queries;
-using Enrollify.Core.Aggregates.CollegeAggregate;
-using MediatR;
 
 namespace Enrollify.Application.Features.Colleges.Commands;
 

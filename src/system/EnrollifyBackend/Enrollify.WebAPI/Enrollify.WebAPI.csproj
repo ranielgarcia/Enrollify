@@ -7,29 +7,30 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Authorization\Departments\HasDeleteDepartmentPermission.cs~RF23b768e.TMP"/>
-    <None Remove="Features\SubjectEquivalences\UpdateSubjectEquivalenceGroupEndpoint.cs~RF6e05071.TMP"/>
+    <None Remove="Authorization\Departments\HasDeleteDepartmentPermission.cs~RF23b768e.TMP" />
+    <None Remove="Features\SubjectEquivalences\UpdateSubjectEquivalenceGroupEndpoint.cs~RF6e05071.TMP" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.21.0"/>
-    <PackageReference Include="FastEndpoints" Version="8.1.0"/>
-    <PackageReference Include="FastEndpoints.Swagger" Version="8.1.0"/>
-    <PackageReference Include="MediatR" Version="14.1.0"/>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5"/>
-    <PackageReference Include="Microsoft.Identity.Web" Version="4.7.0"/>
-    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0"/>
-    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1"/>
-    <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0"/>
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
-    <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0"/>
-    <PackageReference Include="Sqids" Version="3.2.1"/>
+    <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="FastEndpoints" />
+    <PackageReference Include="FastEndpoints.Swagger" />
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.Identity.Web" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Enrichers.Environment" />
+    <PackageReference Include="Serilog.Extensions.Hosting" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.Seq" />
+    <PackageReference Include="Sqids" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Enrollify.Application\Enrollify.Application.csproj"/>
-    <ProjectReference Include="..\Enrollify.DatabaseMigration\Enrollify.DatabaseMigration.csproj"/>
-    <ProjectReference Include="..\Enrollify.Infrastructure\Enrollify.Infrastructure.csproj"/>
+    <ProjectReference Include="..\Enrollify.Application\Enrollify.Application.csproj" />
+    <ProjectReference Include="..\Enrollify.DatabaseMigration\Enrollify.DatabaseMigration.csproj" />
+    <ProjectReference Include="..\Enrollify.Infrastructure\Enrollify.Infrastructure.csproj" />
+    <ProjectReference Include="..\EnrollifyBackend.ServiceDefaults\EnrollifyBackend.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

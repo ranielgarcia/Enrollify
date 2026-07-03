@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { createScheduleRowsOptions } from "@/api/collections/offering-collection";
-import type { ClassSchedule, DayOfWeek } from "@/api/models/class-schedule";
+import type {
+  ClassSchedule,
+  DayOfWeek,
+} from "@/api/models/class-scheduling/class-schedule";
 import type { components } from "@/api/generated/api";
 import { FormTimeSelect } from "@/components/form/form-time-select";
 import { toast } from "sonner";
@@ -417,9 +420,7 @@ export function ScheduleRowFormDrawer({
                           <form.Field
                             name={`perDayTimes.${day}.startTime`}
                             validators={{
-                              onChangeListenTo: [
-                                `perDayTimes.${day}.endTime`,
-                              ],
+                              onChangeListenTo: [`perDayTimes.${day}.endTime`],
                               onChange: makeDurationValidator(
                                 () =>
                                   form.getFieldValue(

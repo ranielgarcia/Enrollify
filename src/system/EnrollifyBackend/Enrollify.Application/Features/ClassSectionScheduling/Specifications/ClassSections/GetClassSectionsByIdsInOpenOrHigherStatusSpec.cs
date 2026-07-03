@@ -1,7 +1,3 @@
-using Ardalis.Specification;
-using Enrollify.Core.Aggregates.ClassSectionAggregate;
-using Enrollify.Core.Constants;
-
 namespace Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSections;
 
 public class GetClassSectionsByIdsInOpenOrHigherStatusSpec : Specification<ClassSection>
