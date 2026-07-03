@@ -1,4 +1,6 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -8,8 +10,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import {
   Building2,
   ChevronLeft,
@@ -36,6 +39,17 @@ interface SearchRoomsDialogProps {
   /** Maximum number of rooms that can be selected. Omit for unlimited. */
   maxSelections?: number;
   onSubmit: (rooms: Room[]) => Promise<void>;
+}
+
+function RoomSkeleton() {
+  return (
+    <div className="flex items-center gap-3 p-3">
+      <Skeleton className="size-4 shrink-0 rounded" />
+      <Skeleton className="h-5 w-20 shrink-0 rounded-full" />
+      <Skeleton className="h-4 flex-1" />
+      <Skeleton className="h-5 w-20 shrink-0 rounded-full" />
+    </div>
+  );
 }
 
 export function SearchRoomsDialog({
@@ -93,6 +107,7 @@ export function SearchRoomsDialog({
     });
   }, [rooms, excludeSet, debouncedSearchTerm]);
 
+  const totalCount = filteredRooms.length;
   const totalPages = Math.max(1, Math.ceil(filteredRooms.length / pageSize));
   const hasNextPage = page < totalPages;
   const hasPreviousPage = page > 1;
@@ -136,9 +151,26 @@ export function SearchRoomsDialog({
     }
   };
 
+  const pageNumbers = useMemo<(number | "ellipsis")[]>(() => {
+    const pages: (number | "ellipsis")[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else if (page <= 3) {
+      pages.push(1, 2, 3, 4, "ellipsis", totalPages);
+    } else if (page >= totalPages - 2) {
+      pages.push(1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+    } else {
+      pages.push(1, "ellipsis", page - 1, page, page + 1, "ellipsis", totalPages);
+    }
+    return pages;
+  }, [page, totalPages]);
+
+  const itemsStart = totalCount > 0 ? (page - 1) * pageSize + 1 : 0;
+  const itemsEnd = Math.min(page * pageSize, totalCount);
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && (
@@ -156,6 +188,7 @@ export function SearchRoomsDialog({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-9"
+              autoFocus
             />
             {searchTerm && (
               <button
@@ -170,87 +203,147 @@ export function SearchRoomsDialog({
           </div>
 
           <ScrollArea className="h-[300px] border rounded-md">
-            <div className="p-2 space-y-1">
-              {isLoading ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Loader2 className="size-8 mx-auto mb-2 animate-spin" />
-                  <p className="text-sm">Loading rooms...</p>
-                </div>
-              ) : paginatedRooms.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Building2 className="size-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">
-                    {searchTerm
-                      ? "No rooms match your search"
-                      : "No available rooms to add"}
-                  </p>
-                </div>
-              ) : (
-                paginatedRooms.map((room) => (
-                  <label
-                    key={room.id}
-                    className="flex items-center gap-3 p-3 rounded-md hover:bg-muted cursor-pointer transition-colors"
-                  >
-                    <Checkbox
-                      checked={selectedRoomIds.includes(room.id)}
-                      onCheckedChange={() => handleToggleRoom(room)}
-                      disabled={isAtLimit && !selectedRoomIds.includes(room.id)}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-accent">
-                          {room.roomNumber}
-                        </span>
-                        <span className="text-muted-foreground">-</span>
-                        <span className="truncate">{room.building.name}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {room.roomType.name} - Capacity: {room.capacity}
-                      </p>
-                    </div>
-                  </label>
-                ))
-              )}
-            </div>
+            {isLoading ? (
+              <div className="p-2 space-y-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <RoomSkeleton key={i} />
+                ))}
+              </div>
+            ) : paginatedRooms.length === 0 ? (
+              <div className="text-center py-10 text-muted-foreground">
+                <Building2 className="size-10 mx-auto mb-3 opacity-30" />
+                {searchTerm ? (
+                  <>
+                    <p className="text-sm font-medium">
+                      No rooms matching{" "}
+                      <strong className="text-foreground">&ldquo;{searchTerm}&rdquo;</strong>
+                    </p>
+                    <p className="text-xs mt-1">Try a different search term</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium">No available rooms to add</p>
+                    <p className="text-xs mt-1">All rooms have already been added</p>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="p-1 space-y-0.5">
+                {paginatedRooms.map((room) => {
+                  const isSelected = selectedRoomIds.includes(room.id);
+                  return (
+                    <label
+                      key={room.id}
+                      className={cn(
+                        "flex items-center gap-3 p-3 rounded-md cursor-pointer transition-all",
+                        "border-l-2 border-transparent hover:border-l-primary hover:bg-muted/50",
+                        isSelected && "bg-muted/30 border-l-primary",
+                      )}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => handleToggleRoom(room)}
+                        disabled={isAtLimit && !isSelected}
+                      />
+                      <Badge variant="secondary" className="shrink-0 font-mono text-xs">
+                        {room.roomNumber}
+                      </Badge>
+                      <span className="flex-1 min-w-0 truncate text-sm">
+                        {room.building.name}
+                      </span>
+                      <Badge variant="outline" className="shrink-0 text-xs tabular-nums">
+                        {room.capacity} seats
+                      </Badge>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
           </ScrollArea>
 
+          {/* Selection Summary */}
+          {selectedRoomIds.length > 0 && (
+            <div
+              className={cn(
+                "flex items-center justify-between rounded-md border px-3 py-2 text-sm",
+                isAtLimit
+                  ? "bg-amber-50 border-amber-200 text-amber-800"
+                  : "bg-primary/5 border-primary/10",
+              )}
+            >
+              <span className="font-medium">
+                {selectedRoomIds.length}
+                {maxSelections !== undefined ? ` / ${maxSelections}` : ""} room
+                {selectedRoomIds.length !== 1 ? "s" : ""} selected
+                {isAtLimit && " — limit reached"}
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedRooms([])}
+                className="text-muted-foreground hover:text-foreground transition-colors p-0.5"
+                aria-label="Clear selection"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <p className="text-xs text-muted-foreground order-2 sm:order-1">
+                Showing {itemsStart}–{itemsEnd} of {totalCount} result
+                {totalCount !== 1 ? "s" : ""}
               </p>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 order-1 sm:order-2">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={!hasPreviousPage || isLoading}
+                  className="size-8 p-0"
+                  aria-label="Previous page"
                 >
                   <ChevronLeft className="size-4" />
-                  Previous
                 </Button>
+                {pageNumbers.map((p, i) =>
+                  p === "ellipsis" ? (
+                    <span
+                      key={`ellipsis-${i}`}
+                      className="px-1 text-muted-foreground text-xs select-none"
+                    >
+                      ...
+                    </span>
+                  ) : (
+                    <Button
+                      key={p}
+                      type="button"
+                      variant={p === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setPage(p)}
+                      disabled={isLoading}
+                      className="size-8 p-0 text-xs"
+                      aria-label={`Page ${p}`}
+                      aria-current={p === page ? "page" : undefined}
+                    >
+                      {p}
+                    </Button>
+                  ),
+                )}
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((p) => p + 1)}
                   disabled={!hasNextPage || isLoading}
+                  className="size-8 p-0"
+                  aria-label="Next page"
                 >
-                  Next
                   <ChevronRight className="size-4" />
                 </Button>
               </div>
             </div>
-          )}
-
-          {(selectedRoomIds.length > 0 || maxSelections !== undefined) && (
-            <p className="text-sm text-muted-foreground">
-              {selectedRoomIds.length}
-              {maxSelections !== undefined ? ` / ${maxSelections}` : ""} room
-              {selectedRoomIds.length !== 1 ? "s" : ""} selected
-              {isAtLimit && " - limit reached"}
-            </p>
           )}
         </div>
 
