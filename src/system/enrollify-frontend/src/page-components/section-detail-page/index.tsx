@@ -193,7 +193,7 @@ export default function SectionDetailPage({
           value="conflicts"
           className="flex min-h-0 flex-col space-y-4"
         >
-          <ConflictsTab validationIssues={allValidationIssues} />
+          <ConflictsTab offerings={section.offerings} />
         </TabsContent>
       </Tabs>
     </ManagementPageLayout>

@@ -1,4 +1,5 @@
 import { Suspense, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import {
   useMutation,
   useQueryClient,
@@ -147,7 +148,7 @@ function SectionDetailDrawerContent({
   const statusValue = section.status?.value;
 
   const transitionButtons = (
-    <div className="flex gap-2 flex-wrap mt-3">
+    <>
       {statusValue === ClassSectionStatusEnum.Draft && (
         <Button
           size="sm"
@@ -214,7 +215,7 @@ function SectionDetailDrawerContent({
           Complete
         </Button>
       )}
-    </div>
+    </>
   );
 
   return (
@@ -228,7 +229,17 @@ function SectionDetailDrawerContent({
           {section.course.name} · {section.academicTerm.termName} · Year{" "}
           {section.intendedYearLevel}
         </DrawerDescription>
-        {transitionButtons}
+        <div className="flex gap-2 flex-wrap">
+          {transitionButtons}
+          <Link
+            to="/portal/curriculum-and-scheduling/sections-details/$sectionId"
+            params={{ sectionId: section.id.toString() }}
+            target="_blank"
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-9 px-3 text-primary underline-offset-4 hover:underline"
+          >
+            Open In New Tab
+          </Link>
+        </div>
       </DrawerHeader>
 
       <div className="flex-1 overflow-y-auto px-6 py-4">
@@ -283,7 +294,7 @@ function SectionDetailDrawerContent({
           </TabsContent>
 
           <TabsContent value="conflicts" className="space-y-4">
-            <ConflictsTab validationIssues={allValidationIssues} />
+            <ConflictsTab offerings={section.offerings} />
           </TabsContent>
         </Tabs>
       </div>

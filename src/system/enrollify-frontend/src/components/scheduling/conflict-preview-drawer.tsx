@@ -1,10 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
   Drawer,
   DrawerContent,
   DrawerFooter,
@@ -13,66 +8,17 @@ import {
   DrawerDescription,
 } from "@/components/ui/drawer";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getOfferingDetailsForClassSectionOptions } from "@/api/collections/class-section-collection";
-import type { Offering } from "@/api/models/class-scheduling/offering";
-import {
-  AlertTriangle,
-  BookOpen,
-  CheckCircle2,
-  ChevronDown,
-  Map,
-  Siren,
-} from "lucide-react";
-import { ValidationIssueCard } from "@/components/scheduling/validation-issue-card";
+import { AlertTriangle, CheckCircle2, Map, Siren } from "lucide-react";
+import { OfferingValidationSection } from "./offering-validation-section";
 
-interface ValidationIssuesPreviewDrawerProps {
+interface ConflictPreviewDrawerProps {
   sectionId: number | null;
   sectionName: string;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-function OfferingValidationIssueSection({ offering }: { offering: Offering }) {
-  const hasValidationIssues = (offering.validationIssues?.length ?? 0) > 0;
-  const subjectLabel =
-    offering.snapshotSubjectCode ?? `Offering #${offering.id}`;
-  const validationIssueCount = offering.validationIssues?.length ?? 0;
-
-  if (!hasValidationIssues) return null;
-
-  return (
-    <Collapsible defaultOpen>
-      <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 text-sm transition-colors hover:bg-muted/50 [&[data-state=closed]>svg:first-child]:-rotate-90 [&[data-state=open]>svg:first-child]:rotate-0">
-        <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform" />
-        <BookOpen className="size-4 shrink-0 text-muted-foreground" />
-        <span className="font-semibold">{subjectLabel}</span>
-        {offering.snapshotSubjectTitle && (
-          <span className="text-xs text-muted-foreground">
-            — {offering.snapshotSubjectTitle}
-          </span>
-        )}
-        <Badge variant="destructive" className="ml-auto text-xs">
-          {validationIssueCount}{" "}
-          {validationIssueCount === 1
-            ? "validation issue"
-            : "validation issues"}
-        </Badge>
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <div className="mt-2 space-y-2">
-          {offering.validationIssues?.map((issue, idx) => (
-            <ValidationIssueCard
-              key={issue.id ?? idx}
-              validationIssue={issue}
-            />
-          ))}
-        </div>
-      </CollapsibleContent>
-    </Collapsible>
-  );
 }
 
 export function ConflictPreviewDrawer({
@@ -80,7 +26,7 @@ export function ConflictPreviewDrawer({
   sectionName,
   isOpen,
   onOpenChange,
-}: ValidationIssuesPreviewDrawerProps) {
+}: ConflictPreviewDrawerProps) {
   const { data: offerings, isLoading } = useQuery({
     ...getOfferingDetailsForClassSectionOptions(sectionId ?? 0),
     enabled: isOpen && !!sectionId,
@@ -175,7 +121,7 @@ export function ConflictPreviewDrawer({
               {/* Validation issue list by offering */}
               <div className="space-y-4">
                 {offeringsWithValidationIssues.map((offering) => (
-                  <OfferingValidationIssueSection
+                  <OfferingValidationSection
                     key={offering.id}
                     offering={offering}
                   />
