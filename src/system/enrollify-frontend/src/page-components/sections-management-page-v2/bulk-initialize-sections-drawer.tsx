@@ -1,6 +1,5 @@
 import { bulkInitializeClassSectionsOptions } from "@/api/collections/class-section-collection";
 import type { Course } from "@/api/models/course";
-import { FormSelectField } from "@/components/form/form-select-field";
 import { SearchableSelectWithCustomTrigger } from "@/components/form/searchable-select-with-custom-trigger";
 import { FormSection } from "@/components/form/form-section";
 import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
@@ -10,11 +9,16 @@ import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerContent,
+  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group";
 import { type FormMeta, defaultFormMeta } from "@/lib/form-meta";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
@@ -22,6 +26,7 @@ import { BookOpen, ChevronDown, ListPlus, Minus, Plus, X } from "lucide-react";
 import { z } from "zod";
 import { useState, useEffect } from "react";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
+import type { College } from "@/api/models/college";
 
 const bulkInitializePayload = z.object({
   courseId: z.number(),
@@ -29,7 +34,6 @@ const bulkInitializePayload = z.object({
 });
 
 const bulkInitializeFormSchema = z.object({
-  academicTermId: z.number().min(1, "Academic term is required"),
   yearLevel: z
     .number()
     .int()
@@ -52,6 +56,7 @@ interface BulkInitializeSectionsDrawerProps {
   setIsOpen: (open: boolean) => void;
   onOpenChange: (isOpen: boolean) => void;
   courses: Course[];
+  college: College | null;
 }
 
 export function BulkInitializeSectionsDrawer({
@@ -59,6 +64,7 @@ export function BulkInitializeSectionsDrawer({
   setIsOpen,
   onOpenChange,
   courses,
+  college,
 }: BulkInitializeSectionsDrawerProps) {
   const [selectedCourseRows, setSelectedCourseRows] = useState<
     CoursePayloadRow[]
@@ -66,18 +72,13 @@ export function BulkInitializeSectionsDrawer({
 
   const {
     selectedAcademicYear,
+    selectedAcademicTerm,
     academicCoreSettings: { yearLevelOptions },
   } = useEnrollmentContext();
 
   const { mutateAsync: bulkInitialize } = useMutation(
     bulkInitializeClassSectionsOptions(),
   );
-
-  const termOptions =
-    selectedAcademicYear?.academicTerms?.map((t) => ({
-      value: t.id.toString(),
-      label: t.termName ?? `Term ${t.termNumber}`,
-    })) ?? [];
 
   const availableCourses = courses.filter(
     (c) => !selectedCourseRows.some((r) => r.course.id === c.id),
@@ -89,7 +90,6 @@ export function BulkInitializeSectionsDrawer({
   }));
 
   const defaultValues: BulkInitializeFormData = {
-    academicTermId: 0,
     yearLevel: 1,
     requestPayload: [],
   };
@@ -102,9 +102,13 @@ export function BulkInitializeSectionsDrawer({
     },
     onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
+      if (selectedAcademicTerm?.id == null) {
+        throw new Error("No academic term selected");
+      }
+
       if (meta.submitAction === "create") {
         await bulkInitialize({
-          academicTermId: value.academicTermId,
+          academicTermId: selectedAcademicTerm?.id,
           yearLevel: value.yearLevel,
           requestPayload: value.requestPayload,
         });
@@ -177,49 +181,55 @@ export function BulkInitializeSectionsDrawer({
               e.stopPropagation();
             }}
           >
-            <DrawerHeader className="border-b pb-4">
-              <DrawerTitle>
-                Bulk Initialize Class Sections for{" "}
-                {selectedAcademicYear?.academicYearTitle ??
-                  "<invalid academic year...>"}
+            <DrawerHeader className="border-b pb-4 shrink-0">
+              <DrawerTitle className="flex items-center gap-2">
+                <ListPlus className="size-5 text-indigo-600" />
+                Bulk Initialize Class Sections
               </DrawerTitle>
-              <p className="text-sm text-muted-foreground">
-                Create multiple class sections for one academic term and year
-                level
+              <DrawerDescription className="mt-1">
+                {college?.name ?? "College"} ·{" "}
+                {selectedAcademicYear?.academicYearTitle ?? "—"} ·{" "}
+                {selectedAcademicTerm?.termName ?? "—"}
+              </DrawerDescription>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Create multiple class sections across selected courses for one
+                year level and academic term.
               </p>
             </DrawerHeader>
 
             <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
-              <FormSection title="Term & Year Level">
-                <form.Field name="academicTermId">
-                  {(field) => (
-                    <FormSelectField
-                      field={field}
-                      label="Academic Term"
-                      options={termOptions}
-                      placeholder="Select academic term"
-                      required
-                      hint="Select the term when these sections will be active"
-                    />
-                  )}
-                </form.Field>
-
-                <form.Field name="yearLevel">
-                  {(field) => (
-                    <FormSelectField
-                      field={field}
-                      label="Year Level"
-                      options={yearLevelOptions.map((o) => ({
-                        value: o.value.toString(),
-                        label: o.label,
-                      }))}
-                      placeholder="Select year level"
-                      required
-                      hint="All sections will be created for this year level"
-                    />
-                  )}
-                </form.Field>
-              </FormSection>
+              <form.Field name="yearLevel">
+                {(field) => (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Year Level
+                      <span className="text-destructive ml-0.5">*</span>
+                    </label>
+                    <ToggleGroup
+                      type="single"
+                      value={field.state.value?.toString() ?? "1"}
+                      onValueChange={(val) => {
+                        if (val) field.handleChange(Number(val));
+                      }}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      {yearLevelOptions.map((opt) => (
+                        <ToggleGroupItem
+                          key={opt.value}
+                          value={opt.value.toString()}
+                          className="flex-1 text-sm"
+                        >
+                          {opt.label}
+                        </ToggleGroupItem>
+                      ))}
+                    </ToggleGroup>
+                    <p className="text-xs text-muted-foreground">
+                      All sections will be created for this year level
+                    </p>
+                  </div>
+                )}
+              </form.Field>
 
               <Separator />
 

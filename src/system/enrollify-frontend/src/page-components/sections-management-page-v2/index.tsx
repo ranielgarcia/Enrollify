@@ -38,10 +38,12 @@ import { searchParams, type QuickFilter } from "./searchParams";
 import { BulkInitializeSectionsDrawer } from "./bulk-initialize-sections-drawer";
 import { FloatingSelectionToolbar } from "./floating-selection-toolbar";
 import { ClassSectionOfferingsDetailDrawer } from "./class-section-offerings-detail-drawer";
+import type { College } from "@/api/models/college";
 
 export default function SectionsManagementPageV2() {
   const [isBulkInitializeOpen, setIsBulkInitializeOpen] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [college, setCollege] = useState<College | null>(null);
 
   return (
     <ManagementPageLayout
@@ -55,6 +57,7 @@ export default function SectionsManagementPageV2() {
             setIsOpen={setIsBulkInitializeOpen}
             onOpenChange={setIsBulkInitializeOpen}
             courses={courses ?? []}
+            college={college}
           />
         </div>
       }
@@ -63,7 +66,10 @@ export default function SectionsManagementPageV2() {
         {({ reset }) => (
           <SectionsErrorBoundary onReset={reset}>
             <Suspense fallback={<SectionsSkeleton />}>
-              <SectionsPageContent setCourses={setCourses} />
+              <SectionsPageContent
+                setCourses={setCourses}
+                setCollege={setCollege}
+              />
             </Suspense>
           </SectionsErrorBoundary>
         )}
@@ -74,8 +80,12 @@ export default function SectionsManagementPageV2() {
 
 interface SectionsPageContentProps {
   setCourses: (courses: Course[]) => void;
+  setCollege: (college: College | null) => void;
 }
-function SectionsPageContent({ setCourses }: SectionsPageContentProps) {
+function SectionsPageContent({
+  setCourses,
+  setCollege,
+}: SectionsPageContentProps) {
   const [{ collegeId, view, quickFilter }, setParams] =
     useQueryStates(searchParams);
   const { selectedAcademicTerm, selectedAcademicYear } = useEnrollmentContext();
@@ -101,6 +111,14 @@ function SectionsPageContent({ setCourses }: SectionsPageContentProps) {
   );
 
   useEffect(() => {
+    if (collegeData) {
+      setCollege({
+        id: collegeData.id,
+        code: collegeData.code,
+        name: collegeData.name,
+      } as College);
+    }
+
     if (collegeData?.coursesWithClassSections) {
       const courses = collegeData?.coursesWithClassSections.map((x) => ({
         id: x.id,
@@ -110,7 +128,7 @@ function SectionsPageContent({ setCourses }: SectionsPageContentProps) {
 
       setCourses(courses);
     }
-  }, [collegeData, setCourses]);
+  }, [collegeData, setCourses, setCollege]);
 
   const {
     isFormOpen,
