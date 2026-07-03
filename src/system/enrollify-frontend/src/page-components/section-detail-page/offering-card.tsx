@@ -47,8 +47,6 @@ export function OfferingCard({
     (msg) => msg.severity.name === "Error",
   );
 
-  console.log(validationMessages);
-
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <div className="rounded-lg border bg-card shadow-sm overflow-hidden">

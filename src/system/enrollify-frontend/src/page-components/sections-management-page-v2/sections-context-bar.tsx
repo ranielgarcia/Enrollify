@@ -1,14 +1,12 @@
 import {
   CalendarClock,
   LayoutGrid,
-  Plus,
   TableIcon,
   TriangleAlert,
 } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Tooltip,
@@ -31,9 +29,6 @@ interface SectionsContextBarProps {
   view: ContextBarView;
   onViewChange: (view: ContextBarView) => void;
   academicTerm: AcademicTermInfo | null | undefined;
-  onCreateClick?: () => void;
-  createDisabled?: boolean;
-  createLabel?: string;
   collegeSelectorOpen?: boolean;
   onCollegeSelectorOpenChange?: (open: boolean) => void;
   className?: string;
@@ -44,15 +39,11 @@ interface SectionsContextBarProps {
  * - College selector (primary filter)
  * - Academic term badge (or inline alert if missing)
  * - Card / Table view toggle
- * - Optional create action
  */
 export function SectionsContextBar({
   view,
   onViewChange,
   academicTerm,
-  onCreateClick,
-  createDisabled = true,
-  createLabel = "Bulk Initialize",
   collegeSelectorOpen,
   onCollegeSelectorOpenChange,
   className,
@@ -130,16 +121,6 @@ export function SectionsContextBar({
               <span className="hidden sm:inline">Table</span>
             </ToggleGroupItem>
           </ToggleGroup>
-          <Button
-            type="button"
-            size="sm"
-            onClick={onCreateClick}
-            disabled={createDisabled}
-            className="h-9 gap-1.5"
-          >
-            <Plus className="size-4" />
-            <span className="hidden sm:inline">{createLabel}</span>
-          </Button>
         </div>
       </div>
     </div>

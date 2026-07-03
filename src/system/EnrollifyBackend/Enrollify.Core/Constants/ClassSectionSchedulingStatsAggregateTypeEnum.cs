@@ -33,24 +33,25 @@ public class ClassSectionSchedulingStatsAggregateTypeEnum : SmartEnum<ClassSecti
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum DEFAULT_VALUES =
     new("DEFAULT_VALUES", 10, ClassSectionValidationIssueCategoryEnum.DEFAULT_VALUE);
 
-  // Class Level Stats
+  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum TOTAL_VALIDATION_ISSUES_ACROSS_OFFERINGS_COUNT =
+    new("TOTAL_VALIDATION_ISSUES_ACROSS_OFFERINGS_COUNT", 11);
+
+  // Class Subject Offering Level Stats
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum OFFERING_WITH_ISSUE_COUNT =
-    new("OFFERING_WITH_ISSUE_COUNT", 11);
+    new("OFFERING_WITH_ISSUE_COUNT", 12);
 
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum OFFERING_MISSING_TEACHER_COUNT =
-    new("OFFERING_MISSING_TEACHER_COUNT", 12);
+    new("OFFERING_MISSING_TEACHER_COUNT", 13);
 
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum OFFERING_MISSING_ROOM_COUNT =
-    new("OFFERING_MISSING_ROOM_COUNT", 13);
+    new("OFFERING_MISSING_ROOM_COUNT", 14);
 
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum OFFERING_NO_SCHEDULE_COUNT =
-    new("OFFERING_NO_SCHEDULE_COUNT", 14);
+    new("OFFERING_NO_SCHEDULE_COUNT", 15);
 
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum OFFERINGS_COUNT =
-    new("OFFERINGS_COUNT", 15);
+    new("OFFERINGS_COUNT", 16);
 
-  public static readonly ClassSectionSchedulingStatsAggregateTypeEnum TOTAL_VALIDATION_ISSUES_ACROSS_OFFERINGS_COUNT =
-    new("TOTAL_VALIDATION_ISSUES_ACROSS_OFFERINGS_COUNT", 16);
 
   public ClassSectionSchedulingStatsAggregateTypeEnum(string name, int value,
     ClassSectionValidationIssueCategoryEnum? issueCategory = null) : base(name, value)
