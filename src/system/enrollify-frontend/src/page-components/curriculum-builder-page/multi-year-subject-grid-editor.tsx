@@ -108,6 +108,8 @@ const populateGridFromCurriculum = (
       units: subject.units,
       unitsOverride: curriculumSubject.unitsOverride ?? null,
       prerequisites: prerequisiteCodes,
+      daysPerWeek: null,
+      hoursPerDay: null,
     };
 
     // Add subject to the appropriate year and term
@@ -335,6 +337,8 @@ export default function MultiYearSubjectGridEditor({
               subjectId: subject.id,
               unitsOverride: null,
               prerequisites: [],
+              daysPerWeek: null,
+              hoursPerDay: null,
             },
           ],
         },
@@ -430,6 +434,42 @@ export default function MultiYearSubjectGridEditor({
       const idx = subjects.findIndex((s) => s.id === subjectId);
       if (idx === -1) return prev;
       subjects[idx] = { ...subjects[idx], unitsOverride: value };
+      return {
+        ...prev,
+        [year]: { ...prev[year], [term]: subjects },
+      };
+    });
+  };
+
+  const setDaysPerWeek = (
+    year: number,
+    term: number,
+    subjectId: number,
+    value: number | null,
+  ) => {
+    updateGridWithDirty((prev) => {
+      const subjects = [...prev[year][term]];
+      const idx = subjects.findIndex((s) => s.id === subjectId);
+      if (idx === -1) return prev;
+      subjects[idx] = { ...subjects[idx], daysPerWeek: value };
+      return {
+        ...prev,
+        [year]: { ...prev[year], [term]: subjects },
+      };
+    });
+  };
+
+  const setHoursPerDay = (
+    year: number,
+    term: number,
+    subjectId: number,
+    value: number | null,
+  ) => {
+    updateGridWithDirty((prev) => {
+      const subjects = [...prev[year][term]];
+      const idx = subjects.findIndex((s) => s.id === subjectId);
+      if (idx === -1) return prev;
+      subjects[idx] = { ...subjects[idx], hoursPerDay: value };
       return {
         ...prev,
         [year]: { ...prev[year], [term]: subjects },
@@ -674,6 +714,8 @@ export default function MultiYearSubjectGridEditor({
                             onUnitsOverrideChange={(value) => setUnitsOverride(year, term, subject.id, value)}
                             onRemovePrerequisite={(pre) => removePrerequisite(year, term, subject.id, pre)}
                             onAddPrerequisites={(codes) => addPrerequisites(year, term, subject.id, codes)}
+                            onDaysPerWeekChange={(value) => setDaysPerWeek(year, term, subject.id, value)}
+                            onHoursPerDayChange={(value) => setHoursPerDay(year, term, subject.id, value)}
                           />
                         ))}
                       </div>
