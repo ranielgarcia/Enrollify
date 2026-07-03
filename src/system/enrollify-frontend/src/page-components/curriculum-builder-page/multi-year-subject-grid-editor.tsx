@@ -12,6 +12,7 @@ import {
   type MultiSearchableSelectWithTriggerOption,
 } from "@/components/form/searchable-select-with-custom-trigger";
 import { Badge } from "@/components/ui/badge";
+import { AddSubjectToTermDialog } from "./add-subject-to-term-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -26,7 +27,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface SubjectInCurriculum {
   id: number;
@@ -182,6 +183,10 @@ export default function MultiYearSubjectGridEditor({
     initialState.activeYears,
   );
   const [grid, setGrid] = useState<YearGrid>(initialState.grid);
+  const [isAddSubjectDialogOpen, setIsAddSubjectDialogOpen] = useState(false);
+  const [addSubjectTargetYear, setAddSubjectTargetYear] = useState<number>(1);
+  const [addSubjectTargetTerm, setAddSubjectTargetTerm] = useState<number>(1);
+
   const { mutateAsync: saveCurriculumContentAsync } = useMutation(
     saveCurriculumContentOptions(curriculum.id),
   );
@@ -475,24 +480,30 @@ export default function MultiYearSubjectGridEditor({
     });
   };
 
-  const getSubjectsOptionsForTerm =
-    (): MultiSearchableSelectWithTriggerOption[] => {
-      // Get all subject IDs already added across all years and terms
-      const allAddedSubjectIds = new Set(
+  const allAddedSubjectCodes = useMemo(
+    () =>
+      new Set(
         Object.values(grid).flatMap((yearData) =>
           Object.values(yearData).flatMap((termSubjects) =>
-            termSubjects.map((s) => s.id),
+            termSubjects.map((s) => s.code),
           ),
         ),
-      );
+      ),
+    [grid],
+  );
 
-      return availableSubjects
-        .filter((s) => !allAddedSubjectIds.has(s.id))
-        .map((s) => ({
-          value: s.id.toString(),
-          label: `${s.code} - ${s.title} (${s.units}u)`,
-        }));
-    };
+  const handleAddSubjectsToTerm = async (subjectCodes: string[]) => {
+    for (const code of subjectCodes) {
+      const subject = availableSubjects.find((s) => s.code === code);
+      if (subject) {
+        addSubjectToGrid(
+          addSubjectTargetYear,
+          addSubjectTargetTerm,
+          subject.id,
+        );
+      }
+    }
+  };
 
   /**
    * Returns all subjects added across all years and terms that can be
@@ -783,26 +794,18 @@ export default function MultiYearSubjectGridEditor({
                         ))}
                       </div>
                       {!isReadOnly && (
-                        <SearchableSelectWithCustomTrigger
-                          options={getSubjectsOptionsForTerm()}
-                          value={[]}
-                          onValueChange={(values: string[]) => {
-                            values.forEach((val) =>
-                              addSubjectToGrid(year, term, Number(val)),
-                            );
+                        <Button
+                          variant="outline"
+                          className="w-full h-9 border-dashed text-xs text-muted-foreground hover:bg-transparent hover:border-accent hover:text-accent transition-colors"
+                          onClick={() => {
+                            setAddSubjectTargetYear(year);
+                            setAddSubjectTargetTerm(term);
+                            setIsAddSubjectDialogOpen(true);
                           }}
-                          searchPlaceholder="Search subjects..."
-                          emptyMessage="No subjects found"
-                          trigger={
-                            <Button
-                              variant="outline"
-                              className="w-full h-9 border-dashed text-xs text-muted-foreground hover:bg-transparent hover:border-accent hover:text-accent transition-colors"
-                            >
-                              <Plus className="size-3 mr-2" />
-                              Add Subject to Term {term}
-                            </Button>
-                          }
-                        />
+                        >
+                          <Plus className="size-3 mr-2" />
+                          Add Subject to Term {term}
+                        </Button>
                       )}
                     </CardContent>
                   </Card>
@@ -847,6 +850,15 @@ export default function MultiYearSubjectGridEditor({
           </div>
         </div>
       )}
+
+      <AddSubjectToTermDialog
+        isOpen={isAddSubjectDialogOpen}
+        onOpenChange={setIsAddSubjectDialogOpen}
+        year={addSubjectTargetYear}
+        term={addSubjectTargetTerm}
+        excludeSubjectCodes={Array.from(allAddedSubjectCodes)}
+        onSubmit={handleAddSubjectsToTerm}
+      />
     </>
   );
 }
