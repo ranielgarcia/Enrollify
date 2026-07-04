@@ -158,9 +158,24 @@ export function SearchRoomsDialog({
     } else if (page <= 3) {
       pages.push(1, 2, 3, 4, "ellipsis", totalPages);
     } else if (page >= totalPages - 2) {
-      pages.push(1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      pages.push(
+        1,
+        "ellipsis",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      );
     } else {
-      pages.push(1, "ellipsis", page - 1, page, page + 1, "ellipsis", totalPages);
+      pages.push(
+        1,
+        "ellipsis",
+        page - 1,
+        page,
+        page + 1,
+        "ellipsis",
+        totalPages,
+      );
     }
     return pages;
   }, [page, totalPages]);
@@ -180,8 +195,8 @@ export function SearchRoomsDialog({
           )}
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="relative">
+        <div className="space-y-4 overflow-hidden">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder="Search by room number, building, or type..."
@@ -216,14 +231,20 @@ export function SearchRoomsDialog({
                   <>
                     <p className="text-sm font-medium">
                       No rooms matching{" "}
-                      <strong className="text-foreground">&ldquo;{searchTerm}&rdquo;</strong>
+                      <strong className="text-foreground">
+                        &ldquo;{searchTerm}&rdquo;
+                      </strong>
                     </p>
                     <p className="text-xs mt-1">Try a different search term</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-sm font-medium">No available rooms to add</p>
-                    <p className="text-xs mt-1">All rooms have already been added</p>
+                    <p className="text-sm font-medium">
+                      No available rooms to add
+                    </p>
+                    <p className="text-xs mt-1">
+                      All rooms have already been added
+                    </p>
                   </>
                 )}
               </div>
@@ -245,13 +266,19 @@ export function SearchRoomsDialog({
                         onCheckedChange={() => handleToggleRoom(room)}
                         disabled={isAtLimit && !isSelected}
                       />
-                      <Badge variant="secondary" className="shrink-0 font-mono text-xs">
+                      <Badge
+                        variant="secondary"
+                        className="shrink-0 font-mono text-xs"
+                      >
                         {room.roomNumber}
                       </Badge>
                       <span className="flex-1 min-w-0 truncate text-sm">
                         {room.building.name}
                       </span>
-                      <Badge variant="outline" className="shrink-0 text-xs tabular-nums">
+                      <Badge
+                        variant="outline"
+                        className="shrink-0 text-xs tabular-nums"
+                      >
                         {room.capacity} seats
                       </Badge>
                     </label>
@@ -295,7 +322,7 @@ export function SearchRoomsDialog({
                 Showing {itemsStart}–{itemsEnd} of {totalCount} result
                 {totalCount !== 1 ? "s" : ""}
               </p>
-              <div className="flex items-center gap-1 order-1 sm:order-2">
+              <div className="flex flex-wrap items-center justify-start gap-1 order-1 sm:order-2">
                 <Button
                   type="button"
                   variant="outline"

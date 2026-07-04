@@ -139,9 +139,24 @@ export function SearchTeachersDialog({
     } else if (page <= 3) {
       pages.push(1, 2, 3, 4, "ellipsis", totalPages);
     } else if (page >= totalPages - 2) {
-      pages.push(1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      pages.push(
+        1,
+        "ellipsis",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      );
     } else {
-      pages.push(1, "ellipsis", page - 1, page, page + 1, "ellipsis", totalPages);
+      pages.push(
+        1,
+        "ellipsis",
+        page - 1,
+        page,
+        page + 1,
+        "ellipsis",
+        totalPages,
+      );
     }
     return pages;
   }, [page, totalPages]);
@@ -161,9 +176,9 @@ export function SearchTeachersDialog({
           )}
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-hidden">
           {/* Search */}
-          <div className="relative">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder="Search by name or ID..."
@@ -199,14 +214,22 @@ export function SearchTeachersDialog({
                   <>
                     <p className="text-sm font-medium">
                       No teachers matching{" "}
-                      <strong className="text-foreground">&ldquo;{searchTerm}&rdquo;</strong>
+                      <strong className="text-foreground">
+                        &ldquo;{searchTerm}&rdquo;
+                      </strong>
                     </p>
-                    <p className="text-xs mt-1">Try a different search term or ID</p>
+                    <p className="text-xs mt-1">
+                      Try a different search term or ID
+                    </p>
                   </>
                 ) : (
                   <>
-                    <p className="text-sm font-medium">No available teachers to add</p>
-                    <p className="text-xs mt-1">All teachers have already been added</p>
+                    <p className="text-sm font-medium">
+                      No available teachers to add
+                    </p>
+                    <p className="text-xs mt-1">
+                      All teachers have already been added
+                    </p>
                   </>
                 )}
               </div>
@@ -226,11 +249,12 @@ export function SearchTeachersDialog({
                       <Checkbox
                         checked={isSelected}
                         onCheckedChange={() => handleToggleTeacher(teacher)}
-                        disabled={
-                          isAtLimit && !isSelected
-                        }
+                        disabled={isAtLimit && !isSelected}
                       />
-                      <Badge variant="secondary" className="shrink-0 font-mono text-xs">
+                      <Badge
+                        variant="secondary"
+                        className="shrink-0 font-mono text-xs"
+                      >
                         {teacher.teacherIdentifier}
                       </Badge>
                       <span className="flex-1 min-w-0 truncate text-sm">
@@ -260,7 +284,8 @@ export function SearchTeachersDialog({
             >
               <span className="font-medium">
                 {selectedTeacherIds.length}
-                {maxSelections !== undefined ? ` / ${maxSelections}` : ""} teacher
+                {maxSelections !== undefined ? ` / ${maxSelections}` : ""}{" "}
+                teacher
                 {selectedTeacherIds.length !== 1 ? "s" : ""} selected
                 {isAtLimit && " — limit reached"}
               </span>
@@ -282,7 +307,7 @@ export function SearchTeachersDialog({
                 Showing {itemsStart}–{itemsEnd} of {totalCount} result
                 {totalCount !== 1 ? "s" : ""}
               </p>
-              <div className="flex items-center gap-1 order-1 sm:order-2">
+              <div className="flex flex-wrap items-center justify-start gap-1 order-1 sm:order-2">
                 <Button
                   type="button"
                   variant="outline"

@@ -13,16 +13,10 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  Search,
-  X,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Search, X } from "lucide-react";
 import { ModuleIcons } from "@/config/module-icons";
 import { useState, useMemo, useEffect } from "react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getAllCollegesOptions } from "@/api/collections/college-collection";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { College } from "@/api/models/college";
@@ -82,10 +76,10 @@ export function SearchCollegesDialog({
 
   const excludeSet = useMemo(
     () => new Set(excludeCollegeIds),
-    [excludeCollegeIds]
+    [excludeCollegeIds],
   );
 
-  const { data: colleges = [], isLoading } = useSuspenseQuery({
+  const { data: colleges = [], isLoading } = useQuery({
     ...getAllCollegesOptions(),
   });
 
@@ -110,10 +104,7 @@ export function SearchCollegesDialog({
   }, [colleges, excludeSet, debouncedSearchTerm]);
 
   const totalCount = filteredColleges.length;
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredColleges.length / pageSize)
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredColleges.length / pageSize));
   const hasNextPage = page < totalPages;
   const hasPreviousPage = page > 1;
 
@@ -129,8 +120,7 @@ export function SearchCollegesDialog({
   }, [filteredColleges, page, pageSize]);
 
   const isAtLimit =
-    maxSelections !== undefined &&
-    selectedColleges.length >= maxSelections;
+    maxSelections !== undefined && selectedColleges.length >= maxSelections;
 
   const handleToggleCollege = (college: College) => {
     const isSelected = selectedColleges.some((c) => c.id === college.id);
@@ -167,9 +157,24 @@ export function SearchCollegesDialog({
     } else if (page <= 3) {
       pages.push(1, 2, 3, 4, "ellipsis", totalPages);
     } else if (page >= totalPages - 2) {
-      pages.push(1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      pages.push(
+        1,
+        "ellipsis",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      );
     } else {
-      pages.push(1, "ellipsis", page - 1, page, page + 1, "ellipsis", totalPages);
+      pages.push(
+        1,
+        "ellipsis",
+        page - 1,
+        page,
+        page + 1,
+        "ellipsis",
+        totalPages,
+      );
     }
     return pages;
   }, [page, totalPages]);
@@ -189,8 +194,8 @@ export function SearchCollegesDialog({
           )}
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="relative">
+        <div className="space-y-4 overflow-hidden">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder="Search by college name, code, or dean..."
@@ -225,14 +230,20 @@ export function SearchCollegesDialog({
                   <>
                     <p className="text-sm font-medium">
                       No colleges matching{" "}
-                      <strong className="text-foreground">&ldquo;{searchTerm}&rdquo;</strong>
+                      <strong className="text-foreground">
+                        &ldquo;{searchTerm}&rdquo;
+                      </strong>
                     </p>
                     <p className="text-xs mt-1">Try a different search term</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-sm font-medium">No available colleges to add</p>
-                    <p className="text-xs mt-1">All colleges have already been added</p>
+                    <p className="text-sm font-medium">
+                      No available colleges to add
+                    </p>
+                    <p className="text-xs mt-1">
+                      All colleges have already been added
+                    </p>
                   </>
                 )}
               </div>
@@ -252,11 +263,12 @@ export function SearchCollegesDialog({
                       <Checkbox
                         checked={isSelected}
                         onCheckedChange={() => handleToggleCollege(college)}
-                        disabled={
-                          isAtLimit && !isSelected
-                        }
+                        disabled={isAtLimit && !isSelected}
                       />
-                      <Badge variant="secondary" className="shrink-0 font-mono text-xs">
+                      <Badge
+                        variant="secondary"
+                        className="shrink-0 font-mono text-xs"
+                      >
                         {college.code}
                       </Badge>
                       <div className="flex-1 min-w-0">
@@ -289,9 +301,8 @@ export function SearchCollegesDialog({
             >
               <span className="font-medium">
                 {selectedCollegeIds.length}
-                {maxSelections !== undefined
-                  ? ` / ${maxSelections}`
-                  : ""} college
+                {maxSelections !== undefined ? ` / ${maxSelections}` : ""}{" "}
+                college
                 {selectedCollegeIds.length !== 1 ? "s" : ""} selected
                 {isAtLimit && " — limit reached"}
               </span>
@@ -313,7 +324,7 @@ export function SearchCollegesDialog({
                 Showing {itemsStart}–{itemsEnd} of {totalCount} result
                 {totalCount !== 1 ? "s" : ""}
               </p>
-              <div className="flex items-center gap-1 order-1 sm:order-2">
+              <div className="flex flex-wrap items-center justify-start gap-1 order-1 sm:order-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -380,11 +391,8 @@ export function SearchCollegesDialog({
             disabled={isSubmitting || selectedCollegeIds.length === 0}
             size="sm"
           >
-            {isSubmitting && (
-              <Loader2 className="mr-2 size-4 animate-spin" />
-            )}
-            Add{" "}
-            {selectedCollegeIds.length > 0
+            {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+            Add {selectedCollegeIds.length > 0
               ? selectedCollegeIds.length
               : ""}{" "}
             College

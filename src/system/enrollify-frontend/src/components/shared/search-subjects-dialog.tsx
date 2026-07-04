@@ -137,9 +137,24 @@ export function SearchSubjectsDialog({
     } else if (page <= 3) {
       pages.push(1, 2, 3, 4, "ellipsis", totalPages);
     } else if (page >= totalPages - 2) {
-      pages.push(1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      pages.push(
+        1,
+        "ellipsis",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      );
     } else {
-      pages.push(1, "ellipsis", page - 1, page, page + 1, "ellipsis", totalPages);
+      pages.push(
+        1,
+        "ellipsis",
+        page - 1,
+        page,
+        page + 1,
+        "ellipsis",
+        totalPages,
+      );
     }
     return pages;
   }, [page, totalPages]);
@@ -159,9 +174,9 @@ export function SearchSubjectsDialog({
           )}
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-hidden">
           {/* Search */}
-          <div className="relative">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder="Search by code or title..."
@@ -197,21 +212,31 @@ export function SearchSubjectsDialog({
                   <>
                     <p className="text-sm font-medium">
                       No subjects matching{" "}
-                      <strong className="text-foreground">&ldquo;{searchTerm}&rdquo;</strong>
+                      <strong className="text-foreground">
+                        &ldquo;{searchTerm}&rdquo;
+                      </strong>
                     </p>
-                    <p className="text-xs mt-1">Try a different search term or code</p>
+                    <p className="text-xs mt-1">
+                      Try a different search term or code
+                    </p>
                   </>
                 ) : (
                   <>
-                    <p className="text-sm font-medium">No available subjects to add</p>
-                    <p className="text-xs mt-1">All subjects have already been added</p>
+                    <p className="text-sm font-medium">
+                      No available subjects to add
+                    </p>
+                    <p className="text-xs mt-1">
+                      All subjects have already been added
+                    </p>
                   </>
                 )}
               </div>
             ) : (
               <div className="p-1 space-y-0.5">
                 {filteredSubjects?.map((subject) => {
-                  const isSelected = selectedSubjectCodes.includes(subject.code);
+                  const isSelected = selectedSubjectCodes.includes(
+                    subject.code,
+                  );
                   return (
                     <label
                       key={subject.id}
@@ -223,16 +248,24 @@ export function SearchSubjectsDialog({
                     >
                       <Checkbox
                         checked={isSelected}
-                        onCheckedChange={() => handleToggleSubject(subject.code)}
+                        onCheckedChange={() =>
+                          handleToggleSubject(subject.code)
+                        }
                         disabled={isAtLimit && !isSelected}
                       />
-                      <Badge variant="secondary" className="shrink-0 font-mono text-xs">
+                      <Badge
+                        variant="secondary"
+                        className="shrink-0 font-mono text-xs"
+                      >
                         {subject.code}
                       </Badge>
                       <span className="flex-1 min-w-0 truncate text-sm">
                         {subject.title}
                       </span>
-                      <Badge variant="outline" className="shrink-0 text-xs tabular-nums">
+                      <Badge
+                        variant="outline"
+                        className="shrink-0 text-xs tabular-nums"
+                      >
                         {Number(subject.units).toFixed(1)}u
                       </Badge>
                     </label>
@@ -254,7 +287,8 @@ export function SearchSubjectsDialog({
             >
               <span className="font-medium">
                 {selectedSubjectCodes.length}
-                {maxSelections !== undefined ? ` / ${maxSelections}` : ""} subject
+                {maxSelections !== undefined ? ` / ${maxSelections}` : ""}{" "}
+                subject
                 {selectedSubjectCodes.length !== 1 ? "s" : ""} selected
                 {isAtLimit && " — limit reached"}
               </span>
@@ -276,7 +310,7 @@ export function SearchSubjectsDialog({
                 Showing {itemsStart}–{itemsEnd} of {totalCount} result
                 {totalCount !== 1 ? "s" : ""}
               </p>
-              <div className="flex items-center gap-1 order-1 sm:order-2">
+              <div className="flex flex-wrap items-center justify-start gap-1 order-1 sm:order-2">
                 <Button
                   type="button"
                   variant="outline"
