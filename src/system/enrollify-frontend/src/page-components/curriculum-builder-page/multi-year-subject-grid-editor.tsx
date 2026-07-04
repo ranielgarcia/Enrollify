@@ -108,8 +108,8 @@ const populateGridFromCurriculum = (
       units: subject.units,
       unitsOverride: curriculumSubject.unitsOverride ?? null,
       prerequisites: prerequisiteCodes,
-      daysPerWeek: null,
-      hoursPerDay: null,
+      daysPerWeek: curriculumSubject.daysPerWeek,
+      hoursPerDay: curriculumSubject.hoursPerDay,
     };
 
     // Add subject to the appropriate year and term
@@ -337,8 +337,8 @@ export default function MultiYearSubjectGridEditor({
               subjectId: subject.id,
               unitsOverride: null,
               prerequisites: [],
-              daysPerWeek: null,
-              hoursPerDay: null,
+              daysPerWeek: 1,
+              hoursPerDay: 1,
             },
           ],
         },
@@ -445,7 +445,7 @@ export default function MultiYearSubjectGridEditor({
     year: number,
     term: number,
     subjectId: number,
-    value: number | null,
+    value: number,
   ) => {
     updateGridWithDirty((prev) => {
       const subjects = [...prev[year][term]];
@@ -463,7 +463,7 @@ export default function MultiYearSubjectGridEditor({
     year: number,
     term: number,
     subjectId: number,
-    value: number | null,
+    value: number,
   ) => {
     updateGridWithDirty((prev) => {
       const subjects = [...prev[year][term]];
@@ -709,13 +709,29 @@ export default function MultiYearSubjectGridEditor({
                             key={subject.id}
                             subject={subject}
                             isReadOnly={isReadOnly}
-                            availablePrerequisiteOptions={getAvailableSubjectForPrerequisitesOptions(year, term, subject.code)}
-                            onRemove={() => removeSubject(year, term, subject.id)}
-                            onUnitsOverrideChange={(value) => setUnitsOverride(year, term, subject.id, value)}
-                            onRemovePrerequisite={(pre) => removePrerequisite(year, term, subject.id, pre)}
-                            onAddPrerequisites={(codes) => addPrerequisites(year, term, subject.id, codes)}
-                            onDaysPerWeekChange={(value) => setDaysPerWeek(year, term, subject.id, value)}
-                            onHoursPerDayChange={(value) => setHoursPerDay(year, term, subject.id, value)}
+                            availablePrerequisiteOptions={getAvailableSubjectForPrerequisitesOptions(
+                              year,
+                              term,
+                              subject.code,
+                            )}
+                            onRemove={() =>
+                              removeSubject(year, term, subject.id)
+                            }
+                            onUnitsOverrideChange={(value) =>
+                              setUnitsOverride(year, term, subject.id, value)
+                            }
+                            onRemovePrerequisite={(pre) =>
+                              removePrerequisite(year, term, subject.id, pre)
+                            }
+                            onAddPrerequisites={(codes) =>
+                              addPrerequisites(year, term, subject.id, codes)
+                            }
+                            onDaysPerWeekChange={(value) =>
+                              setDaysPerWeek(year, term, subject.id, value)
+                            }
+                            onHoursPerDayChange={(value) =>
+                              setHoursPerDay(year, term, subject.id, value)
+                            }
                           />
                         ))}
                       </div>

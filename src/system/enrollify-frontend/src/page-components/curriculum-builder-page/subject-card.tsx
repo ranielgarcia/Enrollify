@@ -13,8 +13,8 @@ export interface SubjectInCurriculum {
   units: number;
   unitsOverride: number | null;
   prerequisites: string[];
-  daysPerWeek: number | null;
-  hoursPerDay: number | null;
+  daysPerWeek: number;
+  hoursPerDay: number;
 }
 
 interface SubjectCardProps {
@@ -25,8 +25,8 @@ interface SubjectCardProps {
   onUnitsOverrideChange: (value: number | null) => void;
   onRemovePrerequisite: (prerequisiteCode: string) => void;
   onAddPrerequisites: (subjectCodes: string[]) => void;
-  onDaysPerWeekChange: (value: number | null) => void;
-  onHoursPerDayChange: (value: number | null) => void;
+  onDaysPerWeekChange: (value: number) => void;
+  onHoursPerDayChange: (value: number) => void;
 }
 
 export function SubjectCard({
@@ -111,7 +111,7 @@ export function SubjectCard({
                 disabled={isReadOnly}
                 onChange={(e) => {
                   const raw = e.target.value;
-                  onDaysPerWeekChange(raw === "" ? null : Number(raw));
+                  onDaysPerWeekChange(raw === "" ? 1 : Number(raw));
                 }}
                 className="w-14 text-xs h-7 px-2 rounded-md border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/40 disabled:opacity-50 disabled:cursor-not-allowed tabular-nums"
               />
@@ -130,12 +130,12 @@ export function SubjectCard({
                 disabled={isReadOnly}
                 onChange={(e) => {
                   const raw = e.target.value;
-                  onHoursPerDayChange(raw === "" ? null : Number(raw));
+                  onHoursPerDayChange(raw === "" ? 1 : Number(raw));
                 }}
                 className="w-14 text-xs h-7 px-2 rounded-md border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/40 disabled:opacity-50 disabled:cursor-not-allowed tabular-nums"
               />
             </div>
-            {(subject.daysPerWeek != null && subject.hoursPerDay != null) && (
+            {subject.daysPerWeek != null && subject.hoursPerDay != null && (
               <span className="text-[10px] text-muted-foreground/60 tabular-nums">
                 = {(subject.daysPerWeek * subject.hoursPerDay).toFixed(1)}h/wk
               </span>

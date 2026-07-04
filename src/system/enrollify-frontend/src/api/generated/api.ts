@@ -1409,6 +1409,10 @@ export interface components {
             isElective?: boolean;
             /** Format: decimal */
             unitsOverride?: number | null;
+            /** Format: int32 */
+            daysPerWeek?: number;
+            /** Format: decimal */
+            hoursPerDay?: number;
             electiveGroupName?: string | null;
             subject?: components["schemas"]["EnrollifyApplicationSharedDTOsSubjectSummaryDto"] | null;
             prerequisites?: components["schemas"]["EnrollifyApplicationFeaturesCurriculumsDTOsCurriculumSubjectPrerequisiteDto"][];
@@ -1448,6 +1452,10 @@ export interface components {
             code?: string;
             /** Format: decimal */
             unitsOverride?: number | null;
+            /** Format: int32 */
+            daysPerWeek?: number;
+            /** Format: decimal */
+            hoursPerDay?: number;
             prerequisites?: string[];
         };
         EnrollifyWebAPIFeaturesCurriculumsUpdateCurriculumRequest: {
@@ -1517,26 +1525,17 @@ export interface components {
             dean: string;
         };
         EnrollifyWebAPIFeaturesClassSectionSchedulingCollegeQueriesGetClassSchedulingStatsForCollegeWithinAcademicTermRequest: Record<string, never>;
-        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsCollegeCoursesWithClassSectionsDto: {
-            /**
-             * Format: int32
-             * @description Value object wrapping Int32
-             */
-            id?: number;
-            code?: string;
-            name?: string;
-            description?: string;
-            coursesWithClassSections?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsCoursesWithClassSectionsDto"][];
-        };
-        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsCoursesWithClassSectionsDto: {
-            /**
-             * Format: int32
-             * @description Value object wrapping Int32
-             */
-            id?: number;
-            code?: components["schemas"]["EnrollifyCoreAggregatesCourseAggregateCourseCode"];
-            name?: string;
-            classSections?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionDto"][];
+        EnrollifyWebAPIFeaturesClassSectionSchedulingCollegeQueriesGetClassSectionsWithinAcademicTermByCollegeRequest: Record<string, never>;
+        EnrollifyApplicationPagedResultOfClassSectionDto: {
+            items?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionDto"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int32 */
+            totalCount?: number;
+            /** Format: int32 */
+            totalPages?: number;
         };
         EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionDto: components["schemas"]["EnrollifyApplicationBaseDto"] & {
             /**
@@ -1610,19 +1609,95 @@ export interface components {
             value?: number;
             description?: string;
         };
-        EnrollifyWebAPIFeaturesClassSectionSchedulingCollegeQueriesGetClassSectionsWithinAcademicTermByCollegeRequest: Record<string, never>;
-        EnrollifyApplicationPagedResultOfClassSectionDto: {
-            items?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionDto"][];
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            pageSize?: number;
-            /** Format: int32 */
-            totalCount?: number;
-            /** Format: int32 */
-            totalPages?: number;
-        };
         EnrollifyWebAPIFeaturesClassSectionSchedulingClassSectionQueriesFilterClassSectionsPaginatedRequest: Record<string, never>;
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionSubjectOfferingDto: components["schemas"]["EnrollifyApplicationBaseDto"] & {
+            /** Format: int32 */
+            id?: number;
+            /** Format: int32 */
+            classSectionId?: number;
+            /** Format: int32 */
+            subjectId?: number;
+            snapshotSubjectCode?: string;
+            snapshotSubjectTitle?: string;
+            /** Format: decimal */
+            snapshotUnits?: number;
+            snapshotIsElective?: boolean;
+            snapshotElectiveGroupName?: string | null;
+            /** Format: int32 */
+            daysPerWeek?: number;
+            /** Format: decimal */
+            hoursPerDay?: number;
+            /** Format: int32 */
+            maxNumberOfStudents?: number | null;
+            isFullyScheduled?: boolean;
+            teacher?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsOfferingTeacherDto"] | null;
+            room?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsOfferingRoomDto"] | null;
+            schedules?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassScheduleDto"][];
+            validationIssues?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionValidationIssueDto"][];
+            /** Format: int32 */
+            totalIssues?: number;
+        };
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsOfferingTeacherDto: {
+            /** Format: int32 */
+            id?: number;
+            firstName?: string;
+            lastName?: string;
+            email?: string;
+        };
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsOfferingRoomDto: {
+            /** Format: int32 */
+            id?: number;
+            roomNumber?: string;
+            building?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsOfferingRoomBuildingDto"];
+        };
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsOfferingRoomBuildingDto: {
+            name?: string | null;
+        };
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassScheduleDto: {
+            /** Format: int32 */
+            id?: number;
+            dayOfWeek?: string;
+            dayOfWeekAbbreviation?: string;
+            /** Format: time */
+            startTime?: string;
+            /** Format: time */
+            endTime?: string;
+        };
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionValidationIssueDto: {
+            id?: string | null;
+            type?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionValidationIssueTypeDto"];
+            message?: string;
+            dayOfWeek?: string | null;
+            startTime?: string | null;
+            endTime?: string | null;
+            conflictingOfferings?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsConflictingOfferingDto"][] | null;
+        };
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionValidationIssueTypeDto: {
+            code?: string;
+            label?: string;
+            category?: string;
+            severity?: string;
+        };
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsConflictingOfferingDto: {
+            /** Format: int32 */
+            id?: number;
+            subject?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsSubjectSummaryDto"];
+            section?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsSectionSummaryDto"];
+            room?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsRoomSummaryDto"] | null;
+        };
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsSubjectSummaryDto: {
+            code?: string;
+            title?: string;
+        };
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsSectionSummaryDto: {
+            /** Format: int32 */
+            id?: number;
+            name?: string;
+        };
+        EnrollifyApplicationFeaturesClassSectionSchedulingDTOsRoomSummaryDto: {
+            roomNumber?: string;
+            building?: string;
+        };
         EnrollifyWebAPIFeaturesClassSectionSchedulingClassSectionMutationsBulkAssignClassSectionAdviserRequest: {
             classSectionAdviserAssignments: components["schemas"]["EnrollifyWebAPIFeaturesClassSectionSchedulingClassSectionMutationsAdviserAssignmentRequest"][];
         };
@@ -3746,17 +3821,6 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Success */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        [key: string]: number;
-                    };
-                };
-            };
             /** @description Bad Request */
             400: {
                 headers: {
@@ -3795,15 +3859,6 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Success */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsCollegeCoursesWithClassSectionsDto"];
-                };
-            };
             /** @description Bad Request */
             400: {
                 headers: {
@@ -3990,6 +4045,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionSubjectOfferingDto"][];
+                };
+            };
             /** @description Unauthorized */
             401: {
                 headers: {
