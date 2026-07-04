@@ -1913,5 +1913,261 @@ public class SaveCurriculumContentTests
     }
 
     #endregion
+
+    #region DaysPerWeekAndHoursPerDay Tests
+
+    [Fact(DisplayName = "Adding new subject with custom DaysPerWeek and HoursPerDay sets the values")]
+    public async Task Handle_AddNewSubjectWithDaysPerWeekAndHoursPerDay_SetsValuesCorrectly()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum
+                {
+                    Code = subjectCode,
+                    DaysPerWeek = 3,
+                    HoursPerDay = 2m
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Mock UpdateCurriculum to simulate database setting IDs
+        var callCount = 0;
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId))
+            .Callback<Curriculum, CancellationToken>((c, ct) =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    SimulateDatabaseIdAssignment(c);
+                }
+            });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subject.Id);
+        Assert.NotNull(curriculumSubject);
+        Assert.Equal(3, curriculumSubject.DaysPerWeek);
+        Assert.Equal(2m, curriculumSubject.HoursPerDay);
+    }
+
+    [Fact(DisplayName = "Adding new subject uses default DaysPerWeek (1) and HoursPerDay (1)")]
+    public async Task Handle_AddNewSubjectWithDefaultDaysPerWeekAndHoursPerDay_UsesDefaults()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(SubjectId.From(1), subjectCode);
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [new SaveCurriculumContent.SubjectInCurriculum
+                {
+                    Code = subjectCode
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        // Mock UpdateCurriculum to simulate database setting IDs
+        var callCount = 0;
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId))
+            .Callback<Curriculum, CancellationToken>((c, ct) =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    SimulateDatabaseIdAssignment(c);
+                }
+            });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subject.Id);
+        Assert.NotNull(curriculumSubject);
+        Assert.Equal(1, curriculumSubject.DaysPerWeek);
+        Assert.Equal(1m, curriculumSubject.HoursPerDay);
+    }
+
+    [Fact(DisplayName = "Updating existing subject changes DaysPerWeek and HoursPerDay")]
+    public async Task Handle_UpdateExistingSubjectDaysPerWeekAndHoursPerDay_UpdatesValues()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+        var subjectId = SubjectId.From(1);
+        var subjectCode = SubjectCode.From("CS101");
+        var subject = CreateTestSubject(subjectId, subjectCode);
+
+        // Add subject with default DaysPerWeek (1) and HoursPerDay (1)
+        AddSubjectToCurriculum(curriculum, subjectId, yearLevel: 1, semester: 1, CurriculumSubjectId.From(100));
+
+        // Update with new DaysPerWeek and HoursPerDay
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [2] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [2] = [new SaveCurriculumContent.SubjectInCurriculum
+                {
+                    Code = subjectCode,
+                    DaysPerWeek = 4,
+                    HoursPerDay = 3m
+                }]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject]);
+
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId));
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var curriculumSubject = curriculum.GetCurriculumSubject(subjectId);
+        Assert.NotNull(curriculumSubject);
+        Assert.Equal(YearLevel.From(2), curriculumSubject.YearLevel);
+        Assert.Equal(TermNumber.From(2), curriculumSubject.TermNumber);
+        Assert.Equal(4, curriculumSubject.DaysPerWeek);
+        Assert.Equal(3m, curriculumSubject.HoursPerDay);
+    }
+
+    [Fact(DisplayName = "Multiple subjects can have different DaysPerWeek and HoursPerDay values")]
+    public async Task Handle_MultipleSubjectsWithDifferentDaysPerWeekAndHoursPerDay_SetsEachCorrectly()
+    {
+        // Arrange
+        var curriculumId = CurriculumId.From(1);
+        var curriculum = CreateTestCurriculum(curriculumId);
+
+        var subject1 = CreateTestSubject(SubjectId.From(1), SubjectCode.From("CS101"));
+        var subject2 = CreateTestSubject(SubjectId.From(2), SubjectCode.From("CS102"));
+        var subject3 = CreateTestSubject(SubjectId.From(3), SubjectCode.From("MATH101"));
+
+        var subjectsGrid = new Dictionary<int, Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>>
+        {
+            [1] = new Dictionary<int, SaveCurriculumContent.SubjectInCurriculum[]>
+            {
+                [1] = [
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = SubjectCode.From("CS101"),
+                        DaysPerWeek = 3,
+                        HoursPerDay = 2m
+                    },
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = SubjectCode.From("MATH101"),
+                        DaysPerWeek = 2,
+                        HoursPerDay = 1.5m
+                    }
+                ],
+                [2] = [
+                    new SaveCurriculumContent.SubjectInCurriculum
+                    {
+                        Code = SubjectCode.From("CS102"),
+                        DaysPerWeek = 5,
+                        HoursPerDay = 1m
+                    }
+                ]
+            }
+        };
+
+        var command = new SaveCurriculumContent.Command(curriculumId, subjectsGrid);
+
+        _curriculumReadRepositoryMock
+            .Setup(r => r.FirstOrDefaultAsync(It.IsAny<ISpecification<Curriculum>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(curriculum);
+
+        _subjectReadRepositoryMock
+            .Setup(r => r.ListAsync(It.IsAny<ISpecification<Subject>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([subject1, subject2, subject3]);
+
+        // Mock UpdateCurriculum to simulate database setting IDs
+        var callCount = 0;
+        _curriculumRepositoryMock
+            .Setup(r => r.UpdateCurriculum(It.IsAny<Curriculum>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success(curriculumId))
+            .Callback<Curriculum, CancellationToken>((c, ct) =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    SimulateDatabaseIdAssignment(c);
+                }
+            });
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+
+        var curriculumSubject1 = curriculum.GetCurriculumSubject(subject1.Id);
+        Assert.NotNull(curriculumSubject1);
+        Assert.Equal(3, curriculumSubject1.DaysPerWeek);
+        Assert.Equal(2m, curriculumSubject1.HoursPerDay);
+
+        var curriculumSubject2 = curriculum.GetCurriculumSubject(subject2.Id);
+        Assert.NotNull(curriculumSubject2);
+        Assert.Equal(5, curriculumSubject2.DaysPerWeek);
+        Assert.Equal(1m, curriculumSubject2.HoursPerDay);
+
+        var curriculumSubject3 = curriculum.GetCurriculumSubject(subject3.Id);
+        Assert.NotNull(curriculumSubject3);
+        Assert.Equal(2, curriculumSubject3.DaysPerWeek);
+        Assert.Equal(1.5m, curriculumSubject3.HoursPerDay);
+    }
+
+    #endregion
 }
 

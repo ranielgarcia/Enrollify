@@ -11,6 +11,10 @@ public class SubjectInCurriculum
 {
     public string Code { get; set; } = null!;
     public decimal? UnitsOverride { get; set; }
+
+    public int DaysPerWeek { get; set; } = 1;
+    public decimal HoursPerDay { get; set; } = 1;
+
     public string[] Prerequisites { get; set; } = [];
 }
 
@@ -41,6 +45,8 @@ public class SaveCurriculumContentEndpoint (IMediator mediator)
                 {
                     Code = SubjectCode.From(s.Code),
                     UnitsOverride = s.UnitsOverride,
+                    DaysPerWeek = s.DaysPerWeek,
+                    HoursPerDay = s.HoursPerDay,
                     Prerequisites = s.Prerequisites.Select(p => SubjectCode.From(p)).ToArray()
                 }).ToArray();
                 termDict[term] = subjectArray;
