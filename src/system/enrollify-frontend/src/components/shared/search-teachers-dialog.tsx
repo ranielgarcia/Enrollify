@@ -241,9 +241,9 @@ export function SearchTeachersDialog({
                     <label
                       key={teacher.id}
                       className={cn(
-                        "flex items-center gap-3 p-3 rounded-md cursor-pointer transition-all",
+                        "flex items-center gap-3 p-3 rounded-md cursor-pointer",
                         "border-l-2 border-transparent hover:border-l-primary hover:bg-muted/50",
-                        isSelected && "bg-muted/30 border-l-primary",
+                        isSelected && "border-l-primary",
                       )}
                     >
                       <Checkbox
