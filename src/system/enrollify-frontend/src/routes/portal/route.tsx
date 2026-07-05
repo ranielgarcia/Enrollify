@@ -91,17 +91,17 @@ function RouteComponent() {
     }));
 
   // Build action required items
-  // const actionRequiredItems = activeAcademicYear
-  //   ? []
-  //   : [
-  //       {
-  //         id: "no-active-academic-year",
-  //         title: "No Active Academic Year",
-  //         description:
-  //           "There is currently no active academic year. Please contact your administrator to set up the academic calendar.",
-  //         variant: "warning" as const,
-  //       },
-  //     ];
+  const actionRequiredItems = activeAcademicYear
+    ? []
+    : [
+        {
+          id: "no-active-academic-year",
+          title: "No Active Academic Year",
+          description:
+            "There is currently no active academic year. Please contact your administrator to set up the academic calendar.",
+          variant: "warning" as const,
+        },
+      ];
 
   return (
     <AuthenticationProvider>
@@ -147,7 +147,9 @@ function RouteComponent() {
                   </div>
                 </div>
               </header>
-              <EnrollmentContextActionRequired items={[]} />
+
+              <EnrollmentContextActionRequired items={actionRequiredItems} />
+
               <Suspense
                 fallback={
                   <OverlayLoader

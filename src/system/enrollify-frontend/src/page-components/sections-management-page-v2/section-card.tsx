@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, MapPin, Pencil, UserRound } from "lucide-react";
+import { CalendarDays, MapPin, Pencil, SquarePen, UserRound } from "lucide-react";
 
 import { openClassSectionOptions } from "@/api/collections/class-section-collection";
 import type { ClassSectionMinimal } from "@/api/models/class-scheduling/class-section";
@@ -35,6 +35,7 @@ interface SectionCardProps {
   onViewDetails: (section: ClassSectionMinimal) => void;
   onChangeAdviser: (section: ClassSectionMinimal) => void;
   onViewConflicts: (section: ClassSectionMinimal) => void;
+  onEdit?: (section: ClassSectionMinimal) => void;
   className?: string;
 }
 
@@ -62,6 +63,7 @@ export function SectionCard({
   onViewDetails,
   onChangeAdviser,
   onViewConflicts,
+  onEdit,
   className,
 }: SectionCardProps) {
   const isDraft = section.status.name === "Draft";
@@ -129,11 +131,13 @@ export function SectionCard({
             <div className="min-w-0">
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-bold leading-none tabular-nums">
-                  {section.sectionCode ?? section.name}
-                </span>
-                <span className="truncate text-sm text-muted-foreground">
                   {section.fullName}
                 </span>
+                <SectionStatusBadge status={section.status} />
+                <IssuesChip
+                  section={section}
+                  onClick={() => onViewConflicts(section)}
+                />
               </div>
               <div className="mt-1 truncate text-[11px] text-muted-foreground">
                 {courseName} · {termName}
@@ -141,13 +145,18 @@ export function SectionCard({
             </div>
           </div>
 
-          <div className="flex shrink-0 flex-col items-end gap-1.5">
-            <SectionStatusBadge status={section.status} />
-            <IssuesChip
-              section={section}
-              onClick={() => onViewConflicts(section)}
-            />
-          </div>
+          {isDraft && onEdit && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => onEdit(section)}
+              className="h-7 w-7 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+              aria-label="Edit section"
+            >
+              <SquarePen className="size-3.5" />
+            </Button>
+          )}
         </div>
 
         {/* Zone B — meta grid */}

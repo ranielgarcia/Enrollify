@@ -9,6 +9,7 @@ import type { ClassSectionMinimal } from "@/api/models/class-scheduling/class-se
 export type SectionsDialogState =
   | { type: "closed" }
   | { type: "edit-adviser"; section: ClassSectionMinimal }
+  | { type: "edit-section"; section: ClassSectionMinimal }
   | { type: "cancel-single"; section: ClassSectionMinimal }
   | { type: "bulk-open"; sectionIds: readonly number[] }
   | { type: "bulk-cancel"; sectionIds: readonly number[] }
@@ -38,6 +39,7 @@ export type UseSectionsDialogsReturn = {
   state: SectionsDialogState;
   close: () => void;
   openEditAdviser: (section: ClassSectionMinimal) => void;
+  openEditSection: (section: ClassSectionMinimal) => void;
   openCancelSingle: (section: ClassSectionMinimal) => void;
   openBulkOpen: (sectionIds: readonly number[]) => void;
   openBulkCancel: (sectionIds: readonly number[]) => void;
@@ -56,6 +58,13 @@ export function useSectionsDialogs(): UseSectionsDialogsReturn {
       dispatch({ kind: "open", state: { type: "edit-adviser", section } }),
     [],
   );
+
+  const openEditSection = useCallback(
+    (section: ClassSectionMinimal) =>
+      dispatch({ kind: "open", state: { type: "edit-section", section } }),
+    [],
+  );
+
   const openCancelSingle = useCallback(
     (section: ClassSectionMinimal) =>
       dispatch({ kind: "open", state: { type: "cancel-single", section } }),
@@ -100,6 +109,7 @@ export function useSectionsDialogs(): UseSectionsDialogsReturn {
     state,
     close,
     openEditAdviser,
+    openEditSection,
     openCancelSingle,
     openBulkOpen,
     openBulkCancel,

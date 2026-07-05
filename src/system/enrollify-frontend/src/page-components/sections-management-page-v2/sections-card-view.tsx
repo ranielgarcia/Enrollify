@@ -33,6 +33,7 @@ interface SectionsCardViewProps {
   onClearFilters: () => void;
   onCancelSection: (section: ClassSectionMinimal) => void;
   onViewDetails: (section: ClassSectionMinimal) => void;
+  onEditDetails: (section: ClassSectionMinimal) => void;
   onChangeAdviser: (section: ClassSectionMinimal) => void;
   onViewConflicts: (section: ClassSectionMinimal) => void;
 }
@@ -54,6 +55,7 @@ interface CourseGroupProps {
   onViewDetails: (section: ClassSectionMinimal) => void;
   onChangeAdviser: (section: ClassSectionMinimal) => void;
   onViewConflicts: (section: ClassSectionMinimal) => void;
+  onEditDetails: (section: ClassSectionMinimal) => void;
 }
 
 function CourseGroup({
@@ -66,6 +68,7 @@ function CourseGroup({
   onViewDetails,
   onChangeAdviser,
   onViewConflicts,
+  onEditDetails,
 }: CourseGroupProps) {
   const sections = course.classSections ?? [];
   const progress = getAggregateSchedulingProgress(sections);
@@ -171,6 +174,7 @@ function CourseGroup({
                     onViewDetails={onViewDetails}
                     onChangeAdviser={onChangeAdviser}
                     onViewConflicts={onViewConflicts}
+                    onEdit={onEditDetails}
                   />
                 ))}
               </div>
@@ -192,6 +196,7 @@ export function SectionsCardView({
   onViewDetails,
   onChangeAdviser,
   onViewConflicts,
+  onEditDetails,
 }: SectionsCardViewProps) {
   const filteredCourses = useMemo(
     () => filterCourseGroupsByQuickFilter(coursesWithSections, quickFilter),
@@ -256,6 +261,7 @@ export function SectionsCardView({
             onViewDetails={onViewDetails}
             onChangeAdviser={onChangeAdviser}
             onViewConflicts={onViewConflicts}
+            onEditDetails={onEditDetails}
           />
         ))}
       </div>
