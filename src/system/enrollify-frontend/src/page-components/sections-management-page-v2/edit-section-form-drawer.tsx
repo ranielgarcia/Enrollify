@@ -1,7 +1,6 @@
 import type { ClassSectionMinimal } from "@/api/models/class-scheduling/class-section";
 import type { Course } from "@/api/models/course";
 import type { Teacher } from "@/api/models/teacher";
-import { FormField } from "@/components/form/form-field";
 import { FormSelectField } from "@/components/form/form-select-field";
 import { FormSection } from "@/components/form/form-section";
 import { FormDrawerFooter } from "@/components/form/form-drawer-footer";
@@ -29,29 +28,30 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const addSectionFormSchema = z.object({
+const editSectionFormSchema = z.object({
   yearLevel: z.number().int().min(1).max(6),
   courseId: z.number().min(1, "Course is required"),
   academicTermId: z.number().min(1, "Academic term is required"),
   adviserId: z.number().min(1, "Adviser is required"),
-  studentCapacity: z.number().int().min(1, "Capacity must be at least 1"),
 });
 
-type AddSectionFormData = z.infer<typeof addSectionFormSchema>;
+type EditSectionFormData = z.infer<typeof editSectionFormSchema>;
 
-interface AddSectionFormDrawerProps {
+interface EditSectionFormDrawerProps {
   isOpen: boolean;
   sectionToUpdate?: ClassSectionMinimal | null;
   onOpenChange: (isOpen: boolean) => void;
   courses: Course[];
 }
 
-export function AddSectionFormDrawer({
+export function EditSectionFormDrawer({
   isOpen,
   sectionToUpdate,
   onOpenChange,
   courses,
-}: AddSectionFormDrawerProps) {
+}: EditSectionFormDrawerProps) {
+  console.log(courses);
+
   const isUpdating = !!sectionToUpdate;
   const {
     selectedAcademicTerm,
@@ -85,10 +85,9 @@ export function AddSectionFormDrawer({
     label: `${c.code} — ${c.name}`,
   }));
 
-  const defaultValues: AddSectionFormData = {
+  const defaultValues: EditSectionFormData = {
     yearLevel: sectionToUpdate?.intendedYearLevel ?? 1,
-    studentCapacity: 40,
-    courseId: 0,
+    courseId: sectionToUpdate?.courseId ?? 0,
     academicTermId: selectedAcademicTerm?.id ?? 0,
     adviserId: sectionToUpdate?.adviser?.id ?? 0,
   };
@@ -96,8 +95,8 @@ export function AddSectionFormDrawer({
   const form = useForm({
     defaultValues,
     validators: {
-      onBlur: addSectionFormSchema,
-      onSubmit: addSectionFormSchema,
+      onBlur: editSectionFormSchema,
+      onSubmit: editSectionFormSchema,
     },
     onSubmitMeta: defaultFormMeta as FormMeta,
     onSubmit: async ({ value, meta }) => {
@@ -133,7 +132,7 @@ export function AddSectionFormDrawer({
           <DrawerHeader className="border-b pb-4">
             <DrawerTitle>
               {isUpdating
-                ? `Edit "${sectionToUpdate.name}"`
+                ? `Edit "${sectionToUpdate.fullName}"`
                 : "Create New Class Section"}
             </DrawerTitle>
           </DrawerHeader>
@@ -170,20 +169,6 @@ export function AddSectionFormDrawer({
                     }))}
                     placeholder="Select year level"
                     required
-                    disabled={isUpdating}
-                  />
-                )}
-              </form.Field>
-
-              <form.Field name="studentCapacity">
-                {(field) => (
-                  <FormField
-                    field={field}
-                    label="Student Capacity"
-                    type="number"
-                    placeholder="40"
-                    required
-                    hint="Maximum number of students"
                     disabled={isUpdating}
                   />
                 )}

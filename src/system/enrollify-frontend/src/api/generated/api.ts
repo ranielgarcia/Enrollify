@@ -1548,6 +1548,11 @@ export interface components {
             sectionCode?: string;
             /** Format: int32 */
             intendedYearLevel?: number;
+            /**
+             * Format: int32
+             * @description Value object wrapping Int32
+             */
+            courseId?: number;
             course?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionCourseDto"];
             curriculum?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionCurriculumDto"];
             academicTerm?: components["schemas"]["EnrollifyApplicationFeaturesClassSectionSchedulingDTOsClassSectionAcademicTermDto"];

@@ -1,5 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, MapPin, Pencil, SquarePen, UserRound } from "lucide-react";
+import {
+  CalendarDays,
+  MapPin,
+  Pencil,
+  SquarePen,
+  UserRound,
+} from "lucide-react";
 
 import { openClassSectionOptions } from "@/api/collections/class-section-collection";
 import type { ClassSectionMinimal } from "@/api/models/class-scheduling/class-section";
@@ -160,7 +166,7 @@ export function SectionCard({
         </div>
 
         {/* Zone B — meta grid */}
-        <div className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-1">
           <MetaRow
             icon={UserRound}
             label="Adviser"

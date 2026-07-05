@@ -32,7 +32,7 @@ import { EnrollmentContextProvider } from "@/contexts/enrollment-context/enrollm
 import z from "zod";
 import { EnrollmentContextDialog } from "@/components/enrollment-context/enrollment-context-dialog";
 import EnrollmentContextActionRequired from "@/components/enrollment-context/enrollment-context-action-required";
-import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
+// import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 export const Route = createFileRoute("/portal")({
   validateSearch: z.object({
@@ -74,7 +74,7 @@ export const Route = createFileRoute("/portal")({
 
 function RouteComponent() {
   const matches = useMatches();
-  const { activeAcademicYear } = useEnrollmentContext();
+  // const { activeAcademicYear } = useEnrollmentContext();
 
   const items = matches
     .filter(
@@ -90,18 +90,18 @@ function RouteComponent() {
       label: loaderData.crumb,
     }));
 
-  // Build action required items
-  const actionRequiredItems = activeAcademicYear
-    ? []
-    : [
-        {
-          id: "no-active-academic-year",
-          title: "No Active Academic Year",
-          description:
-            "There is currently no active academic year. Please contact your administrator to set up the academic calendar.",
-          variant: "warning" as const,
-        },
-      ];
+  // // Build action required items
+  // const actionRequiredItems = activeAcademicYear
+  //   ? []
+  //   : [
+  //       {
+  //         id: "no-active-academic-year",
+  //         title: "No Active Academic Year",
+  //         description:
+  //           "There is currently no active academic year. Please contact your administrator to set up the academic calendar.",
+  //         variant: "warning" as const,
+  //       },
+  //     ];
 
   return (
     <AuthenticationProvider>
@@ -148,7 +148,7 @@ function RouteComponent() {
                 </div>
               </header>
 
-              <EnrollmentContextActionRequired items={actionRequiredItems} />
+              <EnrollmentContextActionRequired items={[]} />
 
               <Suspense
                 fallback={

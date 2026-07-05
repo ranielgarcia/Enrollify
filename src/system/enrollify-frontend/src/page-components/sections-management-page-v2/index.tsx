@@ -37,7 +37,7 @@ import { BulkInitializeSectionsDrawer } from "./bulk-initialize-sections-drawer"
 import { FloatingSelectionToolbar } from "./floating-selection-toolbar";
 import { ClassSectionOfferingsDetailDrawer } from "./class-section-offerings-detail-drawer";
 import type { College } from "@/api/models/college";
-import { AddSectionFormDrawer } from "./add-section-form-drawer";
+import { EditSectionFormDrawer } from "./edit-section-form-drawer";
 
 export default function SectionsManagementPageV2() {
   const [isBulkInitializeOpen, setIsBulkInitializeOpen] = useState(false);
@@ -283,7 +283,7 @@ function SectionsPageContent({
         }
       />
 
-      <AddSectionFormDrawer
+      <EditSectionFormDrawer
         key={
           dialogs.state.type === "edit-section"
             ? dialogs.state.section.id
