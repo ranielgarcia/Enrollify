@@ -11,7 +11,7 @@ public class ClassSectionSchedulingStatsAggregateTypeEnum : SmartEnum<ClassSecti
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum OPEN_SECTIONS = new("OPEN_SECTIONS", 2);
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum CANCELLED_SECTIONS = new("CANCELLED_SECTIONS", 3);
 
-  // Section-level category stats
+  // Section-level categoryEnum stats
   public static readonly ClassSectionSchedulingStatsAggregateTypeEnum SCHEDULE_CONFLICTS =
     new("SCHEDULE_CONFLICTS", 4, ClassSectionValidationIssueCategoryEnum.SCHEDULE_CONFLICT);
 

@@ -28,6 +28,7 @@ using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CourseConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CourseCurriculumAssignmentConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CurriculumConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.DepartmentConfigs;
+using Enrollify.Infrastructure.Data.Config.AggregateConfigs.NotificationConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.PermissionScopeConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoleConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoomConfigs;
@@ -118,5 +119,6 @@ public class EnrollifyDbContext : DbContext
     configurationBuilder.RegisterAllInCourseCurriculumAssignmentEfCoreConverters();
     configurationBuilder.RegisterAllInClassSectionValidationIssueVogenEfCoreConverters();
     configurationBuilder.RegisterAllInClassSectionSchedulingStatsVogenEfCoreConverters();
+    configurationBuilder.RegisterAllInNotificationVogenEfCoreConverters();
   }
 }
