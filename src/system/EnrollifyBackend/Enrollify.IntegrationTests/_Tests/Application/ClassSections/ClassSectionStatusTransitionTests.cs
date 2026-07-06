@@ -15,6 +15,11 @@ using Enrollify.Core.Aggregates.SubjectAggregate.Models;
 using Enrollify.Core.ValueObjects;
 using Enrollify.IntegrationTests.Helpers;
 using Enrollify.IntegrationTests.Infrastructure;
+using Enrollify.Core.Aggregates.BuildingAggregate;
+using Enrollify.Core.Aggregates.DepartmentAggregate;
+using Enrollify.Core.Aggregates.RoomAggregate;
+using Enrollify.Core.Aggregates.RoomAggregate.Models;
+using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections.StateMachine;
@@ -43,7 +48,7 @@ public class ClassSectionStatusTransitionTests
     public async Task OpenClassSection_DraftWithOfferings_Succeeds()
     {
         // Arrange
-        var (sectionId, _, _) = await CreateDraftSectionWithOfferingAsync();
+        var sectionId = await CreateCompleteDraftSectionWithOfferingAsync();
 
         // Act
         var result = await _fixture.SendAsync(new OpenClassSectionForEnrollment.Command(sectionId));
@@ -80,6 +85,20 @@ public class ClassSectionStatusTransitionTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultStatus.NotFound, result.Status);
+    }
+
+    [Fact(DisplayName = "Open class section - draft with incomplete offering returns invalid")]
+    public async Task OpenClassSection_DraftWithIncompleteOffering_ReturnsInvalid()
+    {
+        // Arrange
+        var (sectionId, _, _) = await CreateDraftSectionWithOfferingAsync();
+
+        // Act
+        var result = await _fixture.SendAsync(new OpenClassSectionForEnrollment.Command(sectionId));
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ResultStatus.Invalid, result.Status);
     }
 
     // =========================================================
@@ -354,6 +373,104 @@ public class ClassSectionStatusTransitionTests
     {
         var (id, section, subjectId) = await CreateDraftSectionCoreAsync(withOffering: true);
         return (id, id, subjectId);
+    }
+
+    /// <summary>Creates a Draft section with one fully-configured subject offering (adviser, teacher, room, schedule).</summary>
+    private async Task<ClassSectionId> CreateCompleteDraftSectionWithOfferingAsync()
+    {
+        var (collegeId, courseId, ayId, termId, curriculumId, curriculumSubjectId, subjectId) = await CreateMinimalSetupAsync();
+
+        return await _fixture.ExecuteDbContextAsync(async db =>
+        {
+            // Department (required for Teacher)
+            var department = new Department(
+                DepartmentCode.From(TestDataBuilder.GenerateUniqueString("DP").Substring(0, 8)),
+                TestDataBuilder.GenerateUniqueString("Department"),
+                "Test Chairperson",
+                "Integration test department",
+                collegeId);
+            db.Departments.Add(department);
+            await db.SaveChangesAsync();
+
+            // Teacher (used as both adviser and offering teacher)
+            var uniqueId = TestDataBuilder.GenerateUniqueString("T").Substring(0, 10);
+            var teacher = new Teacher(
+                "Test",
+                null,
+                "Teacher",
+                TeacherIdentifier.From(uniqueId),
+                TeacherEmail.From($"{uniqueId}@test.enrollify.local"),
+                TeacherPhoneNumber.From(TestDataBuilder.NextPhoneNumber()),
+                department.Id);
+            db.Teachers.Add(teacher);
+            await db.SaveChangesAsync();
+
+            // Building (required for Room)
+            var building = new Building(
+                TestDataBuilder.GenerateUniqueString("Building"),
+                "Integration test building",
+                "123 Test St",
+                collegeId);
+            db.Buildings.Add(building);
+            await db.SaveChangesAsync();
+
+            // RoomType (needed for Room)
+            var roomType = TestDataBuilder.CreateRoomType(TestDataBuilder.GenerateUniqueString("RT"));
+            db.RoomTypes.Add(roomType);
+            await db.SaveChangesAsync();
+
+            // Room
+            var room = new Room(new RoomForCreation
+            {
+                RoomNumber = TestDataBuilder.GenerateUniqueString("RM").Substring(0, 8),
+                Capacity = 30,
+                RoomTypeId = roomType.Id,
+                BuildingId = building.Id
+            });
+            db.Rooms.Add(room);
+            await db.SaveChangesAsync();
+
+            // ClassSection with adviser
+            var section = new ClassSection(new ClassSectionForCreation
+            {
+                Name = TestDataBuilder.GenerateUniqueString("SEC"),
+                IntendedYearLevel = YearLevel.From(1),
+                CourseId = courseId,
+                CurriculumId = curriculumId,
+                AcademicTermId = termId,
+                CohortAcademicYearId = ayId,
+                SectionCode = SectionCode.From('A'),
+                AdviserId = teacher.Id
+            });
+
+            db.ClassSections.Add(section);
+            await db.SaveChangesAsync();
+
+            // Subject offering with teacher, room, and schedule
+            var offering = new ClassSectionSubjectOffering(new ClassSectionSubjectOfferingForCreation
+            {
+                ClassSectionId = section.Id,
+                SubjectId = subjectId,
+                CurriculumSubjectId = curriculumSubjectId,
+                SnapshotSubjectCode = SubjectCode.From("TST-SNAP"),
+                SnapshotSubjectTitle = "Test Snapshot Subject",
+                SnapshotUnits = 3m,
+                SnapshotIsElective = false,
+                TeacherId = teacher.Id,
+                RoomId = room.Id,
+                DaysPerWeek = 1,
+                HoursPerDay = 2
+            });
+            offering.AddClassSchedule(new ClassSchedule(
+                offering.Id,
+                DayOfWeekEnum.Monday,
+                new TimeOnly(8, 0),
+                new TimeOnly(10, 0)));
+            db.ClassSectionSubjectOfferings.Add(offering);
+            await db.SaveChangesAsync();
+
+            return section.Id;
+        });
     }
 
     private async Task<(CollegeId CollegeId, CourseId CourseId, AcademicYearId AyId, AcademicTermId TermId,

@@ -1,4 +1,6 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -8,18 +10,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  Search,
-  X,
-} from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight, Loader2, Search, X } from "lucide-react";
 import { ModuleIcons } from "@/config/module-icons";
 import { useState, useMemo, useEffect } from "react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getAllCollegesOptions } from "@/api/collections/college-collection";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { College } from "@/api/models/college";
@@ -32,6 +29,19 @@ interface SearchCollegesDialogProps {
   excludeCollegeIds?: number[];
   maxSelections?: number;
   onSubmit: (colleges: College[]) => Promise<void>;
+}
+
+function CollegeSkeleton() {
+  return (
+    <div className="flex items-center gap-3 p-3">
+      <Skeleton className="size-4 shrink-0 rounded" />
+      <Skeleton className="h-5 w-16 shrink-0 rounded-full" />
+      <div className="flex-1 space-y-1.5">
+        <Skeleton className="h-4 w-3/5" />
+        <Skeleton className="h-3 w-2/5" />
+      </div>
+    </div>
+  );
 }
 
 export function SearchCollegesDialog({
@@ -66,10 +76,10 @@ export function SearchCollegesDialog({
 
   const excludeSet = useMemo(
     () => new Set(excludeCollegeIds),
-    [excludeCollegeIds]
+    [excludeCollegeIds],
   );
 
-  const { data: colleges = [], isLoading } = useSuspenseQuery({
+  const { data: colleges = [], isLoading } = useQuery({
     ...getAllCollegesOptions(),
   });
 
@@ -93,10 +103,8 @@ export function SearchCollegesDialog({
     });
   }, [colleges, excludeSet, debouncedSearchTerm]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredColleges.length / pageSize)
-  );
+  const totalCount = filteredColleges.length;
+  const totalPages = Math.max(1, Math.ceil(filteredColleges.length / pageSize));
   const hasNextPage = page < totalPages;
   const hasPreviousPage = page > 1;
 
@@ -112,8 +120,7 @@ export function SearchCollegesDialog({
   }, [filteredColleges, page, pageSize]);
 
   const isAtLimit =
-    maxSelections !== undefined &&
-    selectedColleges.length >= maxSelections;
+    maxSelections !== undefined && selectedColleges.length >= maxSelections;
 
   const handleToggleCollege = (college: College) => {
     const isSelected = selectedColleges.some((c) => c.id === college.id);
@@ -143,9 +150,41 @@ export function SearchCollegesDialog({
     }
   };
 
+  const pageNumbers = useMemo<(number | "ellipsis")[]>(() => {
+    const pages: (number | "ellipsis")[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else if (page <= 3) {
+      pages.push(1, 2, 3, 4, "ellipsis", totalPages);
+    } else if (page >= totalPages - 2) {
+      pages.push(
+        1,
+        "ellipsis",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      );
+    } else {
+      pages.push(
+        1,
+        "ellipsis",
+        page - 1,
+        page,
+        page + 1,
+        "ellipsis",
+        totalPages,
+      );
+    }
+    return pages;
+  }, [page, totalPages]);
+
+  const itemsStart = totalCount > 0 ? (page - 1) * pageSize + 1 : 0;
+  const itemsEnd = Math.min(page * pageSize, totalCount);
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && (
@@ -155,14 +194,15 @@ export function SearchCollegesDialog({
           )}
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="relative">
+        <div className="space-y-4 overflow-hidden">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder="Search by college name, code, or dean..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-9"
+              autoFocus
             />
             {searchTerm && (
               <button
@@ -177,97 +217,162 @@ export function SearchCollegesDialog({
           </div>
 
           <ScrollArea className="h-[300px] border rounded-md">
-            <div className="p-2 space-y-1">
-              {isLoading ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Loader2 className="size-8 mx-auto mb-2 animate-spin" />
-                  <p className="text-sm">Loading colleges...</p>
-                </div>
-              ) : paginatedColleges.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <ModuleIcons.colleges className="size-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">
-                    {searchTerm
-                      ? "No colleges match your search"
-                      : "No available colleges to add"}
-                  </p>
-                </div>
-              ) : (
-                paginatedColleges.map((college) => (
-                  <label
-                    key={college.id}
-                    className="flex items-center gap-3 p-3 rounded-md hover:bg-muted cursor-pointer transition-colors"
-                  >
-                    <Checkbox
-                      checked={selectedCollegeIds.includes(college.id)}
-                      onCheckedChange={() => handleToggleCollege(college)}
-                      disabled={
-                        isAtLimit &&
-                        !selectedCollegeIds.includes(college.id)
-                      }
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-accent">
-                          {college.code}
+            {isLoading ? (
+              <div className="p-2 space-y-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <CollegeSkeleton key={i} />
+                ))}
+              </div>
+            ) : paginatedColleges.length === 0 ? (
+              <div className="text-center py-10 text-muted-foreground">
+                <ModuleIcons.colleges className="size-10 mx-auto mb-3 opacity-30" />
+                {searchTerm ? (
+                  <>
+                    <p className="text-sm font-medium">
+                      No colleges matching{" "}
+                      <strong className="text-foreground">
+                        &ldquo;{searchTerm}&rdquo;
+                      </strong>
+                    </p>
+                    <p className="text-xs mt-1">Try a different search term</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium">
+                      No available colleges to add
+                    </p>
+                    <p className="text-xs mt-1">
+                      All colleges have already been added
+                    </p>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="p-1 space-y-0.5">
+                {paginatedColleges.map((college) => {
+                  const isSelected = selectedCollegeIds.includes(college.id);
+                  return (
+                    <label
+                      key={college.id}
+                      className={cn(
+                        "flex items-center gap-3 p-3 rounded-md cursor-pointer transition-all",
+                        "border-l-2 border-transparent hover:border-l-primary hover:bg-muted/50",
+                        isSelected && "bg-muted/30 border-l-primary",
+                      )}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => handleToggleCollege(college)}
+                        disabled={isAtLimit && !isSelected}
+                      />
+                      <Badge
+                        variant="secondary"
+                        className="shrink-0 font-mono text-xs"
+                      >
+                        {college.code}
+                      </Badge>
+                      <div className="flex-1 min-w-0">
+                        <span className="block truncate text-sm">
+                          {college.name}
                         </span>
-                        <span className="text-muted-foreground">-</span>
-                        <span className="truncate">{college.name}</span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {college.dean}
+                          {college.description
+                            ? ` - ${college.description}`
+                            : ""}
+                        </span>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {college.dean}
-                        {college.description
-                          ? ` - ${college.description}`
-                          : ""}
-                      </p>
-                    </div>
-                  </label>
-                ))
-              )}
-            </div>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
           </ScrollArea>
 
+          {/* Selection Summary */}
+          {selectedCollegeIds.length > 0 && (
+            <div
+              className={cn(
+                "flex items-center justify-between rounded-md border px-3 py-2 text-sm",
+                isAtLimit
+                  ? "bg-amber-50 border-amber-200 text-amber-800"
+                  : "bg-primary/5 border-primary/10",
+              )}
+            >
+              <span className="font-medium">
+                {selectedCollegeIds.length}
+                {maxSelections !== undefined ? ` / ${maxSelections}` : ""}{" "}
+                college
+                {selectedCollegeIds.length !== 1 ? "s" : ""} selected
+                {isAtLimit && " — limit reached"}
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelectedColleges([])}
+                className="text-muted-foreground hover:text-foreground transition-colors p-0.5"
+                aria-label="Clear selection"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <p className="text-xs text-muted-foreground order-2 sm:order-1">
+                Showing {itemsStart}–{itemsEnd} of {totalCount} result
+                {totalCount !== 1 ? "s" : ""}
               </p>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-start gap-1 order-1 sm:order-2">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={!hasPreviousPage || isLoading}
+                  className="size-8 p-0"
+                  aria-label="Previous page"
                 >
                   <ChevronLeft className="size-4" />
-                  Previous
                 </Button>
+                {pageNumbers.map((p, i) =>
+                  p === "ellipsis" ? (
+                    <span
+                      key={`ellipsis-${i}`}
+                      className="px-1 text-muted-foreground text-xs select-none"
+                    >
+                      ...
+                    </span>
+                  ) : (
+                    <Button
+                      key={p}
+                      type="button"
+                      variant={p === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setPage(p)}
+                      disabled={isLoading}
+                      className="size-8 p-0 text-xs"
+                      aria-label={`Page ${p}`}
+                      aria-current={p === page ? "page" : undefined}
+                    >
+                      {p}
+                    </Button>
+                  ),
+                )}
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((p) => p + 1)}
                   disabled={!hasNextPage || isLoading}
+                  className="size-8 p-0"
+                  aria-label="Next page"
                 >
-                  Next
                   <ChevronRight className="size-4" />
                 </Button>
               </div>
             </div>
-          )}
-
-          {(selectedCollegeIds.length > 0 ||
-            maxSelections !== undefined) && (
-            <p className="text-sm text-muted-foreground">
-              {selectedCollegeIds.length}
-              {maxSelections !== undefined
-                ? ` / ${maxSelections}`
-                : ""}{" "}
-              college
-              {selectedCollegeIds.length !== 1 ? "s" : ""} selected
-              {isAtLimit && " - limit reached"}
-            </p>
           )}
         </div>
 
@@ -286,11 +391,8 @@ export function SearchCollegesDialog({
             disabled={isSubmitting || selectedCollegeIds.length === 0}
             size="sm"
           >
-            {isSubmitting && (
-              <Loader2 className="mr-2 size-4 animate-spin" />
-            )}
-            Add{" "}
-            {selectedCollegeIds.length > 0
+            {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
+            Add {selectedCollegeIds.length > 0
               ? selectedCollegeIds.length
               : ""}{" "}
             College

@@ -1,0 +1,4 @@
+
+ALTER TABLE CurriculumSubjects
+ADD DaysPerWeek INT NOT NULL DEFAULT 1,
+  HoursPerDay DECIMAL(3, 1)  NOT NULL DEFAULT 1;

@@ -25,6 +25,9 @@ public class CurriculumSubjectDto
 
     public decimal? UnitsOverride { get; set; }
 
+    public int DaysPerWeek { get; set; }
+    public decimal HoursPerDay { get; set; }
+
     /// <summary>
     /// Group name for electives (e.g., 'Major Elective', 'Free Elective')
     /// </summary>

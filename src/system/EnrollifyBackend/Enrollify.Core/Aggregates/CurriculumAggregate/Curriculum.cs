@@ -111,12 +111,14 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
     }
 
     public CurriculumSubject? AddSubject(
-        SubjectId subjectId,
-        int yearLevel,
-        int term,
-        bool isElective,
-        string? electiveGroupName,
-        decimal? subjectUnitsOverride)
+      SubjectId subjectId,
+      int yearLevel,
+      int term,
+      bool isElective,
+      string? electiveGroupName,
+      decimal? subjectUnitsOverride,
+      int daysPerWeek = 1,
+      decimal hoursPerDay = 1)
     {
         Guard.Against.Null(subjectId, message: "Subject ID is required");
 
@@ -134,7 +136,9 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
             TermNumber.From(term),
             isElective,
             electiveGroupName,
-            subjectUnitsOverride);
+            subjectUnitsOverride,
+            daysPerWeek,
+            hoursPerDay);
 
         _curriculumSubjects.Add(curriculumSubject);
         return curriculumSubject;

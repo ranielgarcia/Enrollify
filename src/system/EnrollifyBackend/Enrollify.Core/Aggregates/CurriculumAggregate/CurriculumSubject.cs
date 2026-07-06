@@ -22,15 +22,19 @@ public class CurriculumSubject : IAuditable
         TermNumber termNumber,
         bool isElective,
         string? electiveGroupName,
-        decimal? subjectUnitsOverride)
+        decimal? subjectUnitsOverride,
+        int daysPerWeek = 1,
+        decimal hoursPerDay = 1)
     {
         CurriculumId = curriculumId;
         SubjectId = subjectId;
-        YearLevel = Guard.Against.Null(yearLevel, nameof(yearLevel));
-        TermNumber = Guard.Against.Null(termNumber, nameof(termNumber));
+        YearLevel = Guard.Against.Null(yearLevel);
+        TermNumber = Guard.Against.Null(termNumber);
         IsElective = isElective;
         ElectiveGroupName = electiveGroupName;
         SubjectUnitsOverride = subjectUnitsOverride;
+        DaysPerWeek = Guard.Against.NegativeOrZero(daysPerWeek);
+        HoursPerDay = Guard.Against.NegativeOrZero(hoursPerDay);
     }
 
     public CurriculumSubjectId Id { get; private set; }
@@ -53,6 +57,9 @@ public class CurriculumSubject : IAuditable
     public bool IsElective { get; private set; }
 
     public decimal? SubjectUnitsOverride { get; private set; }
+
+    public int DaysPerWeek { get; private set; }
+    public decimal HoursPerDay { get; private set; }
 
     /// <summary>
     /// Group name for electives (e.g., 'Major Elective', 'Free Elective')
@@ -100,6 +107,20 @@ public class CurriculumSubject : IAuditable
         if (SubjectUnitsOverride == subjectUnitsOverride) return this;
         SubjectUnitsOverride = subjectUnitsOverride;
         return this;
+    }
+
+    public CurriculumSubject UpdateDaysPerWeek(int daysPerWeek)
+    {
+      if (DaysPerWeek == daysPerWeek) return this;
+      DaysPerWeek = daysPerWeek;
+      return this;
+    }
+
+    public CurriculumSubject UpdateHoursPerDay(decimal hoursPerDay)
+    {
+      if (HoursPerDay == hoursPerDay) return this;
+      HoursPerDay = hoursPerDay;
+      return this;
     }
 
     public CurriculumSubject AddPrerequisite(

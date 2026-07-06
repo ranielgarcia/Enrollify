@@ -13,6 +13,10 @@ public class SaveCurriculumContent
     {
         public SubjectCode Code { get; set; }
         public decimal? UnitsOverride { get; set; }
+
+        public int DaysPerWeek { get; set; } = 1;
+        public decimal HoursPerDay { get; set; } = 1;
+
         public SubjectCode[] Prerequisites { get; set; } = [];
     }
 
@@ -208,12 +212,22 @@ public class SaveCurriculumContent
                                 curriculumSubject.UpdateYearLevel(YearLevel.From(year.Key));
                                 curriculumSubject.UpdateTermNumber(TermNumber.From(term.Key));
                                 curriculumSubject.UpdateSubjectUnitsOverride(subjectInCurriculum.UnitsOverride);
+                                curriculumSubject.UpdateDaysPerWeek(subjectInCurriculum.DaysPerWeek);
+                                curriculumSubject.UpdateHoursPerDay(subjectInCurriculum.HoursPerDay);
                                 curriculumSubjectsLookup[subjectInCurriculum.Code] = curriculumSubject;
                             }
                             else
                             {
                                 // Add new subject
-                                curriculumSubject = curriculum.AddSubject(subject.Id, year.Key, term.Key, isElective: false, electiveGroupName: null, subjectInCurriculum.UnitsOverride);
+                                curriculumSubject = curriculum
+                                  .AddSubject(subject.Id,
+                                      year.Key,
+                                      term.Key,
+                                      isElective: false,
+                                      electiveGroupName: null,
+                                      subjectInCurriculum.UnitsOverride,
+                                      subjectInCurriculum.DaysPerWeek,
+                                      subjectInCurriculum.HoursPerDay);
                                 if (curriculumSubject != null)
                                 {
                                     curriculumSubjectsLookup[subjectInCurriculum.Code] = curriculumSubject;

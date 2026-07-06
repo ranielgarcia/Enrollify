@@ -23,7 +23,7 @@ interface SectionFormDrawerProps {
   sectionToUpdate?: ClassSectionMinimal | null;
 }
 
-export function SectionFormDrawer({
+export function EditSectionAdviserFormDrawer({
   isOpen,
   onOpenChange,
   sectionToUpdate,

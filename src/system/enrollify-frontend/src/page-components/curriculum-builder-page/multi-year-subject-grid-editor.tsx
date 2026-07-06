@@ -7,11 +7,10 @@ import {
   CurriculumStatusEnum,
   type CurriculumWithSubjects,
 } from "@/api/models/curriculum";
-import {
-  SearchableSelectWithCustomTrigger,
-  type MultiSearchableSelectWithTriggerOption,
-} from "@/components/form/searchable-select-with-custom-trigger";
+import type { MultiSearchableSelectWithTriggerOption } from "@/components/form/searchable-select-with-custom-trigger";
 import { Badge } from "@/components/ui/badge";
+import { AddSubjectToTermDialog } from "./add-subject-to-term-dialog";
+import { SubjectCard, type SubjectInCurriculum } from "./subject-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -26,16 +25,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-
-interface SubjectInCurriculum {
-  id: number;
-  code: string;
-  title: string;
-  units: number;
-  unitsOverride: number | null;
-  prerequisites: string[];
-}
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type TermGrid = Record<number, SubjectInCurriculum[]>;
 type YearGrid = Record<number, TermGrid>;
@@ -118,6 +108,8 @@ const populateGridFromCurriculum = (
       units: subject.units,
       unitsOverride: curriculumSubject.unitsOverride ?? null,
       prerequisites: prerequisiteCodes,
+      daysPerWeek: curriculumSubject.daysPerWeek,
+      hoursPerDay: curriculumSubject.hoursPerDay,
     };
 
     // Add subject to the appropriate year and term
@@ -182,6 +174,10 @@ export default function MultiYearSubjectGridEditor({
     initialState.activeYears,
   );
   const [grid, setGrid] = useState<YearGrid>(initialState.grid);
+  const [isAddSubjectDialogOpen, setIsAddSubjectDialogOpen] = useState(false);
+  const [addSubjectTargetYear, setAddSubjectTargetYear] = useState<number>(1);
+  const [addSubjectTargetTerm, setAddSubjectTargetTerm] = useState<number>(1);
+
   const { mutateAsync: saveCurriculumContentAsync } = useMutation(
     saveCurriculumContentOptions(curriculum.id),
   );
@@ -341,6 +337,8 @@ export default function MultiYearSubjectGridEditor({
               subjectId: subject.id,
               unitsOverride: null,
               prerequisites: [],
+              daysPerWeek: 1,
+              hoursPerDay: 1,
             },
           ],
         },
@@ -443,6 +441,42 @@ export default function MultiYearSubjectGridEditor({
     });
   };
 
+  const setDaysPerWeek = (
+    year: number,
+    term: number,
+    subjectId: number,
+    value: number,
+  ) => {
+    updateGridWithDirty((prev) => {
+      const subjects = [...prev[year][term]];
+      const idx = subjects.findIndex((s) => s.id === subjectId);
+      if (idx === -1) return prev;
+      subjects[idx] = { ...subjects[idx], daysPerWeek: value };
+      return {
+        ...prev,
+        [year]: { ...prev[year], [term]: subjects },
+      };
+    });
+  };
+
+  const setHoursPerDay = (
+    year: number,
+    term: number,
+    subjectId: number,
+    value: number,
+  ) => {
+    updateGridWithDirty((prev) => {
+      const subjects = [...prev[year][term]];
+      const idx = subjects.findIndex((s) => s.id === subjectId);
+      if (idx === -1) return prev;
+      subjects[idx] = { ...subjects[idx], hoursPerDay: value };
+      return {
+        ...prev,
+        [year]: { ...prev[year], [term]: subjects },
+      };
+    });
+  };
+
   const removePrerequisite = (
     year: number,
     term: number,
@@ -475,24 +509,30 @@ export default function MultiYearSubjectGridEditor({
     });
   };
 
-  const getSubjectsOptionsForTerm =
-    (): MultiSearchableSelectWithTriggerOption[] => {
-      // Get all subject IDs already added across all years and terms
-      const allAddedSubjectIds = new Set(
+  const allAddedSubjectCodes = useMemo(
+    () =>
+      new Set(
         Object.values(grid).flatMap((yearData) =>
           Object.values(yearData).flatMap((termSubjects) =>
-            termSubjects.map((s) => s.id),
+            termSubjects.map((s) => s.code),
           ),
         ),
-      );
+      ),
+    [grid],
+  );
 
-      return availableSubjects
-        .filter((s) => !allAddedSubjectIds.has(s.id))
-        .map((s) => ({
-          value: s.id.toString(),
-          label: `${s.code} - ${s.title} (${s.units}u)`,
-        }));
-    };
+  const handleAddSubjectsToTerm = async (subjectCodes: string[]) => {
+    for (const code of subjectCodes) {
+      const subject = availableSubjects.find((s) => s.code === code);
+      if (subject) {
+        addSubjectToGrid(
+          addSubjectTargetYear,
+          addSubjectTargetTerm,
+          subject.id,
+        );
+      }
+    }
+  };
 
   /**
    * Returns all subjects added across all years and terms that can be
@@ -665,144 +705,49 @@ export default function MultiYearSubjectGridEditor({
                     <CardContent className="flex-1 pt-4 space-y-4">
                       <div className="space-y-2">
                         {grid[year][term].map((subject) => (
-                          <div
+                          <SubjectCard
                             key={subject.id}
-                            className="group p-3 border rounded-lg bg-background hover:shadow-sm transition-all flex items-start justify-between gap-2"
-                          >
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-[10px] font-bold text-accent uppercase">
-                                  {subject.code}
-                                </span>
-                                <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded-full font-medium">
-                                  {subject.unitsOverride ?? subject.units} Units
-                                  {subject.unitsOverride !== null && (
-                                    <span className="ml-1 line-through text-muted-foreground">
-                                      {subject.units}
-                                    </span>
-                                  )}
-                                </span>
-                                <input
-                                  type="number"
-                                  min={0}
-                                  step={0.5}
-                                  placeholder={`Override (${subject.units})`}
-                                  value={subject.unitsOverride ?? ""}
-                                  disabled={isReadOnly}
-                                  onChange={(e) => {
-                                    const raw = e.target.value;
-                                    setUnitsOverride(
-                                      year,
-                                      term,
-                                      subject.id,
-                                      raw === "" ? null : Number(raw),
-                                    );
-                                  }}
-                                  className="w-20 text-[10px] h-5 px-1.5 rounded border border-dashed border-muted-foreground/40 bg-transparent focus:outline-none focus:border-accent placeholder:text-muted-foreground/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                />
-                              </div>
-                              <p className="text-sm font-semibold truncate leading-tight">
-                                {subject.title}
-                              </p>
-
-                              {subject.prerequisites.length > 0 && (
-                                <div className="mt-2 flex flex-wrap gap-1">
-                                  {subject.prerequisites.map((pre) => (
-                                    <Badge
-                                      key={pre}
-                                      variant="outline"
-                                      className="text-[9px] px-1 h-5 border-dashed bg-accent/5 gap-1 group/badge"
-                                    >
-                                      Pre: {pre}
-                                      {!isReadOnly && (
-                                        <button
-                                          type="button"
-                                          className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5 transition-colors"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            removePrerequisite(
-                                              year,
-                                              term,
-                                              subject.id,
-                                              pre,
-                                            );
-                                          }}
-                                        >
-                                          <Trash2 className="size-2.5 text-destructive" />
-                                        </button>
-                                      )}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              )}
-
-                              {/* Prerequisites Logic */}
-                              {!isReadOnly && (
-                                <SearchableSelectWithCustomTrigger
-                                  options={getAvailableSubjectForPrerequisitesOptions(
-                                    year,
-                                    term,
-                                    subject.code,
-                                  )}
-                                  value={[]}
-                                  onValueChange={(subjectCodes: string[]) => {
-                                    addPrerequisites(
-                                      year,
-                                      term,
-                                      subject.id,
-                                      subjectCodes,
-                                    );
-                                  }}
-                                  searchPlaceholder="Search subjects..."
-                                  emptyMessage="No subjects found"
-                                  trigger={
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-auto p-0 text-[9px] text-muted-foreground italic hover:text-accent flex flex-wrap gap-1 justify-start"
-                                    >
-                                      <span>+ Add Prerequisite</span>
-                                    </Button>
-                                  }
-                                />
-                              )}
-                            </div>
-                            {!isReadOnly && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="size-7 p-0 opacity-0 group-hover:opacity-100 text-destructive transition-opacity"
-                                onClick={() =>
-                                  removeSubject(year, term, subject.id)
-                                }
-                              >
-                                <Trash2 className="size-3.5" />
-                              </Button>
+                            subject={subject}
+                            isReadOnly={isReadOnly}
+                            availablePrerequisiteOptions={getAvailableSubjectForPrerequisitesOptions(
+                              year,
+                              term,
+                              subject.code,
                             )}
-                          </div>
+                            onRemove={() =>
+                              removeSubject(year, term, subject.id)
+                            }
+                            onUnitsOverrideChange={(value) =>
+                              setUnitsOverride(year, term, subject.id, value)
+                            }
+                            onRemovePrerequisite={(pre) =>
+                              removePrerequisite(year, term, subject.id, pre)
+                            }
+                            onAddPrerequisites={(codes) =>
+                              addPrerequisites(year, term, subject.id, codes)
+                            }
+                            onDaysPerWeekChange={(value) =>
+                              setDaysPerWeek(year, term, subject.id, value)
+                            }
+                            onHoursPerDayChange={(value) =>
+                              setHoursPerDay(year, term, subject.id, value)
+                            }
+                          />
                         ))}
                       </div>
                       {!isReadOnly && (
-                        <SearchableSelectWithCustomTrigger
-                          options={getSubjectsOptionsForTerm()}
-                          value={[]}
-                          onValueChange={(values: string[]) => {
-                            values.forEach((val) =>
-                              addSubjectToGrid(year, term, Number(val)),
-                            );
+                        <Button
+                          variant="outline"
+                          className="w-full h-9 border-dashed text-xs text-muted-foreground hover:bg-transparent hover:border-accent hover:text-accent transition-colors"
+                          onClick={() => {
+                            setAddSubjectTargetYear(year);
+                            setAddSubjectTargetTerm(term);
+                            setIsAddSubjectDialogOpen(true);
                           }}
-                          searchPlaceholder="Search subjects..."
-                          emptyMessage="No subjects found"
-                          trigger={
-                            <Button
-                              variant="outline"
-                              className="w-full h-9 border-dashed text-xs text-muted-foreground hover:bg-transparent hover:border-accent hover:text-accent transition-colors"
-                            >
-                              <Plus className="size-3 mr-2" />
-                              Add Subject to Term {term}
-                            </Button>
-                          }
-                        />
+                        >
+                          <Plus className="size-3 mr-2" />
+                          Add Subject to Term {term}
+                        </Button>
                       )}
                     </CardContent>
                   </Card>
@@ -847,6 +792,15 @@ export default function MultiYearSubjectGridEditor({
           </div>
         </div>
       )}
+
+      <AddSubjectToTermDialog
+        isOpen={isAddSubjectDialogOpen}
+        onOpenChange={setIsAddSubjectDialogOpen}
+        year={addSubjectTargetYear}
+        term={addSubjectTargetTerm}
+        excludeSubjectCodes={Array.from(allAddedSubjectCodes)}
+        onSubmit={handleAddSubjectsToTerm}
+      />
     </>
   );
 }

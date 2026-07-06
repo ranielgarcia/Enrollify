@@ -1,7 +1,7 @@
 using Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 using Enrollify.Application.Features.Curriculums.Events;
 
-namespace Enrollify.Application.Features.Curriculums.EventHandlers;
+namespace Enrollify.Application.Features.CourseCurriculumAssignments.OnCurriculumApproved;
 
 public class CurriculumApprovedEventSyncCourseCurriculumAssignmentsHandler(
     IMediator mediator,

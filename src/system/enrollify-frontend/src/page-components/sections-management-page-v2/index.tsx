@@ -13,11 +13,9 @@ import {
   getCollegeCoursesWithClassSectionsForSchedulingOptions,
 } from "@/api/collections/class-section-collection";
 import type { ClassSectionMinimal } from "@/api/models/class-scheduling/class-section";
-
 import { ManagementPageLayout } from "@/components/page-layouts/management-page-layout";
 import { ModuleIcons } from "@/config/module-icons";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
-import { useCrudState } from "@/hooks/use-crud-state";
 import type { Course } from "@/api/models/course";
 
 import { BulkAdviserAssignDrawer } from "./bulk-adviser-assign-drawer";
@@ -26,7 +24,7 @@ import { CancelSectionAlertDialog } from "./cancel-section-alert-dialog";
 import { SectionsErrorBoundary } from "./components/sections-error-boundary";
 import { ConflictPreviewDrawer } from "@/components/scheduling/conflict-preview-drawer";
 import { EmptyState } from "./empty-state";
-import { SectionFormDrawer } from "./section-form-drawer";
+import { EditSectionAdviserFormDrawer } from "./edit-section-adviser-form-drawer";
 import { SectionsCardView } from "./sections-card-view";
 import { SectionsContextBar } from "./sections-context-bar";
 import { SectionsSkeleton } from "./sections-skeleton";
@@ -39,6 +37,7 @@ import { BulkInitializeSectionsDrawer } from "./bulk-initialize-sections-drawer"
 import { FloatingSelectionToolbar } from "./floating-selection-toolbar";
 import { ClassSectionOfferingsDetailDrawer } from "./class-section-offerings-detail-drawer";
 import type { College } from "@/api/models/college";
+import { EditSectionFormDrawer } from "./edit-section-form-drawer";
 
 export default function SectionsManagementPageV2() {
   const [isBulkInitializeOpen, setIsBulkInitializeOpen] = useState(false);
@@ -129,16 +128,6 @@ function SectionsPageContent({
       setCourses(courses);
     }
   }, [collegeData, setCourses, setCollege]);
-
-  const {
-    isFormOpen,
-    entityToEdit,
-    entityToDelete: sectionToCancel,
-    handleEdit,
-    handleDelete: handleCancelSection,
-    handleFormOpenChange,
-    handleDeleteDialogOpenChange: handleCancelDialogOpenChange,
-  } = useCrudState<ClassSectionMinimal>();
 
   const { mutateAsync: bulkOpen, isPending: isBulkOpenPending } = useMutation(
     bulkOpenSectionsMutationOptions(),
@@ -257,10 +246,11 @@ function SectionsPageContent({
               quickFilter={quickFilter as QuickFilter}
               selection={selection}
               onClearFilters={handleClearFilters}
-              onCancelSection={handleCancelSection}
+              onCancelSection={dialogs.openCancelSingle}
               onViewDetails={handleViewDetails}
-              onChangeAdviser={handleEdit}
+              onChangeAdviser={dialogs.openEditAdviser}
               onViewConflicts={handleViewConflicts}
+              onEditDetails={dialogs.openEditSection}
             />
           )}
 
@@ -270,7 +260,7 @@ function SectionsPageContent({
               quickFilter={quickFilter as QuickFilter}
               selection={selection}
               onClearFilters={handleClearFilters}
-              onCancelSection={handleCancelSection}
+              onCancelSection={dialogs.openCancelSingle}
               onViewDetails={handleViewDetails}
               onViewConflicts={handleViewConflicts}
             />
@@ -278,17 +268,51 @@ function SectionsPageContent({
         </>
       )}
 
-      <SectionFormDrawer
-        key={entityToEdit?.id ?? "new"}
-        isOpen={isFormOpen}
-        onOpenChange={handleFormOpenChange}
-        sectionToUpdate={entityToEdit}
+      <EditSectionAdviserFormDrawer
+        key={
+          dialogs.state.type === "edit-adviser"
+            ? dialogs.state.section.id
+            : "new"
+        }
+        isOpen={dialogs.state.type === "edit-adviser"}
+        onOpenChange={(open) => {
+          if (!open) dialogs.close();
+        }}
+        sectionToUpdate={
+          dialogs.state.type === "edit-adviser" ? dialogs.state.section : null
+        }
+      />
+
+      <EditSectionFormDrawer
+        key={
+          dialogs.state.type === "edit-section"
+            ? dialogs.state.section.id
+            : "edit-new"
+        }
+        isOpen={dialogs.state.type === "edit-section"}
+        onOpenChange={(open) => {
+          if (!open) dialogs.close();
+        }}
+        sectionToUpdate={
+          dialogs.state.type === "edit-section" ? dialogs.state.section : null
+        }
+        courses={
+          coursesWithSections.map((x) => ({
+            id: x.id,
+            code: x.code,
+            name: x.name,
+          })) as Course[]
+        }
       />
 
       <CancelSectionAlertDialog
-        sectionToCancel={sectionToCancel}
-        isOpen={!!sectionToCancel}
-        onOpenChange={handleCancelDialogOpenChange}
+        sectionToCancel={
+          dialogs.state.type === "cancel-single" ? dialogs.state.section : null
+        }
+        isOpen={dialogs.state.type === "cancel-single"}
+        onOpenChange={(open) => {
+          if (!open) dialogs.close();
+        }}
       />
 
       {bulkTransitionAction && (

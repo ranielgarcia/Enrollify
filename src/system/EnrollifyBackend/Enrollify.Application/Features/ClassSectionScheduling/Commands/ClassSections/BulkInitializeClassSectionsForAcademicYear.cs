@@ -167,6 +167,8 @@ public static class BulkInitializeClassSectionsForAcademicYear
                 SubjectId = curriculumSubject.SubjectId,
                 ClassSectionId = classSectionId,
                 CurriculumSubjectId = curriculumSubject.Id,
+                DaysPerWeek = curriculumSubject.DaysPerWeek,
+                HoursPerDay = curriculumSubject.HoursPerDay,
                 SnapshotSubjectCode = curriculumSubject.Subject!.Code,
                 SnapshotSubjectTitle = curriculumSubject.Subject!.Title,
                 SnapshotUnits = snapshotUnits,

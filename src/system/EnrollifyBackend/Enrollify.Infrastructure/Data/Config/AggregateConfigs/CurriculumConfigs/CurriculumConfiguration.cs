@@ -99,6 +99,13 @@ public class CurriculumConfiguration : IEntityTypeConfiguration<Curriculum>
             cs.Property(e => e.SubjectUnitsOverride)
                 .IsRequired(false);
 
+            cs.Property(e => e.DaysPerWeek)
+              .IsRequired();
+
+            cs.Property(e => e.HoursPerDay)
+              .HasColumnType("decimal(3,2)")
+              .IsRequired();
+
             cs.Property(e => e.ElectiveGroupName)
                 .HasMaxLength(50);
 

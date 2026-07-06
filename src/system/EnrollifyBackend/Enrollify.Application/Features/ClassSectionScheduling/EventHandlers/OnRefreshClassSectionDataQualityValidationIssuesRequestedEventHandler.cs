@@ -3,7 +3,7 @@ using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.EventHandlers;
 
-public class RefreshClassSectionDataQualityValidationIssuesRequestedEventHandler(
+public class OnRefreshClassSectionDataQualityValidationIssuesRequestedEventHandler(
   IMediator mediator) : IDomainEventHandler<RefreshClassSectionDataQualityValidationIssuesRequestedEvent>
 {
   public async Task Handle(RefreshClassSectionDataQualityValidationIssuesRequestedEvent notification, CancellationToken cancellationToken)

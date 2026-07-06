@@ -128,6 +128,7 @@ export const ClassSectionMinimalSchema = z.object({
   sectionCode: z.string().max(1).optional(),
   intendedYearLevel: z.number().int().min(1).max(6),
   fullName: z.string(),
+  courseId: z.number(),
   adviser: AdviserSummarySchema.optional().nullable(),
   status: ClassSectionStatusSchema,
   validationSummary: ValidationSummarySchema.optional().nullable(),

@@ -32,6 +32,8 @@ public class CurriculumToCurriculumDetailDtoProjectionSpec : Specification<Curri
                     YearLevel = cs.YearLevel,
                     TermNumber = cs.TermNumber,
                     UnitsOverride = cs.SubjectUnitsOverride,
+                    HoursPerDay = cs.HoursPerDay,
+                    DaysPerWeek = cs.DaysPerWeek,
                     IsElective = cs.IsElective,
                     ElectiveGroupName = cs.ElectiveGroupName,
                     Subject = cs.Subject != null ? new SubjectSummaryDto

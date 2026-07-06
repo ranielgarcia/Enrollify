@@ -10,6 +10,8 @@ public class ClassSectionDto : BaseDto
   public char SectionCode { get; set; }
   public int IntendedYearLevel { get; set; }
 
+  public CourseId CourseId { get; set; }
+
   public ClassSectionCourseDto Course { get; set; } = null!;
   public ClassSectionCurriculumDto Curriculum { get; set; } = null!;
   public ClassSectionAcademicTermDto AcademicTerm { get; set; } = null!;
@@ -31,6 +33,7 @@ public class ClassSectionDto : BaseDto
       ValidationSummary = schedulingStatsList.GroupBy(x => x.AggregateType.Name)
         .ToDictionary(g => g.Key, g => g.Sum(x => x.AggregateCount)),
 
+      CourseId = section.CourseId,
       Course = section.Course is not null
         ? new ClassSectionCourseDto
         {

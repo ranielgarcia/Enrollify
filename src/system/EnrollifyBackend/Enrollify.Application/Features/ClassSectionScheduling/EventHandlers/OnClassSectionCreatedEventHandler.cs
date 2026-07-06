@@ -3,7 +3,7 @@ using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.EventHandlers;
 
-public sealed class ClassSectionCreatedEventHandler(
+public sealed class OnClassSectionCreatedEventHandler(
   IMediator mediator)
   : IDomainEventHandler<ClassSectionCreatedEvent>
 {
