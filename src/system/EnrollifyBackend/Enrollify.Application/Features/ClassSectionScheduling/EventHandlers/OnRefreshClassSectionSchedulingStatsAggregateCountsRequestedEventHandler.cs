@@ -3,7 +3,7 @@ using Enrollify.Core.Aggregates.ClassSectionSchedulingStatsAggregate.Events;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.EventHandlers;
 
-public class RefreshClassSectionSchedulingStatsAggregateCountsRequestedEventHandler(
+public class OnRefreshClassSectionSchedulingStatsAggregateCountsRequestedEventHandler(
   IMediator mediator)
   : IDomainEventHandler<RefreshClassSectionSchedulingStatsAggregateCountsRequestedEvent>
 {

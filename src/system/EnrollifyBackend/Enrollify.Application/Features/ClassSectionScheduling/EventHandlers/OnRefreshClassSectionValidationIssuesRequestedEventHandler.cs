@@ -9,7 +9,7 @@ namespace Enrollify.Application.Features.ClassSectionScheduling.EventHandlers;
 /// Triggered by adviser updates on <see cref="ClassSection"/> and by teacher, room, or schedule
 /// changes on <see cref="ClassSectionSubjectOffering"/>.
 /// </summary>
-public sealed class RefreshClassSectionValidationIssuesRequestedEventHandler(
+public sealed class OnRefreshClassSectionValidationIssuesRequestedEventHandler(
   IMediator mediator)
   : IDomainEventHandler<RefreshClassSectionValidationIssuesRequestedEvent>
 {

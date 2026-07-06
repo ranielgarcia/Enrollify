@@ -55,7 +55,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
       if (section is null)
       {
         _logger.LogWarning(
-          "RefreshClassSectionValidationIssuesRequestedEventHandler: ClassSection {ClassSectionId} not found — skipping",
+          "OnRefreshClassSectionValidationIssuesRequestedEventHandler: ClassSection {ClassSectionId} not found — skipping",
           classSectionId.Value);
         return Result.NotFound($"ClassSection with ID {classSectionId.Value} was not found.");
       }
