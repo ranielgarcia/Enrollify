@@ -9,6 +9,7 @@ using Enrollify.Application.Features.CourseCurriculumAssignments;
 using Enrollify.Application.Features.Courses;
 using Enrollify.Application.Features.Curriculums;
 using Enrollify.Application.Features.Departments;
+using Enrollify.Application.Features.Notifications;
 using Enrollify.Application.Features.Roles.Queries;
 using Enrollify.Application.Features.Rooms;
 using Enrollify.Application.Features.RoomTypes;
@@ -20,6 +21,7 @@ using Enrollify.Core.Constants;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
 using Enrollify.Core.Services.ClassSectionDataIntegrityValidation;
+using Enrollify.Core.Services.NotificationServices;
 using Enrollify.Core.Services.ScheduleConflictDetection;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
@@ -27,8 +29,10 @@ using Enrollify.Infrastructure.Data.Queries;
 using Enrollify.Infrastructure.Persistence;
 using Enrollify.Infrastructure.Repositories;
 using Enrollify.Infrastructure.Services;
+using Enrollify.Infrastructure.Services.NotificationServices;
 using Enrollify.Infrastructure.Storage;
 using Enrollify.SharedKernel;
+using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Infrastructure;
 
@@ -123,8 +127,14 @@ public static class InfrastructureServiceExtensions
     services.AddScoped<IClassSectionValidationIssueRepository, ClassSectionValidationIssueRepository>();
     services.AddScoped<ICourseCurriculumAssignmentRepository, CourseCurriculumAssignmentRepository>();
     services.AddScoped<IClassSectionSchedulingStatsRepository, ClassSectionSchedulingStatsRepository>();
+    services.AddScoped<INotificationRepository, NotificationRepository>();
 
     services.AddScoped<IApplicableCurriculumQueryService, ApplicableCurriculumQueryService>();
+    services.AddScoped<IUserQueryService, UserQueryService>();
+
+    // Notification Services
+    services.AddScoped<INotificationPublisher, NotificationPublisher>();
+    services.AddScoped<INotificationBus, NotificationBus>();
 
     // Domain services
     services.AddScoped<ClassSectionDataIntegrityValidator>();

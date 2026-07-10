@@ -3,6 +3,7 @@ using Enrollify.WebAPI.Infrastructure.Exceptions;
 using Enrollify.WebAPI.Plumbing;
 using Enrollify.WebAPI.StartupServices;
 using Serilog;
+using Wolverine;
 
 Log.Logger = ConfigureSerilogLogging.BootstrapLogger;
 
@@ -16,6 +17,7 @@ try
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
     // builder.Services.AddSerilogLogging(builder.Configuration);
+    builder.Host.UseWolverine();
 
     // Currently remove App Insights logging
     // Due the following:

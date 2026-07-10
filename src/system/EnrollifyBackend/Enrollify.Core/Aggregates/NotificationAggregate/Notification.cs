@@ -1,14 +1,16 @@
+using Enrollify.Core.Aggregates.NotificationAggregate.Models;
 using Enrollify.Core.Aggregates.RoleAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.SharedKernel;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Enrollify.Core.Aggregates.NotificationAggregate;
 
-public class Notification : EntityBase<NotificationId>, IAggregateRoot, IAuditable
+public class Notification : EntityBase<NotificationId>, IAggregateRoot
 {
-  private Notification()
-  {}
+    private Notification()
+    {}
 
     public string Type { get; private set; } = default!;
     public string Title { get; private set; } = default!;
@@ -20,56 +22,90 @@ public class Notification : EntityBase<NotificationId>, IAggregateRoot, IAuditab
     public NotificationTargetScopeEnum TargetScope{ get; private set; }
     public UserId? TargetUserId { get; private set; }
     public RoleId? TargetRoleId { get; private set; }
-    public int RetentionDays { get; private set; }
+    public int RetentionDays { get; private set; } = NotificationSettings.DefaultRetentionDays;
     public DateTimeOffset? ExpiresAt { get; private set; }
-
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
-    public User? CreatedByUser { get; private set; }
-    public DateTimeOffset? UpdatedAt { get; private set; }
-    public UserId? UpdatedBy { get; private set; }
-    public User? UpdatedByUser { get; private set; }
-    public DateTimeOffset? DeletedAt { get; private set; }
-    public UserId? DeletedBy { get; private set; }
-    public User? DeletedByUser { get; private set; }
-    public bool IsActive { get; private set; }
-
 
     private readonly List<NotificationRecipient> _recipients = [];
     public IReadOnlyCollection<NotificationRecipient> Recipients => _recipients.AsReadOnly();
 
     public static Notification Create(
-        string type, string title, string message,
-        NotificationSeverityEnum severity, NotificationCategoryEnum category,
-        NotificationTargetScopeEnum scope, int retentionDays,
-        UserId? targetUserId = null, RoleId? targetRoleId = null,
-        NotificationReferenceTypeEnum? referenceType = null, int? referenceId = null)
+        BroadcastNotification notification)
     {
         var notif = new Notification
         {
-            Type          = type,
-            Title         = title,
-            Message       = message,
-            Severity      = severity,
-            Category      = category,
-            TargetScope   = scope,
-            TargetUserId  = targetUserId,
-            TargetRoleId  = targetRoleId,
-            RetentionDays = retentionDays,
-            ReferenceType = referenceType,
-            ReferenceId   = referenceId,
-            ExpiresAt     = DateTime.UtcNow.AddDays(retentionDays)
+            Type          = notification.Type,
+            Title         = notification.Title,
+            Message       = notification.Message,
+            Severity      = notification.Severity,
+            Category      = notification.Category,
+            TargetScope   = NotificationTargetScopeEnum.Broadcast,
+            RetentionDays = notification.RetentionDays,
+            ReferenceType = notification.ReferenceType,
+            ReferenceId   = notification.ReferenceId,
+            ExpiresAt     = DateTime.UtcNow.AddDays(notification.ReferenceType),
+            CreatedAt = DateTimeOffset.UtcNow,
         };
         return notif;
     }
 
-    public void AddRecipient(UserId userId)
+    public static Notification Create(
+      NotificationForTargetUser notification)
     {
-        if (_recipients.Any(r => (int)r.UserId == (int)userId && r.IsActive))
-            return;
+      var notif = new Notification
+      {
+        Type          = notification.Type,
+        Title         = notification.Title,
+        Message       = notification.Message,
+        Severity      = notification.Severity,
+        Category      = notification.Category,
+        TargetScope   = NotificationTargetScopeEnum.User,
+        TargetUserId = notification.TargetUserId,
+        RetentionDays = notification.RetentionDays,
+        ReferenceType = notification.ReferenceType,
+        ReferenceId   = notification.ReferenceId,
+        ExpiresAt     = DateTime.UtcNow.AddDays(notification.ReferenceType),
+        CreatedAt = DateTimeOffset.UtcNow,
+      };
+      return notif;
+    }
 
-        _recipients.Add(new NotificationRecipient(Id, userId));
+    public static Notification Create(
+      NotificationForTargetRole notification)
+    {
+      var notif = new Notification
+      {
+        Type          = notification.Type,
+        Title         = notification.Title,
+        Message       = notification.Message,
+        Severity      = notification.Severity,
+        Category      = notification.Category,
+        TargetScope   = NotificationTargetScopeEnum.Role,
+        TargetRoleId = notification.TargetRoleId,
+        RetentionDays = notification.RetentionDays,
+        ReferenceType = notification.ReferenceType,
+        ReferenceId   = notification.ReferenceId,
+        ExpiresAt     = DateTime.UtcNow.AddDays(notification.ReferenceType),
+        CreatedAt = DateTimeOffset.UtcNow,
+      };
+      return notif;
+    }
+
+    public Notification AddCreatedBy(UserId userId)
+    {
+      CreatedBy = userId;
+      return this;
+    }
+
+    public Notification AddRecipient(UserId userId)
+    {
+      if (_recipients.Any(r => (int)r.UserId == (int)userId))
+        return this;
+
+      _recipients.Add(new NotificationRecipient(Id, userId));
+        return this;
     }
 }
 

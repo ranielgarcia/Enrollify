@@ -57,27 +57,6 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
     // Audit fields
     builder.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
     builder.Property(a => a.CreatedBy).HasColumnName("CreatedBy");
-    builder.Property(a => a.UpdatedAt).HasColumnName("UpdatedAt");
-    builder.Property(a => a.UpdatedBy).HasColumnName("UpdatedBy");
-    builder.Property(a => a.DeletedAt).HasColumnName("DeletedAt");
-    builder.Property(a => a.DeletedBy).HasColumnName("DeletedBy");
-    builder.Property(a => a.IsActive).HasColumnName("IsActive");
-
-    // Foreign key relationships for audit fields
-    builder.HasOne(e => e.CreatedByUser)
-      .WithMany()
-      .HasForeignKey(e => e.CreatedBy)
-      .OnDelete(DeleteBehavior.NoAction);
-
-    builder.HasOne(e => e.UpdatedByUser)
-      .WithMany()
-      .HasForeignKey(e => e.UpdatedBy)
-      .OnDelete(DeleteBehavior.NoAction);
-
-    builder.HasOne(e => e.DeletedByUser)
-      .WithMany()
-      .HasForeignKey(e => e.DeletedBy)
-      .OnDelete(DeleteBehavior.NoAction);
 
     // EF Core can't add/remove items via a read-only collection,
     // so you tell EF to use the backing field instead of the property
@@ -102,31 +81,6 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
       a.Property(e => e.ReadAt).IsRequired(false);
       a.Property(e => e.IsDismissed).IsRequired().HasDefaultValue(false);
       a.Property(e => e.DismissedAt).IsRequired(false);
-
-      // Audit fields
-      a.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
-      a.Property(a => a.CreatedBy).HasColumnName("CreatedBy");
-      a.Property(a => a.UpdatedAt).HasColumnName("UpdatedAt");
-      a.Property(a => a.UpdatedBy).HasColumnName("UpdatedBy");
-      a.Property(a => a.DeletedAt).HasColumnName("DeletedAt");
-      a.Property(a => a.DeletedBy).HasColumnName("DeletedBy");
-      a.Property(a => a.IsActive).HasColumnName("IsActive");
-
-      // Foreign key relationships for audit fields
-      a.HasOne(e => e.CreatedByUser)
-        .WithMany()
-        .HasForeignKey(e => e.CreatedBy)
-        .OnDelete(DeleteBehavior.NoAction);
-
-      a.HasOne(e => e.UpdatedByUser)
-        .WithMany()
-        .HasForeignKey(e => e.UpdatedBy)
-        .OnDelete(DeleteBehavior.NoAction);
-
-      a.HasOne(e => e.DeletedByUser)
-        .WithMany()
-        .HasForeignKey(e => e.DeletedBy)
-        .OnDelete(DeleteBehavior.NoAction);
     });
   }
 }

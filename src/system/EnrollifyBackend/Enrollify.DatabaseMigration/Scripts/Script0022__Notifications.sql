@@ -25,22 +25,11 @@ CREATE TABLE [Notifications]
   -- Standard Enrollify audit columns
   [CreatedAt]     DATETIME2(7)    NOT NULL DEFAULT SYSUTCDATETIME(),
   [CreatedBy]     INT             NOT NULL,
-  [UpdatedAt]     DATETIME2(7)    NOT NULL DEFAULT SYSUTCDATETIME(),
-  [UpdatedBy]     INT             NOT NULL,
-  [DeletedAt]     DATETIME2(7)    NULL,
-  [DeletedBy]     INT             NULL,
-  [IsActive]      BIT             NOT NULL DEFAULT 1,
 
   CONSTRAINT [PK_Notifications] PRIMARY KEY CLUSTERED ([Id] ASC),
 
   CONSTRAINT [FK_Notifications_CreatedBy_Users]
     FOREIGN KEY ([CreatedBy]) REFERENCES [Users] ([Id]),
-
-  CONSTRAINT [FK_Notifications_UpdatedBy_Users]
-    FOREIGN KEY ([UpdatedBy]) REFERENCES [Users] ([Id]),
-
-  CONSTRAINT [FK_Notifications_DeletedBy_Users]
-    FOREIGN KEY ([DeletedBy]) REFERENCES [Users] ([Id]),
 
   CONSTRAINT [FK_Notifications_TargetUserId_Users]
     FOREIGN KEY ([TargetUserId]) REFERENCES [Users] ([Id]),
@@ -75,31 +64,13 @@ CREATE TABLE [NotificationRecipients]
   [IsDismissed]    BIT          NOT NULL DEFAULT 0,
   [DismissedAt]    DATETIME2(7) NULL,
 
-  -- Standard Enrollify audit columns
-  [CreatedAt]      DATETIME2(7) NOT NULL DEFAULT SYSUTCDATETIME(),
-  [CreatedBy]      INT          NOT NULL,
-  [UpdatedAt]      DATETIME2(7) NOT NULL DEFAULT SYSUTCDATETIME(),
-  [UpdatedBy]      INT          NOT NULL,
-  [DeletedAt]      DATETIME2(7) NULL,
-  [DeletedBy]      INT          NULL,
-  [IsActive]       BIT          NOT NULL DEFAULT 1,
-
   CONSTRAINT [PK_NotificationRecipients] PRIMARY KEY CLUSTERED ([Id] ASC),
 
   CONSTRAINT [FK_NotificationRecipients_NotificationId_Notifications]
     FOREIGN KEY ([NotificationId]) REFERENCES [Notifications] ([Id]),
 
   CONSTRAINT [FK_NotificationRecipients_UserId_Users]
-    FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]),
-
-  CONSTRAINT [FK_NotificationRecipients_CreatedBy_Users]
-    FOREIGN KEY ([CreatedBy]) REFERENCES [Users] ([Id]),
-
-  CONSTRAINT [FK_NotificationRecipients_UpdatedBy_Users]
-    FOREIGN KEY ([UpdatedBy]) REFERENCES [Users] ([Id]),
-
-  CONSTRAINT [FK_NotificationRecipients_DeletedBy_Users]
-    FOREIGN KEY ([DeletedBy]) REFERENCES [Users] ([Id])
+    FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id])
 );
 GO
 
@@ -110,30 +81,22 @@ GO
 -- Most common query: unread notifications for a user
 CREATE NONCLUSTERED INDEX [IX_NotificationRecipients_UserId_IsRead]
   ON [NotificationRecipients] ([UserId] ASC, [IsRead] ASC)
-  INCLUDE ([NotificationId], [IsDismissed], [CreatedAt])
-  WHERE [IsActive] = 1;
+  INCLUDE ([NotificationId], [IsDismissed])
 GO
 
 -- Cleanup job: find expired active notifications
-CREATE NONCLUSTERED INDEX [IX_Notifications_ExpiresAt_IsActive]
-  ON [Notifications] ([ExpiresAt] ASC, [IsActive] ASC)
+CREATE NONCLUSTERED INDEX [IX_Notifications_ExpiresAt]
+  ON [Notifications] ([ExpiresAt] ASC)
   INCLUDE ([Id], [RetentionDays]);
 GO
 
 -- Polymorphic lookups: e.g. "all notifications about Curriculum #5"
 CREATE NONCLUSTERED INDEX [IX_Notifications_ReferenceType_ReferenceId]
   ON [Notifications] ([ReferenceType] ASC, [ReferenceId] ASC)
-  WHERE [IsActive] = 1;
-GO
-
--- Archive queries: find soft-deleted notifications
-CREATE NONCLUSTERED INDEX [IX_Notifications_DeletedAt]
-  ON [Notifications] ([DeletedAt] ASC)
-  WHERE [DeletedAt] IS NOT NULL;
 GO
 
 -- Role-targeted notifications
 CREATE NONCLUSTERED INDEX [IX_Notifications_TargetRoleId]
   ON [Notifications] ([TargetRoleId] ASC)
-  WHERE [IsActive] = 1 AND [TargetRoleId] IS NOT NULL;
+  WHERE [TargetRoleId] IS NOT NULL;
 GO

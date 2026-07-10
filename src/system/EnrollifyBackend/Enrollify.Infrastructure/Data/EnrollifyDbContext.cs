@@ -8,6 +8,7 @@ using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
+using Enrollify.Core.Aggregates.NotificationAggregate;
 using Enrollify.Core.Aggregates.RoleAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
@@ -75,6 +76,7 @@ public class EnrollifyDbContext : DbContext
   public DbSet<User> Users => Set<User>();
   public DbSet<Role> Roles => Set<Role>();
 
+  public DbSet<Notification> Notifications => Set<Notification>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
