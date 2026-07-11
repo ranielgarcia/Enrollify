@@ -1,3 +1,5 @@
+using Enrollify.Application.Features.Notifications;
+using Enrollify.Infrastructure.Data;
 using Enrollify.WebAPI.Authentication;
 using Enrollify.WebAPI.Infrastructure.Exceptions;
 using Enrollify.WebAPI.Plumbing;
@@ -17,7 +19,17 @@ try
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
     // builder.Services.AddSerilogLogging(builder.Configuration);
-    builder.Host.UseWolverine();
+    builder.Host.UseWolverine(opts =>
+    {
+      opts.UseRuntimeCompilation();
+      opts.CodeGeneration.AlwaysUseServiceLocationFor<EnrollifyDbContext>();
+      // Right here, tell Wolverine to make every handler "sticky"
+      opts.MultipleHandlerBehavior = MultipleHandlerBehavior.Separated;
+
+      opts.Discovery.IncludeAssembly(typeof(NotificationCreatedEventHandler).Assembly);
+
+      Console.WriteLine(opts.DescribeHandlerMatch(typeof(NotificationCreatedEventHandler)));
+    });
 
     // Currently remove App Insights logging
     // Due the following:

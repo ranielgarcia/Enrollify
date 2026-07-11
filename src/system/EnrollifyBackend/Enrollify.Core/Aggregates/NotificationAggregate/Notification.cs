@@ -3,7 +3,6 @@ using Enrollify.Core.Aggregates.RoleAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.SharedKernel;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Enrollify.Core.Aggregates.NotificationAggregate;
 

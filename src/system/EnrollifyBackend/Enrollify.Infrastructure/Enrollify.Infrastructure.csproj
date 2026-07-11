@@ -29,6 +29,7 @@
     <PackageReference Include="Polly" />
     <PackageReference Include="Vogen" />
     <PackageReference Include="WolverineFx" />
+    <PackageReference Include="WolverineFx.RuntimeCompilation" />
   </ItemGroup>
 
   <ItemGroup>

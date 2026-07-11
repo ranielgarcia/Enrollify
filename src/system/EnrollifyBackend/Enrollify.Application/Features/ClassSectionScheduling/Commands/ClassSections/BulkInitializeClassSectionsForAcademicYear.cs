@@ -1,11 +1,13 @@
 using Enrollify.Application.Features.ClassSectionScheduling.Extensions;
-using Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.Constants.Authorization;
+using Enrollify.Core.Services.NotificationServices.Models;
 using Enrollify.Core.ValueObjects;
+using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
 
@@ -25,6 +27,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
     private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPublisher _publisher;
+    private readonly INotificationPublisher _notificationPublisher;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -35,6 +38,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
       IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
       IUnitOfWork unitOfWork,
       IPublisher publisher,
+      INotificationPublisher notificationPublisher,
       ILogger<Handler> logger)
     {
       _academicYearRepository = academicYearRepository;
@@ -44,6 +48,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
       _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
       _unitOfWork = unitOfWork;
       _publisher = publisher;
+      _notificationPublisher = notificationPublisher;
       _logger = logger;
     }
 
@@ -207,6 +212,14 @@ public static class BulkInitializeClassSectionsForAcademicYear
         _logger.LogInformation(
           "Successfully bulk initialized {TotalSections} class sections for term {TermId}, year level {YearLevel}",
           totalSectionsCreated, command.AcademicTermId, command.YearLevel);
+
+        await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
+          "BulkInitializeClassSectionsForAcademicYear",
+          "Bulk Initialize Class Sections",
+          $"Successfully bulk initialized {totalSectionsCreated} class sections for term {command.AcademicTermId}, year level {command.YearLevel}.",
+          NotificationCategoryEnum.Academic,
+          [RolesEnum.SystemAdmin]
+        ));
 
         return Result.Success();
       }

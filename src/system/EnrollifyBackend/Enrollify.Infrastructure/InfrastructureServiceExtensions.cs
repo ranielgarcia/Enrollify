@@ -53,8 +53,7 @@ public static class InfrastructureServiceExtensions
                                ?? config.GetConnectionString("SqliteConnection");
     Guard.Against.Null(connectionString);
 
-    services.AddTransient<IDbConnectionFactory>(sp =>
-      new SqlConnectionFactory(connectionString));
+    services.AddTransient<IDbConnectionFactory, SqlConnectionFactory>();
 
     // Azure Blob Storage
     services.AddStorageSettings(config);

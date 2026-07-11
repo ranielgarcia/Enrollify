@@ -17,9 +17,9 @@ using Enrollify.Core.Aggregates.SubjectAggregate.Models;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
+using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Application.Tests.Features.ClassSections.Commands;
 
@@ -32,6 +32,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
     private readonly Mock<IClassSectionSubjectOfferingRepository> _classSectionSubjectOfferingRepositoryMock = new();
     private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
     private readonly Mock<IPublisher> _publisherMock = new();
+    private readonly Mock<INotificationPublisher> _notificationPublisher = new();
     private readonly FakeBulkTransactionScope _fakeTransaction = new();
     private readonly FakeLogger<BulkInitializeClassSectionsForAcademicYear.Handler> _logger;
     private readonly BulkInitializeClassSectionsForAcademicYear.Handler _handler;
@@ -49,6 +50,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
             _classSectionSubjectOfferingRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _publisherMock.Object,
+            _notificationPublisher.Object,
             _logger);
 
         _unitOfWorkMock

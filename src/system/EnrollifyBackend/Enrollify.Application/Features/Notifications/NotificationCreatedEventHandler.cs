@@ -6,12 +6,12 @@ using Enrollify.Core.Services.NotificationServices.Models;
 
 namespace Enrollify.Application.Features.Notifications;
 
-public class OnNotificationCreatedEventHandler
+public class NotificationCreatedEventHandler
 {
   private readonly INotificationRepository _notificationRepository;
   private readonly IUserQueryService _userQueryService;
 
-  public OnNotificationCreatedEventHandler(INotificationRepository notificationRepository, IUserQueryService userQueryService)
+  public NotificationCreatedEventHandler(INotificationRepository notificationRepository, IUserQueryService userQueryService)
   {
     _notificationRepository = notificationRepository;
     _userQueryService = userQueryService;
