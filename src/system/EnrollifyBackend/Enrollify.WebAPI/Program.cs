@@ -1,4 +1,5 @@
 using Enrollify.Application.Features.Notifications;
+using Enrollify.Infrastructure;
 using Enrollify.Infrastructure.Data;
 using Enrollify.WebAPI.Authentication;
 using Enrollify.WebAPI.Infrastructure.Exceptions;
@@ -6,6 +7,7 @@ using Enrollify.WebAPI.Plumbing;
 using Enrollify.WebAPI.StartupServices;
 using Serilog;
 using Wolverine;
+using Wolverine.SqlServer;
 
 Log.Logger = ConfigureSerilogLogging.BootstrapLogger;
 
@@ -13,23 +15,22 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
+    // Get ILogger instance before adding infrastructure services
+    using var loggerFactory = LoggerFactory.Create(config => config.AddConsole());
+    var startupLogger = loggerFactory.CreateLogger<Program>();
+    startupLogger.LogInformation("Starting web host");
+
+
     builder.AddServiceDefaults();
+    builder.Services.AddOpenTelemetry()
+      .WithTracing(tracing => tracing.AddSource("Wolverine"))
+      .WithMetrics(metrics => metrics.AddMeter("Wolverine"));
 
     builder.Services.AddControllers();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
     // builder.Services.AddSerilogLogging(builder.Configuration);
-    builder.Host.UseWolverine(opts =>
-    {
-      opts.UseRuntimeCompilation();
-      opts.CodeGeneration.AlwaysUseServiceLocationFor<EnrollifyDbContext>();
-      // Right here, tell Wolverine to make every handler "sticky"
-      opts.MultipleHandlerBehavior = MultipleHandlerBehavior.Separated;
-
-      opts.Discovery.IncludeAssembly(typeof(NotificationCreatedEventHandler).Assembly);
-
-      Console.WriteLine(opts.DescribeHandlerMatch(typeof(NotificationCreatedEventHandler)));
-    });
+    builder.Host.ConfigureWolverine(builder.Configuration, startupLogger);
 
     // Currently remove App Insights logging
     // Due the following:
@@ -44,16 +45,13 @@ try
     builder.Services.AddFastEndpointsConfigs();
     builder.Services.AddGlobalCorsPolicy(builder.Configuration);
 
-    // Get ILogger instance before adding infrastructure services
-    using var loggerFactory = LoggerFactory.Create(config => config.AddConsole());
-    var startupLogger = loggerFactory.CreateLogger<Program>();
-
-    startupLogger.LogInformation("Starting web host");
-
 
     builder.Services.AddAzureADAuthentication(builder.Configuration);
     builder.Services.AddAuthorizationPolicies();
-    builder.Services.AddServiceConfigs(startupLogger, builder);
+
+    builder.Services.AddInfrastructureServices(builder.Configuration, startupLogger, builder.Environment.IsDevelopment())
+      .AddMediatR(startupLogger);
+
     builder.Services.AddStartupServices(builder.Configuration, builder.Environment);
 
     var app = builder.Build();

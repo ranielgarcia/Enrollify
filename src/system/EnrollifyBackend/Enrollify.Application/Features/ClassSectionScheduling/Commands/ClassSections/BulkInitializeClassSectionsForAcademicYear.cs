@@ -100,25 +100,20 @@ public static class BulkInitializeClassSectionsForAcademicYear
         }
       }
 
-      // Begin transaction to ensure all database operations succeed or fail together
       await using ITransactionScope transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
+      int totalSectionsCreated = 0;
+      var createdSectionIds = new List<ClassSectionId>();
       try
       {
-        int totalSectionsCreated = 0;
-        var createdSectionIds = new List<ClassSectionId>();
 
         foreach (TargetCourse targetCourse in command.TargetCourses)
         {
-          // H3: Direct property access — validator guarantees assignment exists;
-          // dictionary indexer throws rather than returning null, so ?. operators are redundant.
           CourseCurriculumAssignment courseCurriculumAssignment =
             courseCurriculumAssignmentsByCourseId[targetCourse.CourseId];
           Curriculum curriculum = courseCurriculumAssignment.Curriculum!;
           Course course = courseCurriculumAssignment.Course!;
 
-          // H4: Materialize once so .Count is a cheap property read and the inner foreach
-          // doesn't re-evaluate the IEnumerable on every iteration.
           var curriculumSubjects = curriculum
             .GetSubjectsByYearAndTerm(command.YearLevel, academicTerm.TermNumber)
             .ToList();
@@ -131,6 +126,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
             .FirstOrDefault()?
             .SectionCode;
 
+          totalSectionsCreated = 0;
           // Create the requested number of sections
           for (int i = 0; i < targetCourse.NumberOfSections; i++)
           {
@@ -201,6 +197,14 @@ public static class BulkInitializeClassSectionsForAcademicYear
               "Created class section {SectionName} (ID: {ClassSectionId}) with {SubjectCount} subject offerings",
               newClassSection.Name, classSectionId, curriculumSubjects.Count);
           }
+
+          await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
+            "BulkInitializeClassSectionsForAcademicYear",
+            "Bulk Initialize Class Sections",
+            $"Successfully initialized {totalSectionsCreated} class section(s) for {course.Name} for term {academicTerm.TermName}, year level {command.YearLevel}.",
+            NotificationCategoryEnum.Academic,
+            [RolesEnum.SystemAdmin]
+          ));
         }
 
         await transaction.CommitAsync(cancellationToken);
@@ -212,14 +216,6 @@ public static class BulkInitializeClassSectionsForAcademicYear
         _logger.LogInformation(
           "Successfully bulk initialized {TotalSections} class sections for term {TermId}, year level {YearLevel}",
           totalSectionsCreated, command.AcademicTermId, command.YearLevel);
-
-        await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
-          "BulkInitializeClassSectionsForAcademicYear",
-          "Bulk Initialize Class Sections",
-          $"Successfully bulk initialized {totalSectionsCreated} class sections for term {command.AcademicTermId}, year level {command.YearLevel}.",
-          NotificationCategoryEnum.Academic,
-          [RolesEnum.SystemAdmin]
-        ));
 
         return Result.Success();
       }

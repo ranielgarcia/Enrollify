@@ -39,6 +39,7 @@ using Enrollify.Infrastructure.Data.Config.AggregateConfigs.SubjectEquivalenceGr
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.TeacherConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.UserConfigs;
 using SmartEnum.EFCore;
+using Wolverine.EntityFrameworkCore;
 
 namespace Enrollify.Infrastructure.Data;
 
@@ -81,6 +82,7 @@ public class EnrollifyDbContext : DbContext
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);
+    modelBuilder.MapWolverineEnvelopeStorage();
     modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
     modelBuilder.Entity<LatestActiveCurriculumPerCourseView>()

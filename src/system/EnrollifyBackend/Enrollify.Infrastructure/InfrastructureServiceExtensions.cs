@@ -17,11 +17,11 @@ using Enrollify.Application.Features.SubjectEquivalences;
 using Enrollify.Application.Features.Subjects;
 using Enrollify.Application.Features.Teachers;
 using Enrollify.Application.Features.Teachers.Storage;
-using Enrollify.Core.Constants;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
 using Enrollify.Core.Services.ClassSectionDataIntegrityValidation;
 using Enrollify.Core.Services.NotificationServices;
+using Enrollify.Core.Services.NotificationServices.Models;
 using Enrollify.Core.Services.ScheduleConflictDetection;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
@@ -32,6 +32,11 @@ using Enrollify.Infrastructure.Services;
 using Enrollify.Infrastructure.Services.NotificationServices;
 using Enrollify.Infrastructure.Storage;
 using Enrollify.SharedKernel;
+using JasperFx.Core;
+using Microsoft.Extensions.Hosting;
+using Wolverine;
+using Wolverine.EntityFrameworkCore;
+using Wolverine.SqlServer;
 using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Infrastructure;
@@ -44,10 +49,6 @@ public static class InfrastructureServiceExtensions
     ILogger logger,
     bool isDevelopment = false)
   {
-    // Try to get connection strings in order of priority:
-    // 1. "cleanarchitecture" - provided by Aspire when using .WithReference(cleanArchDb)
-    // 2. "DefaultConnection" - traditional SQL Server connection
-    // 3. "SqliteConnection" - fallback to SQLite
     string? connectionString = config.GetConnectionString("cleanarchitecture")
                                ?? config.GetConnectionString("DefaultConnection")
                                ?? config.GetConnectionString("SqliteConnection");
@@ -142,6 +143,47 @@ public static class InfrastructureServiceExtensions
     logger.LogInformation("{Project} services registered", "Infrastructure");
 
     return services;
+  }
+
+  public static IHostBuilder ConfigureWolverine(this IHostBuilder hostBuilder, ConfigurationManager config, ILogger logger, bool isDevelopment = false)
+  {
+    string? connectionString = config.GetConnectionString("cleanarchitecture")
+                               ?? config.GetConnectionString("DefaultConnection")
+                               ?? config.GetConnectionString("SqliteConnection");
+
+    Guard.Against.Null(connectionString);
+
+    hostBuilder.UseWolverine(opts =>
+    {
+      opts.UseRuntimeCompilation();
+      opts.CodeGeneration.AlwaysUseServiceLocationFor<EnrollifyDbContext>();
+      // Right here, tell Wolverine to make every handler "sticky"
+      opts.MultipleHandlerBehavior = MultipleHandlerBehavior.Separated;
+
+      opts.Discovery.IncludeAssembly(typeof(OnNotificationCreatedEventHandler).Assembly);
+
+      // Console.WriteLine(opts.DescribeHandlerMatch(typeof(OnNotificationCreatedEventHandler)));
+      opts.PersistMessagesWithSqlServer(connectionString);
+      opts.UseEntityFrameworkCoreTransactions();
+      opts.Policies.AutoApplyTransactions();
+
+      opts.Policies.UseDurableOutboxOnAllSendingEndpoints();
+      opts.Policies.UseDurableInboxOnAllListeners();
+
+      if (isDevelopment)
+      {
+        opts.Durability.Mode = DurabilityMode.Solo;
+      }
+
+      opts.BatchMessagesOf<NotificationCreatedEvent>(batching =>
+      {
+        batching.BatchSize = 5;
+        batching.LocalExecutionQueueName = "Notifications";
+        batching.TriggerTime = 1.Seconds();
+      });
+
+    });
+    return hostBuilder;
   }
 
   /// <summary>
