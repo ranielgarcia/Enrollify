@@ -167,6 +167,7 @@ public static class InfrastructureServiceExtensions
       opts.UseEntityFrameworkCoreTransactions();
       opts.Policies.AutoApplyTransactions();
 
+      // opts.Policies.UseDurableLocalQueues();
       opts.Policies.UseDurableOutboxOnAllSendingEndpoints();
       opts.Policies.UseDurableInboxOnAllListeners();
 

@@ -16,13 +16,13 @@ public class NotificationRepository : INotificationRepository
     _logger = logger;
   }
 
-  public async Task<Result<NotificationId>> Create(Notification notification, CancellationToken cancellationToken)
+  public async Task<Result> BulkCreate(Notification[] notifications, CancellationToken cancellationToken)
   {
     try
     {
-      await _dbContext.Notifications.AddAsync(notification, cancellationToken);
+      await _dbContext.Notifications.AddRangeAsync(notifications, cancellationToken);
       await _dbContext.SaveChangesAsync(cancellationToken);
-      return Result.Success(notification.Id);
+      return Result.Success();
     }
     catch (Exception ex)
     {

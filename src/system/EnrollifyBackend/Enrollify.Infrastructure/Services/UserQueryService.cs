@@ -16,18 +16,18 @@ public class UserQueryService : IUserQueryService
     _connectionFactory = connectionFactory;
   }
 
-  public async Task<List<UserId>> GetUserIdsWithRole(RoleId roleId, CancellationToken ct)
+  public async Task<List<UserIdRoleId>> GetUserIdsWithRoles(RoleId[] roleIds, CancellationToken ct)
   {
     using SqlConnection conn = await _connectionFactory.CreateOpenAsync(ct);
 
-    string sql = "SELECT UserId FROM UserRolesAssignments WHERE RoleId = @RoleId";
+    string sql = "SELECT UserId, RoleId FROM UserRolesAssignments WHERE RoleId IN @RoleIds";
 
     var command = new CommandDefinition(
       commandText: sql,
-      parameters: new { RoleId = roleId },
+      parameters: new { RoleIds = roleIds.Select(r => r.Value) },
       cancellationToken: ct
     );
-    IEnumerable<UserId> userIds = await conn.QueryAsync<UserId>(command);
+    IEnumerable<UserIdRoleId> userIds = await conn.QueryAsync<UserIdRoleId>(command);
 
     return  userIds.ToList();
   }

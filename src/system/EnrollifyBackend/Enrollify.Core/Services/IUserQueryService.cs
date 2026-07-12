@@ -5,6 +5,8 @@ namespace Enrollify.Core.Services;
 
 public interface IUserQueryService
 {
-  Task<List<UserId>> GetUserIdsWithRole(RoleId roleId, CancellationToken ct);
+  Task<List<UserIdRoleId>> GetUserIdsWithRoles(RoleId[] roleIds, CancellationToken ct);
   Task<List<UserId>> GetAllUserIds(CancellationToken ct);
 }
+
+public record UserIdRoleId(UserId UserId, RoleId RoleId);

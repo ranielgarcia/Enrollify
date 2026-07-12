@@ -19,26 +19,43 @@ public class OnNotificationCreatedEventHandler
 
   public async Task Handle(NotificationCreatedEvent[] notificationCreatedEvents, CancellationToken ct)
   {
-    Notification notification = notificationCreatedEvent.Notification;
+    RoleId[] targetRoleIds = notificationCreatedEvents
+      .Where(e => e.Notification.TargetScope == NotificationTargetScopeEnum.Role)
+      .Select(e => e.Notification.TargetRoleId)
+      .Where(id => id != null).Select(id => (RoleId)id!).Distinct().ToArray();
+    var allUserIds = await _userQueryService.GetAllUserIds(ct);
 
-    List<UserId> userIds = new();
+    List<UserIdRoleId> userIdsWithRoles = await _userQueryService.GetUserIdsWithRoles(targetRoleIds, ct);
+    var userIdsByRole = userIdsWithRoles
+      .GroupBy(x => x.RoleId)
+      .ToDictionary(g => g.Key, g => g.Select(x => x.UserId).ToList());
 
-    if (notification.TargetScope == NotificationTargetScopeEnum.Broadcast)
+    var notifications = new List<Notification>();
+    foreach (NotificationCreatedEvent notificationCreatedEvent in notificationCreatedEvents)
     {
-      userIds = await _userQueryService.GetAllUserIds(ct);
-    }
-    else if (notification.TargetScope == NotificationTargetScopeEnum.Role && notification.TargetRoleId != null)
-    {
-      userIds = await _userQueryService.GetUserIdsWithRole((RoleId)notification.TargetRoleId!, ct);
-    }
-    else if (notification.TargetScope == NotificationTargetScopeEnum.User && notification.TargetUserId != null)
-    {
-      userIds.Add((UserId)notification.TargetUserId);
+      List<UserId> userIds = new();
+
+      Notification notification = notificationCreatedEvent.Notification;
+
+      if (notification.TargetScope == NotificationTargetScopeEnum.Broadcast)
+      {
+        userIds = allUserIds;
+      }
+      else if (notification.TargetScope == NotificationTargetScopeEnum.Role && notification.TargetRoleId != null)
+      {
+        userIds = userIdsByRole.TryGetValue((RoleId)notification.TargetRoleId, out var ids) ? ids : new List<UserId>();
+      }
+      else if (notification.TargetScope == NotificationTargetScopeEnum.User && notification.TargetUserId != null)
+      {
+        userIds.Add((UserId)notification.TargetUserId);
+      }
+
+      foreach (var userId in userIds)
+        notification.AddRecipient(userId);
+
+      notifications.Add(notification);
     }
 
-    foreach (var userId in userIds)
-      notification.AddRecipient(userId);
-
-    await _notificationRepository.Create(notification, ct);
+    await _notificationRepository.BulkCreate(notifications.ToArray(), ct);
   }
 }
