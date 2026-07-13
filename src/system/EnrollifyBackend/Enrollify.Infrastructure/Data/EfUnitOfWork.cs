@@ -1,5 +1,6 @@
 using Enrollify.SharedKernel;
 using Microsoft.EntityFrameworkCore.Storage;
+using Wolverine.EntityFrameworkCore;
 
 namespace Enrollify.Infrastructure.Data;
 
@@ -10,12 +11,16 @@ namespace Enrollify.Infrastructure.Data;
 internal sealed class EfUnitOfWork : IUnitOfWork
 {
     private readonly EnrollifyDbContext _dbContext;
+    private readonly IDbContextOutbox _outbox;
 
-    public EfUnitOfWork(EnrollifyDbContext dbContext)
+    public EfUnitOfWork(EnrollifyDbContext dbContext, IDbContextOutbox outbox)
     {
         _dbContext = dbContext;
-    }
+        _outbox = outbox;
 
+        // attached the DBContext to the outbox, BEFORE sending any messages
+        _outbox.Enroll(_dbContext);
+    }
 
     public async Task<ITransactionScope> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
@@ -27,6 +32,17 @@ internal sealed class EfUnitOfWork : IUnitOfWork
     {
         var transaction = await _dbContext.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
         return new EfTransactionScope(transaction);
+    }
+
+    // Only use this method if you are publishing messages/events using Wolverine infra
+    // else, use the CommitAsync method of the ITransactionScope
+    public async Task SaveChangesAndFlushMessagesThenCommitAsync(CancellationToken cancellationToken = default)
+    {
+      // Commit all changes and flush persisted messages
+      // to the persistent outbox
+      // in the correct order
+      // Wolverine documentations: https://wolverinefx.net/guide/durability/efcore/outbox-and-inbox.html#transactional-inbox-and-outbox-with-ef-core
+      await _outbox.SaveChangesAndFlushMessagesAsync(cancellationToken);
     }
 }
 

@@ -1,20 +1,20 @@
 using Enrollify.Core.Services.NotificationServices;
 using Enrollify.Core.Services.NotificationServices.Models;
-using Wolverine;
+using Wolverine.EntityFrameworkCore;
 
 namespace Enrollify.Infrastructure.Services.NotificationServices;
 
 public class NotificationBus : INotificationBus
 {
-  private readonly IMessageBus _messageBus;
+  private readonly IDbContextOutbox _outbox;
 
-  public NotificationBus(IMessageBus messageBus)
+  public NotificationBus(IDbContextOutbox outbox)
   {
-    _messageBus = messageBus;
+    _outbox = outbox;
   }
 
   public async Task PublishAsync(NotificationCreatedEvent notification)
   {
-    await _messageBus.PublishAsync(notification);
+    await _outbox.PublishAsync(notification);
   }
 }

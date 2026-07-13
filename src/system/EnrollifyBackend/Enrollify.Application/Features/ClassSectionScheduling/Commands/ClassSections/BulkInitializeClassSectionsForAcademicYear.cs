@@ -207,7 +207,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
           ));
         }
 
-        await transaction.CommitAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
 
         // Publish after commit — one event per section so each gets its own recompute
         foreach (ClassSectionId sectionId in createdSectionIds)

@@ -180,7 +180,7 @@ public static class InfrastructureServiceExtensions
       {
         batching.BatchSize = 5;
         batching.LocalExecutionQueueName = "Notifications";
-        batching.TriggerTime = 1.Seconds();
+        batching.TriggerTime = 2.Seconds();
       });
 
     });
