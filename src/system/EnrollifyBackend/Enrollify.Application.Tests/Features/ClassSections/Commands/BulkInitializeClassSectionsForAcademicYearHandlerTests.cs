@@ -14,6 +14,7 @@ using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate.Models;
+using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using MediatR;
@@ -31,7 +32,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
     private readonly Mock<IClassSectionRepository> _classSectionRepositoryMock = new();
     private readonly Mock<IClassSectionSubjectOfferingRepository> _classSectionSubjectOfferingRepositoryMock = new();
     private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
-    private readonly Mock<IPublisher> _publisherMock = new();
+    private readonly Mock<IDomainEventBus> _eventBusMock = new();
     private readonly Mock<INotificationPublisher> _notificationPublisher = new();
     private readonly FakeBulkTransactionScope _fakeTransaction = new();
     private readonly FakeLogger<BulkInitializeClassSectionsForAcademicYear.Handler> _logger;
@@ -49,7 +50,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
             _classSectionRepositoryMock.Object,
             _classSectionSubjectOfferingRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _publisherMock.Object,
+            _eventBusMock.Object,
             _notificationPublisher.Object,
             _logger);
 
@@ -739,7 +740,8 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
             AcademicTermId = AcademicTermId.From(1),
             CohortAcademicYearId = AcademicYearId.From(1),
             AdviserId = null,
-            SectionCode = sectionCode
+            SectionCode = sectionCode,
+            InitializeStatus = ClassSectionStatusEnum.Draft
         });
     }
 

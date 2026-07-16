@@ -81,6 +81,7 @@ public static class InfrastructureServiceExtensions
     // SQL Server TIME columns (TimeSpan) to .NET TimeOnly type
     SqlMapper.AddTypeHandler(new TimeSpanToTimeOnlyDapperTypeHandler());
 
+    services.AddScoped<IDomainEventBus, DomainEventBus>();
     services.AddScoped<EventDispatchInterceptor>();
     services.AddScoped<PreSaveChangesInterceptor>();
     services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();

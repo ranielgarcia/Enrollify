@@ -4,12 +4,11 @@ using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 namespace Enrollify.Application.Features.ClassSectionScheduling.EventHandlers;
 
 public sealed class OnClassSectionCreatedEventHandler(
-  IMediator mediator)
+  IDomainEventBus eventBus)
   : IDomainEventHandler<ClassSectionCreatedEvent>
 {
   public async Task Handle(ClassSectionCreatedEvent notification, CancellationToken cancellationToken)
   {
-    await mediator.Publish(new RefreshClassSectionValidationIssuesRequestedEvent(notification.Id),
-      cancellationToken);
+    await eventBus.PublishAsync(new RefreshClassSectionValidationIssuesRequestedEvent(notification.Id));
   }
 }

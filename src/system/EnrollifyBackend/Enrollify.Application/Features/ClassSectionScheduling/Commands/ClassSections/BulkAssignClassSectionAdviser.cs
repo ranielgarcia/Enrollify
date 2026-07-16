@@ -18,18 +18,21 @@ public static class BulkAssignClassSectionAdviser
   {
     private readonly IReadRepository<ClassSection> _classSectionReadRepository;
     private readonly IClassSectionRepository _classSectionRepository;
-    private readonly IPublisher _publisher;
+    private readonly IDomainEventBus _eventBus;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
       IReadRepository<ClassSection> classSectionReadRepository,
       IClassSectionRepository classSectionRepository,
-      IPublisher publisher,
+      IDomainEventBus eventBus,
+      IUnitOfWork unitOfWork,
       ILogger<Handler> logger)
     {
       _classSectionReadRepository = classSectionReadRepository;
       _classSectionRepository = classSectionRepository;
-      _publisher = publisher;
+      _eventBus = eventBus;
+      _unitOfWork = unitOfWork;
       _logger = logger;
     }
 
@@ -71,6 +74,8 @@ public static class BulkAssignClassSectionAdviser
           classSection.UpdateAdviser(adviserId);
         }
 
+        await using ITransactionScope transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
         Result<ClassSectionId> updateResult = await _classSectionRepository.BulkUpdate(classSections, cancellationToken);
         if (!updateResult.IsSuccess)
         {
@@ -79,8 +84,9 @@ public static class BulkAssignClassSectionAdviser
           return Result.Error("Unable to bulk update the class sections.");
         }
 
-        await _publisher.Publish(new RefreshClassSectionDataQualityValidationIssuesRequestedEvent(classSections.Select(x => x.Id).ToList()), cancellationToken);
+        await _eventBus.PublishAsync(new RefreshClassSectionDataQualityValidationIssuesRequestedEvent(classSections.Select(x => x.Id).ToList()));
 
+        await transaction.CommitAsync(cancellationToken);
       }
       catch (ArgumentException ex)
       {

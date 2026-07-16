@@ -9,6 +9,7 @@ using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Microsoft.Extensions.Logging;
@@ -367,6 +368,7 @@ public class UpdateAcademicYearAndTermsTests
             AcademicTermId = AcademicTermId.From(1),
             CohortAcademicYearId = AcademicYearId.From(1),
             SectionCode = SectionCode.From('A'),
+            InitializeStatus = ClassSectionStatusEnum.Draft,
         };
         return new ClassSection(creation)
             .OpenForEnrollment()

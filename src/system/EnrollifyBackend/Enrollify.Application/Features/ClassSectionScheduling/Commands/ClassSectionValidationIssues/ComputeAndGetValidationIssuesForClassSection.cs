@@ -20,6 +20,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
     private readonly ClassSectionDataIntegrityValidator _dataIntegrityValidator;
     private readonly IClassSectionSubjectOfferingScheduleConflictRepository _conflictRepo;
     private readonly IReadRepository<ClassSection> _classSectionReadRepository;
+    private readonly IClassSectionRepository _classSectionRepository;
     private readonly IClassSectionValidationIssueRepository _validationIssueRepository;
     private readonly IPublisher _publisher;
     private readonly ILogger<Handler> _logger;
@@ -30,6 +31,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
       ClassSectionDataIntegrityValidator dataIntegrityValidator,
       IClassSectionSubjectOfferingScheduleConflictRepository conflictRepo,
       IReadRepository<ClassSection> classSectionReadRepository,
+      IClassSectionRepository classSectionRepository,
       IClassSectionValidationIssueRepository validationIssueRepository,
       IPublisher publisher,
       ILogger<Handler> logger)
@@ -39,6 +41,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
       _dataIntegrityValidator = dataIntegrityValidator;
       _conflictRepo = conflictRepo;
       _classSectionReadRepository = classSectionReadRepository;
+      _classSectionRepository = classSectionRepository;
       _validationIssueRepository = validationIssueRepository;
       _publisher = publisher;
       _logger = logger;
@@ -59,6 +62,9 @@ public static class ComputeAndGetValidationIssuesForClassSection
           classSectionId.Value);
         return Result.NotFound($"ClassSection with ID {classSectionId.Value} was not found.");
       }
+
+      section.MoveToValidating();
+      await _classSectionRepository.Update(section, cancellationToken);
 
       List<ClassSectionSubjectOffering> offerings = await _offeringReadRepository.ListAsync(
         new GetClassSectionSubjectOfferingsByClassSectionIdSpec(section.Id), cancellationToken);
@@ -116,6 +122,10 @@ public static class ComputeAndGetValidationIssuesForClassSection
       _logger.LogInformation(
         "Computed {ConflictIssueCount} conflict validation issues and {DataIntegrityIssueCount} data integrity validation issues for class section {ClassSectionId}",
         conflictValidationIssues.Count, dataIntegrityValidationIssues.Count, section.Id.Value);
+
+      // Draft only, higher status will not invoke this event handler in any way. Updates to a class with higher status is not allowed
+      section.MoveToDraft();
+      await _classSectionRepository.Update(section, cancellationToken);
 
       return Result.Success(validationIssues);
     }

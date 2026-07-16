@@ -10,6 +10,7 @@ using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using Moq;
@@ -464,7 +465,8 @@ public class CreateClassSectionValidatorTests
             AcademicTermId = AcademicTermId.From(1),
             CohortAcademicYearId = AcademicYearId.From(1),
             AdviserId = null,
-            SectionCode = sectionCode
+            SectionCode = sectionCode,
+            InitializeStatus = ClassSectionStatusEnum.Draft
         });
         SetEntityProperty(classSection, "Id", ClassSectionId.From(1));
         return classSection;

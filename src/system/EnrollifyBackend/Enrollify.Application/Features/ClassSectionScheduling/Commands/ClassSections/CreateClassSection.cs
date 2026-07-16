@@ -25,7 +25,7 @@ public static class CreateClassSection
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IPublisher _publisher;
+    private readonly IDomainEventBus _eventBus;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -35,7 +35,7 @@ public static class CreateClassSection
       IClassSectionRepository classSectionRepository,
       IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
       IUnitOfWork unitOfWork,
-      IPublisher publisher,
+      IDomainEventBus eventBus,
       ILogger<Handler> logger)
     {
       _academicYearReadRepository = academicYearReadRepository;
@@ -44,7 +44,7 @@ public static class CreateClassSection
       _classSectionRepository = classSectionRepository;
       _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
       _unitOfWork = unitOfWork;
-      _publisher = publisher;
+      _eventBus = eventBus;
       _logger = logger;
     }
 
@@ -133,7 +133,8 @@ public static class CreateClassSection
           AcademicTermId = command.AcademicTermId,
           AdviserId = command.AdviserId,
           SectionCode = sectionCode,
-          CohortAcademicYearId = cohortAcademicYear.Id
+          CohortAcademicYearId = cohortAcademicYear.Id,
+          InitializeStatus = ClassSectionStatusEnum.PendingValidation
         });
         Result<ClassSectionId> createResult =
           await _classSectionRepository.Create(newClassSection, cancellationToken);
@@ -180,10 +181,10 @@ public static class CreateClassSection
           }
         }
 
-        await transaction.CommitAsync(cancellationToken);
-
         // Publish after commit so the event handler reads fully-committed data
-        await _publisher.Publish(new ClassSectionCreatedEvent(classSectionId), cancellationToken);
+        await _eventBus.PublishAsync(new ClassSectionCreatedEvent(classSectionId));
+
+        await transaction.CommitAsync(cancellationToken);
 
         _logger.LogInformation(
           "Successfully created class section {ClassSectionId} with {SubjectCount} subject offerings",

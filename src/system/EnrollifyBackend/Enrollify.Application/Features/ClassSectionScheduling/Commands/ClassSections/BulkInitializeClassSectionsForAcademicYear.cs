@@ -26,7 +26,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IPublisher _publisher;
+    private readonly IDomainEventBus _eventBus;
     private readonly INotificationPublisher _notificationPublisher;
     private readonly ILogger<Handler> _logger;
 
@@ -37,7 +37,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
       IClassSectionRepository classSectionRepository,
       IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
       IUnitOfWork unitOfWork,
-      IPublisher publisher,
+      IDomainEventBus eventBus,
       INotificationPublisher notificationPublisher,
       ILogger<Handler> logger)
     {
@@ -47,7 +47,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
       _classSectionRepository = classSectionRepository;
       _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
       _unitOfWork = unitOfWork;
-      _publisher = publisher;
+      _eventBus = eventBus;
       _notificationPublisher = notificationPublisher;
       _logger = logger;
     }
@@ -144,7 +144,8 @@ public static class BulkInitializeClassSectionsForAcademicYear
               AcademicTermId = command.AcademicTermId,
               AdviserId = null, // No adviser assigned during bulk initialization
               SectionCode = sectionCode,
-              CohortAcademicYearId = cohortAcademicYear.Id
+              CohortAcademicYearId = cohortAcademicYear.Id,
+              InitializeStatus = ClassSectionStatusEnum.PendingValidation,
             });
 
             Result<ClassSectionId> createResult =
@@ -207,11 +208,10 @@ public static class BulkInitializeClassSectionsForAcademicYear
           ));
         }
 
+        await _eventBus.PublishAllAsync(createdSectionIds.Select(sectionId => new ClassSectionCreatedEvent(sectionId)));
+
         await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
 
-        // Publish after commit — one event per section so each gets its own recompute
-        foreach (ClassSectionId sectionId in createdSectionIds)
-          await _publisher.Publish(new ClassSectionCreatedEvent(sectionId), cancellationToken);
 
         _logger.LogInformation(
           "Successfully bulk initialized {TotalSections} class sections for term {TermId}, year level {YearLevel}",
