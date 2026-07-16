@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Wolverine.EntityFrameworkCore;
 
 namespace Enrollify.IntegrationTests.Infrastructure;
 
@@ -74,6 +75,12 @@ public class WebApiTestFixture : WebApplicationFactory<Program>, IAsyncLifetime
                 options.UseSqlServer(_sqlConnectionString);
                 options.EnableSensitiveDataLogging();
             });
+
+            // Override Wolverine's real IDbContextOutbox with a no-op stub so events
+            // published during test handler execution are silently discarded and the
+            // test server does not need Wolverine's SQL Server outbox tables at startup.
+            // The last registration wins for GetRequiredService<IDbContextOutbox>().
+            services.AddScoped<IDbContextOutbox, TestDbContextOutbox>();
 
             // TODO: Configure test authentication if needed
             // For now, tests will need to handle authentication bypass or use test auth handlers

@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Wolverine.EntityFrameworkCore;
 
 namespace Enrollify.IntegrationTests.Infrastructure;
 
@@ -83,6 +84,12 @@ public class ApplicationTestFixture : IAsyncLifetime
 
         // Add Infrastructure services (DbContext, repositories, etc.)
         services.AddInfrastructureServices(configManager, logger, isDevelopment: true);
+
+        // Wolverine's IDbContextOutbox is only registered when ConfigureWolverine is called
+        // (which requires a running host with SQL Server persistence). For integration tests
+        // we register a no-op stub so handlers that depend on IUnitOfWork / IDomainEventBus
+        // can resolve without needing the full Wolverine runtime.
+        services.AddScoped<IDbContextOutbox, TestDbContextOutbox>();
 
         // Register test-specific services
         services.AddSingleton<ICurrentUserAccessor, TestCurrentUserAccessor>();

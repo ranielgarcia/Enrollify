@@ -293,7 +293,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
         Assert.Equal(ResultStatus.Ok, result.Status);
     }
 
-    [Fact(DisplayName = "All payloads succeed - commits transaction")]
+    [Fact(DisplayName = "All payloads succeed - flushes and commits via unit of work")]
     public async Task Handle_AllPayloadsSucceed_CommitsTransaction()
     {
         // Arrange
@@ -306,8 +306,11 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.True(_fakeTransaction.IsCommitted);
-        Assert.False(_fakeTransaction.IsRolledBack);
+        // The handler commits by flushing Wolverine outbox messages and saving via IUnitOfWork,
+        // not by calling transaction.CommitAsync() directly.
+        _unitOfWorkMock.Verify(
+            u => u.SaveChangesAndFlushMessagesThenCommitAsync(It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact(DisplayName = "Multiple payloads all succeed - opens transaction exactly once")]

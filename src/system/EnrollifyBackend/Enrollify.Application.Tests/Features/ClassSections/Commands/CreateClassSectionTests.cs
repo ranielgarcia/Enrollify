@@ -682,8 +682,8 @@ public class CreateClassSectionTests
         Assert.Contains(logs, l => l.Level == LogLevel.Information && l.Message.Contains("Successfully created class section"));
     }
 
-    [Fact(DisplayName = "New ClassSection defaults to Draft status")]
-    public async Task Handle_ValidCommand_CreatesClassSectionWithDraftStatus()
+    [Fact(DisplayName = "New ClassSection initializes with PendingValidation status")]
+    public async Task Handle_ValidCommand_CreatesClassSectionWithPendingValidationStatus()
     {
         // Arrange
         var command = CreateCommand();
@@ -703,7 +703,7 @@ public class CreateClassSectionTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(capturedClassSection);
-        Assert.Equal(ClassSectionStatusEnum.Draft, capturedClassSection.StatusId);
+        Assert.Equal(ClassSectionStatusEnum.PendingValidation, capturedClassSection.StatusId);
     }
 
     #endregion

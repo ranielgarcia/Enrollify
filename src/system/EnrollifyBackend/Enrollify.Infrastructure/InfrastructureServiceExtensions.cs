@@ -149,14 +149,18 @@ public static class InfrastructureServiceExtensions
 
   public static IHostBuilder ConfigureWolverine(this IHostBuilder hostBuilder, ConfigurationManager config, ILogger logger, bool isDevelopment = false)
   {
-    string? connectionString = config.GetConnectionString("cleanarchitecture")
-                               ?? config.GetConnectionString("DefaultConnection")
-                               ?? config.GetConnectionString("SqliteConnection");
-
-    Guard.Against.Null(connectionString);
-
     hostBuilder.UseWolverine(opts =>
     {
+      // Read connection string INSIDE the lambda so it is evaluated during IHostBuilder.Build(),
+      // after WebApplicationFactory (integration tests) has applied its ConfigureAppConfiguration
+      // overrides. Reading it eagerly before the lambda would capture the appsettings.json value
+      // instead of the test container connection string.
+      string? connectionString = config.GetConnectionString("cleanarchitecture")
+                                 ?? config.GetConnectionString("DefaultConnection")
+                                 ?? config.GetConnectionString("SqliteConnection");
+
+      Guard.Against.Null(connectionString);
+
       opts.UseRuntimeCompilation();
       opts.CodeGeneration.AlwaysUseServiceLocationFor<EnrollifyDbContext>();
       opts.CodeGeneration.AlwaysUseServiceLocationFor<IMediator>();
