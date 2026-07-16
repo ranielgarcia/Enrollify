@@ -72,19 +72,27 @@ const AdviserSummarySchema = z.object({
 });
 
 export const ClassSectionStatusEnum = {
-  Draft: 1,
-  Open: 2,
-  Locked: 3,
-  Active: 4,
-  Completed: 5,
-  Cancelled: 6,
+  PendingValidation: 1,
+  Validating: 2,
+  Draft: 3,
+  Open: 4,
+  Locked: 5,
+  Active: 6,
+  Completed: 7,
+  Cancelled: 8,
 } as const;
 
 export type ClassSectionStatusValue =
   (typeof ClassSectionStatusEnum)[keyof typeof ClassSectionStatusEnum];
+export type ClassSectionStatusName = keyof typeof ClassSectionStatusEnum;
 
 const ClassSectionStatusSchema = z.object({
-  name: z.enum(["Draft", "Open", "Locked", "Active", "Completed", "Cancelled"]),
+  name: z.enum(
+    Object.keys(ClassSectionStatusEnum) as [
+      ClassSectionStatusName,
+      ...ClassSectionStatusName[],
+    ],
+  ),
   value: z.number(),
   description: z.string().optional(),
 });

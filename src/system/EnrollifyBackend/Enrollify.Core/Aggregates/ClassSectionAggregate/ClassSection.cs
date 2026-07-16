@@ -31,7 +31,7 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
             nameof(sectionForCreation.CohortAcademicYearId));
         AdviserId = sectionForCreation.AdviserId;
         SectionCode = Guard.Against.Null(sectionForCreation.SectionCode, nameof(sectionForCreation.SectionCode));
-        StatusId = ClassSectionStatusEnum.Draft;
+        StatusId = sectionForCreation.InitializeStatus;
     }
 
     public string Name { get; private set; } = null!;

@@ -33,6 +33,7 @@ using Enrollify.Infrastructure.Services.NotificationServices;
 using Enrollify.Infrastructure.Storage;
 using Enrollify.SharedKernel;
 using JasperFx.Core;
+using MediatR;
 using Microsoft.Extensions.Hosting;
 using Wolverine;
 using Wolverine.EntityFrameworkCore;
@@ -158,6 +159,7 @@ public static class InfrastructureServiceExtensions
     {
       opts.UseRuntimeCompilation();
       opts.CodeGeneration.AlwaysUseServiceLocationFor<EnrollifyDbContext>();
+      opts.CodeGeneration.AlwaysUseServiceLocationFor<IMediator>();
       // Right here, tell Wolverine to make every handler "sticky"
       opts.MultipleHandlerBehavior = MultipleHandlerBehavior.Separated;
 
@@ -166,7 +168,6 @@ public static class InfrastructureServiceExtensions
       // Console.WriteLine(opts.DescribeHandlerMatch(typeof(OnNotificationCreatedEventHandler)));
       opts.PersistMessagesWithSqlServer(connectionString);
       opts.UseEntityFrameworkCoreTransactions();
-      opts.Policies.AutoApplyTransactions();
 
       // opts.Policies.UseDurableLocalQueues();
       opts.Policies.UseDurableOutboxOnAllSendingEndpoints();
@@ -184,6 +185,7 @@ public static class InfrastructureServiceExtensions
         batching.TriggerTime = 2.Seconds();
       });
 
+      opts.Policies.AutoApplyTransactions();
     });
     return hostBuilder;
   }
