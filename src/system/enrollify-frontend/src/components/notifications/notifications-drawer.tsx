@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { Bell, CheckCheck, Trash2 } from "lucide-react";
 import {
   dismissAllNotificationsOptions,
-  getNotificationsOptions,
+  filterNotificationsOptions,
   markAllNotificationsAsReadOptions,
 } from "@/api/collections/notifications-collection";
 import {
@@ -44,9 +44,9 @@ export function NotificationsDrawer({
   const [isClearAllDialogOpen, setIsClearAllDialogOpen] = useState(false);
 
   const { data: pagedNotifications, isLoading } = useQuery({
-    ...getNotificationsOptions({
+    ...filterNotificationsOptions({
       page: 1,
-      perPage: RECENT_NOTIFICATIONS_LIMIT,
+      pageSize: RECENT_NOTIFICATIONS_LIMIT,
     }),
     enabled: isOpen,
   });
@@ -77,7 +77,7 @@ export function NotificationsDrawer({
                 size="sm"
                 className="gap-1.5 text-xs"
                 disabled={!hasUnread || isMarkingAllAsRead}
-                onClick={() => markAllAsRead()}
+                onClick={() => markAllAsRead({})}
               >
                 <CheckCheck className="size-3.5" />
                 Mark all as read
@@ -154,7 +154,7 @@ export function NotificationsDrawer({
               disabled={isDismissingAll}
               onClick={(e) => {
                 e.preventDefault();
-                dismissAll();
+                dismissAll({});
               }}
             >
               Clear all

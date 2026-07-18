@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import {
   dismissAllNotificationsOptions,
-  getNotificationsOptions,
+  filterNotificationsOptions,
   markAllNotificationsAsReadOptions,
 } from "@/api/collections/notifications-collection";
 import type {
@@ -47,9 +47,9 @@ export default function NotificationsPage() {
   }, [debouncedSearch]);
 
   const { data: pagedNotifications } = useSuspenseQuery(
-    getNotificationsOptions({
+    filterNotificationsOptions({
       page: filters.page,
-      perPage: filters.perPage,
+      pageSize: filters.pageSize,
       category: filters.category as NotificationCategory | "all",
       severity: filters.severity as NotificationSeverity | "all",
       readState: filters.readState as NotificationReadState,
@@ -91,7 +91,7 @@ export default function NotificationsPage() {
             size="sm"
             className="gap-1.5"
             disabled={!hasUnread || isMarkingAllAsRead}
-            onClick={() => markAllAsRead()}
+            onClick={() => markAllAsRead({})}
           >
             <CheckCheck className="size-4" />
             Mark all as read
@@ -201,7 +201,7 @@ export default function NotificationsPage() {
               disabled={isDismissingAll}
               onClick={(e) => {
                 e.preventDefault();
-                dismissAll();
+                dismissAll({});
               }}
             >
               Clear all

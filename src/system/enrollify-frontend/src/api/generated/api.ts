@@ -388,6 +388,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/notifications/filter/{page}/{pageSize}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesNotificationsFilterNotificationsPaginatedEndpoint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesNotificationsGetUnreadNotificationsCountForUserEndpoint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications/dismiss-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["EnrollifyWebAPIFeaturesNotificationsMarkAllNotificationsAsDismissedEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["EnrollifyWebAPIFeaturesNotificationsMarkAllNotificationsAsReadEndpoint"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications/{id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesNotificationsMarkNotificationAsDismissedEndpoint"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesNotificationsMarkNotificationAsReadEndpoint"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications/{id}/unread": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["EnrollifyWebAPIFeaturesNotificationsMarkNotificationAsUnreadEndpoint"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/departments": {
         parameters: {
             query?: never;
@@ -1303,6 +1415,64 @@ export interface components {
             value?: number;
         };
         ArdalisSmartEnumSmartFlagEngineOfPermissionEnumAndInt32: Record<string, never>;
+        EnrollifyApplicationPagedResultOfNotificationDto: {
+            items?: components["schemas"]["EnrollifyApplicationFeaturesNotificationsDTOsNotificationDto"][];
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int32 */
+            totalCount?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
+        EnrollifyApplicationFeaturesNotificationsDTOsNotificationDto: {
+            type?: string;
+            title?: string;
+            message?: string;
+            severity?: components["schemas"]["EnrollifyCoreConstantsNotificationSeverityEnum"];
+            category?: components["schemas"]["EnrollifyCoreConstantsNotificationCategoryEnum"];
+            referenceType?: components["schemas"]["EnrollifyCoreConstantsNotificationReferenceTypeEnum"] | null;
+            /** Format: int32 */
+            referenceId?: number | null;
+        };
+        EnrollifyCoreConstantsNotificationSeverityEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfNotificationSeverityEnum"] & Record<string, never>;
+        ArdalisSmartEnumSmartEnumOfNotificationSeverityEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfNotificationSeverityEnumAndInt32"] & Record<string, never>;
+        /** @description A base type to use for creating smart enums. */
+        ArdalisSmartEnumSmartEnumOfNotificationSeverityEnumAndInt32: {
+            /** @description Gets the name. */
+            name?: string | null;
+            /**
+             * Format: int32
+             * @description Gets the value.
+             */
+            value?: number;
+        };
+        EnrollifyCoreConstantsNotificationCategoryEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfNotificationCategoryEnum"] & Record<string, never>;
+        ArdalisSmartEnumSmartEnumOfNotificationCategoryEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfNotificationCategoryEnumAndInt32"] & Record<string, never>;
+        /** @description A base type to use for creating smart enums. */
+        ArdalisSmartEnumSmartEnumOfNotificationCategoryEnumAndInt32: {
+            /** @description Gets the name. */
+            name?: string | null;
+            /**
+             * Format: int32
+             * @description Gets the value.
+             */
+            value?: number;
+        };
+        EnrollifyCoreConstantsNotificationReferenceTypeEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfNotificationReferenceTypeEnum"] & Record<string, never>;
+        ArdalisSmartEnumSmartEnumOfNotificationReferenceTypeEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfNotificationReferenceTypeEnumAndInt32"] & Record<string, never>;
+        /** @description A base type to use for creating smart enums. */
+        ArdalisSmartEnumSmartEnumOfNotificationReferenceTypeEnumAndInt32: {
+            /** @description Gets the name. */
+            name?: string | null;
+            /**
+             * Format: int32
+             * @description Gets the value.
+             */
+            value?: number;
+        };
+        EnrollifyWebAPIFeaturesNotificationsFilterNotificationsPaginatedRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesDepartmentsCreateDepartmentRequest: {
             code: string;
             name: string;
@@ -3104,6 +3274,222 @@ export interface operations {
                     "application/json": components["schemas"]["EnrollifyApplicationFeaturesRolesDTOsRoleDto"][];
                 };
             };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesNotificationsFilterNotificationsPaginatedEndpoint: {
+        parameters: {
+            query?: {
+                SearchTerm?: string | null;
+                Category?: string | null;
+                Severity?: string | null;
+                ReadState?: string | null;
+            };
+            header?: never;
+            path: {
+                page: number;
+                pageSize: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollifyApplicationPagedResultOfNotificationDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesNotificationsGetUnreadNotificationsCountForUserEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": number;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesNotificationsMarkAllNotificationsAsDismissedEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesNotificationsMarkAllNotificationsAsReadEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesNotificationsMarkNotificationAsDismissedEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesNotificationsMarkNotificationAsReadEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesNotificationsMarkNotificationAsUnreadEndpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
             /** @description Unauthorized */
             401: {
                 headers: {

@@ -142,7 +142,7 @@ export function NotificationCard({
               className="size-8 text-muted-foreground hover:text-foreground"
               disabled={isToggling}
               onClick={() =>
-                notification.isRead ? markAsUnread() : markAsRead()
+                notification.isRead ? markAsUnread({}) : markAsRead({})
               }
             >
               {isToggling ? (
@@ -166,7 +166,7 @@ export function NotificationCard({
               size="icon"
               className="size-8 text-muted-foreground hover:text-destructive"
               disabled={isDismissing}
-              onClick={() => dismiss()}
+              onClick={() => dismiss({})}
             >
               {isDismissing ? (
                 <Loader2 className="size-4 animate-spin" />

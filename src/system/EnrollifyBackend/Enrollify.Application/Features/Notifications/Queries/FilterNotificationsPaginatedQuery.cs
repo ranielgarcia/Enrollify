@@ -10,7 +10,9 @@ public record FilterNotificationsPaginatedQuery (
   string SearchTerm = "",
   int Page = 1,
   int PageSize = 10,
-  IEnumerable<FilterItem>? Filters = null) : IRequest<Result<PagedResult<NotificationDto>>>;
+  NotificationCategoryEnum? Category = null,
+  NotificationSeverityEnum? Severity = null,
+  string ReadState = "") : IRequest<Result<PagedResult<NotificationDto>>>;
 
 public class FilterNotificationsPaginatedQueryHandler : IRequestHandler<FilterNotificationsPaginatedQuery, Result<PagedResult<NotificationDto>>>
 {
@@ -26,7 +28,7 @@ public class FilterNotificationsPaginatedQueryHandler : IRequestHandler<FilterNo
   public async Task<Result<PagedResult<NotificationDto>>> Handle(FilterNotificationsPaginatedQuery request, CancellationToken cancellationToken)
   {
     var user = _currentUserAccessor.GetCurrentUser();
-    var spec = new FilterNotificationsForTheUserPaginatedSpec(user!.Id, request.SearchTerm, request.Page, request.PageSize, request.Filters);
+    var spec = new FilterNotificationsForTheUserPaginatedSpec(user!.Id, request.SearchTerm, request.Page, request.PageSize, request.Category, request.Severity, request.ReadState);
     var notifications = await _readRepository.ListAsync(spec, cancellationToken);
     var totalCount = await _readRepository.CountAsync(spec, cancellationToken);
 

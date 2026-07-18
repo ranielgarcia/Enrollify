@@ -10,11 +10,6 @@ import type {
 
 const queryKeys = {
   base: () => ["subjects"],
-  paginated: (page: number, pageSize: number) => [
-    ...queryKeys.base(),
-    page,
-    pageSize,
-  ],
   filter: (
     page: number,
     pageSize: number,
