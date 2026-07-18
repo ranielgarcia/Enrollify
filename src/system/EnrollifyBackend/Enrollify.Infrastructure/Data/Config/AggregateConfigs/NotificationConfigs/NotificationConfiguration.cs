@@ -56,7 +56,12 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
 
     // Audit fields
     builder.Property(a => a.CreatedAt).HasColumnName("CreatedAt");
-    builder.Property(a => a.CreatedBy).HasColumnName("CreatedBy");
+
+    // Foreign key relationships for audit fields
+    builder.HasOne(e => e.CreatedByUser)
+      .WithMany()
+      .HasForeignKey(e => e.CreatedBy)
+      .OnDelete(DeleteBehavior.NoAction);
 
     // EF Core can't add/remove items via a read-only collection,
     // so you tell EF to use the backing field instead of the property

@@ -26,6 +26,7 @@ public class Notification : EntityBase<NotificationId>, IAggregateRoot
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
+    public User? CreatedByUser { get; private set; }
 
     private readonly List<NotificationRecipient> _recipients = [];
     public IReadOnlyCollection<NotificationRecipient> Recipients => _recipients.AsReadOnly();

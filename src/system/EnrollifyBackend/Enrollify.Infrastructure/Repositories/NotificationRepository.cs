@@ -1,6 +1,7 @@
 using Ardalis.Result;
 using Enrollify.Application.Features.Notifications;
 using Enrollify.Core.Aggregates.NotificationAggregate;
+using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Infrastructure.Data;
 
 namespace Enrollify.Infrastructure.Repositories;
@@ -64,6 +65,48 @@ public class NotificationRepository : INotificationRepository
     {
       _logger.LogError(ex, "Unable to delete notification");
       return Result.Error($"An error occurred while deleting the notification: {ex.Message}");
+    }
+  }
+
+  public async Task<Result> MarkAllNotificationsAsReadForUser(UserId userId, CancellationToken cancellationToken)
+  {
+    try
+    {
+      await _dbContext.Notifications
+        .Include(n => n.Recipients)
+        .Where(n => n.ExpiresAt == null)
+        .Where(n => (n.TargetUserId != null && n.TargetUserId == userId) ||
+                    n.Recipients.Any(r => r.UserId == userId))
+        .ExecuteUpdateAsync(n => n.SetProperty(n => n.Recipients.FirstOrDefault(r => r.UserId == userId)!.IsRead, true), cancellationToken);
+      await _dbContext.SaveChangesAsync(cancellationToken);
+      return Result.Success();
+    }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Unable to mark notifications as read");
+      return Result.Error($"An error occurred while marking notifications as read: {ex.Message}");
+    }
+  }
+
+  public async Task<Result> MarkAllNotificationsAsDismissedForUser(UserId userId, CancellationToken cancellationToken)
+  {
+    try
+    {
+      await _dbContext.Notifications
+        .Include(n => n.Recipients)
+        .Where(n => n.ExpiresAt == null)
+        .Where(n => (n.TargetUserId != null && n.TargetUserId == userId) ||
+                    n.Recipients.Any(r => r.UserId == userId))
+        .ExecuteUpdateAsync(n =>
+          n.SetProperty(n => n.Recipients.FirstOrDefault(r => r.UserId == userId)!.IsDismissed, true)
+            .SetProperty(n => n.Recipients.FirstOrDefault(r => r.UserId == userId)!.DismissedAt, DateTimeOffset.UtcNow), cancellationToken);
+      await _dbContext.SaveChangesAsync(cancellationToken);
+      return Result.Success();
+    }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Unable to mark notifications as dismissed");
+      return Result.Error($"An error occurred while marking notifications as dismissed: {ex.Message}");
     }
   }
 }

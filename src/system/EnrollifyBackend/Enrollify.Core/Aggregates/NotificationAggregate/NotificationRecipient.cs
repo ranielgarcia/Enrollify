@@ -19,4 +19,25 @@ public class NotificationRecipient : EntityBase<NotificationRecipientId>
   public DateTimeOffset? ReadAt { get; set; }
   public bool IsDismissed { get; set; }
   public DateTimeOffset? DismissedAt { get; set; }
+
+  public NotificationRecipient MarkAsRead()
+  {
+    IsRead = true;
+    ReadAt = DateTimeOffset.UtcNow;
+    return this;
+  }
+
+  public NotificationRecipient MarkAsUnread()
+  {
+    IsRead = false;
+    ReadAt = null;
+    return this;
+  }
+
+  public NotificationRecipient MarkAsDismissed()
+  {
+    IsDismissed = true;
+    DismissedAt = DateTimeOffset.UtcNow;
+    return this;
+  }
 }
