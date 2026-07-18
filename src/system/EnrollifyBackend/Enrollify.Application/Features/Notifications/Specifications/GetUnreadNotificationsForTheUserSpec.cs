@@ -11,6 +11,6 @@ public class GetUnreadNotificationsForTheUserSpec : Specification<Notification>
       .Include(n => n.Recipients)
       .Where(n => (n.TargetUserId != null && n.TargetUserId == userId) ||
                   n.Recipients.Any(r => r.UserId == userId && !r.IsDismissed && !r.IsRead))
-      .Where(n => n.ExpiresAt == null);
+      .Where(n => n.ExpiresAt == null || n.ExpiresAt > DateTimeOffset.UtcNow);
   }
 }

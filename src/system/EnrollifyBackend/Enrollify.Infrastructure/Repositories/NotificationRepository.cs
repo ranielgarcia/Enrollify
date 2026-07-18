@@ -73,12 +73,12 @@ public class NotificationRepository : INotificationRepository
     try
     {
       await _dbContext.Notifications
-        .Include(n => n.Recipients)
-        .Where(n => n.ExpiresAt == null)
+        .Where(n => n.ExpiresAt == null || n.ExpiresAt > DateTimeOffset.UtcNow)
         .Where(n => (n.TargetUserId != null && n.TargetUserId == userId) ||
                     n.Recipients.Any(r => r.UserId == userId))
-        .ExecuteUpdateAsync(n => n.SetProperty(n => n.Recipients.FirstOrDefault(r => r.UserId == userId)!.IsRead, true), cancellationToken);
-      await _dbContext.SaveChangesAsync(cancellationToken);
+        .ExecuteUpdateAsync(n => n
+          .SetProperty(n => n.Recipients.FirstOrDefault(r => r.UserId == userId)!.IsRead, true)
+          .SetProperty(n => n.Recipients.FirstOrDefault(r => r.UserId == userId)!.ReadAt, DateTimeOffset.UtcNow), cancellationToken);
       return Result.Success();
     }
     catch (Exception ex)
@@ -93,14 +93,12 @@ public class NotificationRepository : INotificationRepository
     try
     {
       await _dbContext.Notifications
-        .Include(n => n.Recipients)
-        .Where(n => n.ExpiresAt == null)
+        .Where(n => n.ExpiresAt == null || n.ExpiresAt > DateTimeOffset.UtcNow)
         .Where(n => (n.TargetUserId != null && n.TargetUserId == userId) ||
                     n.Recipients.Any(r => r.UserId == userId))
         .ExecuteUpdateAsync(n =>
           n.SetProperty(n => n.Recipients.FirstOrDefault(r => r.UserId == userId)!.IsDismissed, true)
             .SetProperty(n => n.Recipients.FirstOrDefault(r => r.UserId == userId)!.DismissedAt, DateTimeOffset.UtcNow), cancellationToken);
-      await _dbContext.SaveChangesAsync(cancellationToken);
       return Result.Success();
     }
     catch (Exception ex)

@@ -60,7 +60,7 @@ public class FilterNotificationsForTheUserPaginatedSpec : Specification<Notifica
 
     Query
       .Where(n => (n.TargetUserId != null && n.TargetUserId == userId) || n.Recipients.Any(r => r.UserId == userId && !r.IsDismissed))
-      .Where(n => n.ExpiresAt == null)
+      .Where(n => n.ExpiresAt == null || n.ExpiresAt > DateTimeOffset.UtcNow)
       .OrderByDescending(n => n.CreatedAt)
       .Skip((page - 1) * pageSize)
       .Take(pageSize);
