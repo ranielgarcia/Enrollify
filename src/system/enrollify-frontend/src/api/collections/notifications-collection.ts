@@ -19,8 +19,10 @@ export interface NotificationListParams {
   search?: string;
 }
 
-const queryKeys = {
+const RECENT_NOTIFICATIONS_LIMIT = 20;
+export const queryKeys = {
   base: () => ["notifications"],
+  recent: () => [...queryKeys.base(), "recent", RECENT_NOTIFICATIONS_LIMIT],
   filter: (params: NotificationListParams) => [
     ...queryKeys.base(),
     "filter",
@@ -48,7 +50,17 @@ const queryKeys = {
 
 const pagedNotificationsSchema = pagedResultSchema(NotificationSchema);
 
-export const filterNotificationsOptions = (params: NotificationListParams) =>
+export const getRecentNotificationsOptions = () =>
+  filterNotificationsOptions(
+    { page: 1, pageSize: RECENT_NOTIFICATIONS_LIMIT },
+    queryKeys.recent(),
+  );
+
+export const filterNotificationsOptions = (
+  params: NotificationListParams,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  queryKey?: any[],
+) =>
   createQueryOptions({
     path: "/api/notifications/filter/{page}/{pageSize}",
     pathParams: {
@@ -62,7 +74,7 @@ export const filterNotificationsOptions = (params: NotificationListParams) =>
       ReadState: params.readState,
     },
     options: {
-      queryKey: queryKeys.filter(params),
+      queryKey: queryKey ?? queryKeys.filter(params),
       staleTime: 1000 * 60 * 2,
       select: (pagedResults): PagedResult<Notification> => {
         // Handle empty response or string response

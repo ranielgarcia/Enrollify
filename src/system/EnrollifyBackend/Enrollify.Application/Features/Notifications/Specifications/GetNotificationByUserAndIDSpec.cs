@@ -8,9 +8,9 @@ public class GetNotificationByUserAndIDSpec : Specification<Notification>
   public GetNotificationByUserAndIDSpec(UserId userId, NotificationId notificationId)
   {
     Query
-      .Include(n => n.Recipients)
+      .Include(n => n.Recipients.Where(r => r.UserId == userId))
       .Where(n => (n.TargetUserId != null && n.TargetUserId == userId) ||
                   n.Recipients.Any(r => r.UserId == userId))
-      .Where(n => n.ExpiresAt == null && n.Id == notificationId);
+      .Where(n => n.Id == notificationId);
   }
 }

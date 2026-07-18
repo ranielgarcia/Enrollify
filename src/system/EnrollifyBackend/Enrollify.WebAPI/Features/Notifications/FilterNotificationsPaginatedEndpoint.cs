@@ -45,7 +45,10 @@ public class FilterNotificationsPaginatedEndpoint (IMediator mediator)
 {
   public override async Task HandleAsync(FilterNotificationsPaginatedRequest req, CancellationToken ct)
   {
-    var result = await mediator.Send(new FilterNotificationsPaginatedQuery(req.SearchTerm ?? "", req.Page, req.PageSize, NotificationCategoryEnum.FromName(req.Category), NotificationSeverityEnum.FromName(req.Severity), req.ReadState), ct);
+    NotificationCategoryEnum? category = req.Category != null && req.Category.ToLower() != "all" ? NotificationCategoryEnum.FromName(req.Category) : null;
+    NotificationSeverityEnum? severity = req.Severity != null && req.Severity.ToLower() != "all" ? NotificationSeverityEnum.FromName(req.Severity) : null;
+
+    var result = await mediator.Send(new FilterNotificationsPaginatedQuery(req.SearchTerm ?? "", req.Page, req.PageSize, category, severity, req.ReadState), ct);
     await Send.OkAsync(result, ct);
   }
 }

@@ -19,8 +19,4 @@
     <ProjectReference Include="..\Enrollify.Analyzers\Enrollify.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Aggregates\NotificationAggregate\Events\" />
-  </ItemGroup>
-
 </Project>

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BasicUserInfoSchema } from "@/api/models/basic-user-info";
+// import { BasicUserInfoSchema } from "@/api/models/basic-user-info";
 
 /**
  * Mirrors `NotificationSeverityEnum` (Enrollify.Core/Constants/NotificationSeverityEnum.cs).
@@ -75,11 +75,11 @@ export const NotificationSchema = z.object({
     .nullish(),
   referenceId: z.number().nullish(),
   isRead: z.boolean(),
-  isDismissed: z.boolean(),
+  // isDismissed: z.boolean(),
   createdAt: z.string(),
-  readAt: z.string().nullish(),
-  dismissedAt: z.string().nullish(),
-  createdBy: BasicUserInfoSchema.nullish(),
+  // readAt: z.string().nullish(),
+  // dismissedAt: z.string().nullish(),
+  // createdBy: BasicUserInfoSchema.nullish(),
 });
 
 export type Notification = z.infer<typeof NotificationSchema>;

@@ -20,10 +20,10 @@ CREATE TABLE [Notifications]
   [TargetUserId]  INT             NULL,               -- Populated when TargetScope = 'User'
   [TargetRoleId]  INT             NULL,               -- Populated when TargetScope = 'Role'
   [RetentionDays] INT             NOT NULL DEFAULT 30,
-  [ExpiresAt]     DATETIME2(7)    NULL,               -- Computed at insert: CreatedAt + RetentionDays
+  [ExpiresAt]     DATETIMEOFFSET    NULL,               -- Computed at insert: CreatedAt + RetentionDays
 
   -- Standard Enrollify audit columns
-  [CreatedAt]     DATETIME2(7)    NOT NULL DEFAULT SYSUTCDATETIME(),
+  [CreatedAt]     DATETIMEOFFSET    NOT NULL DEFAULT SYSUTCDATETIME(),
   [CreatedBy]     INT             NOT NULL,
 
   CONSTRAINT [PK_Notifications] PRIMARY KEY CLUSTERED ([Id] ASC),
@@ -60,9 +60,9 @@ CREATE TABLE [NotificationRecipients]
   [NotificationId] INT          NOT NULL,
   [UserId]         INT          NOT NULL,
   [IsRead]         BIT          NOT NULL DEFAULT 0,
-  [ReadAt]         DATETIME2(7) NULL,
+  [ReadAt]         DATETIMEOFFSET NULL,
   [IsDismissed]    BIT          NOT NULL DEFAULT 0,
-  [DismissedAt]    DATETIME2(7) NULL,
+  [DismissedAt]    DATETIMEOFFSET NULL,
 
   CONSTRAINT [PK_NotificationRecipients] PRIMARY KEY CLUSTERED ([Id] ASC),
 

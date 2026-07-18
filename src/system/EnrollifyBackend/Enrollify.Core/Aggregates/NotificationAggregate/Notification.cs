@@ -45,7 +45,7 @@ public class Notification : EntityBase<NotificationId>, IAggregateRoot
             RetentionDays = notification.RetentionDays,
             ReferenceType = notification.ReferenceType,
             ReferenceId   = notification.ReferenceId,
-            ExpiresAt     = DateTime.UtcNow.AddDays(notification.ReferenceType),
+            ExpiresAt     = DateTimeOffset.UtcNow.AddDays(notification.RetentionDays),
             CreatedAt = DateTimeOffset.UtcNow,
         };
         return notif;
@@ -66,7 +66,7 @@ public class Notification : EntityBase<NotificationId>, IAggregateRoot
         RetentionDays = notification.RetentionDays,
         ReferenceType = notification.ReferenceType,
         ReferenceId   = notification.ReferenceId,
-        ExpiresAt     = DateTime.UtcNow.AddDays(notification.ReferenceType),
+        ExpiresAt     = DateTimeOffset.UtcNow.AddDays(notification.RetentionDays),
         CreatedAt = DateTimeOffset.UtcNow,
       };
       return notif;
@@ -87,7 +87,7 @@ public class Notification : EntityBase<NotificationId>, IAggregateRoot
         RetentionDays = notification.RetentionDays,
         ReferenceType = notification.ReferenceType,
         ReferenceId   = notification.ReferenceId,
-        ExpiresAt     = DateTime.UtcNow.AddDays(notification.ReferenceType),
+        ExpiresAt     = DateTimeOffset.UtcNow.AddDays(notification.RetentionDays),
         CreatedAt = DateTimeOffset.UtcNow,
       };
       return notif;

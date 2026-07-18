@@ -5,7 +5,7 @@ public static class NotificationAuthorizationPolicyRegistration
   public static IServiceCollection AddNotificationAuthorizationPolicyHandlers(this IServiceCollection services)
   {
     services.AddScoped<IAuthorizationHandler, HasViewNotificationPermissionHandler>();
-    services.AddScoped<IAuthorizationHandler, HasViewNotificationPermissionHandler>();
+    services.AddScoped<IAuthorizationHandler, HasUpdateNotificationPermissionHandler>();
     return services;
   }
 

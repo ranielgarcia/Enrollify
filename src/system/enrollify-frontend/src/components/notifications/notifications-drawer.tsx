@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { Bell, CheckCheck, Trash2 } from "lucide-react";
 import {
   dismissAllNotificationsOptions,
-  filterNotificationsOptions,
+  getRecentNotificationsOptions,
   markAllNotificationsAsReadOptions,
 } from "@/api/collections/notifications-collection";
 import {
@@ -35,8 +35,6 @@ interface NotificationsDrawerProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const RECENT_NOTIFICATIONS_LIMIT = 20;
-
 export function NotificationsDrawer({
   isOpen,
   onOpenChange,
@@ -44,10 +42,7 @@ export function NotificationsDrawer({
   const [isClearAllDialogOpen, setIsClearAllDialogOpen] = useState(false);
 
   const { data: pagedNotifications, isLoading } = useQuery({
-    ...filterNotificationsOptions({
-      page: 1,
-      pageSize: RECENT_NOTIFICATIONS_LIMIT,
-    }),
+    ...getRecentNotificationsOptions(),
     enabled: isOpen,
   });
 

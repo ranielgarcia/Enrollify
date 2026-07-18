@@ -9,6 +9,7 @@ public class FilterNotificationsForTheUserPaginatedSpec : Specification<Notifica
     UserId userId, string searchTerm = "", int page = 1, int pageSize = 10, NotificationCategoryEnum? category = null, NotificationSeverityEnum? severity = null, string? readState = null)
   {
     Query
+      .Include(n => n.Recipients.Where(r => r.UserId == userId))
       .AsNoTracking()
       .Include(n => n.CreatedByUser);
 
@@ -31,9 +32,9 @@ public class FilterNotificationsForTheUserPaginatedSpec : Specification<Notifica
     if (!string.IsNullOrEmpty(readState))
     {
       if (readState.ToLower() == "read")
-        Query.Where(n => n.Recipients.Any(r => r.IsRead));
+        Query.Where(n => n.Recipients.Any(r => r.IsRead && r.UserId == userId));
       else if  (readState.ToLower() == "unread")
-        Query.Where(n => n.Recipients.Any(r => !r.IsRead));
+        Query.Where(n => n.Recipients.Any(r => !r.IsRead && r.UserId == userId));
     }
 
     Query

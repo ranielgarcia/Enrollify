@@ -208,7 +208,10 @@ public static class BulkInitializeClassSectionsForAcademicYear
           ));
         }
 
-        await _eventBus.PublishAllAsync(createdSectionIds.Select(sectionId => new ClassSectionCreatedEvent(sectionId)));
+        foreach (ClassSectionId createdSectionId in createdSectionIds)
+        {
+          await _eventBus.PublishAsync(new ClassSectionCreatedEvent(createdSectionId));
+        }
 
         await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
 

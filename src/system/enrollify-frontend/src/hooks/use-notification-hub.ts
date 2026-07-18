@@ -9,7 +9,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { getCurrentAccessToken } from "@/infrastructure/authentication/tokenFetcher";
 import { Config } from "@/infrastructure/configurations/app-config";
-import { notificationQueryKeys } from "@/api/collections/notifications-collection";
+import { queryKeys } from "@/api/collections/notifications-collection";
 
 const getNotificationHubUrl = () =>
   `${Config.API_URL.replace(/\/api\/?$/, "")}/hubs/notifications`;
@@ -51,11 +51,11 @@ export function useNotificationHub() {
       .build();
 
     connection.on("ReceiveNotification", () => {
-      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recent() });
     });
 
     connection.onreconnected(() => {
-      queryClient.invalidateQueries({ queryKey: notificationQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recent() });
     });
 
     connection.onclose((error) => {
