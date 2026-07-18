@@ -48,7 +48,7 @@ public class UpdateEndpoint : Endpoint<UpdateRoomTypeRequest, OkOrNotFoundApiRes
     {
         var result = await _mediator.Send(new UpdateRoomType.Command(RoomTypeId.From(request.Id), request.Name, request.Description));
 
-        return result.ToUpdateResult(
+        return result.ToUpdatedResult(
             id => new UpdateRoomTypeResponse
             {
                 Id = id.Value,

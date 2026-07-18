@@ -35,6 +35,6 @@ public class AddSubjectsToEquivalenceGroupEndpoint (IMediator mediator)
         var subjectCodes = request.SubjectCodes.Select(code => SubjectCode.From(code)).ToList();
         var result = await mediator.Send(new AddSubjectsToEquivalenceGroup
             .Command(SubjectEquivalenceGroupId.From(request.Id), subjectCodes), ct);
-        return result.ToUpdateResult(id => result.Value);
+        return result.ToUpdatedResult(id => result.Value);
     }
 }

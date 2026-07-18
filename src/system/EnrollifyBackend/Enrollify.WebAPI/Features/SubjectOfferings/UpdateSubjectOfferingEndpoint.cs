@@ -62,6 +62,6 @@ public class UpdateSubjectOfferingEndpoint : Endpoint<UpdateSubjectOfferingReque
         request.MaxNumberOfStudents),
       cancellationToken);
 
-    return result.ToUpdateResult(id => id.Value);
+    return result.ToUpdatedResult(id => id.Value);
   }
 }

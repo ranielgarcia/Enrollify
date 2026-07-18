@@ -16,6 +16,6 @@ public class LockClassSectionEndpoint(IMediator mediator)
 
     Result<ClassSectionId> result = await mediator.Send(
       new LockClassSectionEnrollment.Command(ClassSectionId.From(classSectionId)), cancellationToken);
-    return result.ToUpdateResult(id => id.Value);
+    return result.ToUpdatedResult(id => id.Value);
   }
 }

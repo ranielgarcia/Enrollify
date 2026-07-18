@@ -72,7 +72,7 @@ public class UpdateEndpoint : Endpoint<UpdateBuildingRequest, OkOrNotFoundApiRes
             ),
             cancellationToken);
 
-        return result.ToUpdateResult(
+        return result.ToUpdatedResult(
              id => new UpdateBuildingResponse
              {
                  Id = id.Value,

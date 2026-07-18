@@ -16,6 +16,6 @@ public class OpenClassSectionEndpoint(IMediator mediator)
 
     Result<ClassSectionId> result = await mediator.Send(
       new OpenClassSectionForEnrollment.Command(ClassSectionId.From(classSectionId)), cancellationToken);
-    return result.ToUpdateResult(id => id.Value);
+    return result.ToUpdatedResult(id => id.Value);
   }
 }

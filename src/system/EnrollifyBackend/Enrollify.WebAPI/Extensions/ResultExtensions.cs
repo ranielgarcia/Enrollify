@@ -100,7 +100,7 @@ public static class ResultExtensions
     /// <summary>
     /// Maps Result to TypedResults for Update endpoints that return Ok, NotFound, or ProblemHttpResult
     /// </summary>
-    public static OkOrNotFoundApiResult<TResponse> ToUpdateResult<TValue, TResponse>(
+    public static OkOrNotFoundApiResult<TResponse> ToUpdatedResult<TValue, TResponse>(
       this Result<TValue> result,
       Func<TValue, TResponse> mapResponse)
     {

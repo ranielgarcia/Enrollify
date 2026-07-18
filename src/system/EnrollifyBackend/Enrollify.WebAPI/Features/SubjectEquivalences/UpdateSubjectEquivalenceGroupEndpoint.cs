@@ -30,6 +30,6 @@ public class UpdateSubjectEquivalenceGroupEndpoint (IMediator mediator)
     {
         var result = await mediator.Send(new UpdateSubjectEquivalenceGroup
             .Command(SubjectEquivalenceGroupId.From(request.Id), request.Name), ct);
-        return result.ToUpdateResult(id => request.Id);
+        return result.ToUpdatedResult(id => request.Id);
     }
 }

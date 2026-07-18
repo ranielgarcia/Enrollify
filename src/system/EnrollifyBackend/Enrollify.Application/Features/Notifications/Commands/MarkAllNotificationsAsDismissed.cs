@@ -4,9 +4,9 @@ namespace Enrollify.Application.Features.Notifications.Commands;
 
 public static class MarkAllNotificationsAsDismissed
 {
-  public sealed record Command() : IRequest<Unit>;
+  public sealed record Command() : IRequest<Result<Unit>>;
 
-  public sealed class Handler : IRequestHandler<Command, Unit>
+  public sealed class Handler : IRequestHandler<Command, Result<Unit>>
   {
     private readonly INotificationRepository _notificationRepository;
     private readonly ICurrentUserAccessor _currentUserAccessor;
@@ -19,11 +19,11 @@ public static class MarkAllNotificationsAsDismissed
       _currentUserAccessor = currentUserAccessor;
     }
 
-    public async Task<Unit> Handle(Command command, CancellationToken cancellationToken)
+    public async Task<Result<Unit>> Handle(Command command, CancellationToken cancellationToken)
     {
       var user = _currentUserAccessor.GetCurrentUser();
-      await _notificationRepository.MarkAllNotificationsAsDismissedForUser(user!.Id, cancellationToken);
-      return Unit.Value;
+      var result = await _notificationRepository.MarkAllNotificationsAsDismissedForUser(user!.Id, cancellationToken);
+      return result;
     }
   }
 }

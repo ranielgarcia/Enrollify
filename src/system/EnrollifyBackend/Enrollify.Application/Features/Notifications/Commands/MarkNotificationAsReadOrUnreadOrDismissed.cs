@@ -12,9 +12,9 @@ public static class MarkNotificationAsReadOrUnreadOrDismissed
     MarkUnread,
     MarkDismissed
   }
-  public sealed record Command (NotificationId NotificationId, Action Action) : IRequest<Unit>;
+  public sealed record Command (NotificationId NotificationId, Action Action) : IRequest<Result<NotificationId>>;
 
-  public sealed class Handler : IRequestHandler<Command, Unit>
+  public sealed class Handler : IRequestHandler<Command, Result<NotificationId>>
   {
     private readonly IReadRepository<Notification> _readRepository;
     private readonly INotificationRepository _notificationRepository;
@@ -30,14 +30,14 @@ public static class MarkNotificationAsReadOrUnreadOrDismissed
       _currentUserAccessor = currentUserAccessor;
     }
 
-    public async Task<Unit> Handle(Command command, CancellationToken cancellationToken)
+    public async Task<Result<NotificationId>> Handle(Command command, CancellationToken cancellationToken)
     {
       var user = _currentUserAccessor.GetCurrentUser();
       var spec = new GetNotificationByUserAndIDSpec(user!.Id, command.NotificationId);
       var notification = await _readRepository.FirstOrDefaultAsync(spec, cancellationToken);
       if (notification == null)
       {
-        throw new Exception($"Notification with id {command.NotificationId} not found");
+        return Result.NotFound($"Notification with id {command.NotificationId} not found");
       }
 
       if (command.Action == Action.MarkRead)
@@ -49,8 +49,8 @@ public static class MarkNotificationAsReadOrUnreadOrDismissed
       if (command.Action == Action.MarkDismissed)
         notification.Recipients.FirstOrDefault(x => x.UserId == user!.Id)?.MarkAsDismissed();
 
-      await _notificationRepository.Update(notification, cancellationToken);
-      return Unit.Value;
+      var result = await _notificationRepository.Update(notification, cancellationToken);
+      return result;
     }
   }
 }

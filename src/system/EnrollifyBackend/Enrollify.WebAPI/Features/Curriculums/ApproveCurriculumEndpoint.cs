@@ -27,7 +27,7 @@ public class ApproveCurriculumEndpoint(IMediator mediator)
         ExecuteAsync(ApproveCurriculumRequest request, CancellationToken cancellationToken)
     {
         var result = await mediator.Send(new ApproveCurriculum.Command(CurriculumId.From(request.Id)), cancellationToken);
-        return result.ToUpdateResult(
+        return result.ToUpdatedResult(
             id => request.Id);
     }
 }
