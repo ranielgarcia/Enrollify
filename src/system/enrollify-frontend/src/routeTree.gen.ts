@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PortalRouteRouteImport } from './routes/portal/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PortalNotificationsRouteImport } from './routes/portal/notifications'
 import { Route as PortalHomeRouteImport } from './routes/portal/home'
 import { Route as PortalMasterDataRouteRouteImport } from './routes/portal/master-data/route'
 import { Route as PortalCurriculumAndSchedulingRouteRouteImport } from './routes/portal/curriculum-and-scheduling/route'
@@ -42,6 +43,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PortalNotificationsRoute = PortalNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => PortalRouteRoute,
 } as any)
 const PortalHomeRoute = PortalHomeRouteImport.update({
   id: '/home',
@@ -139,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/portal/curriculum-and-scheduling': typeof PortalCurriculumAndSchedulingRouteRouteWithChildren
   '/portal/master-data': typeof PortalMasterDataRouteRouteWithChildren
   '/portal/home': typeof PortalHomeRoute
+  '/portal/notifications': typeof PortalNotificationsRoute
   '/portal/curriculum-and-scheduling/academic-year': typeof PortalCurriculumAndSchedulingAcademicYearRoute
   '/portal/curriculum-and-scheduling/sections': typeof PortalCurriculumAndSchedulingSectionsRoute
   '/portal/curriculum-and-scheduling/teachers': typeof PortalCurriculumAndSchedulingTeachersRoute
@@ -159,6 +166,7 @@ export interface FileRoutesByTo {
   '/portal/curriculum-and-scheduling': typeof PortalCurriculumAndSchedulingRouteRouteWithChildren
   '/portal/master-data': typeof PortalMasterDataRouteRouteWithChildren
   '/portal/home': typeof PortalHomeRoute
+  '/portal/notifications': typeof PortalNotificationsRoute
   '/portal/curriculum-and-scheduling/academic-year': typeof PortalCurriculumAndSchedulingAcademicYearRoute
   '/portal/curriculum-and-scheduling/sections': typeof PortalCurriculumAndSchedulingSectionsRoute
   '/portal/curriculum-and-scheduling/teachers': typeof PortalCurriculumAndSchedulingTeachersRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/portal/curriculum-and-scheduling': typeof PortalCurriculumAndSchedulingRouteRouteWithChildren
   '/portal/master-data': typeof PortalMasterDataRouteRouteWithChildren
   '/portal/home': typeof PortalHomeRoute
+  '/portal/notifications': typeof PortalNotificationsRoute
   '/portal/curriculum-and-scheduling/academic-year': typeof PortalCurriculumAndSchedulingAcademicYearRoute
   '/portal/curriculum-and-scheduling/sections': typeof PortalCurriculumAndSchedulingSectionsRoute
   '/portal/curriculum-and-scheduling/teachers': typeof PortalCurriculumAndSchedulingTeachersRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/portal/curriculum-and-scheduling'
     | '/portal/master-data'
     | '/portal/home'
+    | '/portal/notifications'
     | '/portal/curriculum-and-scheduling/academic-year'
     | '/portal/curriculum-and-scheduling/sections'
     | '/portal/curriculum-and-scheduling/teachers'
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
     | '/portal/curriculum-and-scheduling'
     | '/portal/master-data'
     | '/portal/home'
+    | '/portal/notifications'
     | '/portal/curriculum-and-scheduling/academic-year'
     | '/portal/curriculum-and-scheduling/sections'
     | '/portal/curriculum-and-scheduling/teachers'
@@ -242,6 +253,7 @@ export interface FileRouteTypes {
     | '/portal/curriculum-and-scheduling'
     | '/portal/master-data'
     | '/portal/home'
+    | '/portal/notifications'
     | '/portal/curriculum-and-scheduling/academic-year'
     | '/portal/curriculum-and-scheduling/sections'
     | '/portal/curriculum-and-scheduling/teachers'
@@ -284,6 +296,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/portal/notifications': {
+      id: '/portal/notifications'
+      path: '/notifications'
+      fullPath: '/portal/notifications'
+      preLoaderRoute: typeof PortalNotificationsRouteImport
+      parentRoute: typeof PortalRouteRoute
     }
     '/portal/home': {
       id: '/portal/home'
@@ -450,6 +469,7 @@ interface PortalRouteRouteChildren {
   PortalCurriculumAndSchedulingRouteRoute: typeof PortalCurriculumAndSchedulingRouteRouteWithChildren
   PortalMasterDataRouteRoute: typeof PortalMasterDataRouteRouteWithChildren
   PortalHomeRoute: typeof PortalHomeRoute
+  PortalNotificationsRoute: typeof PortalNotificationsRoute
 }
 
 const PortalRouteRouteChildren: PortalRouteRouteChildren = {
@@ -457,6 +477,7 @@ const PortalRouteRouteChildren: PortalRouteRouteChildren = {
     PortalCurriculumAndSchedulingRouteRouteWithChildren,
   PortalMasterDataRouteRoute: PortalMasterDataRouteRouteWithChildren,
   PortalHomeRoute: PortalHomeRoute,
+  PortalNotificationsRoute: PortalNotificationsRoute,
 }
 
 const PortalRouteRouteWithChildren = PortalRouteRoute._addFileChildren(

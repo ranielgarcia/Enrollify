@@ -32,6 +32,8 @@ import { EnrollmentContextProvider } from "@/contexts/enrollment-context/enrollm
 import z from "zod";
 import { EnrollmentContextDialog } from "@/components/enrollment-context/enrollment-context-dialog";
 import EnrollmentContextActionRequired from "@/components/enrollment-context/enrollment-context-action-required";
+import { NotificationBellTrigger } from "@/components/notifications/notification-bell-trigger";
+import { useNotificationHub } from "@/hooks/use-notification-hub";
 // import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 export const Route = createFileRoute("/portal")({
@@ -75,6 +77,7 @@ export const Route = createFileRoute("/portal")({
 function RouteComponent() {
   const matches = useMatches();
   // const { activeAcademicYear } = useEnrollmentContext();
+  useNotificationHub();
 
   const items = matches
     .filter(
@@ -143,6 +146,7 @@ function RouteComponent() {
                     </BreadcrumbList>
                   </Breadcrumb>
                   <div className="ml-auto flex items-center gap-2">
+                    <NotificationBellTrigger />
                     <EnrollmentContextDialog />
                   </div>
                 </div>
