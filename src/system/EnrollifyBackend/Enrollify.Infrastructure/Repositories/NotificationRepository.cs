@@ -1,19 +1,23 @@
 using Ardalis.Result;
+using Dapper;
 using Enrollify.Application.Features.Notifications;
 using Enrollify.Core.Aggregates.NotificationAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Infrastructure.Data;
+using Microsoft.Data.SqlClient;
 
 namespace Enrollify.Infrastructure.Repositories;
 
 public class NotificationRepository : INotificationRepository
 {
   private readonly EnrollifyDbContext _dbContext;
+  private readonly IDbConnectionFactory _connectionFactory;
   private readonly ILogger<NotificationRepository> _logger;
 
-  public NotificationRepository(EnrollifyDbContext dbContext, ILogger<NotificationRepository> logger)
+  public NotificationRepository(EnrollifyDbContext dbContext, IDbConnectionFactory connectionFactory, ILogger<NotificationRepository> logger)
   {
     _dbContext = dbContext;
+    _connectionFactory = connectionFactory;
     _logger = logger;
   }
 
@@ -72,13 +76,22 @@ public class NotificationRepository : INotificationRepository
   {
     try
     {
-      await _dbContext.Notifications
-        .Where(n => n.ExpiresAt == null || n.ExpiresAt > DateTimeOffset.UtcNow)
-        .Where(n => (n.TargetUserId != null && n.TargetUserId == userId) ||
-                    n.Recipients.Any(r => r.UserId == userId))
-        .ExecuteUpdateAsync(n => n
-          .SetProperty(n => n.Recipients.FirstOrDefault(r => r.UserId == userId)!.IsRead, true)
-          .SetProperty(n => n.Recipients.FirstOrDefault(r => r.UserId == userId)!.ReadAt, DateTimeOffset.UtcNow), cancellationToken);
+      using SqlConnection conn = await _connectionFactory.CreateOpenAsync(cancellationToken);
+
+      string query = @"UPDATE NR
+          SET NR.IsRead=1, NR.ReadAt = SYSUTCDATETIME()
+          FROM NotificationRecipients NR
+          JOIN Notifications N ON N.Id = NR.NotificationId
+          WHERE NR.UserId = @UserId AND N.ExpiresAt >= SYSUTCDATETIME()";
+
+      var command = new CommandDefinition(
+        commandText: query,
+        parameters: new { UserId = userId.Value },
+        cancellationToken: cancellationToken
+      );
+
+      await conn.ExecuteAsync(command);
+
       return Result.Success();
     }
     catch (Exception ex)
@@ -92,13 +105,22 @@ public class NotificationRepository : INotificationRepository
   {
     try
     {
-      await _dbContext.Notifications
-        .Where(n => n.ExpiresAt == null || n.ExpiresAt > DateTimeOffset.UtcNow)
-        .Where(n => (n.TargetUserId != null && n.TargetUserId == userId) ||
-                    n.Recipients.Any(r => r.UserId == userId))
-        .ExecuteUpdateAsync(n =>
-          n.SetProperty(n => n.Recipients.FirstOrDefault(r => r.UserId == userId)!.IsDismissed, true)
-            .SetProperty(n => n.Recipients.FirstOrDefault(r => r.UserId == userId)!.DismissedAt, DateTimeOffset.UtcNow), cancellationToken);
+      using SqlConnection conn = await _connectionFactory.CreateOpenAsync(cancellationToken);
+
+      string query = @"UPDATE NR
+          SET NR.IsDismissed=1, NR.DismissedAt = SYSUTCDATETIME()
+          FROM NotificationRecipients NR
+          JOIN Notifications N ON N.Id = NR.NotificationId
+          WHERE NR.UserId = @UserId AND N.ExpiresAt >= SYSUTCDATETIME()";
+
+      var command = new CommandDefinition(
+        commandText: query,
+        parameters: new { UserId = userId.Value },
+        cancellationToken: cancellationToken
+      );
+
+      await conn.ExecuteAsync(command);
+
       return Result.Success();
     }
     catch (Exception ex)
