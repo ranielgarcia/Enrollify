@@ -93,4 +93,8 @@ public class PolicyName
     public const string HasDeleteSubjectOfferingPermission = "HasDeleteSubjectOfferingPermission";
     public const string HasViewSubjectOfferingsPermission = "HasViewSubjectOfferingsPermission";
 
+    // Notifications
+    public const string HasUpdateNotificationPermission = "HasUpdateNotificationPermission";
+    public const string HasViewNotificationPermission = "HasViewNotificationPermission";
+
 }

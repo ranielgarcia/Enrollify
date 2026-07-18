@@ -4,20 +4,20 @@ using Enrollify.Core.Authentication;
 
 namespace Enrollify.Application.Features.Notifications.Queries;
 
-public record GetUnreadNotificationsForTheUserQuery() : IRequest<int>;
+public record GetUnreadNotificationsCountForTheUserQuery() : IRequest<int>;
 
-public class GetUnreadNotificationsForTheUserQueryHandler : IRequestHandler<GetUnreadNotificationsForTheUserQuery, int>
+public class GetUnreadNotificationsCountForTheUserQueryHandler : IRequestHandler<GetUnreadNotificationsCountForTheUserQuery, int>
 {
   private readonly IReadRepository<Notification> _readRepository;
   private readonly ICurrentUserAccessor _currentUserAccessor;
 
-  public GetUnreadNotificationsForTheUserQueryHandler(IReadRepository<Notification> readRepository, ICurrentUserAccessor currentUserAccessor)
+  public GetUnreadNotificationsCountForTheUserQueryHandler(IReadRepository<Notification> readRepository, ICurrentUserAccessor currentUserAccessor)
   {
     _readRepository = readRepository;
     _currentUserAccessor = currentUserAccessor;
   }
 
-  public async Task<int> Handle(GetUnreadNotificationsForTheUserQuery request, CancellationToken cancellationToken)
+  public async Task<int> Handle(GetUnreadNotificationsCountForTheUserQuery request, CancellationToken cancellationToken)
   {
     var user = _currentUserAccessor.GetCurrentUser();
     if (user is null) return 0;
