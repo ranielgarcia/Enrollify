@@ -213,6 +213,12 @@ public static class BulkInitializeClassSectionsForAcademicYear
           await _eventBus.PublishAsync(new ClassSectionCreatedEvent(createdSectionId));
         }
 
+        // ClassSectionCreatedEvent is routed to a dedicated BufferedInMemory local queue (see
+        // ConfigureWolverine in InfrastructureServiceExtensions), so the resulting validation-issue
+        // recomputation chain (OnClassSectionCreatedEventHandler -> RefreshClassSectionValidationIssuesRequestedEvent
+        // -> ComputeAndGetValidationIssuesForClassSection) runs asynchronously in the background.
+        // This call returns as soon as the class sections are committed and the events are handed
+        // off - it does not wait for those handlers to finish.
         await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
 
 

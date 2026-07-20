@@ -181,14 +181,18 @@ public static class CreateClassSection
           }
         }
 
-        // Publish after commit so the event handler reads fully-committed data
+        // Publish after commit so the event handler reads fully-committed data.
+        // ClassSectionCreatedEvent is routed to a dedicated BufferedInMemory local queue (see
+        // ConfigureWolverine in InfrastructureServiceExtensions), so the cascading validation-issue
+        // recomputation chain runs asynchronously in the background rather than blocking this call.
         await _eventBus.PublishAsync(new ClassSectionCreatedEvent(classSectionId));
 
         // Use the unit of work's outbox-aware commit instead of transaction.CommitAsync() directly:
         // it saves pending changes, commits the ambient transaction, and flushes the published
         // ClassSectionCreatedEvent to the outbox message store all together. Calling
         // transaction.CommitAsync() alone would commit the DB writes but never flush the outbox,
-        // silently dropping the published event.
+        // silently dropping the published event. This call returns once the flush hands the event
+        // off to its (async) local queue - it does not wait for downstream handlers to finish.
         await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
 
         _logger.LogInformation(

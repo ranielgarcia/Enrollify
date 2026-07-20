@@ -17,6 +17,8 @@ using Enrollify.Application.Features.SubjectEquivalences;
 using Enrollify.Application.Features.Subjects;
 using Enrollify.Application.Features.Teachers;
 using Enrollify.Application.Features.Teachers.Storage;
+using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
+using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
 using Enrollify.Core.Services.ClassSectionDataIntegrityValidation;
@@ -82,7 +84,6 @@ public static class InfrastructureServiceExtensions
     // SQL Server TIME columns (TimeSpan) to .NET TimeOnly type
     SqlMapper.AddTypeHandler(new TimeSpanToTimeOnlyDapperTypeHandler());
 
-    services.AddScoped<IDomainEventBus, DomainEventBus>();
     services.AddScoped<EventDispatchInterceptor>();
     services.AddScoped<PreSaveChangesInterceptor>();
     services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
@@ -101,11 +102,11 @@ public static class InfrastructureServiceExtensions
       options.AddInterceptors(preSaveChangesInterceptor);
     });
 
-
     services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>))
       .AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
 
     services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+    services.AddScoped<IDomainEventBus, DomainEventBus>();
 
     services.AddSingleton<IDbExceptionTranslator, SqlServerExceptionTranslator>();
     services.AddScoped<IListRolesQueryService, ListRolesQueryService>();
@@ -176,6 +177,29 @@ public static class InfrastructureServiceExtensions
       // opts.Policies.UseDurableLocalQueues();
       opts.Policies.UseDurableOutboxOnAllSendingEndpoints();
       opts.Policies.UseDurableInboxOnAllListeners();
+
+      // ClassSectionCreatedEvent kicks off a cascading local-message chain
+      // (OnClassSectionCreatedEventHandler -> RefreshClassSectionValidationIssuesRequestedEvent ->
+      // OnRefreshClassSectionValidationIssuesRequestedEventHandler -> ComputeAndGetValidationIssuesForClassSection).
+      // Because of the global UseDurableOutboxOnAllSendingEndpoints() policy above, this local queue
+      // would otherwise run in EndpointMode.Durable, which processes local cascading messages
+      // synchronously as part of SaveChangesAndFlushMessagesThenCommitAsync - making callers like
+      // CreateClassSection/BulkInitializeClassSectionsForAcademicYear block until the whole
+      // validation-issue recomputation finishes. Routing these two message types to a dedicated
+      // BufferedInMemory queue restores true async, fire-and-forget local dispatch so those commands
+      // return as soon as the class section(s) are committed.
+      // Trade-off: this queue is intentionally non-durable - a pending refresh is dropped (not
+      // retried) if the process crashes between commit and processing. That's acceptable here
+      // because UpdateClassSection, UpdateClassSectionSubjectOffering, AddMultipleSchedulesToOffering,
+      // and RemoveScheduleFromOffering already re-trigger RefreshClassSectionValidationIssuesRequestedEvent
+      // independently, so a missed refresh self-heals on the next relevant write.
+      /*opts.LocalQueue("class-section-validation").BufferedInMemory();
+      opts.Publish(x =>
+      {
+        x.Message<ClassSectionCreatedEvent>();
+        x.Message<RefreshClassSectionValidationIssuesRequestedEvent>();
+        x.ToLocalQueue("class-section-validation");
+      });*/
 
       if (isDevelopment)
       {
