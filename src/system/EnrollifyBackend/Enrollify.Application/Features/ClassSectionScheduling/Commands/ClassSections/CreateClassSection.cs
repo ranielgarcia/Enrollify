@@ -184,7 +184,12 @@ public static class CreateClassSection
         // Publish after commit so the event handler reads fully-committed data
         await _eventBus.PublishAsync(new ClassSectionCreatedEvent(classSectionId));
 
-        await transaction.CommitAsync(cancellationToken);
+        // Use the unit of work's outbox-aware commit instead of transaction.CommitAsync() directly:
+        // it saves pending changes, commits the ambient transaction, and flushes the published
+        // ClassSectionCreatedEvent to the outbox message store all together. Calling
+        // transaction.CommitAsync() alone would commit the DB writes but never flush the outbox,
+        // silently dropping the published event.
+        await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
 
         _logger.LogInformation(
           "Successfully created class section {ClassSectionId} with {SubjectCount} subject offerings",

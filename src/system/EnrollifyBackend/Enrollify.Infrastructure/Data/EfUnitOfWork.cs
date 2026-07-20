@@ -17,19 +17,24 @@ internal sealed class EfUnitOfWork : IUnitOfWork
     {
         _dbContext = dbContext;
         _outbox = outbox;
-
-        // attached the DBContext to the outbox, BEFORE sending any messages
-        _outbox.Enroll(_dbContext);
     }
 
     public async Task<ITransactionScope> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
+      // Defensive/idempotent backstop: enrollment now primarily happens up-front via
+      // OutboxEnrollmentBehavior (MediatR pipeline behavior), which runs before every request
+      // handler and enrolls this same scoped DbContext into the same scoped IDbContextOutbox.
+      // Keeping this call here protects any future non-MediatR call path from an un-enrolled outbox.
+      _outbox.Enroll(_dbContext);
         var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+
         return new EfTransactionScope(transaction);
     }
 
     public async Task<ITransactionScope> BeginTransactionAsync(System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
     {
+      // Defensive/idempotent backstop - see comment in the overload above.
+      _outbox.Enroll(_dbContext);
         var transaction = await _dbContext.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
         return new EfTransactionScope(transaction);
     }

@@ -2,6 +2,7 @@ using Enrollify.Application.Behaviors;
 using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections.Validators;
 using Enrollify.Application.Features.Users.Queries;
 using Enrollify.Infrastructure;
+using Enrollify.Infrastructure.Behaviors;
 using Enrollify.Infrastructure.Data;
 using Enrollify.SharedKernel;
 using FluentValidation;
@@ -25,8 +26,17 @@ public static class MediatorConfig
             cfg.RegisterServicesFromAssemblyContaining<Program>(); // WebAPI (Program is non-static in .NET 6+)
 
             // Register pipeline behaviors (order matters - they run in registration order)
+            // OutboxEnrollmentBehavior must run first so the scoped IDbContextOutbox is enrolled
+            // with the scoped EnrollifyDbContext before any other behavior or handler can publish
+            // messages/notifications/domain events through it (parity with how Wolverine enrolls
+            // the DbContext automatically for its own handlers).
+            // OutboxFlushBehavior runs last (innermost), wrapping directly around the handler, so it
+            // flushes the outbox immediately after Handle() returns successfully - a safety net for
+            // handlers that publish messages but forget to explicitly flush them (see its own XML docs).
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(OutboxEnrollmentBehavior<,>));
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(OutboxFlushBehavior<,>));
         });
 
         // Register all FluentValidation validators from the Application assembly
