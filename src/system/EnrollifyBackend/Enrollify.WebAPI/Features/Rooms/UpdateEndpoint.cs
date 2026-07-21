@@ -65,7 +65,7 @@ public class UpdateEndpoint : Endpoint<UpdateRoomRequest, OkOrNotFoundApiResult<
                 BuildingId.From(request.BuildingId)),
             cancellationToken);
 
-        return result.ToUpdateResult(
+        return result.ToUpdatedResult(
             id => new UpdateRoomResponse
             {
                 Id = id.Value,

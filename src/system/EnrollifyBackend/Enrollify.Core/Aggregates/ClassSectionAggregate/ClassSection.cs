@@ -31,6 +31,7 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
             nameof(sectionForCreation.CohortAcademicYearId));
         AdviserId = sectionForCreation.AdviserId;
         SectionCode = Guard.Against.Null(sectionForCreation.SectionCode, nameof(sectionForCreation.SectionCode));
+        StatusId = sectionForCreation.InitializeStatus;
     }
 
     public string Name { get; private set; } = null!;
@@ -53,7 +54,7 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
 
     public SectionCode SectionCode { get; private set; }
 
-    public ClassSectionStatusEnum StatusId { get; private set; } = ClassSectionStatusEnum.Draft;
+    public ClassSectionStatusEnum StatusId { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
@@ -146,6 +147,18 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
         if (newAdviserId == AdviserId) return this;
         AdviserId = Guard.Against.Null(newAdviserId, nameof(newAdviserId));
         return this;
+    }
+
+    public ClassSection MoveToDraft()
+    {
+      StatusId = ClassSectionStatusEnum.Draft;
+      return this;
+    }
+
+    public ClassSection MoveToValidating()
+    {
+      StatusId = ClassSectionStatusEnum.Validating;
+      return this;
     }
 
     public ClassSection OpenForEnrollment()

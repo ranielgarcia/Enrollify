@@ -50,8 +50,6 @@ export function EditSectionFormDrawer({
   onOpenChange,
   courses,
 }: EditSectionFormDrawerProps) {
-  console.log(courses);
-
   const isUpdating = !!sectionToUpdate;
   const {
     selectedAcademicTerm,

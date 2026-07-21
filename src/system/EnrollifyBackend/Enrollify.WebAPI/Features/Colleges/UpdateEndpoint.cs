@@ -58,7 +58,7 @@ public class UpdateEndpoint : Endpoint<UpdateCollegeRequest, OkOrNotFoundApiResu
         ExecuteAsync (UpdateCollegeRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new UpdateCollege.Command(CollegeId.From(request.Id), CollegeCode.From(request.Code), request.Name, request.Description, request.Dean));
-        return result.ToUpdateResult(
+        return result.ToUpdatedResult(
             id => new UpdateCollegeResponse
             {
                 Id = id.Value,

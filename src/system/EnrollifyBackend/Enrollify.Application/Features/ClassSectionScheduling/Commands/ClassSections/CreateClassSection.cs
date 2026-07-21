@@ -4,7 +4,10 @@ using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.Constants.Authorization;
+using Enrollify.Core.Services.NotificationServices.Models;
 using Enrollify.Core.ValueObjects;
+using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
 
@@ -25,7 +28,8 @@ public static class CreateClassSection
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IPublisher _publisher;
+    private readonly IDomainEventBus _eventBus;
+    private readonly INotificationPublisher _notificationPublisher;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -35,7 +39,8 @@ public static class CreateClassSection
       IClassSectionRepository classSectionRepository,
       IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
       IUnitOfWork unitOfWork,
-      IPublisher publisher,
+      IDomainEventBus eventBus,
+      INotificationPublisher notificationPublisher,
       ILogger<Handler> logger)
     {
       _academicYearReadRepository = academicYearReadRepository;
@@ -44,7 +49,8 @@ public static class CreateClassSection
       _classSectionRepository = classSectionRepository;
       _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
       _unitOfWork = unitOfWork;
-      _publisher = publisher;
+      _eventBus = eventBus;
+      _notificationPublisher = notificationPublisher;
       _logger = logger;
     }
 
@@ -133,7 +139,8 @@ public static class CreateClassSection
           AcademicTermId = command.AcademicTermId,
           AdviserId = command.AdviserId,
           SectionCode = sectionCode,
-          CohortAcademicYearId = cohortAcademicYear.Id
+          CohortAcademicYearId = cohortAcademicYear.Id,
+          InitializeStatus = ClassSectionStatusEnum.PendingValidation
         });
         Result<ClassSectionId> createResult =
           await _classSectionRepository.Create(newClassSection, cancellationToken);
@@ -180,10 +187,28 @@ public static class CreateClassSection
           }
         }
 
-        await transaction.CommitAsync(cancellationToken);
+        // TODO: Use the correct Target Role
+        await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
+          "CreateClassSection",
+          "Create Class Section",
+          $"Successfully created {newClassSection.FullName} for {course.Name} for term {academicTerm.TermName}, year level {command.YearLevel}.",
+          NotificationCategoryEnum.Academic,
+          [RolesEnum.SystemAdmin]
+        ));
 
-        // Publish after commit so the event handler reads fully-committed data
-        await _publisher.Publish(new ClassSectionCreatedEvent(classSectionId), cancellationToken);
+        // Publish after commit so the event handler reads fully-committed data.
+        // ClassSectionCreatedEvent is routed to a dedicated BufferedInMemory local queue (see
+        // ConfigureWolverine in InfrastructureServiceExtensions), so the cascading validation-issue
+        // recomputation chain runs asynchronously in the background rather than blocking this call.
+        await _eventBus.PublishAsync(new ClassSectionCreatedEvent(classSectionId));
+
+        // Use the unit of work's outbox-aware commit instead of transaction.CommitAsync() directly:
+        // it saves pending changes, commits the ambient transaction, and flushes the published
+        // ClassSectionCreatedEvent to the outbox message store all together. Calling
+        // transaction.CommitAsync() alone would commit the DB writes but never flush the outbox,
+        // silently dropping the published event. This call returns once the flush hands the event
+        // off to its (async) local queue - it does not wait for downstream handlers to finish.
+        await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
 
         _logger.LogInformation(
           "Successfully created class section {ClassSectionId} with {SubjectCount} subject offerings",

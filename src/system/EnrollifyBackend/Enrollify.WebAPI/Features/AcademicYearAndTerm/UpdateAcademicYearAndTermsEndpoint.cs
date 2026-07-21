@@ -76,6 +76,6 @@ public class UpdateAcademicYearAndTermsEndpoint
                 .ToArray()),
             ct);
 
-        return result.ToUpdateResult(dto => dto);
+        return result.ToUpdatedResult(dto => dto);
     }
 }

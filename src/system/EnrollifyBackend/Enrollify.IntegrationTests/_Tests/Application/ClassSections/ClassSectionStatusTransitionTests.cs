@@ -343,7 +343,8 @@ public class ClassSectionStatusTransitionTests
                 CurriculumId = curriculumId,
                 AcademicTermId = termId,
                 CohortAcademicYearId = ayId,
-                SectionCode = SectionCode.From('A')
+                SectionCode = SectionCode.From('A'),
+                InitializeStatus = ClassSectionStatusEnum.Draft
             });
 
             db.ClassSections.Add(section);
@@ -440,7 +441,8 @@ public class ClassSectionStatusTransitionTests
                 AcademicTermId = termId,
                 CohortAcademicYearId = ayId,
                 SectionCode = SectionCode.From('A'),
-                AdviserId = teacher.Id
+                AdviserId = teacher.Id,
+                InitializeStatus = ClassSectionStatusEnum.Draft
             });
 
             db.ClassSections.Add(section);

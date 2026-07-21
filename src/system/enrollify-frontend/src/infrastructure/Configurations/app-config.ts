@@ -18,4 +18,9 @@ export const Config = {
   VERBOSE_AUTH_LOGGING: import.meta.env.VITE_VERBOSE_AUTH_LOGGING === "true",
   LOG_SENSITIVE_INFORMATION:
     import.meta.env.VITE_LOG_SENSITIVE_INFORMATION === "true",
+  // Kept disabled until the backend exposes a SignalR notifications hub
+  // (see docs/plans/system-notifications-plan.md). The hook is wired but
+  // inert while this is false.
+  ENABLE_NOTIFICATION_HUB:
+    import.meta.env.VITE_ENABLE_NOTIFICATION_HUB === "true",
 } as const;

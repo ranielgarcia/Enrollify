@@ -15,6 +15,6 @@ public class CompleteClassSectionEndpoint(IMediator mediator)
     int classSectionId = Route<int>("id");
     Result<ClassSectionId> result = await mediator.Send(
       new CompleteClassSection.Command(ClassSectionId.From(classSectionId)), cancellationToken);
-    return result.ToUpdateResult(id => id.Value);
+    return result.ToUpdatedResult(id => id.Value);
   }
 }

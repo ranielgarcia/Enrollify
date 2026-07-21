@@ -18,10 +18,10 @@ using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
+using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Application.Tests.Features.ClassSections.Commands;
 
@@ -33,10 +33,11 @@ public class CreateClassSectionTests
     private readonly Mock<IClassSectionRepository> _classSectionRepositoryMock = new();
     private readonly Mock<IClassSectionSubjectOfferingRepository> _mockClassSectionSubjectOfferingRepository = new();
     private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
-    private readonly Mock<IPublisher> _publisherMock = new();
+    private readonly Mock<IDomainEventBus> _eventBusMock = new();
     private readonly FakeTransactionScope _fakeTransaction = new();
     private readonly FakeLogger<CreateClassSection.Handler> _logger;
     private readonly CreateClassSection.Handler _handler;
+    private readonly Mock<INotificationPublisher> _notificationPublisher = new();
 
     public CreateClassSectionTests()
     {
@@ -50,7 +51,8 @@ public class CreateClassSectionTests
             _classSectionRepositoryMock.Object,
             _mockClassSectionSubjectOfferingRepository.Object,
             _unitOfWorkMock.Object,
-            _publisherMock.Object,
+            _eventBusMock.Object,
+            _notificationPublisher.Object,
             _logger);
 
         // Default setup for transaction - use fake implementation
@@ -682,8 +684,8 @@ public class CreateClassSectionTests
         Assert.Contains(logs, l => l.Level == LogLevel.Information && l.Message.Contains("Successfully created class section"));
     }
 
-    [Fact(DisplayName = "New ClassSection defaults to Draft status")]
-    public async Task Handle_ValidCommand_CreatesClassSectionWithDraftStatus()
+    [Fact(DisplayName = "New ClassSection initializes with PendingValidation status")]
+    public async Task Handle_ValidCommand_CreatesClassSectionWithPendingValidationStatus()
     {
         // Arrange
         var command = CreateCommand();
@@ -703,7 +705,7 @@ public class CreateClassSectionTests
         // Assert
         Assert.True(result.IsSuccess);
         Assert.NotNull(capturedClassSection);
-        Assert.Equal(ClassSectionStatusEnum.Draft, capturedClassSection.StatusId);
+        Assert.Equal(ClassSectionStatusEnum.PendingValidation, capturedClassSection.StatusId);
     }
 
     #endregion
@@ -860,7 +862,8 @@ public class CreateClassSectionTests
             AcademicTermId = AcademicTermId.From(1),
             CohortAcademicYearId = AcademicYearId.From(1),
             AdviserId = TeacherId.From(1),
-            SectionCode = sectionCode
+            SectionCode = sectionCode,
+            InitializeStatus = ClassSectionStatusEnum.Draft,
         });
         SetEntityProperty(classSection, "Id", ClassSectionId.From(1));
         return classSection;

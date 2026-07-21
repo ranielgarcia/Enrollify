@@ -15,8 +15,12 @@ public sealed class SqlConnectionFactory : IDbConnectionFactory
     private readonly string _connectionString;
     private readonly AsyncPolicy _retryPolicy;
 
-    public SqlConnectionFactory(string connectionString)
+    public SqlConnectionFactory(IConfiguration configuration)
     {
+      string? connectionString = configuration.GetConnectionString("cleanarchitecture")
+                                ?? configuration.GetConnectionString("DefaultConnection")
+                                ?? configuration.GetConnectionString("SqliteConnection");
+      Guard.Against.Null(connectionString);
         // Early validation and ensure reasonable connection timeout
         var builder = new SqlConnectionStringBuilder(connectionString);
         if (builder.ConnectTimeout < 30)

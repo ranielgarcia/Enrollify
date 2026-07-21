@@ -142,7 +142,7 @@ public class UpdateTeacherEndpoint : Endpoint<UpdateTeacherRequest, OkOrNotFound
             },
             photo), ct);
 
-        return result.ToUpdateResult(
+        return result.ToUpdatedResult(
             id => new UpdateTeacherResponse
             {
                 Id = id.Value,

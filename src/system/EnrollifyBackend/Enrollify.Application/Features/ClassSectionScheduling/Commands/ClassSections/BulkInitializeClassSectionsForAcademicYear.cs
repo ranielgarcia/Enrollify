@@ -1,11 +1,13 @@
 using Enrollify.Application.Features.ClassSectionScheduling.Extensions;
-using Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.Constants.Authorization;
+using Enrollify.Core.Services.NotificationServices.Models;
 using Enrollify.Core.ValueObjects;
+using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
 
@@ -24,7 +26,8 @@ public static class BulkInitializeClassSectionsForAcademicYear
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IPublisher _publisher;
+    private readonly IDomainEventBus _eventBus;
+    private readonly INotificationPublisher _notificationPublisher;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -34,7 +37,8 @@ public static class BulkInitializeClassSectionsForAcademicYear
       IClassSectionRepository classSectionRepository,
       IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
       IUnitOfWork unitOfWork,
-      IPublisher publisher,
+      IDomainEventBus eventBus,
+      INotificationPublisher notificationPublisher,
       ILogger<Handler> logger)
     {
       _academicYearRepository = academicYearRepository;
@@ -43,7 +47,8 @@ public static class BulkInitializeClassSectionsForAcademicYear
       _classSectionRepository = classSectionRepository;
       _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
       _unitOfWork = unitOfWork;
-      _publisher = publisher;
+      _eventBus = eventBus;
+      _notificationPublisher = notificationPublisher;
       _logger = logger;
     }
 
@@ -95,25 +100,21 @@ public static class BulkInitializeClassSectionsForAcademicYear
         }
       }
 
-      // Begin transaction to ensure all database operations succeed or fail together
       await using ITransactionScope transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
+      int totalSectionsCreated = 0;
+      var createdSectionIds = new List<ClassSectionId>();
       try
       {
-        int totalSectionsCreated = 0;
-        var createdSectionIds = new List<ClassSectionId>();
 
+        int totalSectionsCreatedForCurrentCourse = 0;
         foreach (TargetCourse targetCourse in command.TargetCourses)
         {
-          // H3: Direct property access — validator guarantees assignment exists;
-          // dictionary indexer throws rather than returning null, so ?. operators are redundant.
           CourseCurriculumAssignment courseCurriculumAssignment =
             courseCurriculumAssignmentsByCourseId[targetCourse.CourseId];
           Curriculum curriculum = courseCurriculumAssignment.Curriculum!;
           Course course = courseCurriculumAssignment.Course!;
 
-          // H4: Materialize once so .Count is a cheap property read and the inner foreach
-          // doesn't re-evaluate the IEnumerable on every iteration.
           var curriculumSubjects = curriculum
             .GetSubjectsByYearAndTerm(command.YearLevel, academicTerm.TermNumber)
             .ToList();
@@ -126,6 +127,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
             .FirstOrDefault()?
             .SectionCode;
 
+          totalSectionsCreatedForCurrentCourse = 0;
           // Create the requested number of sections
           for (int i = 0; i < targetCourse.NumberOfSections; i++)
           {
@@ -143,7 +145,8 @@ public static class BulkInitializeClassSectionsForAcademicYear
               AcademicTermId = command.AcademicTermId,
               AdviserId = null, // No adviser assigned during bulk initialization
               SectionCode = sectionCode,
-              CohortAcademicYearId = cohortAcademicYear.Id
+              CohortAcademicYearId = cohortAcademicYear.Id,
+              InitializeStatus = ClassSectionStatusEnum.PendingValidation,
             });
 
             Result<ClassSectionId> createResult =
@@ -192,17 +195,35 @@ public static class BulkInitializeClassSectionsForAcademicYear
 
             createdSectionIds.Add(classSectionId);
             totalSectionsCreated++;
+            totalSectionsCreatedForCurrentCourse++;
             _logger.LogInformation(
               "Created class section {SectionName} (ID: {ClassSectionId}) with {SubjectCount} subject offerings",
               newClassSection.Name, classSectionId, curriculumSubjects.Count);
           }
+
+          // TODO: Use the correct Target Role
+          await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
+            "BulkInitializeClassSectionsForAcademicYear",
+            "Bulk Initialize Class Sections",
+            $"Successfully initialized {totalSectionsCreatedForCurrentCourse} class section(s) for {course.Name} for term {academicTerm.TermName}, year level {command.YearLevel}.",
+            NotificationCategoryEnum.Academic,
+            [RolesEnum.SystemAdmin]
+          ));
         }
 
-        await transaction.CommitAsync(cancellationToken);
+        foreach (ClassSectionId createdSectionId in createdSectionIds)
+        {
+          await _eventBus.PublishAsync(new ClassSectionCreatedEvent(createdSectionId));
+        }
 
-        // Publish after commit — one event per section so each gets its own recompute
-        foreach (ClassSectionId sectionId in createdSectionIds)
-          await _publisher.Publish(new ClassSectionCreatedEvent(sectionId), cancellationToken);
+        // ClassSectionCreatedEvent is routed to a dedicated BufferedInMemory local queue (see
+        // ConfigureWolverine in InfrastructureServiceExtensions), so the resulting validation-issue
+        // recomputation chain (OnClassSectionCreatedEventHandler -> RefreshClassSectionValidationIssuesRequestedEvent
+        // -> ComputeAndGetValidationIssuesForClassSection) runs asynchronously in the background.
+        // This call returns as soon as the class sections are committed and the events are handed
+        // off - it does not wait for those handlers to finish.
+        await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
+
 
         _logger.LogInformation(
           "Successfully bulk initialized {TotalSections} class sections for term {TermId}, year level {YearLevel}",

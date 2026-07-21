@@ -14,12 +14,13 @@ using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate.Models;
+using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
+using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Application.Tests.Features.ClassSections.Commands;
 
@@ -31,7 +32,8 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
     private readonly Mock<IClassSectionRepository> _classSectionRepositoryMock = new();
     private readonly Mock<IClassSectionSubjectOfferingRepository> _classSectionSubjectOfferingRepositoryMock = new();
     private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
-    private readonly Mock<IPublisher> _publisherMock = new();
+    private readonly Mock<IDomainEventBus> _eventBusMock = new();
+    private readonly Mock<INotificationPublisher> _notificationPublisher = new();
     private readonly FakeBulkTransactionScope _fakeTransaction = new();
     private readonly FakeLogger<BulkInitializeClassSectionsForAcademicYear.Handler> _logger;
     private readonly BulkInitializeClassSectionsForAcademicYear.Handler _handler;
@@ -48,7 +50,8 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
             _classSectionRepositoryMock.Object,
             _classSectionSubjectOfferingRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _publisherMock.Object,
+            _eventBusMock.Object,
+            _notificationPublisher.Object,
             _logger);
 
         _unitOfWorkMock
@@ -290,7 +293,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
         Assert.Equal(ResultStatus.Ok, result.Status);
     }
 
-    [Fact(DisplayName = "All payloads succeed - commits transaction")]
+    [Fact(DisplayName = "All payloads succeed - flushes and commits via unit of work")]
     public async Task Handle_AllPayloadsSucceed_CommitsTransaction()
     {
         // Arrange
@@ -303,8 +306,11 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
 
         // Assert
         Assert.True(result.IsSuccess);
-        Assert.True(_fakeTransaction.IsCommitted);
-        Assert.False(_fakeTransaction.IsRolledBack);
+        // The handler commits by flushing Wolverine outbox messages and saving via IUnitOfWork,
+        // not by calling transaction.CommitAsync() directly.
+        _unitOfWorkMock.Verify(
+            u => u.SaveChangesAndFlushMessagesThenCommitAsync(It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact(DisplayName = "Multiple payloads all succeed - opens transaction exactly once")]
@@ -737,7 +743,8 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
             AcademicTermId = AcademicTermId.From(1),
             CohortAcademicYearId = AcademicYearId.From(1),
             AdviserId = null,
-            SectionCode = sectionCode
+            SectionCode = sectionCode,
+            InitializeStatus = ClassSectionStatusEnum.Draft
         });
     }
 

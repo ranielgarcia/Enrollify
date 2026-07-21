@@ -65,7 +65,7 @@ public class UpdateEndpoint (IMediator mediator)
             CollegeId.From(request.CollegeId)
         ), cancellationToken);
 
-        return result.ToUpdateResult(
+        return result.ToUpdatedResult(
             id => new UpdateCourseResponse
             {
                 Id = id.Value,

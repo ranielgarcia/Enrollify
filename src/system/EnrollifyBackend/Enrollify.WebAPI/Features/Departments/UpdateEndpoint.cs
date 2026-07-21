@@ -75,7 +75,7 @@ public class UpdateEndpoint(IMediator mediator)
             cancellationToken
         );
 
-        return result.ToUpdateResult(
+        return result.ToUpdatedResult(
             id => new UpdateDepartmentResponse
             {
                 Id = id.Value,

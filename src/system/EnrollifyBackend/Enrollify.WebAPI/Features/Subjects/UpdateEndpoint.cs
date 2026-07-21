@@ -69,7 +69,7 @@ public class UpdateEndpoint : Endpoint<UpdateSubjectRequest, OkOrNotFoundApiResu
             PreferRoomTypeId = RoomTypeId.From(request.PreferRoomTypeId)
         }, ct);
 
-        return result.ToUpdateResult(
+        return result.ToUpdatedResult(
             id => new UpdateSubjectResponse
             {
                 Id = id.Value,

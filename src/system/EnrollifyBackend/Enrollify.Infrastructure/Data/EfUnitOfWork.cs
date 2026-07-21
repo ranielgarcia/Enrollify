@@ -1,5 +1,6 @@
 using Enrollify.SharedKernel;
 using Microsoft.EntityFrameworkCore.Storage;
+using Wolverine.EntityFrameworkCore;
 
 namespace Enrollify.Infrastructure.Data;
 
@@ -10,23 +11,43 @@ namespace Enrollify.Infrastructure.Data;
 internal sealed class EfUnitOfWork : IUnitOfWork
 {
     private readonly EnrollifyDbContext _dbContext;
+    private readonly IDbContextOutbox _outbox;
 
-    public EfUnitOfWork(EnrollifyDbContext dbContext)
+    public EfUnitOfWork(EnrollifyDbContext dbContext, IDbContextOutbox outbox)
     {
         _dbContext = dbContext;
+        _outbox = outbox;
     }
-
 
     public async Task<ITransactionScope> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
+      // Defensive/idempotent backstop: enrollment now primarily happens up-front via
+      // OutboxEnrollmentBehavior (MediatR pipeline behavior), which runs before every request
+      // handler and enrolls this same scoped DbContext into the same scoped IDbContextOutbox.
+      // Keeping this call here protects any future non-MediatR call path from an un-enrolled outbox.
+      _outbox.Enroll(_dbContext);
         var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+
         return new EfTransactionScope(transaction);
     }
 
     public async Task<ITransactionScope> BeginTransactionAsync(System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
     {
+      // Defensive/idempotent backstop - see comment in the overload above.
+      _outbox.Enroll(_dbContext);
         var transaction = await _dbContext.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
         return new EfTransactionScope(transaction);
+    }
+
+    // Only use this method if you are publishing messages/events using Wolverine infra
+    // else, use the CommitAsync method of the ITransactionScope
+    public async Task SaveChangesAndFlushMessagesThenCommitAsync(CancellationToken cancellationToken = default)
+    {
+      // Commit all changes and flush persisted messages
+      // to the persistent outbox
+      // in the correct order
+      // Wolverine documentations: https://wolverinefx.net/guide/durability/efcore/outbox-and-inbox.html#transactional-inbox-and-outbox-with-ef-core
+      await _outbox.SaveChangesAndFlushMessagesAsync(cancellationToken);
     }
 }
 

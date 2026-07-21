@@ -51,7 +51,7 @@ public class
         TeacherId.From(request.AdviserId)),
       cancellationToken);
 
-    return result.ToUpdateResult(id => new UpdateClassSectionResponse
+    return result.ToUpdatedResult(id => new UpdateClassSectionResponse
     {
       Id = id.Value,
       AdviserId = request.AdviserId

@@ -62,7 +62,19 @@ public class ClassSectionRepository : IClassSectionRepository
     {
         try
         {
-            _dbContext.ClassSections.Update(updatedClassSection);
+            // Guard against the case where the same entity key is already tracked by a different
+            // instance (e.g. when an AsNoTracking query and a tracked query both load the same row
+            // within one DI scope). Using SetValues copies the scalar properties onto the existing
+            // tracked entry instead of trying to attach a competing instance, which would otherwise
+            // cause an InvalidOperationException that corrupts the DbContext change-tracker state.
+            var trackedEntry = _dbContext.ChangeTracker.Entries<ClassSection>()
+                .FirstOrDefault(e => e.Entity.Id == updatedClassSection.Id);
+
+            if (trackedEntry != null && !ReferenceEquals(trackedEntry.Entity, updatedClassSection))
+                trackedEntry.CurrentValues.SetValues(updatedClassSection);
+            else
+                _dbContext.ClassSections.Update(updatedClassSection);
+
             await _dbContext.SaveChangesAsync(cancellationToken);
             return Result.Success(updatedClassSection.Id);
         }

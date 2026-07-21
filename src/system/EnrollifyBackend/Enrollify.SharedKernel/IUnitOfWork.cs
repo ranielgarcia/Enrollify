@@ -19,6 +19,15 @@ public interface IUnitOfWork
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A transaction scope that can be committed or rolled back.</returns>
     Task<ITransactionScope> BeginTransactionAsync(System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Commits all changes and flushes persisted messages
+    /// to the persistent outbox
+    /// in the correct order
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SaveChangesAndFlushMessagesThenCommitAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>

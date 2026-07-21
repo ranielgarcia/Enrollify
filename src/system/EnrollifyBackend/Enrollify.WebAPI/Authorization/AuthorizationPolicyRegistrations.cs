@@ -5,6 +5,7 @@ using Enrollify.WebAPI.Authorization.Colleges;
 using Enrollify.WebAPI.Authorization.Courses;
 using Enrollify.WebAPI.Authorization.Curriculums;
 using Enrollify.WebAPI.Authorization.Departments;
+using Enrollify.WebAPI.Authorization.Notifications;
 using Enrollify.WebAPI.Authorization.Roles;
 using Enrollify.WebAPI.Authorization.Rooms;
 using Enrollify.WebAPI.Authorization.RoomTypes;
@@ -35,6 +36,7 @@ public static class AuthorizationPolicyRegistrations
         services.AddAcademicYearsAndTermsAuthorizationPolicyHandlers();
         services.AddClassSectionsAuthorizationPolicyHandlers();
         services.AddSubjectOfferingsAuthorizationPolicyHandlers();
+        services.AddNotificationAuthorizationPolicyHandlers();
 
         services.AddAuthorization(options =>
         {
@@ -55,6 +57,7 @@ public static class AuthorizationPolicyRegistrations
             options.AddAcademicYearsAndTermsAuthorizationPolicies();
             options.AddClassSectionsAuthorizationPolicies();
             options.AddSubjectOfferingsAuthorizationPolicies();
+            options.AddNotificationAuthorizationPolicies();
         });
 
         return services;

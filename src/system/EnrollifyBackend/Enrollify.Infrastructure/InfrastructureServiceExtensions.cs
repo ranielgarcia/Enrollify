@@ -9,6 +9,7 @@ using Enrollify.Application.Features.CourseCurriculumAssignments;
 using Enrollify.Application.Features.Courses;
 using Enrollify.Application.Features.Curriculums;
 using Enrollify.Application.Features.Departments;
+using Enrollify.Application.Features.Notifications;
 using Enrollify.Application.Features.Roles.Queries;
 using Enrollify.Application.Features.Rooms;
 using Enrollify.Application.Features.RoomTypes;
@@ -16,19 +17,32 @@ using Enrollify.Application.Features.SubjectEquivalences;
 using Enrollify.Application.Features.Subjects;
 using Enrollify.Application.Features.Teachers;
 using Enrollify.Application.Features.Teachers.Storage;
-using Enrollify.Core.Constants;
+using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
+using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
 using Enrollify.Core.Services.ClassSectionDataIntegrityValidation;
+using Enrollify.Core.Services.NotificationServices;
+using Enrollify.Core.Services.NotificationServices.Models;
 using Enrollify.Core.Services.ScheduleConflictDetection;
 using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
 using Enrollify.Infrastructure.Data.Queries;
 using Enrollify.Infrastructure.Persistence;
+using Enrollify.Infrastructure.RealTime;
 using Enrollify.Infrastructure.Repositories;
 using Enrollify.Infrastructure.Services;
+using Enrollify.Infrastructure.Services.NotificationServices;
 using Enrollify.Infrastructure.Storage;
 using Enrollify.SharedKernel;
+using JasperFx.Core;
+using MediatR;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Hosting;
+using Wolverine;
+using Wolverine.EntityFrameworkCore;
+using Wolverine.SqlServer;
+using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Infrastructure;
 
@@ -40,17 +54,12 @@ public static class InfrastructureServiceExtensions
     ILogger logger,
     bool isDevelopment = false)
   {
-    // Try to get connection strings in order of priority:
-    // 1. "cleanarchitecture" - provided by Aspire when using .WithReference(cleanArchDb)
-    // 2. "DefaultConnection" - traditional SQL Server connection
-    // 3. "SqliteConnection" - fallback to SQLite
     string? connectionString = config.GetConnectionString("cleanarchitecture")
                                ?? config.GetConnectionString("DefaultConnection")
                                ?? config.GetConnectionString("SqliteConnection");
     Guard.Against.Null(connectionString);
 
-    services.AddTransient<IDbConnectionFactory>(sp =>
-      new SqlConnectionFactory(connectionString));
+    services.AddTransient<IDbConnectionFactory, SqlConnectionFactory>();
 
     // Azure Blob Storage
     services.AddStorageSettings(config);
@@ -95,11 +104,11 @@ public static class InfrastructureServiceExtensions
       options.AddInterceptors(preSaveChangesInterceptor);
     });
 
-
     services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>))
       .AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
 
     services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+    services.AddScoped<IDomainEventBus, DomainEventBus>();
 
     services.AddSingleton<IDbExceptionTranslator, SqlServerExceptionTranslator>();
     services.AddScoped<IListRolesQueryService, ListRolesQueryService>();
@@ -123,8 +132,29 @@ public static class InfrastructureServiceExtensions
     services.AddScoped<IClassSectionValidationIssueRepository, ClassSectionValidationIssueRepository>();
     services.AddScoped<ICourseCurriculumAssignmentRepository, CourseCurriculumAssignmentRepository>();
     services.AddScoped<IClassSectionSchedulingStatsRepository, ClassSectionSchedulingStatsRepository>();
+    services.AddScoped<INotificationRepository, NotificationRepository>();
 
     services.AddScoped<IApplicableCurriculumQueryService, ApplicableCurriculumQueryService>();
+    services.AddScoped<IUserQueryService, UserQueryService>();
+
+    // Notification Services
+    services.AddScoped<INotificationPublisher, NotificationPublisher>();
+    services.AddScoped<INotificationBus, NotificationBus>();
+
+    // Real-time notification push (SignalR)
+    services.AddSignalR(options =>
+    {
+      // Surface hub/connection errors to clients in development so a 1006
+      // "no reason given" close carries an actual diagnostic message.
+      options.EnableDetailedErrors = isDevelopment;
+      // Keep the WebSocket transport alive so idle connections aren't torn
+      // down. Client default server timeout is 30s; a 15s ping stays inside it.
+      options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+      options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
+      options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+    });
+    services.AddSingleton<IUserIdProvider, SignalRUserIdProvider>();
+    services.AddScoped<IRealTimeNotificationSender, SignalRRealTimeNotificationSender>();
 
     // Domain services
     services.AddScoped<ClassSectionDataIntegrityValidator>();
@@ -133,6 +163,76 @@ public static class InfrastructureServiceExtensions
     logger.LogInformation("{Project} services registered", "Infrastructure");
 
     return services;
+  }
+
+  public static IHostBuilder ConfigureWolverine(this IHostBuilder hostBuilder, ConfigurationManager config, ILogger logger, bool isDevelopment = false)
+  {
+    hostBuilder.UseWolverine(opts =>
+    {
+      // Read connection string INSIDE the lambda so it is evaluated during IHostBuilder.Build(),
+      // after WebApplicationFactory (integration tests) has applied its ConfigureAppConfiguration
+      // overrides. Reading it eagerly before the lambda would capture the appsettings.json value
+      // instead of the test container connection string.
+      string? connectionString = config.GetConnectionString("cleanarchitecture")
+                                 ?? config.GetConnectionString("DefaultConnection")
+                                 ?? config.GetConnectionString("SqliteConnection");
+
+      Guard.Against.Null(connectionString);
+
+      opts.UseRuntimeCompilation();
+      opts.CodeGeneration.AlwaysUseServiceLocationFor<EnrollifyDbContext>();
+      opts.CodeGeneration.AlwaysUseServiceLocationFor<IMediator>();
+      // Right here, tell Wolverine to make every handler "sticky"
+      opts.MultipleHandlerBehavior = MultipleHandlerBehavior.Separated;
+
+      opts.Discovery.IncludeAssembly(typeof(OnNotificationCreatedEventHandler).Assembly);
+
+      // Console.WriteLine(opts.DescribeHandlerMatch(typeof(OnNotificationCreatedEventHandler)));
+      opts.PersistMessagesWithSqlServer(connectionString);
+      opts.UseEntityFrameworkCoreTransactions();
+
+      // opts.Policies.UseDurableLocalQueues();
+      opts.Policies.UseDurableOutboxOnAllSendingEndpoints();
+      opts.Policies.UseDurableInboxOnAllListeners();
+
+      // ClassSectionCreatedEvent kicks off a cascading local-message chain
+      // (OnClassSectionCreatedEventHandler -> RefreshClassSectionValidationIssuesRequestedEvent ->
+      // OnRefreshClassSectionValidationIssuesRequestedEventHandler -> ComputeAndGetValidationIssuesForClassSection).
+      // Because of the global UseDurableOutboxOnAllSendingEndpoints() policy above, this local queue
+      // would otherwise run in EndpointMode.Durable, which processes local cascading messages
+      // synchronously as part of SaveChangesAndFlushMessagesThenCommitAsync - making callers like
+      // CreateClassSection/BulkInitializeClassSectionsForAcademicYear block until the whole
+      // validation-issue recomputation finishes. Routing these two message types to a dedicated
+      // BufferedInMemory queue restores true async, fire-and-forget local dispatch so those commands
+      // return as soon as the class section(s) are committed.
+      // Trade-off: this queue is intentionally non-durable - a pending refresh is dropped (not
+      // retried) if the process crashes between commit and processing. That's acceptable here
+      // because UpdateClassSection, UpdateClassSectionSubjectOffering, AddMultipleSchedulesToOffering,
+      // and RemoveScheduleFromOffering already re-trigger RefreshClassSectionValidationIssuesRequestedEvent
+      // independently, so a missed refresh self-heals on the next relevant write.
+      /*opts.LocalQueue("class-section-validation").BufferedInMemory();
+      opts.Publish(x =>
+      {
+        x.Message<ClassSectionCreatedEvent>();
+        x.Message<RefreshClassSectionValidationIssuesRequestedEvent>();
+        x.ToLocalQueue("class-section-validation");
+      });*/
+
+      if (isDevelopment)
+      {
+        opts.Durability.Mode = DurabilityMode.Solo;
+      }
+
+      opts.BatchMessagesOf<NotificationCreatedEvent>(batching =>
+      {
+        batching.BatchSize = 5;
+        batching.LocalExecutionQueueName = "Notifications";
+        batching.TriggerTime = 2.Seconds();
+      });
+
+      opts.Policies.AutoApplyTransactions();
+    });
+    return hostBuilder;
   }
 
   /// <summary>

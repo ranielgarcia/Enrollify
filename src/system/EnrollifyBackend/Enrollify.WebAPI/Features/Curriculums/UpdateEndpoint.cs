@@ -49,7 +49,7 @@ public class UpdateEndpoint(IMediator mediator)
         var result = await mediator.Send(new UpdateCurriculum
             .Command(CurriculumId.From(request.Id), CourseId.From(request.CourseId), request.EffectiveYear, request.Version, request.Description));
 
-        return result.ToUpdateResult(
+        return result.ToUpdatedResult(
             id => request.Id);
     }
 }

@@ -57,6 +57,6 @@ public class SaveCurriculumContentEndpoint (IMediator mediator)
         var result = await mediator.Send(new SaveCurriculumContent
             .Command(CurriculumId.From(request.CurriculumId), subjectsGrid), ct);
 
-        return result.ToUpdateResult(id => result.Value);
+        return result.ToUpdatedResult(id => result.Value);
     }
 }

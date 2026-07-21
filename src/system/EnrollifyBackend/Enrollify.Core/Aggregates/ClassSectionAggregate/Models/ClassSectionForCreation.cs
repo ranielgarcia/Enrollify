@@ -2,6 +2,7 @@ using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.TeacherAggregate;
+using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 
 namespace Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
@@ -16,4 +17,5 @@ public class ClassSectionForCreation
     public required AcademicYearId CohortAcademicYearId { get; set; }
     public TeacherId? AdviserId { get; set; }
     public required SectionCode SectionCode { get; set; }
+    public required ClassSectionStatusEnum InitializeStatus { get; set; }
 }

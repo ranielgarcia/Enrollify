@@ -8,6 +8,7 @@ using Enrollify.Core.Aggregates.CourseAggregate;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.Aggregates.CurriculumAggregate;
 using Enrollify.Core.Aggregates.DepartmentAggregate;
+using Enrollify.Core.Aggregates.NotificationAggregate;
 using Enrollify.Core.Aggregates.RoleAggregate;
 using Enrollify.Core.Aggregates.RoomAggregate;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
@@ -28,6 +29,7 @@ using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CourseConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CourseCurriculumAssignmentConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.CurriculumConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.DepartmentConfigs;
+using Enrollify.Infrastructure.Data.Config.AggregateConfigs.NotificationConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.PermissionScopeConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoleConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.RoomConfigs;
@@ -37,6 +39,7 @@ using Enrollify.Infrastructure.Data.Config.AggregateConfigs.SubjectEquivalenceGr
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.TeacherConfigs;
 using Enrollify.Infrastructure.Data.Config.AggregateConfigs.UserConfigs;
 using SmartEnum.EFCore;
+using Wolverine.EntityFrameworkCore;
 
 namespace Enrollify.Infrastructure.Data;
 
@@ -74,10 +77,12 @@ public class EnrollifyDbContext : DbContext
   public DbSet<User> Users => Set<User>();
   public DbSet<Role> Roles => Set<Role>();
 
+  public DbSet<Notification> Notifications => Set<Notification>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);
+    modelBuilder.MapWolverineEnvelopeStorage();
     modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
     modelBuilder.Entity<LatestActiveCurriculumPerCourseView>()
@@ -118,5 +123,6 @@ public class EnrollifyDbContext : DbContext
     configurationBuilder.RegisterAllInCourseCurriculumAssignmentEfCoreConverters();
     configurationBuilder.RegisterAllInClassSectionValidationIssueVogenEfCoreConverters();
     configurationBuilder.RegisterAllInClassSectionSchedulingStatsVogenEfCoreConverters();
+    configurationBuilder.RegisterAllInNotificationVogenEfCoreConverters();
   }
 }
