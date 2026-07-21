@@ -107,6 +107,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
       try
       {
 
+        int totalSectionsCreatedForCurrentCourse = 0;
         foreach (TargetCourse targetCourse in command.TargetCourses)
         {
           CourseCurriculumAssignment courseCurriculumAssignment =
@@ -126,7 +127,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
             .FirstOrDefault()?
             .SectionCode;
 
-          totalSectionsCreated = 0;
+          totalSectionsCreatedForCurrentCourse = 0;
           // Create the requested number of sections
           for (int i = 0; i < targetCourse.NumberOfSections; i++)
           {
@@ -194,6 +195,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
 
             createdSectionIds.Add(classSectionId);
             totalSectionsCreated++;
+            totalSectionsCreatedForCurrentCourse++;
             _logger.LogInformation(
               "Created class section {SectionName} (ID: {ClassSectionId}) with {SubjectCount} subject offerings",
               newClassSection.Name, classSectionId, curriculumSubjects.Count);
@@ -203,7 +205,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
           await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
             "BulkInitializeClassSectionsForAcademicYear",
             "Bulk Initialize Class Sections",
-            $"Successfully initialized {totalSectionsCreated} class section(s) for {course.Name} for term {academicTerm.TermName}, year level {command.YearLevel}.",
+            $"Successfully initialized {totalSectionsCreatedForCurrentCourse} class section(s) for {course.Name} for term {academicTerm.TermName}, year level {command.YearLevel}.",
             NotificationCategoryEnum.Academic,
             [RolesEnum.SystemAdmin]
           ));

@@ -19,7 +19,7 @@ CREATE TABLE [Notifications]
   [TargetScope]   NVARCHAR(20)    NOT NULL DEFAULT 'Broadcast', -- User | Role | Broadcast
   [TargetUserId]  INT             NULL,               -- Populated when TargetScope = 'User'
   [TargetRoleId]  INT             NULL,               -- Populated when TargetScope = 'Role'
-  [RetentionDays] INT             NOT NULL DEFAULT 30,
+  [RetentionDays] INT             NOT NULL DEFAULT 5,
   [ExpiresAt]     DATETIMEOFFSET    NULL,               -- Computed at insert: CreatedAt + RetentionDays
 
   -- Standard Enrollify audit columns

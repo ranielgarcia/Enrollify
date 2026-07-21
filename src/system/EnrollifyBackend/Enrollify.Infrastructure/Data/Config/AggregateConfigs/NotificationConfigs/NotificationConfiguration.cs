@@ -50,7 +50,7 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
 
     builder.Property(e => e.TargetUserId).IsRequired(false);
     builder.Property(e => e.TargetRoleId).IsRequired(false);
-    builder.Property(e => e.RetentionDays).IsRequired().HasDefaultValue(30);
+    builder.Property(e => e.RetentionDays).IsRequired().HasDefaultValue(NotificationSettings.DefaultRetentionDays);
     builder.Property(e => e.ExpiresAt).IsRequired(false);
 
 

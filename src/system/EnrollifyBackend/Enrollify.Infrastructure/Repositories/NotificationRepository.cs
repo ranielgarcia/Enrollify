@@ -32,7 +32,7 @@ public class NotificationRepository : INotificationRepository
     catch (Exception ex)
     {
       _logger.LogError(ex, "Unable to save notification");
-      return Result.Error($"An error occurred while creating the notification: {ex.Message}");
+      return Result.Error("An unexpected error occurred.");
     }
   }
 
@@ -47,7 +47,7 @@ public class NotificationRepository : INotificationRepository
     catch (Exception ex)
     {
       _logger.LogError(ex, "Unable to update notification");
-      return Result.Error($"An error occurred while updating the notification: {ex.Message}");
+      return Result.Error("An unexpected error occurred.");
     }
   }
 
@@ -68,7 +68,7 @@ public class NotificationRepository : INotificationRepository
     catch (Exception ex)
     {
       _logger.LogError(ex, "Unable to delete notification");
-      return Result.Error($"An error occurred while deleting the notification: {ex.Message}");
+      return Result.Error("An unexpected error occurred.");
     }
   }
 
@@ -97,7 +97,7 @@ public class NotificationRepository : INotificationRepository
     catch (Exception ex)
     {
       _logger.LogError(ex, "Unable to mark notifications as read");
-      return Result.Error($"An error occurred while marking notifications as read: {ex.Message}");
+      return Result.Error("An unexpected error occurred.");
     }
   }
 
@@ -126,7 +126,7 @@ public class NotificationRepository : INotificationRepository
     catch (Exception ex)
     {
       _logger.LogError(ex, "Unable to mark notifications as dismissed");
-      return Result.Error($"An error occurred while marking notifications as dismissed: {ex.Message}");
+      return Result.Error("An unexpected error occurred.");
     }
   }
 }
