@@ -2,6 +2,7 @@ using Ardalis.Result;
 using Ardalis.Specification;
 using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
 using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
+using Enrollify.Application.Features.CourseCurriculumAssignments;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
@@ -32,6 +33,7 @@ public class CreateClassSectionTests
     private readonly Mock<IReadRepository<CourseCurriculumAssignment>> _courseCurriculumAssignmentReadRepositoryMock = new();
     private readonly Mock<IClassSectionRepository> _classSectionRepositoryMock = new();
     private readonly Mock<IClassSectionSubjectOfferingRepository> _mockClassSectionSubjectOfferingRepository = new();
+    private readonly Mock<ICourseCurriculumAssignmentRepository> _courseCurriculumAssignmentRepositoryMock = new();
     private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
     private readonly Mock<IDomainEventBus> _eventBusMock = new();
     private readonly FakeTransactionScope _fakeTransaction = new();
@@ -50,6 +52,7 @@ public class CreateClassSectionTests
             _courseCurriculumAssignmentReadRepositoryMock.Object,
             _classSectionRepositoryMock.Object,
             _mockClassSectionSubjectOfferingRepository.Object,
+            _courseCurriculumAssignmentRepositoryMock.Object,
             _unitOfWorkMock.Object,
             _eventBusMock.Object,
             _notificationPublisher.Object,
@@ -409,6 +412,11 @@ public class CreateClassSectionTests
             .Setup(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(throwingTransactionMock.Object);
 
+        // Setup SaveChangesAndFlushMessagesThenCommitAsync to also throw
+        _unitOfWorkMock
+            .Setup(u => u.SaveChangesAndFlushMessagesThenCommitAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Database commit failed"));
+
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -532,6 +540,8 @@ public class CreateClassSectionTests
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulClassSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
+        SetupSuccessfulTransactionCommit();
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -569,6 +579,39 @@ public class CreateClassSectionTests
         // Transaction automatically rolls back on dispose when exception occurs
     }
 
+    [Fact(DisplayName = "Valid command - BulkUpdate called once with locked assignment")]
+    public async Task Handle_ValidCommand_CallsBulkUpdateOnceWithLockedAssignment()
+    {
+        // Arrange
+        var command = CreateCommand();
+        SetupHandlerPrerequisites(command);
+        SetupSuccessfulCurriculumRetrieval(command);
+        SetupSuccessfulClassSectionCreation();
+        SetupSuccessfulSubjectOfferingCreation();
+
+        var capturedAssignments = CaptureCourseCurriculumAssignmentsFromBulkUpdate();
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert: BulkUpdate called exactly once
+        _courseCurriculumAssignmentRepositoryMock.Verify(
+            r => r.BulkUpdate(It.IsAny<List<CourseCurriculumAssignment>>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        // Assert: Exactly one assignment is captured
+        Assert.Single(capturedAssignments);
+
+        // Assert: Assignment is locked
+        var lockedAssignment = capturedAssignments[0];
+        Assert.True(lockedAssignment.IsLocked, "CourseCurriculumAssignment should be locked");
+
+        // Assert: Lock remarks contain expected information
+        Assert.NotNull(lockedAssignment.LockRemarks);
+        Assert.Contains("year level", lockedAssignment.LockRemarks, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(lockedAssignment.Course!.Name, lockedAssignment.LockRemarks);
+    }
+
     #endregion
 
     #region Success Scenarios
@@ -581,6 +624,8 @@ public class CreateClassSectionTests
         SetupHandlerPrerequisites(command);
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
+        SetupSuccessfulTransactionCommit();
 
         // No existing sections, so should get 'A'
         _classSectionReadRepositoryMock
@@ -612,6 +657,8 @@ public class CreateClassSectionTests
         SetupHandlerPrerequisites(command);
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
+        SetupSuccessfulTransactionCommit();
 
         // Existing section with code 'A'
         var existingSection = CreateClassSection(SectionCode.From('A'));
@@ -654,6 +701,8 @@ public class CreateClassSectionTests
 
         SetupSuccessfulClassSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
+        SetupSuccessfulTransactionCommit();
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -674,6 +723,8 @@ public class CreateClassSectionTests
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulClassSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
+        SetupSuccessfulTransactionCommit();
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -692,6 +743,8 @@ public class CreateClassSectionTests
         SetupHandlerPrerequisites(command);
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
+        SetupSuccessfulTransactionCommit();
 
         ClassSection? capturedClassSection = null;
         _classSectionRepositoryMock
@@ -771,6 +824,35 @@ public class CreateClassSectionTests
         _mockClassSectionSubjectOfferingRepository
             .Setup(r => r.Create(It.IsAny<ClassSectionSubjectOffering>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success(ClassSectionSubjectOfferingId.From(1)));
+    }
+
+    private void SetupSuccessfulCourseCurriculumAssignmentBulkUpdate()
+    {
+        _courseCurriculumAssignmentRepositoryMock
+            .Setup(r => r.BulkUpdate(It.IsAny<List<CourseCurriculumAssignment>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
+    }
+
+    private void SetupSuccessfulTransactionCommit()
+    {
+        _unitOfWorkMock
+            .Setup(u => u.SaveChangesAndFlushMessagesThenCommitAsync(It.IsAny<CancellationToken>()))
+            .Returns(async () => await _fakeTransaction.CommitAsync());
+    }
+
+    /// <summary>
+    /// Registers a Moq Callback so the <see cref="CourseCurriculumAssignment"/> object passed to
+    /// <see cref="ICourseCurriculumAssignmentRepository.BulkUpdate"/> is collected and returned.
+    /// Also configures the mock to return success.
+    /// </summary>
+    private List<CourseCurriculumAssignment> CaptureCourseCurriculumAssignmentsFromBulkUpdate()
+    {
+        var captured = new List<CourseCurriculumAssignment>();
+        _courseCurriculumAssignmentRepositoryMock
+            .Setup(r => r.BulkUpdate(It.IsAny<List<CourseCurriculumAssignment>>(), It.IsAny<CancellationToken>()))
+            .Callback<List<CourseCurriculumAssignment>, CancellationToken>((assignments, _) => captured.AddRange(assignments))
+            .ReturnsAsync(Result.Success());
+        return captured;
     }
 
     private static Course CreateCourse(CourseId courseId)
