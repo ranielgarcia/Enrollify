@@ -68,6 +68,7 @@ try
     //app.UseSerilogLogging();
     app.UseExceptionHandler();
     app.UseHttpsRedirection();
+    app.UseWebSockets();
     app.UseRouting();
     app.UseGlobalCorsPolicy();
     app.UseAzureADAuthentication();

@@ -142,7 +142,17 @@ public static class InfrastructureServiceExtensions
     services.AddScoped<INotificationBus, NotificationBus>();
 
     // Real-time notification push (SignalR)
-    services.AddSignalR();
+    services.AddSignalR(options =>
+    {
+      // Surface hub/connection errors to clients in development so a 1006
+      // "no reason given" close carries an actual diagnostic message.
+      options.EnableDetailedErrors = isDevelopment;
+      // Keep the WebSocket transport alive so idle connections aren't torn
+      // down. Client default server timeout is 30s; a 15s ping stays inside it.
+      options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+      options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
+      options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+    });
     services.AddSingleton<IUserIdProvider, SignalRUserIdProvider>();
     services.AddScoped<IRealTimeNotificationSender, SignalRRealTimeNotificationSender>();
 

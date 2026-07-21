@@ -4,6 +4,7 @@ import {
   HubConnectionBuilder,
   HubConnectionState,
   LogLevel,
+  type ILogger,
   type HubConnection,
 } from "@microsoft/signalr";
 import { useQueryClient } from "@tanstack/react-query";
@@ -46,6 +47,32 @@ export function useNotificationHub() {
     // negotiation" error on every page load.
     let cancelled = false;
 
+    // SignalR logs the start() rejection at Error level through its own internal
+    // logger, which the level-based `configureLogging` cannot suppress. When
+    // Strict Mode aborts the first connection mid-negotiate, that surfaces as a
+    // "stopped during negotiation" (and a follow-up 1006) error even though it's
+    // a benign, expected dev-only teardown. Downgrade only that case; every
+    // other warning/error still reaches the console.
+    const logger: ILogger = {
+      log(logLevel, message) {
+        if (
+          cancelled &&
+          (message.includes("stopped during negotiation") ||
+            message.includes("1006"))
+        ) {
+          return;
+        }
+        if (logLevel >= LogLevel.Warning) {
+          const line = `[SignalR] ${message}`;
+          if (logLevel >= LogLevel.Error) {
+            console.error(line);
+          } else {
+            console.warn(line);
+          }
+        }
+      },
+    };
+
     const connection = new HubConnectionBuilder()
       .withUrl(getNotificationHubUrl(), {
         accessTokenFactory: async () => {
@@ -54,15 +81,15 @@ export function useNotificationHub() {
         },
       })
       .withAutomaticReconnect()
-      .configureLogging(LogLevel.Warning)
+      .configureLogging(logger)
       .build();
 
     connection.on("ReceiveNotification", () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.recent() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.base() });
     });
 
     connection.onreconnected(() => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.recent() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.base() });
     });
 
     connection.onclose((error) => {
