@@ -15,6 +15,8 @@ public class CourseCurriculumAssignmentConfiguration : IEntityTypeConfiguration<
         builder.Property(d => d.CourseId).IsRequired();
         builder.Property(d => d.EntryAcademicYearId).IsRequired();
         builder.Property(d => d.CurriculumId).IsRequired();
+        builder.Property(d => d.IsLocked).IsRequired(true).HasDefaultValue(false);
+        builder.Property(d => d.LockRemarks).HasMaxLength(500);
 
         builder.HasOne(d => d.Course)
                .WithMany()

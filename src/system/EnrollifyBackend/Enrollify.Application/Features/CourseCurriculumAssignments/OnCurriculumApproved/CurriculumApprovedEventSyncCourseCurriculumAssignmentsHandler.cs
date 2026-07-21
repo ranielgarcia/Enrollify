@@ -17,6 +17,7 @@ public class CurriculumApprovedEventSyncCourseCurriculumAssignmentsHandler(
 
         if (academicYear is null)
         {
+          // TODO: Raise a notification here
             logger.LogWarning(
                 "No academic year found for curriculum effective year {EffectiveYear} (CurriculumId: {CurriculumId}). Skipping course-curriculum assignment sync.",
                 curriculum.EffectiveYear, curriculum.Id);

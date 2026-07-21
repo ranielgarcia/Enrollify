@@ -12,15 +12,18 @@ public class OnNotificationCreatedEventHandler
   private readonly INotificationRepository _notificationRepository;
   private readonly IUserQueryService _userQueryService;
   private readonly IRealTimeNotificationSender _realTimeNotificationSender;
+  private readonly ILogger<OnNotificationCreatedEventHandler> _logger;
 
   public OnNotificationCreatedEventHandler(
     INotificationRepository notificationRepository,
     IUserQueryService userQueryService,
-    IRealTimeNotificationSender realTimeNotificationSender)
+    IRealTimeNotificationSender realTimeNotificationSender,
+    ILogger<OnNotificationCreatedEventHandler> logger)
   {
     _notificationRepository = notificationRepository;
     _userQueryService = userQueryService;
     _realTimeNotificationSender = realTimeNotificationSender;
+    _logger = logger;
   }
 
   public async Task Handle(NotificationCreatedEvent[] notificationCreatedEvents, CancellationToken ct)
@@ -59,6 +62,8 @@ public class OnNotificationCreatedEventHandler
       foreach (var userId in userIds)
         notification.AddRecipient(userId);
 
+      _logger.LogDebug("Notification {NotificationId} created with {RecipientCount} recipients.", notification.Id, notification.Recipients.Count);
+      _logger.LogInformation(notification.Message);
       notifications.Add(notification);
     }
 

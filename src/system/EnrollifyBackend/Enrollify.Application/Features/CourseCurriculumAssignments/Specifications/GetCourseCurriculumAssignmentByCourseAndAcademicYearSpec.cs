@@ -2,9 +2,9 @@ using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 
 namespace Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 
-public class GetCourseCurriculumAssignmentByCourseAndAcademicYear : Specification<CourseCurriculumAssignment>
+public class GetCourseCurriculumAssignmentByCourseAndAcademicYearSpec : Specification<CourseCurriculumAssignment>
 {
-    public GetCourseCurriculumAssignmentByCourseAndAcademicYear(CourseId courseId, AcademicYearId academicYearId)
+    public GetCourseCurriculumAssignmentByCourseAndAcademicYearSpec(CourseId courseId, AcademicYearId academicYearId)
     {
         Query
             .Include(a => a.Course)

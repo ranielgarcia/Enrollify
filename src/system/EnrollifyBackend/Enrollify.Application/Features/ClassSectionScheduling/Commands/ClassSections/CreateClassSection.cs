@@ -1,4 +1,5 @@
 using Enrollify.Application.Features.ClassSectionScheduling.Extensions;
+using Enrollify.Application.Features.CourseCurriculumAssignments;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
@@ -27,6 +28,7 @@ public static class CreateClassSection
     private readonly IReadRepository<CourseCurriculumAssignment> _courseCurriculumAssignmentReadRepository;
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
+    private readonly ICourseCurriculumAssignmentRepository _courseCurriculumAssignmentRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDomainEventBus _eventBus;
     private readonly INotificationPublisher _notificationPublisher;
@@ -38,6 +40,7 @@ public static class CreateClassSection
       IReadRepository<CourseCurriculumAssignment> courseCurriculumAssignmentReadRepository,
       IClassSectionRepository classSectionRepository,
       IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
+      ICourseCurriculumAssignmentRepository courseCurriculumAssignmentRepository,
       IUnitOfWork unitOfWork,
       IDomainEventBus eventBus,
       INotificationPublisher notificationPublisher,
@@ -48,6 +51,7 @@ public static class CreateClassSection
       _courseCurriculumAssignmentReadRepository = courseCurriculumAssignmentReadRepository;
       _classSectionRepository = classSectionRepository;
       _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
+      _courseCurriculumAssignmentRepository = courseCurriculumAssignmentRepository;
       _unitOfWork = unitOfWork;
       _eventBus = eventBus;
       _notificationPublisher = notificationPublisher;
@@ -76,7 +80,7 @@ public static class CreateClassSection
 
       CourseCurriculumAssignment? courseCurriculumAssignment = await _courseCurriculumAssignmentReadRepository
         .FirstOrDefaultAsync(
-          new GetCourseCurriculumAssignmentByCourseAndAcademicYear(courseId, academicYear.Id), ct);
+          new GetCourseCurriculumAssignmentByCourseAndAcademicYearSpec(courseId, academicYear.Id), ct);
 
       if (courseCurriculumAssignment == null)
         return Result.Error("Course-Curriculum assignment for the given cohort not found.");
@@ -186,6 +190,9 @@ public static class CreateClassSection
             return Result.Error("Unable to create one or more subject offerings.");
           }
         }
+
+        courseCurriculumAssignment.Lock($"This curriculum is used as reference for class sections in {academicTerm.TermName}, year level {command.YearLevel} for course {course.Name}.");
+        await _courseCurriculumAssignmentRepository.BulkUpdate([courseCurriculumAssignment], cancellationToken);
 
         // TODO: Use the correct Target Role
         await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(

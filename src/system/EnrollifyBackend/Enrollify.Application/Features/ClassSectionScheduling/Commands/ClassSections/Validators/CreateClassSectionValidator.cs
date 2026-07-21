@@ -136,7 +136,7 @@ public class CreateClassSectionValidator : AbstractValidator<CreateClassSection.
 
         var assignment = await _courseCurriculumAssignmentRepository
             .FirstOrDefaultAsync(
-                new GetCourseCurriculumAssignmentByCourseAndAcademicYear(command.CourseId, cohortAcademicYear.Id),
+                new GetCourseCurriculumAssignmentByCourseAndAcademicYearSpec(command.CourseId, cohortAcademicYear.Id),
                 cancellationToken);
 
         if (assignment == null)

@@ -9,6 +9,8 @@ CREATE TABLE CourseCurriculumAssignments
     CourseId            INT NOT NULL,
     EntryAcademicYearId INT NOT NULL,  -- The AY when Year 1 students of this cohort start
     CurriculumId        INT NOT NULL,  -- The curriculum locked for this cohort
+    IsLocked            BIT NOT NULL DEFAULT 0,  -- If false, the curriculum is unlocked for this cohort. If True, Curriculum is already used by some class sections, so unlocking is only allowed if no class sections exist for this cohort.
+    LockRemarks         NVARCHAR(500) NULL,  -- Optional remarks for locking the curriculum for this cohort
 
     CreatedAt DATETIMEOFFSET DEFAULT SYSDATETIMEOFFSET(),
     CreatedBy INT NOT NULL,

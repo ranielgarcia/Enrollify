@@ -1,4 +1,5 @@
 using Enrollify.Application.Features.ClassSectionScheduling.Extensions;
+using Enrollify.Application.Features.CourseCurriculumAssignments;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
@@ -28,6 +29,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDomainEventBus _eventBus;
     private readonly INotificationPublisher _notificationPublisher;
+    private readonly ICourseCurriculumAssignmentRepository _courseCurriculumAssignmentRepository;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -39,6 +41,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
       IUnitOfWork unitOfWork,
       IDomainEventBus eventBus,
       INotificationPublisher notificationPublisher,
+      ICourseCurriculumAssignmentRepository courseCurriculumAssignmentRepository,
       ILogger<Handler> logger)
     {
       _academicYearRepository = academicYearRepository;
@@ -49,6 +52,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
       _unitOfWork = unitOfWork;
       _eventBus = eventBus;
       _notificationPublisher = notificationPublisher;
+      _courseCurriculumAssignmentRepository = courseCurriculumAssignmentRepository;
       _logger = logger;
     }
 
@@ -92,6 +96,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
         CourseCurriculumAssignment assignment = courseCurriculumAssignmentsByCourseId[targetCourse.CourseId];
         if (!assignment.Curriculum!.GetSubjectsByYearAndTerm(command.YearLevel, academicTerm.TermNumber).Any())
         {
+          // TODO: Raise a notification here to inform the user in the client app
           _logger.LogWarning(
             "No curriculum subjects found for course {CourseId}, year level {YearLevel}, term {TermNumber}",
             targetCourse.CourseId, command.YearLevel, academicTerm.TermNumber);
@@ -106,7 +111,6 @@ public static class BulkInitializeClassSectionsForAcademicYear
       var createdSectionIds = new List<ClassSectionId>();
       try
       {
-
         int totalSectionsCreatedForCurrentCourse = 0;
         foreach (TargetCourse targetCourse in command.TargetCourses)
         {
@@ -201,6 +205,9 @@ public static class BulkInitializeClassSectionsForAcademicYear
               newClassSection.Name, classSectionId, curriculumSubjects.Count);
           }
 
+          // Lock the Course-Curriculumn Assignment
+          courseCurriculumAssignment.Lock($"This curriculum is used as reference for class sections in {academicTerm.TermName}, year level {command.YearLevel} for course {course.Name}.");
+
           // TODO: Use the correct Target Role
           await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
             "BulkInitializeClassSectionsForAcademicYear",
@@ -210,6 +217,8 @@ public static class BulkInitializeClassSectionsForAcademicYear
             [RolesEnum.SystemAdmin]
           ));
         }
+
+        await _courseCurriculumAssignmentRepository.BulkUpdate(cohortCourseCurriculumAssignments, cancellationToken);
 
         foreach (ClassSectionId createdSectionId in createdSectionIds)
         {

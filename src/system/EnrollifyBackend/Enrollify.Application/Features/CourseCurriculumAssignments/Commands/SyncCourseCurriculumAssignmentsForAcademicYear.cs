@@ -1,6 +1,9 @@
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
+using Enrollify.Core.Services.NotificationServices.Models;
+using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 
@@ -16,6 +19,7 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
     private readonly IReadRepository<AcademicYear> _academicYearReadRepository;
     private readonly IApplicableCurriculumQueryService _applicableCurriculumQueryService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificationPublisher _notificationPublisher;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -25,6 +29,7 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
       IReadRepository<AcademicYear> academicYearReadRepository,
       IApplicableCurriculumQueryService applicableCurriculumQueryService,
       IUnitOfWork unitOfWork,
+      INotificationPublisher notificationPublisher,
       ILogger<Handler> logger)
     {
       _repository = repository;
@@ -33,11 +38,15 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
       _academicYearReadRepository = academicYearReadRepository;
       _applicableCurriculumQueryService = applicableCurriculumQueryService;
       _unitOfWork = unitOfWork;
+      _notificationPublisher = notificationPublisher;
       _logger = logger;
     }
 
     public async Task<Result> Handle(Command request, CancellationToken cancellationToken)
     {
+      // Begin transaction to ensure all database operations succeed or fail together
+      await using ITransactionScope transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
       AcademicYear? academicYear = await _academicYearReadRepository.GetByIdAsync(request.AcademicYearId, cancellationToken);
       if (academicYear is null)
       {
@@ -65,11 +74,27 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
       {
         CourseCurriculumAssignment? existing = existingAssignmentByCourseId.GetValueOrDefault(course.Id);
 
+        if (existing != null && existing.IsLocked)
+        {
+          await _notificationPublisher.WarningTargetRoleNotification(new NotificationForTargetRoleCreation(
+            "SyncCourseCurriculumAssignmentsForAcademicYear",
+            "Sync Course Curriculum Assignments",
+            $"Course {course.Name} already has an active curriculum assigned (CurriculumId: {existing.CurriculumId}), and currently used by an existing class section(s). To replace the curriculum assigned to this course, please remove the existing class section(s) first.",
+            NotificationCategoryEnum.Academic,
+            [RolesEnum.SystemAdmin]
+          ));
+          continue;
+        }
+
         if (existing?.Curriculum?.StatusId == CurriculumStatusEnum.Active)
         {
-          _logger.LogInformation(
-            "Course {CourseName} already has an active curriculum assigned (CurriculumId: {CurriculumId}), skipping assignment.",
-            course.Name, existing.CurriculumId);
+          await _notificationPublisher.WarningTargetRoleNotification(new NotificationForTargetRoleCreation(
+            "SyncCourseCurriculumAssignmentsForAcademicYear",
+            "Sync Course Curriculum Assignments",
+            $"Course {course.Name} already has an active curriculum assigned (CurriculumId: {existing.CurriculumId}), skipping assignment.",
+            NotificationCategoryEnum.Academic,
+            [RolesEnum.SystemAdmin]
+          ));
           continue;
         }
 
@@ -97,9 +122,6 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
         }
       }
 
-      // Begin transaction to ensure all database operations succeed or fail together
-      await using ITransactionScope transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
-
       try
       {
         Result bulkCreateResult = await _repository.BulkCreate(courseCurriculumAssignmentsToCreate, cancellationToken);
@@ -122,7 +144,7 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
           return Result.Error("Failed to sync course-curriculum assignments.");
         }
 
-        await transaction.CommitAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
 
         return Result.Success();
       }
