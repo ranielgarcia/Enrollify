@@ -62,17 +62,21 @@ public class OnNotificationCreatedEventHandler
       notifications.Add(notification);
     }
 
-    await _notificationRepository.BulkCreate(notifications.ToArray(), ct);
+    var bulkResult = await _notificationRepository.BulkCreate(notifications.ToArray(), ct);
 
-    // Push a real-time event to each recipient's active connection(s) now that the
-    // notification (and its recipients) have been successfully persisted.
-    foreach (var notification in notifications)
+    if (bulkResult.IsSuccess)
     {
-      var recipientUserIds = notification.Recipients.Select(r => r.UserId).ToArray();
-      if (recipientUserIds.Length == 0)
-        continue;
+      // Push a real-time event to each recipient's active connection(s) now that the
+      // notification (and its recipients) have been successfully persisted.
+      foreach (var notification in notifications)
+      {
+        var recipientUserIds = notification.Recipients.Select(r => r.UserId).ToArray();
+        if (recipientUserIds.Length == 0)
+          continue;
 
-      await _realTimeNotificationSender.SendToUsersAsync(recipientUserIds, NotificationDto.FromEntity(notification), ct);
+        await _realTimeNotificationSender.SendToUsersAsync(recipientUserIds, NotificationDto.FromEntity(notification), ct);
+      }
     }
+
   }
 }

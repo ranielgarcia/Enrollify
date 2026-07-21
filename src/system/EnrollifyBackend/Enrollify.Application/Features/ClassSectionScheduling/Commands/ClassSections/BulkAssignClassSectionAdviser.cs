@@ -1,5 +1,7 @@
-using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
+using Enrollify.Core.Constants.Authorization;
+using Enrollify.Core.Services.NotificationServices.Models;
+using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
 
@@ -20,6 +22,7 @@ public static class BulkAssignClassSectionAdviser
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IDomainEventBus _eventBus;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificationPublisher _notificationPublisher;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -27,12 +30,14 @@ public static class BulkAssignClassSectionAdviser
       IClassSectionRepository classSectionRepository,
       IDomainEventBus eventBus,
       IUnitOfWork unitOfWork,
+      INotificationPublisher notificationPublisher,
       ILogger<Handler> logger)
     {
       _classSectionReadRepository = classSectionReadRepository;
       _classSectionRepository = classSectionRepository;
       _eventBus = eventBus;
       _unitOfWork = unitOfWork;
+      _notificationPublisher = notificationPublisher;
       _logger = logger;
     }
 
@@ -84,9 +89,18 @@ public static class BulkAssignClassSectionAdviser
           return Result.Error("Unable to bulk update the class sections.");
         }
 
+        // TODO: Use the correct Target Role
+        await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
+          "BulkAssignClassSectionAdviser",
+          "Bulk Assign Class Section Adviser",
+          $"Successfully assigned advisers to class sections.",
+          NotificationCategoryEnum.Academic,
+          [RolesEnum.SystemAdmin]
+        ));
+
         await _eventBus.PublishAsync(new RefreshClassSectionDataQualityValidationIssuesRequestedEvent(classSections.Select(x => x.Id).ToList()));
 
-        await transaction.CommitAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
       }
       catch (ArgumentException ex)
       {

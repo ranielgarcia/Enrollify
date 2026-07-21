@@ -199,6 +199,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
               newClassSection.Name, classSectionId, curriculumSubjects.Count);
           }
 
+          // TODO: Use the correct Target Role
           await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
             "BulkInitializeClassSectionsForAcademicYear",
             "Bulk Initialize Class Sections",

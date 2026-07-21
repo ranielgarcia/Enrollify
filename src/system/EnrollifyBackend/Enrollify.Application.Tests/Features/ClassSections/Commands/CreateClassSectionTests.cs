@@ -18,10 +18,10 @@ using Enrollify.Core.Aggregates.TeacherAggregate;
 using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
+using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Application.Tests.Features.ClassSections.Commands;
 
@@ -37,6 +37,7 @@ public class CreateClassSectionTests
     private readonly FakeTransactionScope _fakeTransaction = new();
     private readonly FakeLogger<CreateClassSection.Handler> _logger;
     private readonly CreateClassSection.Handler _handler;
+    private readonly Mock<INotificationPublisher> _notificationPublisher = new();
 
     public CreateClassSectionTests()
     {
@@ -51,6 +52,7 @@ public class CreateClassSectionTests
             _mockClassSectionSubjectOfferingRepository.Object,
             _unitOfWorkMock.Object,
             _eventBusMock.Object,
+            _notificationPublisher.Object,
             _logger);
 
         // Default setup for transaction - use fake implementation

@@ -87,11 +87,11 @@ export function useNotificationHub() {
       .build();
 
     connection.on("ReceiveNotification", (notification) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.base() });
       const parsedNotification = NotificationSchema.parse(notification);
       toast.info(parsedNotification.title, {
         description: parsedNotification.message,
       });
-      queryClient.invalidateQueries({ queryKey: queryKeys.base() });
     });
 
     connection.onreconnected(() => {

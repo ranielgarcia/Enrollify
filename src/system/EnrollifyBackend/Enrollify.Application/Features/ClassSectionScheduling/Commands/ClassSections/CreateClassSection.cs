@@ -4,7 +4,10 @@ using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.Constants.Authorization;
+using Enrollify.Core.Services.NotificationServices.Models;
 using Enrollify.Core.ValueObjects;
+using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
 
@@ -26,6 +29,7 @@ public static class CreateClassSection
     private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDomainEventBus _eventBus;
+    private readonly INotificationPublisher _notificationPublisher;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -36,6 +40,7 @@ public static class CreateClassSection
       IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
       IUnitOfWork unitOfWork,
       IDomainEventBus eventBus,
+      INotificationPublisher notificationPublisher,
       ILogger<Handler> logger)
     {
       _academicYearReadRepository = academicYearReadRepository;
@@ -45,6 +50,7 @@ public static class CreateClassSection
       _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
       _unitOfWork = unitOfWork;
       _eventBus = eventBus;
+      _notificationPublisher = notificationPublisher;
       _logger = logger;
     }
 
@@ -180,6 +186,15 @@ public static class CreateClassSection
             return Result.Error("Unable to create one or more subject offerings.");
           }
         }
+
+        // TODO: Use the correct Target Role
+        await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
+          "CreateClassSection",
+          "Create Class Section",
+          $"Successfully created {newClassSection.FullName} for {course.Name} for term {academicTerm.TermName}, year level {command.YearLevel}.",
+          NotificationCategoryEnum.Academic,
+          [RolesEnum.SystemAdmin]
+        ));
 
         // Publish after commit so the event handler reads fully-committed data.
         // ClassSectionCreatedEvent is routed to a dedicated BufferedInMemory local queue (see

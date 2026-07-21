@@ -9,26 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PortalRouteRouteImport } from './routes/portal/route'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as PortalNotificationsRouteImport } from './routes/portal/notifications'
+import { Route as PortalCurriculumAndSchedulingRouteRouteImport } from './routes/portal/curriculum-and-scheduling/route'
 import { Route as PortalHomeRouteImport } from './routes/portal/home'
 import { Route as PortalMasterDataRouteRouteImport } from './routes/portal/master-data/route'
-import { Route as PortalCurriculumAndSchedulingRouteRouteImport } from './routes/portal/curriculum-and-scheduling/route'
-import { Route as PortalMasterDataSubjectsRouteImport } from './routes/portal/master-data/subjects'
-import { Route as PortalMasterDataRoomsRouteImport } from './routes/portal/master-data/rooms'
-import { Route as PortalMasterDataDepartmentsRouteImport } from './routes/portal/master-data/departments'
-import { Route as PortalMasterDataCoursesRouteImport } from './routes/portal/master-data/courses'
-import { Route as PortalMasterDataCollegesRouteImport } from './routes/portal/master-data/colleges'
-import { Route as PortalMasterDataBuildingsRouteImport } from './routes/portal/master-data/buildings'
-import { Route as PortalCurriculumAndSchedulingTeachersRouteImport } from './routes/portal/curriculum-and-scheduling/teachers'
-import { Route as PortalCurriculumAndSchedulingSectionsRouteImport } from './routes/portal/curriculum-and-scheduling/sections'
+import { Route as PortalNotificationsRouteImport } from './routes/portal/notifications'
 import { Route as PortalCurriculumAndSchedulingAcademicYearRouteImport } from './routes/portal/curriculum-and-scheduling/academic-year'
-import { Route as PortalCurriculumAndSchedulingSectionsDetailsSectionIdRouteImport } from './routes/portal/curriculum-and-scheduling/sections-details.$sectionId'
-import { Route as PortalCurriculumAndSchedulingSchedulingSectionsRouteImport } from './routes/portal/curriculum-and-scheduling/scheduling/sections'
+import { Route as PortalCurriculumAndSchedulingSectionsRouteImport } from './routes/portal/curriculum-and-scheduling/sections'
+import { Route as PortalCurriculumAndSchedulingTeachersRouteImport } from './routes/portal/curriculum-and-scheduling/teachers'
+import { Route as PortalMasterDataBuildingsRouteImport } from './routes/portal/master-data/buildings'
+import { Route as PortalMasterDataCollegesRouteImport } from './routes/portal/master-data/colleges'
+import { Route as PortalMasterDataCoursesRouteImport } from './routes/portal/master-data/courses'
+import { Route as PortalMasterDataDepartmentsRouteImport } from './routes/portal/master-data/departments'
+import { Route as PortalMasterDataRoomsRouteImport } from './routes/portal/master-data/rooms'
+import { Route as PortalMasterDataSubjectsRouteImport } from './routes/portal/master-data/subjects'
 import { Route as PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125RouteImport } from './routes/portal/curriculum-and-scheduling/curriculum.{-$curriculumId}'
+import { Route as PortalCurriculumAndSchedulingSchedulingSectionsRouteImport } from './routes/portal/curriculum-and-scheduling/scheduling/sections'
+import { Route as PortalCurriculumAndSchedulingSectionsDetailsSectionIdRouteImport } from './routes/portal/curriculum-and-scheduling/sections-details.$sectionId'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -39,16 +44,12 @@ const PortalRouteRoute = PortalRouteRouteImport.update({
   path: '/portal',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PortalNotificationsRoute = PortalNotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => PortalRouteRoute,
-} as any)
+const PortalCurriculumAndSchedulingRouteRoute =
+  PortalCurriculumAndSchedulingRouteRouteImport.update({
+    id: '/curriculum-and-scheduling',
+    path: '/curriculum-and-scheduling',
+    getParentRoute: () => PortalRouteRoute,
+  } as any)
 const PortalHomeRoute = PortalHomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -59,50 +60,15 @@ const PortalMasterDataRouteRoute = PortalMasterDataRouteRouteImport.update({
   path: '/master-data',
   getParentRoute: () => PortalRouteRoute,
 } as any)
-const PortalCurriculumAndSchedulingRouteRoute =
-  PortalCurriculumAndSchedulingRouteRouteImport.update({
-    id: '/curriculum-and-scheduling',
-    path: '/curriculum-and-scheduling',
-    getParentRoute: () => PortalRouteRoute,
-  } as any)
-const PortalMasterDataSubjectsRoute =
-  PortalMasterDataSubjectsRouteImport.update({
-    id: '/subjects',
-    path: '/subjects',
-    getParentRoute: () => PortalMasterDataRouteRoute,
-  } as any)
-const PortalMasterDataRoomsRoute = PortalMasterDataRoomsRouteImport.update({
-  id: '/rooms',
-  path: '/rooms',
-  getParentRoute: () => PortalMasterDataRouteRoute,
+const PortalNotificationsRoute = PortalNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => PortalRouteRoute,
 } as any)
-const PortalMasterDataDepartmentsRoute =
-  PortalMasterDataDepartmentsRouteImport.update({
-    id: '/departments',
-    path: '/departments',
-    getParentRoute: () => PortalMasterDataRouteRoute,
-  } as any)
-const PortalMasterDataCoursesRoute = PortalMasterDataCoursesRouteImport.update({
-  id: '/courses',
-  path: '/courses',
-  getParentRoute: () => PortalMasterDataRouteRoute,
-} as any)
-const PortalMasterDataCollegesRoute =
-  PortalMasterDataCollegesRouteImport.update({
-    id: '/colleges',
-    path: '/colleges',
-    getParentRoute: () => PortalMasterDataRouteRoute,
-  } as any)
-const PortalMasterDataBuildingsRoute =
-  PortalMasterDataBuildingsRouteImport.update({
-    id: '/buildings',
-    path: '/buildings',
-    getParentRoute: () => PortalMasterDataRouteRoute,
-  } as any)
-const PortalCurriculumAndSchedulingTeachersRoute =
-  PortalCurriculumAndSchedulingTeachersRouteImport.update({
-    id: '/teachers',
-    path: '/teachers',
+const PortalCurriculumAndSchedulingAcademicYearRoute =
+  PortalCurriculumAndSchedulingAcademicYearRouteImport.update({
+    id: '/academic-year',
+    path: '/academic-year',
     getParentRoute: () => PortalCurriculumAndSchedulingRouteRoute,
   } as any)
 const PortalCurriculumAndSchedulingSectionsRoute =
@@ -111,23 +77,45 @@ const PortalCurriculumAndSchedulingSectionsRoute =
     path: '/sections',
     getParentRoute: () => PortalCurriculumAndSchedulingRouteRoute,
   } as any)
-const PortalCurriculumAndSchedulingAcademicYearRoute =
-  PortalCurriculumAndSchedulingAcademicYearRouteImport.update({
-    id: '/academic-year',
-    path: '/academic-year',
+const PortalCurriculumAndSchedulingTeachersRoute =
+  PortalCurriculumAndSchedulingTeachersRouteImport.update({
+    id: '/teachers',
+    path: '/teachers',
     getParentRoute: () => PortalCurriculumAndSchedulingRouteRoute,
   } as any)
-const PortalCurriculumAndSchedulingSectionsDetailsSectionIdRoute =
-  PortalCurriculumAndSchedulingSectionsDetailsSectionIdRouteImport.update({
-    id: '/sections-details/$sectionId',
-    path: '/sections-details/$sectionId',
-    getParentRoute: () => PortalCurriculumAndSchedulingRouteRoute,
+const PortalMasterDataBuildingsRoute =
+  PortalMasterDataBuildingsRouteImport.update({
+    id: '/buildings',
+    path: '/buildings',
+    getParentRoute: () => PortalMasterDataRouteRoute,
   } as any)
-const PortalCurriculumAndSchedulingSchedulingSectionsRoute =
-  PortalCurriculumAndSchedulingSchedulingSectionsRouteImport.update({
-    id: '/scheduling/sections',
-    path: '/scheduling/sections',
-    getParentRoute: () => PortalCurriculumAndSchedulingRouteRoute,
+const PortalMasterDataCollegesRoute =
+  PortalMasterDataCollegesRouteImport.update({
+    id: '/colleges',
+    path: '/colleges',
+    getParentRoute: () => PortalMasterDataRouteRoute,
+  } as any)
+const PortalMasterDataCoursesRoute = PortalMasterDataCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => PortalMasterDataRouteRoute,
+} as any)
+const PortalMasterDataDepartmentsRoute =
+  PortalMasterDataDepartmentsRouteImport.update({
+    id: '/departments',
+    path: '/departments',
+    getParentRoute: () => PortalMasterDataRouteRoute,
+  } as any)
+const PortalMasterDataRoomsRoute = PortalMasterDataRoomsRouteImport.update({
+  id: '/rooms',
+  path: '/rooms',
+  getParentRoute: () => PortalMasterDataRouteRoute,
+} as any)
+const PortalMasterDataSubjectsRoute =
+  PortalMasterDataSubjectsRouteImport.update({
+    id: '/subjects',
+    path: '/subjects',
+    getParentRoute: () => PortalMasterDataRouteRoute,
   } as any)
 const PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route =
   PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125RouteImport.update(
@@ -137,6 +125,18 @@ const PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125Route =
       getParentRoute: () => PortalCurriculumAndSchedulingRouteRoute,
     } as any,
   )
+const PortalCurriculumAndSchedulingSchedulingSectionsRoute =
+  PortalCurriculumAndSchedulingSchedulingSectionsRouteImport.update({
+    id: '/scheduling/sections',
+    path: '/scheduling/sections',
+    getParentRoute: () => PortalCurriculumAndSchedulingRouteRoute,
+  } as any)
+const PortalCurriculumAndSchedulingSectionsDetailsSectionIdRoute =
+  PortalCurriculumAndSchedulingSectionsDetailsSectionIdRouteImport.update({
+    id: '/sections-details/$sectionId',
+    path: '/sections-details/$sectionId',
+    getParentRoute: () => PortalCurriculumAndSchedulingRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -276,6 +276,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -290,18 +297,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/portal/notifications': {
-      id: '/portal/notifications'
-      path: '/notifications'
-      fullPath: '/portal/notifications'
-      preLoaderRoute: typeof PortalNotificationsRouteImport
+    '/portal/curriculum-and-scheduling': {
+      id: '/portal/curriculum-and-scheduling'
+      path: '/curriculum-and-scheduling'
+      fullPath: '/portal/curriculum-and-scheduling'
+      preLoaderRoute: typeof PortalCurriculumAndSchedulingRouteRouteImport
       parentRoute: typeof PortalRouteRoute
     }
     '/portal/home': {
@@ -318,60 +318,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalMasterDataRouteRouteImport
       parentRoute: typeof PortalRouteRoute
     }
-    '/portal/curriculum-and-scheduling': {
-      id: '/portal/curriculum-and-scheduling'
-      path: '/curriculum-and-scheduling'
-      fullPath: '/portal/curriculum-and-scheduling'
-      preLoaderRoute: typeof PortalCurriculumAndSchedulingRouteRouteImport
+    '/portal/notifications': {
+      id: '/portal/notifications'
+      path: '/notifications'
+      fullPath: '/portal/notifications'
+      preLoaderRoute: typeof PortalNotificationsRouteImport
       parentRoute: typeof PortalRouteRoute
     }
-    '/portal/master-data/subjects': {
-      id: '/portal/master-data/subjects'
-      path: '/subjects'
-      fullPath: '/portal/master-data/subjects'
-      preLoaderRoute: typeof PortalMasterDataSubjectsRouteImport
-      parentRoute: typeof PortalMasterDataRouteRoute
-    }
-    '/portal/master-data/rooms': {
-      id: '/portal/master-data/rooms'
-      path: '/rooms'
-      fullPath: '/portal/master-data/rooms'
-      preLoaderRoute: typeof PortalMasterDataRoomsRouteImport
-      parentRoute: typeof PortalMasterDataRouteRoute
-    }
-    '/portal/master-data/departments': {
-      id: '/portal/master-data/departments'
-      path: '/departments'
-      fullPath: '/portal/master-data/departments'
-      preLoaderRoute: typeof PortalMasterDataDepartmentsRouteImport
-      parentRoute: typeof PortalMasterDataRouteRoute
-    }
-    '/portal/master-data/courses': {
-      id: '/portal/master-data/courses'
-      path: '/courses'
-      fullPath: '/portal/master-data/courses'
-      preLoaderRoute: typeof PortalMasterDataCoursesRouteImport
-      parentRoute: typeof PortalMasterDataRouteRoute
-    }
-    '/portal/master-data/colleges': {
-      id: '/portal/master-data/colleges'
-      path: '/colleges'
-      fullPath: '/portal/master-data/colleges'
-      preLoaderRoute: typeof PortalMasterDataCollegesRouteImport
-      parentRoute: typeof PortalMasterDataRouteRoute
-    }
-    '/portal/master-data/buildings': {
-      id: '/portal/master-data/buildings'
-      path: '/buildings'
-      fullPath: '/portal/master-data/buildings'
-      preLoaderRoute: typeof PortalMasterDataBuildingsRouteImport
-      parentRoute: typeof PortalMasterDataRouteRoute
-    }
-    '/portal/curriculum-and-scheduling/teachers': {
-      id: '/portal/curriculum-and-scheduling/teachers'
-      path: '/teachers'
-      fullPath: '/portal/curriculum-and-scheduling/teachers'
-      preLoaderRoute: typeof PortalCurriculumAndSchedulingTeachersRouteImport
+    '/portal/curriculum-and-scheduling/academic-year': {
+      id: '/portal/curriculum-and-scheduling/academic-year'
+      path: '/academic-year'
+      fullPath: '/portal/curriculum-and-scheduling/academic-year'
+      preLoaderRoute: typeof PortalCurriculumAndSchedulingAcademicYearRouteImport
       parentRoute: typeof PortalCurriculumAndSchedulingRouteRoute
     }
     '/portal/curriculum-and-scheduling/sections': {
@@ -381,18 +339,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalCurriculumAndSchedulingSectionsRouteImport
       parentRoute: typeof PortalCurriculumAndSchedulingRouteRoute
     }
-    '/portal/curriculum-and-scheduling/academic-year': {
-      id: '/portal/curriculum-and-scheduling/academic-year'
-      path: '/academic-year'
-      fullPath: '/portal/curriculum-and-scheduling/academic-year'
-      preLoaderRoute: typeof PortalCurriculumAndSchedulingAcademicYearRouteImport
+    '/portal/curriculum-and-scheduling/teachers': {
+      id: '/portal/curriculum-and-scheduling/teachers'
+      path: '/teachers'
+      fullPath: '/portal/curriculum-and-scheduling/teachers'
+      preLoaderRoute: typeof PortalCurriculumAndSchedulingTeachersRouteImport
       parentRoute: typeof PortalCurriculumAndSchedulingRouteRoute
     }
-    '/portal/curriculum-and-scheduling/sections-details/$sectionId': {
-      id: '/portal/curriculum-and-scheduling/sections-details/$sectionId'
-      path: '/sections-details/$sectionId'
-      fullPath: '/portal/curriculum-and-scheduling/sections-details/$sectionId'
-      preLoaderRoute: typeof PortalCurriculumAndSchedulingSectionsDetailsSectionIdRouteImport
+    '/portal/master-data/buildings': {
+      id: '/portal/master-data/buildings'
+      path: '/buildings'
+      fullPath: '/portal/master-data/buildings'
+      preLoaderRoute: typeof PortalMasterDataBuildingsRouteImport
+      parentRoute: typeof PortalMasterDataRouteRoute
+    }
+    '/portal/master-data/colleges': {
+      id: '/portal/master-data/colleges'
+      path: '/colleges'
+      fullPath: '/portal/master-data/colleges'
+      preLoaderRoute: typeof PortalMasterDataCollegesRouteImport
+      parentRoute: typeof PortalMasterDataRouteRoute
+    }
+    '/portal/master-data/courses': {
+      id: '/portal/master-data/courses'
+      path: '/courses'
+      fullPath: '/portal/master-data/courses'
+      preLoaderRoute: typeof PortalMasterDataCoursesRouteImport
+      parentRoute: typeof PortalMasterDataRouteRoute
+    }
+    '/portal/master-data/departments': {
+      id: '/portal/master-data/departments'
+      path: '/departments'
+      fullPath: '/portal/master-data/departments'
+      preLoaderRoute: typeof PortalMasterDataDepartmentsRouteImport
+      parentRoute: typeof PortalMasterDataRouteRoute
+    }
+    '/portal/master-data/rooms': {
+      id: '/portal/master-data/rooms'
+      path: '/rooms'
+      fullPath: '/portal/master-data/rooms'
+      preLoaderRoute: typeof PortalMasterDataRoomsRouteImport
+      parentRoute: typeof PortalMasterDataRouteRoute
+    }
+    '/portal/master-data/subjects': {
+      id: '/portal/master-data/subjects'
+      path: '/subjects'
+      fullPath: '/portal/master-data/subjects'
+      preLoaderRoute: typeof PortalMasterDataSubjectsRouteImport
+      parentRoute: typeof PortalMasterDataRouteRoute
+    }
+    '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}': {
+      id: '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}'
+      path: '/curriculum/{-$curriculumId}'
+      fullPath: '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}'
+      preLoaderRoute: typeof PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125RouteImport
       parentRoute: typeof PortalCurriculumAndSchedulingRouteRoute
     }
     '/portal/curriculum-and-scheduling/scheduling/sections': {
@@ -402,11 +402,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalCurriculumAndSchedulingSchedulingSectionsRouteImport
       parentRoute: typeof PortalCurriculumAndSchedulingRouteRoute
     }
-    '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}': {
-      id: '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}'
-      path: '/curriculum/{-$curriculumId}'
-      fullPath: '/portal/curriculum-and-scheduling/curriculum/{-$curriculumId}'
-      preLoaderRoute: typeof PortalCurriculumAndSchedulingCurriculumChar123CurriculumIdChar125RouteImport
+    '/portal/curriculum-and-scheduling/sections-details/$sectionId': {
+      id: '/portal/curriculum-and-scheduling/sections-details/$sectionId'
+      path: '/sections-details/$sectionId'
+      fullPath: '/portal/curriculum-and-scheduling/sections-details/$sectionId'
+      preLoaderRoute: typeof PortalCurriculumAndSchedulingSectionsDetailsSectionIdRouteImport
       parentRoute: typeof PortalCurriculumAndSchedulingRouteRoute
     }
   }
