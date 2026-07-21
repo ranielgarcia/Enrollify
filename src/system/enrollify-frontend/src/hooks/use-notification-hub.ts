@@ -89,9 +89,24 @@ export function useNotificationHub() {
     connection.on("ReceiveNotification", (notification) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.base() });
       const parsedNotification = NotificationSchema.parse(notification);
-      toast.info(parsedNotification.title, {
-        description: parsedNotification.message,
-      });
+
+      if (parsedNotification.severity === "Info") {
+        toast.info(parsedNotification.title, {
+          description: parsedNotification.message,
+        });
+      } else if (parsedNotification.severity === "Warning") {
+        toast.warning(parsedNotification.title, {
+          description: parsedNotification.message,
+        });
+      } else if (parsedNotification.severity === "Error") {
+        toast.error(parsedNotification.title, {
+          description: parsedNotification.message,
+        });
+      } else if (parsedNotification.severity === "Success") {
+        toast.success(parsedNotification.title, {
+          description: parsedNotification.message,
+        });
+      }
     });
 
     connection.onreconnected(() => {
