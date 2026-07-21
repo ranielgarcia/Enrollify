@@ -4,7 +4,7 @@ using Enrollify.Core.Services;
 
 namespace Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 
-public static class SyncCourseCurriculumAssignments
+public static class SyncCourseCurriculumAssignmentsForAcademicYear
 {
   public record Command(AcademicYearId AcademicYearId) : IRequest<Result>;
 

@@ -23,6 +23,6 @@ public class CurriculumApprovedEventSyncCourseCurriculumAssignmentsHandler(
             return;
         }
 
-        await mediator.Send(new SyncCourseCurriculumAssignments.Command(academicYear.Id), cancellationToken);
+        await mediator.Send(new SyncCourseCurriculumAssignmentsForAcademicYear.Command(academicYear.Id), cancellationToken);
     }
 }

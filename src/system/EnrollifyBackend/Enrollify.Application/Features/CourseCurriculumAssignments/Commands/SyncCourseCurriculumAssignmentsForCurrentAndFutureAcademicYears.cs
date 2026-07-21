@@ -34,7 +34,7 @@ public static class SyncCourseCurriculumAssignmentsForCurrentAndFutureAcademicYe
       {
         Result syncResult =
           await _mediator.Send(
-            new SyncCourseCurriculumAssignments.Command(currentAcademicYear.Id),
+            new SyncCourseCurriculumAssignmentsForAcademicYear.Command(currentAcademicYear.Id),
             cancellationToken);
         if (!syncResult.IsSuccess)
         {
@@ -53,7 +53,7 @@ public static class SyncCourseCurriculumAssignmentsForCurrentAndFutureAcademicYe
       {
         Result syncResult =
           await _mediator.Send(
-            new SyncCourseCurriculumAssignments.Command(futureAcademicYear.Id),
+            new SyncCourseCurriculumAssignmentsForAcademicYear.Command(futureAcademicYear.Id),
             cancellationToken);
         if (!syncResult.IsSuccess)
         {

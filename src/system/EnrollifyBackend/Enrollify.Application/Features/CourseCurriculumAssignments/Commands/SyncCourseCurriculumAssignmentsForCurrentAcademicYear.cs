@@ -31,7 +31,7 @@ public static class SyncCourseCurriculumAssignmentsForCurrentAcademicYear
                      : Result.Error(string.Join("; ", currentAcademicYear.Errors));
             }
 
-            return await _mediator.Send(new SyncCourseCurriculumAssignments.Command(currentAcademicYear.Value.Id), cancellationToken);
+            return await _mediator.Send(new SyncCourseCurriculumAssignmentsForAcademicYear.Command(currentAcademicYear.Value.Id), cancellationToken);
         }
     }
 }
