@@ -11,6 +11,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getCurrentAccessToken } from "@/infrastructure/authentication/tokenFetcher";
 import { Config } from "@/infrastructure/configurations/app-config";
 import { queryKeys } from "@/api/collections/notifications-collection";
+import { NotificationSchema } from "@/api/models/notification";
+import { toast } from "sonner";
 
 const getNotificationHubUrl = () =>
   `${Config.API_URL.replace(/\/api\/?$/, "")}/hubs/notifications`;
@@ -84,7 +86,11 @@ export function useNotificationHub() {
       .configureLogging(logger)
       .build();
 
-    connection.on("ReceiveNotification", () => {
+    connection.on("ReceiveNotification", (notification) => {
+      const parsedNotification = NotificationSchema.parse(notification);
+      toast.info(parsedNotification.title, {
+        description: parsedNotification.message,
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.base() });
     });
 
