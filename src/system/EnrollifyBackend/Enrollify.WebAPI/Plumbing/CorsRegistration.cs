@@ -1,5 +1,4 @@
-﻿using Microsoft.Net.Http.Headers;
-using Serilog;
+﻿using Serilog;
 
 namespace Enrollify.WebAPI.Plumbing;
 
@@ -23,12 +22,7 @@ public static class CorsRegistration
                     p.AllowCredentials()
                         .AllowAnyMethod()
                         .WithOrigins(allowedHosts)
-                        .WithHeaders(HeaderNames.Authorization,
-                            HeaderNames.Accept,
-                            HeaderNames.AcceptLanguage,
-                            HeaderNames.ContentLanguage,
-                            HeaderNames.ContentType,
-                            HeaderNames.TraceParent);
+                        .AllowAnyHeader();
                 });
             });
         }

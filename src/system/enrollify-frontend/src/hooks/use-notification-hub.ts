@@ -39,6 +39,13 @@ export function useNotificationHub() {
       return;
     }
 
+    // Track whether this effect instance has been cleaned up. In React Strict
+    // Mode (dev) the cleanup runs immediately after the first mount while
+    // start() is still awaiting the /negotiate response. Without this flag that
+    // race would log a noisy false-positive "connection was stopped during
+    // negotiation" error on every page load.
+    let cancelled = false;
+
     const connection = new HubConnectionBuilder()
       .withUrl(getNotificationHubUrl(), {
         accessTokenFactory: async () => {
@@ -67,19 +74,21 @@ export function useNotificationHub() {
       }
     });
 
-    connection
-      .start()
-      .catch((error) =>
-        console.error("Failed to start notification hub connection:", error),
-      );
-
+    // Assign before start() so a fast cleanup can stop it properly.
     connectionRef.current = connection;
 
+    connection.start().catch((error) => {
+      if (!cancelled) {
+        console.error("Failed to start notification hub connection:", error);
+      }
+    });
+
     return () => {
+      cancelled = true;
+      connectionRef.current = null;
       if (connection.state !== HubConnectionState.Disconnected) {
         connection.stop().catch(() => undefined);
       }
-      connectionRef.current = null;
     };
   }, [instance, queryClient]);
 }

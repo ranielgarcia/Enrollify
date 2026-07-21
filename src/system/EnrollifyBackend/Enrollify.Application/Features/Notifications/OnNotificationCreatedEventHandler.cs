@@ -1,3 +1,4 @@
+using Enrollify.Application.Features.Notifications.DTOs;
 using Enrollify.Core.Aggregates.NotificationAggregate;
 using Enrollify.Core.Aggregates.RoleAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
@@ -10,11 +11,16 @@ public class OnNotificationCreatedEventHandler
 {
   private readonly INotificationRepository _notificationRepository;
   private readonly IUserQueryService _userQueryService;
+  private readonly IRealTimeNotificationSender _realTimeNotificationSender;
 
-  public OnNotificationCreatedEventHandler(INotificationRepository notificationRepository, IUserQueryService userQueryService)
+  public OnNotificationCreatedEventHandler(
+    INotificationRepository notificationRepository,
+    IUserQueryService userQueryService,
+    IRealTimeNotificationSender realTimeNotificationSender)
   {
     _notificationRepository = notificationRepository;
     _userQueryService = userQueryService;
+    _realTimeNotificationSender = realTimeNotificationSender;
   }
 
   public async Task Handle(NotificationCreatedEvent[] notificationCreatedEvents, CancellationToken ct)
@@ -57,5 +63,16 @@ public class OnNotificationCreatedEventHandler
     }
 
     await _notificationRepository.BulkCreate(notifications.ToArray(), ct);
+
+    // Push a real-time event to each recipient's active connection(s) now that the
+    // notification (and its recipients) have been successfully persisted.
+    foreach (var notification in notifications)
+    {
+      var recipientUserIds = notification.Recipients.Select(r => r.UserId).ToArray();
+      if (recipientUserIds.Length == 0)
+        continue;
+
+      await _realTimeNotificationSender.SendToUsersAsync(recipientUserIds, NotificationDto.FromEntity(notification), ct);
+    }
   }
 }

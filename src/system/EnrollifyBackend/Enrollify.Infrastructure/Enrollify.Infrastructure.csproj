@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Needed to use ASP.NET Core SignalR server types (Hub, IHubContext<>, IUserIdProvider)
+         from this class library, since SignalR server ships in the shared framework, not a NuGet package. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Ardalis.SmartEnum.Dapper" />
     <PackageReference Include="Ardalis.SmartEnum.EFCore" />
     <PackageReference Include="Ardalis.Specification.EntityFrameworkCore" />

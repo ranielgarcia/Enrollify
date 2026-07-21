@@ -29,6 +29,7 @@ using Enrollify.Infrastructure.Data;
 using Enrollify.Infrastructure.Data.Dapper.Generated;
 using Enrollify.Infrastructure.Data.Queries;
 using Enrollify.Infrastructure.Persistence;
+using Enrollify.Infrastructure.RealTime;
 using Enrollify.Infrastructure.Repositories;
 using Enrollify.Infrastructure.Services;
 using Enrollify.Infrastructure.Services.NotificationServices;
@@ -36,6 +37,7 @@ using Enrollify.Infrastructure.Storage;
 using Enrollify.SharedKernel;
 using JasperFx.Core;
 using MediatR;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Wolverine;
 using Wolverine.EntityFrameworkCore;
@@ -138,6 +140,11 @@ public static class InfrastructureServiceExtensions
     // Notification Services
     services.AddScoped<INotificationPublisher, NotificationPublisher>();
     services.AddScoped<INotificationBus, NotificationBus>();
+
+    // Real-time notification push (SignalR)
+    services.AddSignalR();
+    services.AddSingleton<IUserIdProvider, SignalRUserIdProvider>();
+    services.AddScoped<IRealTimeNotificationSender, SignalRRealTimeNotificationSender>();
 
     // Domain services
     services.AddScoped<ClassSectionDataIntegrityValidator>();

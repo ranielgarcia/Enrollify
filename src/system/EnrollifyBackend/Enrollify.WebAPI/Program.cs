@@ -1,6 +1,7 @@
 using Enrollify.Application.Features.Notifications;
 using Enrollify.Infrastructure;
 using Enrollify.Infrastructure.Data;
+using Enrollify.Infrastructure.RealTime;
 using Enrollify.WebAPI.Authentication;
 using Enrollify.WebAPI.Infrastructure.Exceptions;
 using Enrollify.WebAPI.Plumbing;
@@ -66,12 +67,14 @@ try
 
     //app.UseSerilogLogging();
     app.UseExceptionHandler();
-    app.UseRouting();
     app.UseHttpsRedirection();
+    app.UseRouting();
     app.UseGlobalCorsPolicy();
     app.UseAzureADAuthentication();
     //app.MapControllers();
     app.UseFastEndpointsConfigs();
+
+    app.MapHub<NotificationHub>("/hubs/notifications").RequireAuthorization();
 
     app.Run();
 }
