@@ -88,6 +88,7 @@ public class NotificationPublisher : INotificationPublisher
   private async Task BroadcastNotification(BroadcastNotificationCreation notification, NotificationSeverityEnum severity)
   {
     var currentUser = _currentUserAccessor.GetCurrentUser();
+    var userId = currentUser?.Id ??  SystemUserConstants.SystemUserId;
     var broadcastNotification = new BroadcastNotification(
       notification.Type,
       notification.Title,
@@ -100,7 +101,7 @@ public class NotificationPublisher : INotificationPublisher
     );
 
     var notificationEntity = Notification.Create(broadcastNotification);
-    notificationEntity.AddCreatedBy(currentUser!.Id);
+    notificationEntity.AddCreatedBy(userId);
 
     await _notificationBus.PublishAsync(new NotificationCreatedEvent(notificationEntity));
   }
@@ -108,6 +109,7 @@ public class NotificationPublisher : INotificationPublisher
   private async Task NotifyTargetUser(NotificationForTargetUserCreation notification, NotificationSeverityEnum severity)
   {
     var currentUser = _currentUserAccessor.GetCurrentUser();
+    var userId = currentUser?.Id ??  SystemUserConstants.SystemUserId;
     var broadcastNotification = new NotificationForTargetUser(
       notification.Type,
       notification.Title,
@@ -121,7 +123,7 @@ public class NotificationPublisher : INotificationPublisher
     );
 
     var notificationEntity = Notification.Create(broadcastNotification);
-    notificationEntity.AddCreatedBy(currentUser!.Id);
+    notificationEntity.AddCreatedBy(userId);
 
     await _notificationBus.PublishAsync(new NotificationCreatedEvent(notificationEntity));
   }
@@ -129,6 +131,7 @@ public class NotificationPublisher : INotificationPublisher
   private async Task NotifyTargetUsersWithARole(NotificationForTargetRoleCreation notification, NotificationSeverityEnum severity)
   {
     var currentUser = _currentUserAccessor.GetCurrentUser();
+    var userId = currentUser?.Id ??  SystemUserConstants.SystemUserId;
 
     foreach (var targetRole in notification.TargetRoles)
     {
@@ -145,7 +148,7 @@ public class NotificationPublisher : INotificationPublisher
       );
 
       var notificationEntity = Notification.Create(broadcastNotification);
-      notificationEntity.AddCreatedBy(currentUser!.Id);
+      notificationEntity.AddCreatedBy(userId);
 
       await _notificationBus.PublishAsync(new NotificationCreatedEvent(notificationEntity));
     }

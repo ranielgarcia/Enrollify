@@ -44,9 +44,6 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
 
     public async Task<Result> Handle(Command request, CancellationToken cancellationToken)
     {
-      // Begin transaction to ensure all database operations succeed or fail together
-      await using ITransactionScope transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
-
       AcademicYear? academicYear = await _academicYearReadRepository.GetByIdAsync(request.AcademicYearId, cancellationToken);
       if (academicYear is null)
       {
@@ -102,8 +99,16 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
 
         if (curriculum == null)
         {
-          _logger.LogError("Unable to find an active curriculum for course {CourseName}", course.Name);
-          return Result.Error($"Unable to find an active curriculum for course {course.Name}");
+          await _notificationPublisher.WarningTargetRoleNotification(new NotificationForTargetRoleCreation(
+            "SyncCourseCurriculumAssignmentsForAcademicYear",
+            "Sync Course Curriculum Assignments",
+            $"Unable to find an active curriculum for course {course.Name} and academic year {academicYear.AcademicYearTitle}, skipping assignment.",
+            NotificationCategoryEnum.Academic,
+            [RolesEnum.SystemAdmin]
+          ));
+          _logger.LogWarning("Unable to find an active curriculum for course {CourseName} and academic year {AcademicYear}", course.Name, academicYear.AcademicYearTitle);
+          // return Result.Error($"Unable to find an active curriculum for course {course.Name}");
+          continue;
         }
 
         if (existing != null && existing.CurriculumId != curriculum.Id)
@@ -122,29 +127,39 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
         }
       }
 
+      // Begin transaction to ensure all database operations succeed or fail together
+      await using ITransactionScope transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
       try
       {
-        Result bulkCreateResult = await _repository.BulkCreate(courseCurriculumAssignmentsToCreate, cancellationToken);
-        Result bulkUpdateResult = await _repository.BulkUpdate(courseCurriculumAssignmentsToUpdate, cancellationToken);
-
-        if (!bulkCreateResult.IsSuccess)
+        if (courseCurriculumAssignmentsToCreate.Any())
         {
-          _logger.LogError("Bulk Create - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}",
-            string.Join(", ", bulkCreateResult.Errors));
-          await transaction.RollbackAsync(cancellationToken);
-          return Result.Error("Failed to sync course-curriculum assignments.");
+          Result bulkCreateResult = await _repository.BulkCreate(courseCurriculumAssignmentsToCreate, cancellationToken);
+          if (!bulkCreateResult.IsSuccess)
+          {
+            _logger.LogError("Bulk Create - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}",
+              string.Join(", ", bulkCreateResult.Errors));
+            await transaction.RollbackAsync(cancellationToken);
+            return Result.Error("Failed to sync course-curriculum assignments.");
+          }
         }
 
-
-        if (!bulkUpdateResult.IsSuccess)
+        if (courseCurriculumAssignmentsToUpdate.Any())
         {
-          _logger.LogError("Bulk Update - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}",
-            string.Join(", ", bulkUpdateResult.Errors));
-          await transaction.RollbackAsync(cancellationToken);
-          return Result.Error("Failed to sync course-curriculum assignments.");
+          Result bulkUpdateResult = await _repository.BulkUpdate(courseCurriculumAssignmentsToUpdate, cancellationToken);
+          if (!bulkUpdateResult.IsSuccess)
+          {
+            _logger.LogError("Bulk Update - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}",
+              string.Join(", ", bulkUpdateResult.Errors));
+            await transaction.RollbackAsync(cancellationToken);
+            return Result.Error("Failed to sync course-curriculum assignments.");
+          }
         }
 
-        await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
+        if (courseCurriculumAssignmentsToUpdate.Any() || courseCurriculumAssignmentsToCreate.Any())
+        {
+          await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
+        }
 
         return Result.Success();
       }

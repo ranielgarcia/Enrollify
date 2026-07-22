@@ -6,7 +6,7 @@ public class AcademicTermDto : BaseDto
 {
     public AcademicTermId Id { get; private set; }
     public TermNumber TermNumber { get; private set; }
-    public string TermName { get; private set; }
+    public string TermName { get; private set; } = string.Empty;
     public AcademicYearId AcademicYearId { get; private set; }
     public AcademicTermStartDate StartDate { get; private set; }
     public AcademicTermEndDate EndDate { get; private set; }

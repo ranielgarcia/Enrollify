@@ -1,9 +1,9 @@
 using Enrollify.Application.Features.AcademicYearAndTerm.Events;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 
-namespace Enrollify.Application.Features.AcademicYearAndTerm.EventHandlers;
+namespace Enrollify.Application.Features.CourseCurriculumAssignments.OnAcademicYearCreated;
 
-public class AcademicYearCreatedEventSyncCourseCurriculumAssignmentsHandler (IMediator mediator) : INotificationHandler<AcademicYearCreatedEvent>
+public class OnAcademicYearCreatedEventSyncCourseCurriculumAssignmentsHandler (IMediator mediator) : INotificationHandler<AcademicYearCreatedEvent>
 {
     public async Task Handle(AcademicYearCreatedEvent notification, CancellationToken cancellationToken)
     {

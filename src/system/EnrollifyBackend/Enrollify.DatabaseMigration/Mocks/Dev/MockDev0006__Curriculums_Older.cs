@@ -106,7 +106,7 @@ public class MockDev0006__CurriculumsOlder : IScript
             DECLARE @InitialUserId INT = (SELECT Id FROM Users WHERE Email='system@enrollify.local');
             DECLARE @BSCSCourseId INT = (SELECT Id FROM Courses WHERE Code='BSCS');
             DECLARE @BSITCourseId INT = (SELECT Id FROM Courses WHERE Code='BSIT');
-            DECLARE @ActiveStatusId INT = 2; -- Active status for curriculum
+            DECLARE @DraftStatusId INT = 1; -- Draft status for curriculum
             """);
 
         // Create Curriculums for BSCS and BSIT
@@ -118,8 +118,8 @@ public class MockDev0006__CurriculumsOlder : IScript
 
             MERGE [Curriculums] AS [Target]
             USING (VALUES
-                (@BSCSCourseId, 2020, '2020-A', @ActiveStatusId, 'Bachelor of Science in Computer Science Curriculum 2020'),
-                (@BSITCourseId, 2020, '2020-A', @ActiveStatusId, 'Bachelor of Science in Information Technology Curriculum 2020')
+                (@BSCSCourseId, 2020, '2020-A', @DraftStatusId, 'Bachelor of Science in Computer Science Curriculum 2020'),
+                (@BSITCourseId, 2020, '2020-A', @DraftStatusId, 'Bachelor of Science in Information Technology Curriculum 2020')
             ) AS [Source] ([CourseId], [EffectiveYear], [Version], [StatusId], [Description])
             ON [Target].[CourseId] = [Source].[CourseId] AND [Target].[Version] = [Source].[Version]
             WHEN NOT MATCHED THEN
