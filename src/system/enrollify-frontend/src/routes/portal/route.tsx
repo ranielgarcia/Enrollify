@@ -33,7 +33,7 @@ import z from "zod";
 import { EnrollmentContextDialog } from "@/components/enrollment-context/enrollment-context-dialog";
 import EnrollmentContextActionRequired from "@/components/enrollment-context/enrollment-context-action-required";
 import { NotificationBellTrigger } from "@/components/notifications/notification-bell-trigger";
-import { useNotificationHub } from "@/hooks/use-notification-hub";
+import { useNotificationHub } from "@/signalR-hubs/use-notification-hub";
 // import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 export const Route = createFileRoute("/portal")({
