@@ -116,7 +116,7 @@ public class NotificationPublisher : INotificationPublisher
       notification.Message,
       severity,
       notification.Category,
-      notification.TargetUserId,
+      notification.TargetUserId ?? userId,
       notification.RetentionDays,
       notification.ReferenceType,
       notification.ReferenceId
