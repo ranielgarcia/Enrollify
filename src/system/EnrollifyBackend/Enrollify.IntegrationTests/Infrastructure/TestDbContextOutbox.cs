@@ -22,14 +22,26 @@ internal sealed class TestDbContextOutbox : IDbContextOutbox
 
     public async Task SaveChangesAndFlushMessagesAsync(CancellationToken cancellation = default)
     {
-        if (_dbContext is not null)
-            await _dbContext.SaveChangesAsync(cancellation);
+      if (_dbContext is not null)
+      {
+        await _dbContext.SaveChangesAsync(cancellation);
+        if (_dbContext.Database.CurrentTransaction != null)
+        {
+            await _dbContext.Database.CurrentTransaction.CommitAsync(cancellation);
+        }
+      }
     }
 
     public async Task SaveChangesAndFlushMessagesAsync(MultiFlushMode mode, CancellationToken cancellation = default)
     {
-        if (_dbContext is not null)
-            await _dbContext.SaveChangesAsync(cancellation);
+      if (_dbContext is not null)
+      {
+        await _dbContext.SaveChangesAsync(cancellation);
+        if (_dbContext.Database.CurrentTransaction != null)
+        {
+          await _dbContext.Database.CurrentTransaction.CommitAsync(cancellation);
+        }
+      }
     }
 
     public Task FlushOutgoingMessagesAsync() => Task.CompletedTask;
