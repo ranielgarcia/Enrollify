@@ -14,6 +14,8 @@ interface SectionStatusBadgeProps {
 function getStatusStyles(statusValue: number): string {
   switch (statusValue) {
     case ClassSectionStatusEnum.Draft:
+    case ClassSectionStatusEnum.PendingValidation:
+    case ClassSectionStatusEnum.Validating:
       return "bg-secondary text-secondary-foreground border-secondary/50";
     case ClassSectionStatusEnum.Open:
       return "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800";

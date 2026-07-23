@@ -1,10 +1,11 @@
-using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
 using Enrollify.Core.Aggregates.ClassSectionSchedulingStatsAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Models;
 using Enrollify.Core.Services.ClassSectionDataIntegrityValidation;
+using Enrollify.Core.Services.NotificationServices.Models;
 using Enrollify.Core.Services.ScheduleConflictDetection;
+using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSectionValidationIssues;
 
@@ -23,6 +24,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IClassSectionValidationIssueRepository _validationIssueRepository;
     private readonly IDomainEventBus _eventBus;
+    private readonly INotificationPublisher _notificationPublisher;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -34,6 +36,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
       IClassSectionRepository classSectionRepository,
       IClassSectionValidationIssueRepository validationIssueRepository,
       IDomainEventBus eventBus,
+      INotificationPublisher notificationPublisher,
       ILogger<Handler> logger)
     {
       _offeringReadRepository = offeringReadRepository;
@@ -44,6 +47,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
       _classSectionRepository = classSectionRepository;
       _validationIssueRepository = validationIssueRepository;
       _eventBus = eventBus;
+      _notificationPublisher = notificationPublisher;
       _logger = logger;
     }
 
@@ -64,7 +68,16 @@ public static class ComputeAndGetValidationIssuesForClassSection
       }
 
       section.MoveToValidating();
-      await _classSectionRepository.Update(section, cancellationToken);
+      var sectionValidatingStatusUpdatedResult = await _classSectionRepository.Update(section, cancellationToken);
+      if (sectionValidatingStatusUpdatedResult.IsSuccess)
+      {
+        await _notificationPublisher.InfoTargetUserNotification(new NotificationForTargetUserCreation(
+          "ComputeAndGetValidationIssuesForClassSection",
+          "Class Section Validation",
+          $"{section.Name} has been set to Validating status for validation issue computation.",
+          NotificationCategoryEnum.Academic
+        ));
+      }
 
       List<ClassSectionSubjectOffering> offerings = await _offeringReadRepository.ListAsync(
         new GetClassSectionSubjectOfferingsByClassSectionIdSpec(section.Id), cancellationToken);
@@ -118,7 +131,16 @@ public static class ComputeAndGetValidationIssuesForClassSection
 
       // Draft only, higher status will not invoke this event handler in any way. Updates to a class with higher status is not allowed
       section.MoveToDraft();
-      await _classSectionRepository.Update(section, cancellationToken);
+      var sectionDraftStatusUpdatedResult = await _classSectionRepository.Update(section, cancellationToken);
+      if (sectionDraftStatusUpdatedResult.IsSuccess)
+      {
+        await _notificationPublisher.InfoTargetUserNotification(new NotificationForTargetUserCreation(
+          "ComputeAndGetValidationIssuesForClassSection",
+          "Draft Class Section",
+          $"{section.Name} has been set to Draft status.",
+          NotificationCategoryEnum.Academic
+        ));
+      }
 
       await _eventBus.PublishAsync(
         new RefreshClassSectionSchedulingStatsAggregateCountsRequestedEvent(section.AcademicTermId, section.CourseId,
