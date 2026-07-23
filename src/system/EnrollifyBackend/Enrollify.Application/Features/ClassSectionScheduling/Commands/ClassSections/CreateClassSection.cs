@@ -1,6 +1,7 @@
 using Enrollify.Application.Features.ClassSectionScheduling.Extensions;
 using Enrollify.Application.Features.CourseCurriculumAssignments;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
+using Enrollify.Application.Features.Notifications;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
@@ -196,7 +197,7 @@ public static class CreateClassSection
 
         // TODO: Use the correct Target Role
         await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
-          "CreateClassSection",
+          NotificationTypeConstants.CreateClassSection,
           "Create Class Section",
           $"Successfully created {newClassSection.FullName} for {course.Name} for term {academicTerm.TermName}, year level {command.YearLevel}.",
           NotificationCategoryEnum.Academic,

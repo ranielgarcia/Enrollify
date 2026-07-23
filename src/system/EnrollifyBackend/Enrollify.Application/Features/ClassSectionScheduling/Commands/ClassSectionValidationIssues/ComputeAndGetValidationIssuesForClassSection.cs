@@ -1,4 +1,5 @@
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
+using Enrollify.Application.Features.Notifications;
 using Enrollify.Core.Aggregates.ClassSectionSchedulingStatsAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Models;
@@ -72,7 +73,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
       if (sectionValidatingStatusUpdatedResult.IsSuccess)
       {
         await _notificationPublisher.InfoTargetUserNotification(new NotificationForTargetUserCreation(
-          "ComputeAndGetValidationIssuesForClassSection",
+          NotificationTypeConstants.ComputeAndGetValidationIssuesForClassSection,
           "Class Section Validation",
           $"{section.Name} has been set to Validating status for validation issue computation.",
           NotificationCategoryEnum.Academic
@@ -135,7 +136,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
       if (sectionDraftStatusUpdatedResult.IsSuccess)
       {
         await _notificationPublisher.InfoTargetUserNotification(new NotificationForTargetUserCreation(
-          "ComputeAndGetValidationIssuesForClassSection",
+          NotificationTypeConstants.ComputeAndGetValidationIssuesForClassSection,
           "Draft Class Section",
           $"{section.Name} has been set to Draft status.",
           NotificationCategoryEnum.Academic

@@ -3,7 +3,7 @@ import { CourseSchema, type Course } from "../models/course";
 import createMutationOptions from "@/hooks/create-mutation-options";
 import { toast } from "sonner";
 
-const queryKeys = {
+export const queryKeys = {
   all: () => ["courses"],
   create: () => [...queryKeys.all(), `create`],
   update: (courseId: number) => [...queryKeys.all(), "update", courseId],

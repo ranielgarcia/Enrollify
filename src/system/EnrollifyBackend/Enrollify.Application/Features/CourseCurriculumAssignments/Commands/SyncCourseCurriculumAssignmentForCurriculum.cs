@@ -1,4 +1,5 @@
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
+using Enrollify.Application.Features.Notifications;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services.NotificationServices.Models;
@@ -74,7 +75,7 @@ public static class SyncCourseCurriculumAssignmentForCurriculum
       if (existingAssignment != null && existingAssignment.IsLocked)
       {
         await _notificationPublisher.WarningTargetRoleNotification(new NotificationForTargetRoleCreation(
-          "SyncCourseCurriculumAssignmentsForAcademicYear",
+          NotificationTypeConstants.SyncCourseCurriculumAssignmentsForAcademicYear,
           "Sync Course Curriculum Assignments",
           $"Course {course.Name} already has an active curriculum assigned (CurriculumId: {existingAssignment.CurriculumId.Value}), and currently used by an existing class section(s). To replace the curriculum assigned to this course, please remove the existing class section(s) first.",
           NotificationCategoryEnum.Academic,

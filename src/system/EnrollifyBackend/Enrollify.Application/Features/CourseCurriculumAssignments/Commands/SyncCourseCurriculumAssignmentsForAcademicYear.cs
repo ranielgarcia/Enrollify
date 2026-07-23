@@ -1,4 +1,5 @@
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
+using Enrollify.Application.Features.Notifications;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
@@ -74,7 +75,7 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
         if (existing != null && existing.IsLocked)
         {
           await _notificationPublisher.WarningTargetRoleNotification(new NotificationForTargetRoleCreation(
-            "SyncCourseCurriculumAssignmentsForAcademicYear",
+            NotificationTypeConstants.SyncCourseCurriculumAssignmentsForAcademicYear,
             "Sync Course Curriculum Assignments",
             $"Course {course.Name} already has an active curriculum assigned (CurriculumId: {existing.CurriculumId}), and currently used by an existing class section(s). To replace the curriculum assigned to this course, please remove the existing class section(s) first.",
             NotificationCategoryEnum.Academic,
@@ -86,7 +87,7 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
         if (existing?.Curriculum?.StatusId == CurriculumStatusEnum.Active)
         {
           await _notificationPublisher.WarningTargetRoleNotification(new NotificationForTargetRoleCreation(
-            "SyncCourseCurriculumAssignmentsForAcademicYear",
+            NotificationTypeConstants.SyncCourseCurriculumAssignmentsForAcademicYear,
             "Sync Course Curriculum Assignments",
             $"Course {course.Name} already has an active curriculum assigned (CurriculumId: {existing.CurriculumId}), skipping assignment.",
             NotificationCategoryEnum.Academic,
@@ -100,7 +101,7 @@ public static class SyncCourseCurriculumAssignmentsForAcademicYear
         if (curriculum == null)
         {
           await _notificationPublisher.WarningTargetRoleNotification(new NotificationForTargetRoleCreation(
-            "SyncCourseCurriculumAssignmentsForAcademicYear",
+            NotificationTypeConstants.SyncCourseCurriculumAssignmentsForAcademicYear,
             "Sync Course Curriculum Assignments",
             $"Unable to find an active curriculum for course {course.Name} and academic year {academicYear.AcademicYearTitle}, skipping assignment.",
             NotificationCategoryEnum.Academic,

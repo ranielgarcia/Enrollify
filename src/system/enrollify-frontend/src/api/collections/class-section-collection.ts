@@ -20,7 +20,7 @@ import {
   type Offering,
 } from "../models/class-scheduling/offering";
 
-const queryKeys = {
+export const queryKeys = {
   base: () => ["sections"],
   filter: (
     page: number,

@@ -13,6 +13,7 @@ import { Config } from "@/infrastructure/configurations/app-config";
 import { queryKeys } from "@/api/collections/notifications-collection";
 import { NotificationSchema } from "@/api/models/notification";
 import { toast } from "sonner";
+import { syncQueriesForNotification } from "./use-notification-sync";
 
 const getNotificationHubUrl = () =>
   `${Config.API_URL.replace(/\/api\/?$/, "")}/hubs/notifications`;
@@ -89,6 +90,8 @@ export function useNotificationHub() {
     connection.on("ReceiveNotification", (notification) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.base() });
       const parsedNotification = NotificationSchema.parse(notification);
+
+      syncQueriesForNotification(parsedNotification.type, queryClient);
 
       if (parsedNotification.severity === "Info") {
         toast.info(parsedNotification.title, {

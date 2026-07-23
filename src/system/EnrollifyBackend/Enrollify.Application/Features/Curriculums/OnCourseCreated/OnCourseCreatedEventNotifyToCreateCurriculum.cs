@@ -1,4 +1,5 @@
 using Enrollify.Application.Features.Courses.Events;
+using Enrollify.Application.Features.Notifications;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services.NotificationServices.Models;
 using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
@@ -14,7 +15,7 @@ public class OnCourseCreatedEventNotifyToCreateCurriculum
     var course = await courseRepository.GetByIdAsync(notification.CourseId, cancellationToken);
     // TODO: Use the correct Target Role
     await notificationPublisher.InfoTargetRoleNotification(new NotificationForTargetRoleCreation(
-      "CourseCreatedEvent",
+      NotificationTypeConstants.CourseCreatedEvent,
       $"Complete Course Setup: {course!.Name}",
       $"The course has been created. Create its curriculum to finish the setup.",
       NotificationCategoryEnum.Academic,

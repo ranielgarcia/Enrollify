@@ -1,6 +1,7 @@
 using Enrollify.Application.Features.ClassSectionScheduling.Extensions;
 using Enrollify.Application.Features.CourseCurriculumAssignments;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
+using Enrollify.Application.Features.Notifications;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
@@ -210,7 +211,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
 
           // TODO: Use the correct Target Role
           await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
-            "BulkInitializeClassSectionsForAcademicYear",
+            NotificationTypeConstants.BulkInitializeClassSectionsForAcademicYear,
             "Bulk Initialize Class Sections",
             $"Successfully initialized {totalSectionsCreatedForCurrentCourse} class section(s) for {course.Name} for term {academicTerm.TermName}, year level {command.YearLevel}.",
             NotificationCategoryEnum.Academic,

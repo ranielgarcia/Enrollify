@@ -1,3 +1,4 @@
+using Enrollify.Application.Features.Notifications;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services.NotificationServices.Models;
@@ -91,7 +92,7 @@ public static class BulkAssignClassSectionAdviser
 
         // TODO: Use the correct Target Role
         await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
-          "BulkAssignClassSectionAdviser",
+          NotificationTypeConstants.BulkAssignClassSectionAdviser,
           "Bulk Assign Class Section Adviser",
           $"Successfully assigned advisers to class sections.",
           NotificationCategoryEnum.Academic,
