@@ -6,6 +6,8 @@ using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Core.Authentication;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services.NotificationServices.Models;
 using Enrollify.Core.ValueObjects;
@@ -31,6 +33,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
     private readonly IDomainEventBus _eventBus;
     private readonly INotificationPublisher _notificationPublisher;
     private readonly ICourseCurriculumAssignmentRepository _courseCurriculumAssignmentRepository;
+    private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -43,6 +46,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
       IDomainEventBus eventBus,
       INotificationPublisher notificationPublisher,
       ICourseCurriculumAssignmentRepository courseCurriculumAssignmentRepository,
+      ICurrentUserAccessor currentUserAccessor,
       ILogger<Handler> logger)
     {
       _academicYearRepository = academicYearRepository;
@@ -54,12 +58,18 @@ public static class BulkInitializeClassSectionsForAcademicYear
       _eventBus = eventBus;
       _notificationPublisher = notificationPublisher;
       _courseCurriculumAssignmentRepository = courseCurriculumAssignmentRepository;
+      _currentUserAccessor = currentUserAccessor;
       _logger = logger;
     }
 
 
     public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
     {
+      // Capture the initiating user now, while HTTP context is still alive.
+      // This is propagated through the Wolverine event chain so background handlers
+      // know which user to send real-time invalidations to.
+      UserId? triggeredBy = _currentUserAccessor.GetCurrentUser()?.Id;
+
       var targetCourseIds = command.TargetCourses.Select(p => p.CourseId).ToList();
 
       // Get academic year and term (validated by validator)
@@ -223,7 +233,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
 
         foreach (ClassSectionId createdSectionId in createdSectionIds)
         {
-          await _eventBus.PublishAsync(new ClassSectionCreatedEvent(createdSectionId));
+          await _eventBus.PublishAsync(new ClassSectionCreatedEvent(createdSectionId, triggeredBy));
         }
 
         // ClassSectionCreatedEvent is routed to a dedicated BufferedInMemory local queue (see

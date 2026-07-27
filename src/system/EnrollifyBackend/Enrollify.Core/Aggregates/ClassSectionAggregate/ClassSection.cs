@@ -149,17 +149,17 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
         return this;
     }
 
-    public ClassSection MoveToDraft()
+    public ClassSection MoveToDraft(UserId? triggeredBy = null)
     {
       StatusId = ClassSectionStatusEnum.Draft;
-      RegisterDomainEvent(new ClassSectionMovedToDraftEvent(Id));
+      RegisterDomainEvent(new ClassSectionMovedToDraftEvent(Id, triggeredBy));
       return this;
     }
 
-    public ClassSection MoveToValidating()
+    public ClassSection MoveToValidating(UserId? triggeredBy = null)
     {
       StatusId = ClassSectionStatusEnum.Validating;
-      RegisterDomainEvent(new ClassSectionMovedToValidatingEvent(Id));
+      RegisterDomainEvent(new ClassSectionMovedToValidatingEvent(Id, triggeredBy));
       return this;
     }
 

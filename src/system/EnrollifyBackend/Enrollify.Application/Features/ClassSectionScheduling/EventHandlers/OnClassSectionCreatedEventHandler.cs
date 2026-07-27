@@ -8,6 +8,6 @@ public sealed class OnClassSectionCreatedEventHandler
   public RefreshClassSectionValidationIssuesRequestedEvent Handle
     (ClassSectionCreatedEvent notification)
   {
-    return new RefreshClassSectionValidationIssuesRequestedEvent(notification.Id);
+    return new RefreshClassSectionValidationIssuesRequestedEvent(notification.Id, notification.TriggeredBy);
   }
 }

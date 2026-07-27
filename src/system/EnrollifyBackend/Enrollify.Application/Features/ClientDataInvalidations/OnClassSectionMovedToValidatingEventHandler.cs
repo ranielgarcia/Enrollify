@@ -14,7 +14,11 @@ public class OnClassSectionMovedToValidatingEventHandler : IDomainEventHandler<C
 
   public async Task Handle(ClassSectionMovedToValidatingEvent notification, CancellationToken cancellationToken)
   {
+    var targetUserIds = notification.TriggeredBy != null
+      ? new[] { notification.TriggeredBy.Value }
+      : null;
+
     await _clientDataInvalidationDispatcher.DispatchClientDataInvalidationToTargetUser(
-      nameof(ClassSectionMovedToValidatingEvent), targetUserIds: null, ct: cancellationToken);
+      nameof(ClassSectionMovedToValidatingEvent), targetUserIds: targetUserIds, ct: cancellationToken);
   }
 }

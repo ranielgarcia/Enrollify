@@ -7,6 +7,7 @@
  */
 export const ClientDataInvalidationTypes = {
   ClassSectionMovedToDraftEvent: "ClassSectionMovedToDraftEvent",
+  ClassSectionMovedToValidatingEvent: "ClassSectionMovedToValidatingEvent",
 } as const;
 
 export type ClientDataInvalidationType =

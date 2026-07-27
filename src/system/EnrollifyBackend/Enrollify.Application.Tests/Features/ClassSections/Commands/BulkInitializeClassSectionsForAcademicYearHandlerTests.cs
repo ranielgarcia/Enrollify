@@ -15,6 +15,7 @@ using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate.Models;
+using Enrollify.Core.Authentication;
 using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
@@ -36,6 +37,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
     private readonly Mock<IDomainEventBus> _eventBusMock = new();
     private readonly Mock<INotificationPublisher> _notificationPublisher = new();
     private readonly Mock<ICourseCurriculumAssignmentRepository> _courseCurriculumAssignmentRepositoryMock = new();
+    private readonly Mock<ICurrentUserAccessor> _currentUserAccessorMock = new();
     private readonly FakeBulkTransactionScope _fakeTransaction = new();
     private readonly FakeLogger<BulkInitializeClassSectionsForAcademicYear.Handler> _logger;
     private readonly BulkInitializeClassSectionsForAcademicYear.Handler _handler;
@@ -55,6 +57,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
             _eventBusMock.Object,
             _notificationPublisher.Object,
             _courseCurriculumAssignmentRepositoryMock.Object,
+            _currentUserAccessorMock.Object,
             _logger);
 
         _unitOfWorkMock

@@ -8,7 +8,11 @@ public class OnClassSectionMovedToDraftEventHandler (IClientDataInvalidationDisp
 {
   public async Task Handle(ClassSectionMovedToDraftEvent notification, CancellationToken cancellationToken)
   {
+    var targetUserIds = notification.TriggeredBy != null
+      ? new[] { notification.TriggeredBy.Value }
+      : null;
+
     await clientDataInvalidationDispatcher.DispatchClientDataInvalidationToTargetUser(
-      nameof(ClassSectionMovedToDraftEvent), targetUserIds: null, ct: cancellationToken);
+      nameof(ClassSectionMovedToDraftEvent), targetUserIds: targetUserIds, ct: cancellationToken);
   }
 }

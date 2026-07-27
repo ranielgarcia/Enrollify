@@ -16,6 +16,7 @@ using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate.Models;
 using Enrollify.Core.Aggregates.TeacherAggregate;
+using Enrollify.Core.Authentication;
 using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
@@ -40,6 +41,7 @@ public class CreateClassSectionTests
     private readonly FakeLogger<CreateClassSection.Handler> _logger;
     private readonly CreateClassSection.Handler _handler;
     private readonly Mock<INotificationPublisher> _notificationPublisher = new();
+    private readonly Mock<ICurrentUserAccessor> _currentUserAccessorMock = new();
 
     public CreateClassSectionTests()
     {
@@ -56,6 +58,7 @@ public class CreateClassSectionTests
             _unitOfWorkMock.Object,
             _eventBusMock.Object,
             _notificationPublisher.Object,
+            _currentUserAccessorMock.Object,
             _logger);
 
         // Default setup for transaction - use fake implementation

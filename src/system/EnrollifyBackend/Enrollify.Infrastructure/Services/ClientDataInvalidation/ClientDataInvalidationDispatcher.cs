@@ -2,7 +2,6 @@ using Enrollify.Application.Features.ClientDataInvalidations;
 using Enrollify.Core.Aggregates.RoleAggregate;
 using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.Authentication;
-using Enrollify.Core.Constants;
 using Enrollify.Core.Services;
 using Enrollify.Core.Services.ClientDataInvalidation;
 
@@ -47,7 +46,17 @@ public class ClientDataInvalidationDispatcher : IClientDataInvalidationDispatche
     if (targetUserIds == null || targetUserIds.Length == 0)
     {
       var currentUser = _currentUserAccessor.GetCurrentUser();
-      targetUserIds = new[] { currentUser?.Id ?? SystemUserConstants.SystemUserId };
+      if (currentUser != null)
+      {
+        targetUserIds = new[] { currentUser.Id };
+      }
+      else
+      {
+        // No HTTP context (e.g. background Wolverine handler) and no TriggeredBy was propagated.
+        // Broadcast to all connected users as a defensive fallback so the invalidation is not silently dropped.
+        await BroadcastClientDataInvalidation(type, ct);
+        return;
+      }
     }
 
     await _realTimeClientDataInvalidationDispatcher

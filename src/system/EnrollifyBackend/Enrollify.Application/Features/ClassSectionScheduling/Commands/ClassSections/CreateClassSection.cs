@@ -6,6 +6,8 @@ using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Core.Authentication;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services.NotificationServices.Models;
 using Enrollify.Core.ValueObjects;
@@ -33,6 +35,7 @@ public static class CreateClassSection
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDomainEventBus _eventBus;
     private readonly INotificationPublisher _notificationPublisher;
+    private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -45,6 +48,7 @@ public static class CreateClassSection
       IUnitOfWork unitOfWork,
       IDomainEventBus eventBus,
       INotificationPublisher notificationPublisher,
+      ICurrentUserAccessor currentUserAccessor,
       ILogger<Handler> logger)
     {
       _academicYearReadRepository = academicYearReadRepository;
@@ -56,6 +60,7 @@ public static class CreateClassSection
       _unitOfWork = unitOfWork;
       _eventBus = eventBus;
       _notificationPublisher = notificationPublisher;
+      _currentUserAccessor = currentUserAccessor;
       _logger = logger;
     }
 
@@ -92,6 +97,9 @@ public static class CreateClassSection
 
     public async Task<Result<ClassSectionId>> Handle(Command command, CancellationToken cancellationToken)
     {
+      // Capture the initiating user now, while HTTP context is still alive.
+      UserId? triggeredBy = _currentUserAccessor.GetCurrentUser()?.Id;
+
       // Get validated entities (we know they exist because of validation)
       AcademicYear? academicYear = await _academicYearReadRepository
         .FirstOrDefaultAsync(new GetAcademicYearByAcademicTermIdSpec(command.AcademicTermId),
@@ -208,7 +216,7 @@ public static class CreateClassSection
         // ClassSectionCreatedEvent is routed to a dedicated BufferedInMemory local queue (see
         // ConfigureWolverine in InfrastructureServiceExtensions), so the cascading validation-issue
         // recomputation chain runs asynchronously in the background rather than blocking this call.
-        await _eventBus.PublishAsync(new ClassSectionCreatedEvent(classSectionId));
+        await _eventBus.PublishAsync(new ClassSectionCreatedEvent(classSectionId, triggeredBy));
 
         // Use the unit of work's outbox-aware commit instead of transaction.CommitAsync() directly:
         // it saves pending changes, commits the ambient transaction, and flushes the published

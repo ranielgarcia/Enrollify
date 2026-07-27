@@ -18,7 +18,7 @@ public sealed class OnRefreshClassSectionValidationIssuesRequestedEventHandler(
   {
     ClassSectionId classSectionId = notification.ClassSectionId;
 
-    await mediator.Send(new ComputeAndGetValidationIssuesForClassSection.Command(classSectionId),
+    await mediator.Send(new ComputeAndGetValidationIssuesForClassSection.Command(classSectionId, notification.TriggeredBy),
       cancellationToken);
   }
 }
