@@ -4,6 +4,7 @@ using Dapper;
 using Enrollify.Application.Features.AcademicYearAndTerm;
 using Enrollify.Application.Features.Buildings;
 using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
+using Enrollify.Application.Features.ClientDataInvalidations;
 using Enrollify.Application.Features.Colleges;
 using Enrollify.Application.Features.CourseCurriculumAssignments;
 using Enrollify.Application.Features.Courses;
@@ -22,6 +23,7 @@ using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
 using Enrollify.Core.Services.ClassSectionDataIntegrityValidation;
+using Enrollify.Core.Services.ClientDataInvalidation;
 using Enrollify.Core.Services.NotificationServices;
 using Enrollify.Core.Services.NotificationServices.Models;
 using Enrollify.Core.Services.ScheduleConflictDetection;
@@ -32,6 +34,7 @@ using Enrollify.Infrastructure.Persistence;
 using Enrollify.Infrastructure.RealTime;
 using Enrollify.Infrastructure.Repositories;
 using Enrollify.Infrastructure.Services;
+using Enrollify.Infrastructure.Services.ClientDataInvalidation;
 using Enrollify.Infrastructure.Services.NotificationServices;
 using Enrollify.Infrastructure.Storage;
 using Enrollify.SharedKernel;
@@ -141,6 +144,9 @@ public static class InfrastructureServiceExtensions
     services.AddScoped<INotificationPublisher, NotificationPublisher>();
     services.AddScoped<INotificationBus, NotificationBus>();
 
+    // Client Data Invalidation
+    services.AddScoped<IClientDataInvalidationDispatcher, ClientDataInvalidationDispatcher>();
+
     // Real-time notification push (SignalR)
     services.AddSignalR(options =>
     {
@@ -155,6 +161,7 @@ public static class InfrastructureServiceExtensions
     });
     services.AddSingleton<IUserIdProvider, SignalRUserIdProvider>();
     services.AddScoped<IRealTimeNotificationSender, SignalRRealTimeNotificationSender>();
+    services.AddScoped<IRealTimeClientDataInvalidationDispatcher, SignalRRealTimeClientDataInvalidationDispatcher>();
 
     // Domain services
     services.AddScoped<ClassSectionDataIntegrityValidator>();

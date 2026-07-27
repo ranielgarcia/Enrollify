@@ -152,12 +152,14 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
     public ClassSection MoveToDraft()
     {
       StatusId = ClassSectionStatusEnum.Draft;
+      RegisterDomainEvent(new ClassSectionMovedToDraftEvent(Id));
       return this;
     }
 
     public ClassSection MoveToValidating()
     {
       StatusId = ClassSectionStatusEnum.Validating;
+      RegisterDomainEvent(new ClassSectionMovedToValidatingEvent(Id));
       return this;
     }
 

@@ -76,6 +76,7 @@ try
     app.UseFastEndpointsConfigs();
 
     app.MapHub<NotificationHub>("/hubs/notifications").RequireAuthorization();
+    app.MapHub<ClientDataInvalidationHub>("/hubs/client-data-invalidation").RequireAuthorization();
 
     app.Run();
 }
