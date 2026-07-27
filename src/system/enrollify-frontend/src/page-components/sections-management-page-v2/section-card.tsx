@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   CalendarDays,
+  Loader2,
   MapPin,
   Pencil,
   SquarePen,
@@ -74,6 +75,9 @@ export function SectionCard({
 }: SectionCardProps) {
   const isDraft = section.status.name === "Draft";
   const isCancelled = section.status.name === "Cancelled";
+  const isProcessing =
+    section.status.name === "PendingValidation" ||
+    section.status.name === "Validating";
 
   const queryClient = useQueryClient();
   const openMutation = useMutation(openClassSectionOptions(section.id));
@@ -89,9 +93,11 @@ export function SectionCard({
     ? `${section.adviser.firstName} ${section.adviser.lastName}`.trim()
     : null;
 
-  const accentClass = validation?.hasIssues
-    ? "border-l-2 border-l-amber-400 dark:border-l-amber-600"
-    : "border-l-2 border-l-transparent";
+  const accentClass = isProcessing
+    ? "border-l-2 border-l-blue-400 dark:border-l-blue-500"
+    : validation?.hasIssues
+      ? "border-l-2 border-l-amber-400 dark:border-l-amber-600"
+      : "border-l-2 border-l-transparent";
 
   return (
     <Card
@@ -103,6 +109,9 @@ export function SectionCard({
         className,
       )}
     >
+      {isProcessing && (
+        <div className="absolute inset-x-0 top-0 h-0.5 animate-pulse rounded-t-xl bg-blue-400 dark:bg-blue-500" />
+      )}
       <CardContent className="space-y-3 p-4">
         {/* Zone A — header */}
         <div className="flex items-start justify-between gap-3">
@@ -144,6 +153,9 @@ export function SectionCard({
                   section={section}
                   onClick={() => onViewConflicts(section)}
                 />
+                {isProcessing && (
+                  <Loader2 className="size-3.5 shrink-0 animate-spin text-blue-500 dark:text-blue-400" />
+                )}
               </div>
               <div className="mt-1 truncate text-[11px] text-muted-foreground">
                 {courseName} · {termName}
