@@ -283,12 +283,20 @@ Additional scoped instruction files exist in `.github/`:
 
 Project-level Copilot skills for complex, multi-step workflows:
 
-- `.github/skills/enrollify-management-page/SKILL.md` — Step-by-step guide for implementing CRUD management pages in the React frontend (model schema, API collection, table, form drawer, delete dialog)
-- `.github/skills/enrollify-integration-tests/SKILL.md` — Comprehensive guide for creating integration tests (WebAPI tests via TestServer, Application tests via Mediator, test data strategies, fixtures, helpers)
-- `.github/skills/enrollify-resize-dialog/SKILL.md` — Quick reference for resizing Dialog components (width classes, height control, scrollable body, when to switch from Dialog to Drawer)
-- `.github/skills/enrollify-resize-drawer/SKILL.md` — Step-by-step guide for resizing right-side Drawer components (vaul data-attribute override pattern, half-screen, near-full, full-screen widths)
+- `.agents/skills/enrollify-management-page/SKILL.md` — Step-by-step guide for implementing CRUD management pages in the React frontend (model schema, API collection, table, form drawer, delete dialog)
+- `.agents/skills/enrollify-integration-tests/SKILL.md` — Comprehensive guide for creating integration tests (WebAPI tests via TestServer, Application tests via Mediator, test data strategies, fixtures, helpers)
+- `.agents/skills/enrollify-resize-dialog/SKILL.md` — Quick reference for resizing Dialog components (width classes, height control, scrollable body, when to switch from Dialog to Drawer)
+- `.agents/skills/enrollify-resize-drawer/SKILL.md` — Step-by-step guide for resizing right-side Drawer components (vaul data-attribute override pattern, half-screen, near-full, full-screen widths)
 - `.agents/skills/frontend-design/SKILL.md` — Guidance for deliberate, distinctive frontend visual design choices (palette, typography, layout signature, and design critique workflow)
-- `.github/skills/grill-me/SKILL.md` — Interview the user relentlessly to stress-test a plan, research, or design until shared understanding is reached
-- `.github/skills/to-issues/SKILL.md` — Break any plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices.
-- `.github/skills/to-prd/SKILL.md` — Turn the current conversation context into a PRD and submit it as a GitHub issue.
-- `.github/skills/enrollify-to-user-stories/SKILL.md` — Decompose a PRD markdown file into individual user story files with YAML frontmatter, acceptance criteria, and technical notes.
+- `.agents/skills/grill-me/SKILL.md` — Interview the user relentlessly to stress-test a plan, research, or design until shared understanding is reached
+- `.agents/skills/to-issues/SKILL.md` — Break any plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices.
+- `.agents/skills/to-prd/SKILL.md` — Turn the current conversation context into a PRD and submit it as a GitHub issue.
+- `.agents/skills/enrollify-to-user-stories/SKILL.md` — Decompose a PRD markdown file into individual user story files with YAML frontmatter, acceptance criteria, and technical notes.
+- `.agents/skills/enrollify-feature-analysis/SKILL.md` — Analyze research documents or specs, categorize features into IMPLEMENTED / PARTIALLY_IMPLEMENTED / PENDING folders, and generate summary docs.
+- `.agents/skills/redesign-skill/SKILL.md` — Audit and upgrade existing UIs to premium quality; identifies generic AI-generated patterns and applies high-end design standards.
+- `.agents/skills/dotnet-inspect/SKILL.md` — Query .NET APIs across NuGet packages, platform libraries, and local files; search types, diff versions, and find extension methods.
+- `.agents/skills/aspire/SKILL.md` — Top-level router for Aspire 13.4 distributed apps; detects the AppHost and routes to aspire-init, aspireify, aspire-orchestration, aspire-deployment, and aspire-monitoring.
+- `.agents/skills/aspire-init/SKILL.md` — First-run flow for adding Aspire to a repo — picks `aspire new` (greenfield) or `aspire init` (existing repo) and drops the AppHost skeleton.
+- `.agents/skills/aspire-orchestration/SKILL.md` — Manage Aspire AppHost lifecycle and recover from file locks, port conflicts, and orphaned processes.
+- `.agents/skills/aspire-deployment/SKILL.md` — Deploy Aspire apps from AppHost models to Docker Compose, Kubernetes, Azure, or AWS.
+- `.agents/skills/aspire-monitoring/SKILL.md` — Observe Aspire apps — logs, traces, metrics, resource state, telemetry export, and the standalone dashboard.
