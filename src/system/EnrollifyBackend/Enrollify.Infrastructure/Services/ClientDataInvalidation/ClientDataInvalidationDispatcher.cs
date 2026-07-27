@@ -26,6 +26,7 @@ public class ClientDataInvalidationDispatcher : IClientDataInvalidationDispatche
 
   public async Task BroadcastClientDataInvalidation(string type, CancellationToken ct)
   {
+    // TODO: Cache user ids
     List<UserId> allUserIds = await _userQueryService.GetAllUserIds(ct);
     await _realTimeClientDataInvalidationDispatcher.SendToUsersAsync(allUserIds, type, ct);
   }
@@ -33,6 +34,7 @@ public class ClientDataInvalidationDispatcher : IClientDataInvalidationDispatche
   public async Task DispatchClientDataInvalidationToTargetRole(
     string type, RoleId[] targetRoleIds, CancellationToken ct)
   {
+    // TODO: Cache user ids
     List<UserIdRoleId> userIdsWithRoles = await _userQueryService.GetUserIdsWithRoles(targetRoleIds, ct);
     UserId[] targetUserIds = userIdsWithRoles.Select(x => x.UserId).Distinct().ToArray();
 

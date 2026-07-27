@@ -10,23 +10,17 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { getCurrentAccessToken } from "@/infrastructure/authentication/tokenFetcher";
 import { Config } from "@/infrastructure/configurations/app-config";
-import { queryKeys } from "@/api/collections/notifications-collection";
-import { NotificationSchema } from "@/api/models/notification";
-import { toast } from "sonner";
+import { syncQueriesForClientDataInvalidation } from "./use-client-data-invalidation-sync";
 
-const getNotificationHubUrl = () =>
-  `${Config.API_URL.replace(/\/api\/?$/, "")}/hubs/notifications`;
+const getClientDataInvalidationHubUrl = () =>
+  `${Config.API_URL.replace(/\/api\/?$/, "")}/hubs/client-data-invalidation`;
 
-export function useNotificationHub() {
+export function useClientDataInvalidationHub() {
   const { instance } = useMsal();
   const queryClient = useQueryClient();
   const connectionRef = useRef<HubConnection | null>(null);
 
   useEffect(() => {
-    if (!Config.ENABLE_NOTIFICATION_HUB) {
-      return;
-    }
-
     // Track whether this effect instance has been cleaned up. In React Strict
     // Mode (dev) the cleanup runs immediately after the first mount while
     // start() is still awaiting the /negotiate response. Without this flag that
@@ -61,7 +55,7 @@ export function useNotificationHub() {
     };
 
     const connection = new HubConnectionBuilder()
-      .withUrl(getNotificationHubUrl(), {
+      .withUrl(getClientDataInvalidationHubUrl(), {
         accessTokenFactory: async () => {
           const token = await getCurrentAccessToken({ msalInstance: instance });
           return token ?? "";
@@ -71,37 +65,24 @@ export function useNotificationHub() {
       .configureLogging(logger)
       .build();
 
-    connection.on("ReceiveNotification", (notification) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.base() });
-      const parsedNotification = NotificationSchema.parse(notification);
-
-      if (parsedNotification.severity === "Info") {
-        toast.info(parsedNotification.title, {
-          description: parsedNotification.message,
-        });
-      } else if (parsedNotification.severity === "Warning") {
-        toast.warning(parsedNotification.title, {
-          description: parsedNotification.message,
-        });
-      } else if (parsedNotification.severity === "Error") {
-        toast.error(parsedNotification.title, {
-          description: parsedNotification.message,
-        });
-      } else if (parsedNotification.severity === "Success") {
-        toast.success(parsedNotification.title, {
-          description: parsedNotification.message,
-        });
-      }
-    });
+    connection.on(
+      "ReceiveClientDataInvalidation",
+      (clientDataInvalidationType: string) => {
+        syncQueriesForClientDataInvalidation(
+          clientDataInvalidationType,
+          queryClient,
+        );
+      },
+    );
 
     connection.onreconnected(() => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.base() });
+      console.info("Client data invalidation hub reconnected.");
     });
 
     connection.onclose((error) => {
       if (error) {
         console.error(
-          "Notification hub connection closed with an error:",
+          "Client data invalidation hub connection closed with an error:",
           error,
         );
       }
@@ -112,7 +93,10 @@ export function useNotificationHub() {
 
     connection.start().catch((error) => {
       if (!cancelled) {
-        console.error("Failed to start notification hub connection:", error);
+        console.error(
+          "Failed to start client data invalidation hub connection:",
+          error,
+        );
       }
     });
 

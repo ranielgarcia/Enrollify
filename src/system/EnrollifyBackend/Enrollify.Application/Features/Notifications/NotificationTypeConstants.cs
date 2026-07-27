@@ -13,7 +13,6 @@ public static class NotificationTypeConstants
     public const string BulkInitializeClassSectionsForAcademicYear = "BulkInitializeClassSectionsForAcademicYear";
     public const string CreateClassSection = "CreateClassSection";
     public const string BulkAssignClassSectionAdviser = "BulkAssignClassSectionAdviser";
-    public const string ComputeAndGetValidationIssuesForClassSection = "ComputeAndGetValidationIssuesForClassSection";
 
     // ── Courses / Curricula ───────────────────────────────────────────────────
     public const string CourseCreatedEvent = "CourseCreatedEvent";

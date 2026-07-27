@@ -3,7 +3,7 @@ using Enrollify.Core.Services.ClientDataInvalidation;
 
 namespace Enrollify.Application.Features.ClientDataInvalidations;
 
-public class OnClassSectionMovedToDraft (IClientDataInvalidationDispatcher clientDataInvalidationDispatcher)
+public class OnClassSectionMovedToDraftEventHandler (IClientDataInvalidationDispatcher clientDataInvalidationDispatcher)
   : IDomainEventHandler<ClassSectionMovedToDraftEvent>
 {
   public async Task Handle(ClassSectionMovedToDraftEvent notification, CancellationToken cancellationToken)

@@ -34,6 +34,7 @@ import { EnrollmentContextDialog } from "@/components/enrollment-context/enrollm
 import EnrollmentContextActionRequired from "@/components/enrollment-context/enrollment-context-action-required";
 import { NotificationBellTrigger } from "@/components/notifications/notification-bell-trigger";
 import { useNotificationHub } from "@/signalR-hubs/use-notification-hub";
+import { useClientDataInvalidationHub } from "@/signalR-hubs/use-client-data-invalidation-hub";
 // import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 
 export const Route = createFileRoute("/portal")({
@@ -78,6 +79,7 @@ function RouteComponent() {
   const matches = useMatches();
   // const { activeAcademicYear } = useEnrollmentContext();
   useNotificationHub();
+  useClientDataInvalidationHub();
 
   const items = matches
     .filter(
