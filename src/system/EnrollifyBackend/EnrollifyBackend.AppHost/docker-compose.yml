@@ -1,0 +1,47 @@
+# Standalone SQL Server + Azurite for Enrollify
+#
+# Use this when the Aspire AppHost is NOT running:
+#   docker compose up -d
+#
+# Stop with:
+#   docker compose down   (keeps volumes/data intact)
+#
+# SQL Server connection (SSMS / Azure Data Studio / appsettings):
+#   Server=localhost,59480; User Id=sa; Password=Password!; TrustServerCertificate=True
+#
+# NOTE: Do NOT run this alongside Aspire — both use port 59480.
+#       Volumes are declared as external because Aspire creates them on first run.
+#       On a fresh machine, run Aspire once first, OR remove "external: true" below
+#       so docker compose creates the volumes itself.
+
+services:
+  sql:
+    container_name: enrollify-sql
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "Password!"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    ports:
+      - "59480:1433"
+    volumes:
+      - enrollify-sql-data-01:/var/opt/mssql
+    restart: unless-stopped
+
+  azurite:
+    container_name: enrollify-azurite
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: azurite --loose --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - enrollify-azurite-data:/data
+    restart: unless-stopped
+
+volumes:
+  enrollify-sql-data-01:
+    external: true
+  enrollify-azurite-data:
+    external: true
