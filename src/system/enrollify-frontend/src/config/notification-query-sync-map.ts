@@ -25,7 +25,7 @@ export const notificationQuerySyncMap: Partial<
     classSectionKeys.base(),
   ],
   [NotificationTypes.CreateClassSection]: [classSectionKeys.base()],
-  [NotificationTypes.BulkAssignClassSectionAdviser]: [classSectionKeys.base()],
+  // [NotificationTypes.BulkAssignClassSectionAdviser]: [classSectionKeys.base()],
   [NotificationTypes.ComputeAndGetValidationIssuesForClassSection]: [
     classSectionKeys.base(),
   ],

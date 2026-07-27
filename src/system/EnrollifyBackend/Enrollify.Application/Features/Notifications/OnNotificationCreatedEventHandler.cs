@@ -28,6 +28,7 @@ public class OnNotificationCreatedEventHandler
 
   public async Task Handle(NotificationCreatedEvent[] notificationCreatedEvents, CancellationToken ct)
   {
+    // TODO: Cache roles and users
     RoleId[] targetRoleIds = notificationCreatedEvents
       .Where(e => e.Notification.TargetScope == NotificationTargetScopeEnum.Role)
       .Select(e => e.Notification.TargetRoleId)
