@@ -229,7 +229,15 @@ public static class BulkInitializeClassSectionsForAcademicYear
           ));
         }
 
-        await _courseCurriculumAssignmentRepository.BulkUpdate(cohortCourseCurriculumAssignments, cancellationToken);
+        Result lockResult = await _courseCurriculumAssignmentRepository.BulkUpdate(cohortCourseCurriculumAssignments, cancellationToken);
+        if (!lockResult.IsSuccess)
+        {
+          _logger.LogError(
+            "Failed to lock course-curriculum assignments. Errors: {Errors}",
+            string.Join(", ", lockResult.Errors));
+          await transaction.RollbackAsync(cancellationToken);
+          return Result.Error("Unable to lock course-curriculum assignments.");
+        }
 
         foreach (ClassSectionId createdSectionId in createdSectionIds)
         {

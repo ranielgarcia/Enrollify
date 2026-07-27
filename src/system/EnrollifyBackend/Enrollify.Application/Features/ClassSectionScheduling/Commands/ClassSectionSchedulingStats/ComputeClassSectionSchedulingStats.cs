@@ -100,11 +100,15 @@ public static class ComputeClassSectionSchedulingStats
           refreshOfferingCountWithNoScheduleIssueForClassSectionTask);
 
         ClassSection? section =
-          await classSectionReadRepository.FirstOrDefaultAsync(new GetClassSectionFullDetailsByIdSpec((ClassSectionId)request.ClassSectionId),
+          await classSectionReadRepository.FirstOrDefaultAsync(
+            new GetClassSectionFullDetailsByIdSpec((ClassSectionId)request.ClassSectionId),
             cancellationToken);
 
+        if (section is null)
+          return;
+
         // Draft only, higher status will not invoke this event handler in any way. Updates to a class with higher status is not allowed
-        section!.MoveToDraft(request.TriggeredBy);
+        section.MoveToDraft(request.TriggeredBy);
         await classSectionRepository.Update(section, cancellationToken);
 
       }

@@ -201,7 +201,16 @@ public static class CreateClassSection
         }
 
         courseCurriculumAssignment.Lock($"This curriculum is used as reference for class sections in {academicTerm.TermName}, year level {command.YearLevel} for course {course.Name}.");
-        await _courseCurriculumAssignmentRepository.BulkUpdate([courseCurriculumAssignment], cancellationToken);
+        Result lockResult = await _courseCurriculumAssignmentRepository.BulkUpdate([courseCurriculumAssignment], cancellationToken);
+        if (!lockResult.IsSuccess)
+        {
+          _logger.LogError(
+            "Failed to lock course-curriculum assignment for course {CourseId}. Errors: {Errors}",
+            courseCurriculumAssignment.CourseId,
+            string.Join(", ", lockResult.Errors));
+          await transaction.RollbackAsync(cancellationToken);
+          return Result.Error("Unable to lock course-curriculum assignment.");
+        }
 
         // TODO: Use the correct Target Role
         await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(

@@ -63,8 +63,7 @@ public class OnNotificationCreatedEventHandler
       foreach (var userId in userIds)
         notification.AddRecipient(userId);
 
-      _logger.LogDebug("Notification {NotificationId} created with {RecipientCount} recipients.", notification.Id, notification.Recipients.Count);
-      _logger.LogInformation(notification.Message);
+      _logger.LogDebug("Notification {NotificationId} message: {Message} created with {RecipientCount} recipients.", notification.Id, notification.Message, notification.Recipients.Count);
       notifications.Add(notification);
     }
 

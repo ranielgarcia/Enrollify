@@ -62,12 +62,14 @@ public static class DeleteClassSection
             }
 
             var deleteResult = await _classSectionRepository.Delete(classSectionToDelete, cancellationToken);
-
-            if (deleteResult.IsSuccess)
+            if (!deleteResult.IsSuccess)
             {
-              // TODO: when all class sections are deleted, we should also unlock the course-curriculum assignment for that course and academic year
-                await _eventBus.PublishAsync(new ClassSectionDeletedEvent(classSectionToDelete.Id));
+              await transaction.RollbackAsync(cancellationToken);
+              return deleteResult;
             }
+
+            // TODO: when all class sections are deleted, we should also unlock the course-curriculum assignment for that course and academic year
+            await _eventBus.PublishAsync(new ClassSectionDeletedEvent(classSectionToDelete.Id));
 
             await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
             return deleteResult;
