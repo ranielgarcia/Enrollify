@@ -1,9 +1,13 @@
 using Enrollify.Application.Features.ClassSectionScheduling.Extensions;
+using Enrollify.Application.Features.CourseCurriculumAssignments;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
+using Enrollify.Application.Features.Notifications;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Core.Authentication;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services.NotificationServices.Models;
 using Enrollify.Core.ValueObjects;
@@ -28,6 +32,8 @@ public static class BulkInitializeClassSectionsForAcademicYear
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDomainEventBus _eventBus;
     private readonly INotificationPublisher _notificationPublisher;
+    private readonly ICourseCurriculumAssignmentRepository _courseCurriculumAssignmentRepository;
+    private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -39,6 +45,8 @@ public static class BulkInitializeClassSectionsForAcademicYear
       IUnitOfWork unitOfWork,
       IDomainEventBus eventBus,
       INotificationPublisher notificationPublisher,
+      ICourseCurriculumAssignmentRepository courseCurriculumAssignmentRepository,
+      ICurrentUserAccessor currentUserAccessor,
       ILogger<Handler> logger)
     {
       _academicYearRepository = academicYearRepository;
@@ -49,12 +57,19 @@ public static class BulkInitializeClassSectionsForAcademicYear
       _unitOfWork = unitOfWork;
       _eventBus = eventBus;
       _notificationPublisher = notificationPublisher;
+      _courseCurriculumAssignmentRepository = courseCurriculumAssignmentRepository;
+      _currentUserAccessor = currentUserAccessor;
       _logger = logger;
     }
 
 
     public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
     {
+      // Capture the initiating user now, while HTTP context is still alive.
+      // This is propagated through the Wolverine event chain so background handlers
+      // know which user to send real-time invalidations to.
+      UserId? triggeredBy = _currentUserAccessor.GetCurrentUser()?.Id;
+
       var targetCourseIds = command.TargetCourses.Select(p => p.CourseId).ToList();
 
       // Get academic year and term (validated by validator)
@@ -92,6 +107,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
         CourseCurriculumAssignment assignment = courseCurriculumAssignmentsByCourseId[targetCourse.CourseId];
         if (!assignment.Curriculum!.GetSubjectsByYearAndTerm(command.YearLevel, academicTerm.TermNumber).Any())
         {
+          // TODO: Raise a notification here to inform the user in the client app
           _logger.LogWarning(
             "No curriculum subjects found for course {CourseId}, year level {YearLevel}, term {TermNumber}",
             targetCourse.CourseId, command.YearLevel, academicTerm.TermNumber);
@@ -106,7 +122,6 @@ public static class BulkInitializeClassSectionsForAcademicYear
       var createdSectionIds = new List<ClassSectionId>();
       try
       {
-
         int totalSectionsCreatedForCurrentCourse = 0;
         foreach (TargetCourse targetCourse in command.TargetCourses)
         {
@@ -201,9 +216,12 @@ public static class BulkInitializeClassSectionsForAcademicYear
               newClassSection.Name, classSectionId, curriculumSubjects.Count);
           }
 
+          // Lock the Course-Curriculumn Assignment
+          courseCurriculumAssignment.Lock($"This curriculum is used as reference for class sections in {academicTerm.TermName}, year level {command.YearLevel} for course {course.Name}.");
+
           // TODO: Use the correct Target Role
           await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
-            "BulkInitializeClassSectionsForAcademicYear",
+            NotificationTypeConstants.BulkInitializeClassSectionsForAcademicYear,
             "Bulk Initialize Class Sections",
             $"Successfully initialized {totalSectionsCreatedForCurrentCourse} class section(s) for {course.Name} for term {academicTerm.TermName}, year level {command.YearLevel}.",
             NotificationCategoryEnum.Academic,
@@ -211,9 +229,19 @@ public static class BulkInitializeClassSectionsForAcademicYear
           ));
         }
 
+        Result lockResult = await _courseCurriculumAssignmentRepository.BulkUpdate(cohortCourseCurriculumAssignments, cancellationToken);
+        if (!lockResult.IsSuccess)
+        {
+          _logger.LogError(
+            "Failed to lock course-curriculum assignments. Errors: {Errors}",
+            string.Join(", ", lockResult.Errors));
+          await transaction.RollbackAsync(cancellationToken);
+          return Result.Error("Unable to lock course-curriculum assignments.");
+        }
+
         foreach (ClassSectionId createdSectionId in createdSectionIds)
         {
-          await _eventBus.PublishAsync(new ClassSectionCreatedEvent(createdSectionId));
+          await _eventBus.PublishAsync(new ClassSectionCreatedEvent(createdSectionId, triggeredBy));
         }
 
         // ClassSectionCreatedEvent is routed to a dedicated BufferedInMemory local queue (see

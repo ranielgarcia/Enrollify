@@ -1,4 +1,5 @@
 using Enrollify.Application.Features.ClassSectionScheduling.Extensions;
+using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
 
@@ -10,19 +11,27 @@ public static class DeleteClassSection
     {
         private readonly IClassSectionRepository _classSectionRepository;
         private readonly IReadRepository<ClassSection> _readRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IDomainEventBus _eventBus;
         private readonly ILogger<Handler> _logger;
 
         public Handler(IClassSectionRepository classSectionRepository,
             IReadRepository<ClassSection> readRepository,
+            IUnitOfWork unitOfWork,
+            IDomainEventBus eventBus,
             ILogger<Handler> logger)
         {
             _classSectionRepository = classSectionRepository;
             _readRepository = readRepository;
+            _unitOfWork = unitOfWork;
+            _eventBus = eventBus;
             _logger = logger;
         }
 
         public async Task<Result> Handle(Command command, CancellationToken cancellationToken)
         {
+          await using ITransactionScope transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
             var classSectionToDelete = await _readRepository.GetByIdAsync(command.Id, cancellationToken);
 
             if (classSectionToDelete is null)
@@ -52,7 +61,18 @@ public static class DeleteClassSection
                 }
             }
 
-            return await _classSectionRepository.Delete(classSectionToDelete, cancellationToken);
+            var deleteResult = await _classSectionRepository.Delete(classSectionToDelete, cancellationToken);
+            if (!deleteResult.IsSuccess)
+            {
+              await transaction.RollbackAsync(cancellationToken);
+              return deleteResult;
+            }
+
+            // TODO: when all class sections are deleted, we should also unlock the course-curriculum assignment for that course and academic year
+            await _eventBus.PublishAsync(new ClassSectionDeletedEvent(classSectionToDelete.Id));
+
+            await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
+            return deleteResult;
         }
     }
 }

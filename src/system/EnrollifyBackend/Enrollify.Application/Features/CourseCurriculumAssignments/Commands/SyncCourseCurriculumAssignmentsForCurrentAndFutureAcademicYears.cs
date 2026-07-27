@@ -3,8 +3,9 @@ namespace Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 public static class SyncCourseCurriculumAssignmentsForCurrentAndFutureAcademicYears
 {
   private const int MaxFutureAcademicYearsToSync = 2;
+  private const int MaxPastAcademicYearsToSync = 4;
 
-  public record Command() : IRequest<Result>;
+  public record Command(bool IncludePastYears = false) : IRequest<Result>;
 
   public class Handler : IRequestHandler<Command, Result>
   {
@@ -34,7 +35,7 @@ public static class SyncCourseCurriculumAssignmentsForCurrentAndFutureAcademicYe
       {
         Result syncResult =
           await _mediator.Send(
-            new SyncCourseCurriculumAssignments.Command(currentAcademicYear.Id),
+            new SyncCourseCurriculumAssignmentsForAcademicYear.Command(currentAcademicYear.Id),
             cancellationToken);
         if (!syncResult.IsSuccess)
         {
@@ -53,7 +54,7 @@ public static class SyncCourseCurriculumAssignmentsForCurrentAndFutureAcademicYe
       {
         Result syncResult =
           await _mediator.Send(
-            new SyncCourseCurriculumAssignments.Command(futureAcademicYear.Id),
+            new SyncCourseCurriculumAssignmentsForAcademicYear.Command(futureAcademicYear.Id),
             cancellationToken);
         if (!syncResult.IsSuccess)
         {
@@ -61,6 +62,27 @@ public static class SyncCourseCurriculumAssignmentsForCurrentAndFutureAcademicYe
             "Failed to sync course curriculum assignments for future academic year with id {AcademicYearId}. Error: {Error}",
             futureAcademicYear.Id, syncResult.Errors.FirstOrDefault());
           errors.Add($"AcademicYear {futureAcademicYear.Id}: {syncResult.Errors.FirstOrDefault()}");
+        }
+      }
+
+      if (request.IncludePastYears)
+      {
+        var pastAcademicYears = (await _academicYearReadRepository.ListAsync(
+          new ListPreviousAcademicYearsSpec(MaxPastAcademicYearsToSync), cancellationToken)).ToList();
+
+        foreach (AcademicYear pastAcademicYear in pastAcademicYears)
+        {
+          Result syncResult =
+            await _mediator.Send(
+              new SyncCourseCurriculumAssignmentsForAcademicYear.Command(pastAcademicYear.Id),
+              cancellationToken);
+          if (!syncResult.IsSuccess)
+          {
+            _logger.LogError(
+              "Failed to sync course curriculum assignments for past academic year with id {AcademicYearId}. Error: {Error}",
+              pastAcademicYear.Id, syncResult.Errors.FirstOrDefault());
+            errors.Add($"AcademicYear {pastAcademicYear.Id}: {syncResult.Errors.FirstOrDefault()}");
+          }
         }
       }
 

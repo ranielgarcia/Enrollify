@@ -1,6 +1,7 @@
 using Enrollify.Core.Aggregates.NotificationAggregate;
 using Enrollify.Core.Aggregates.NotificationAggregate.Models;
 using Enrollify.Core.Aggregates.RoleAggregate;
+using Enrollify.Core.Aggregates.UserAggregate;
 using Enrollify.Core.Authentication;
 using Enrollify.Core.Constants;
 using Enrollify.Core.Services.NotificationServices;
@@ -12,13 +13,16 @@ public class NotificationPublisher : INotificationPublisher
 {
   private readonly ICurrentUserAccessor _currentUserAccessor;
   private readonly INotificationBus _notificationBus;
+  private readonly ILogger<NotificationPublisher> _logger;
 
   public NotificationPublisher(
     ICurrentUserAccessor currentUserAccessor,
-    INotificationBus notificationBus)
+    INotificationBus notificationBus,
+    ILogger<NotificationPublisher> logger)
   {
     _currentUserAccessor = currentUserAccessor;
     _notificationBus = notificationBus;
+    _logger = logger;
   }
 
   // Broadcast notifications
@@ -88,6 +92,13 @@ public class NotificationPublisher : INotificationPublisher
   private async Task BroadcastNotification(BroadcastNotificationCreation notification, NotificationSeverityEnum severity)
   {
     var currentUser = _currentUserAccessor.GetCurrentUser();
+
+    if (currentUser?.Id == null)
+    {
+      _logger.LogWarning("No current user context, falling back to SystemUserId...");
+    }
+
+    var userId = currentUser?.Id ?? SystemUserConstants.SystemUserId;
     var broadcastNotification = new BroadcastNotification(
       notification.Type,
       notification.Title,
@@ -100,7 +111,7 @@ public class NotificationPublisher : INotificationPublisher
     );
 
     var notificationEntity = Notification.Create(broadcastNotification);
-    notificationEntity.AddCreatedBy(currentUser!.Id);
+    notificationEntity.AddCreatedBy(userId);
 
     await _notificationBus.PublishAsync(new NotificationCreatedEvent(notificationEntity));
   }
@@ -108,20 +119,28 @@ public class NotificationPublisher : INotificationPublisher
   private async Task NotifyTargetUser(NotificationForTargetUserCreation notification, NotificationSeverityEnum severity)
   {
     var currentUser = _currentUserAccessor.GetCurrentUser();
+    var userId = notification.TargetUserId ?? currentUser?.Id;
+
+    if (userId == null)
+    {
+      _logger.LogWarning("Unable to send notification to target user because the target user id is null and there is no current user context.");
+      return;
+    }
+
     var broadcastNotification = new NotificationForTargetUser(
       notification.Type,
       notification.Title,
       notification.Message,
       severity,
       notification.Category,
-      notification.TargetUserId,
+      (UserId)userId,
       notification.RetentionDays,
       notification.ReferenceType,
       notification.ReferenceId
     );
 
     var notificationEntity = Notification.Create(broadcastNotification);
-    notificationEntity.AddCreatedBy(currentUser!.Id);
+    notificationEntity.AddCreatedBy((UserId)userId);
 
     await _notificationBus.PublishAsync(new NotificationCreatedEvent(notificationEntity));
   }
@@ -129,6 +148,12 @@ public class NotificationPublisher : INotificationPublisher
   private async Task NotifyTargetUsersWithARole(NotificationForTargetRoleCreation notification, NotificationSeverityEnum severity)
   {
     var currentUser = _currentUserAccessor.GetCurrentUser();
+    if (currentUser?.Id == null)
+    {
+      _logger.LogWarning("No current user context, falling back to SystemUserId...");
+    }
+
+    var userId = currentUser?.Id ??  SystemUserConstants.SystemUserId;
 
     foreach (var targetRole in notification.TargetRoles)
     {
@@ -145,7 +170,7 @@ public class NotificationPublisher : INotificationPublisher
       );
 
       var notificationEntity = Notification.Create(broadcastNotification);
-      notificationEntity.AddCreatedBy(currentUser!.Id);
+      notificationEntity.AddCreatedBy(userId);
 
       await _notificationBus.PublishAsync(new NotificationCreatedEvent(notificationEntity));
     }

@@ -11,9 +11,9 @@ public record ClassSectionValidationIssueDto
 {
   public string? Id { get; init; }
 
-  public ClassSectionValidationIssueTypeDto Type { get; init; }
+  public required ClassSectionValidationIssueTypeDto Type { get; init; }
 
-  public string Message { get; init; } = string.Empty;
+  public required string Message { get; init; } = string.Empty;
 
   public string? DayOfWeek { get; init; }
 

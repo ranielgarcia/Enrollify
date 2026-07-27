@@ -23,7 +23,7 @@ public class DevelopmentDatabaseSetupService(
 
         logger.LogInformation("Database migration complete. Running course-curriculum assignment sync...");
 
-        await mediator.Send(new SyncCourseCurriculumAssignmentsForCurrentAndFutureAcademicYears.Command(), cancellationToken);
+        await mediator.Send(new SyncCourseCurriculumAssignmentsForCurrentAndFutureAcademicYears.Command(IncludePastYears: true), cancellationToken);
 
         logger.LogInformation("Development database setup complete.");
     }

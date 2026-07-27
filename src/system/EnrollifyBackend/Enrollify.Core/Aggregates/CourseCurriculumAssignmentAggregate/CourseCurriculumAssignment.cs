@@ -34,6 +34,9 @@ public class CourseCurriculumAssignment : EntityBase<CourseCurriculumAssignment,
     public CurriculumId CurriculumId { get; private set; }
     public Curriculum? Curriculum { get; private set; }
 
+    public bool IsLocked { get; private set; }
+    public string? LockRemarks { get; private set; }
+
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }
     public User? CreatedByUser { get; private set; }
@@ -50,6 +53,20 @@ public class CourseCurriculumAssignment : EntityBase<CourseCurriculumAssignment,
         if (CurriculumId == newCurriculumId) return this;
         CurriculumId = Guard.Against.Null(newCurriculumId, nameof(newCurriculumId));
         return this;
+    }
+
+    public CourseCurriculumAssignment Lock(string remarks)
+    {
+      IsLocked = true;
+      LockRemarks = remarks;
+      return this;
+    }
+
+    public CourseCurriculumAssignment Unlock(string remarks)
+    {
+      IsLocked = false;
+      LockRemarks = remarks;
+      return this;
     }
 
 }

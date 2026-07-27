@@ -29,7 +29,6 @@ public class CourseCurriculumAssignmentRepository : ICourseCurriculumAssignmentR
         catch(Exception ex)
         {
             _logger.LogError(ex, "Unable to bulk create Course-Curriculum assignments.");
-            // Transaction will rollback automatically on dispose
             return Result.Error("An unexpected error occurred while creating Course-Curriculum assignments.");
         }
     }
@@ -45,7 +44,6 @@ public class CourseCurriculumAssignmentRepository : ICourseCurriculumAssignmentR
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unable to bulk update Course-Curriculum assignments.");
-            // Transaction will rollback automatically on dispose
             return Result.Error("An unexpected error occurred while updating Course-Curriculum assignments.");
         }
     }

@@ -13,6 +13,7 @@ public class OnRefreshClassSectionSchedulingStatsAggregateCountsRequestedEventHa
     await mediator.Send(new ComputeClassSectionSchedulingStats.Command(
       notification.TermId,
       notification.CourseId,
-      notification.ClassSectionId), cancellationToken);
+      notification.ClassSectionId,
+      notification.TriggeredBy), cancellationToken);
   }
 }

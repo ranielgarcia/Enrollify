@@ -12,19 +12,23 @@ public class OnNotificationCreatedEventHandler
   private readonly INotificationRepository _notificationRepository;
   private readonly IUserQueryService _userQueryService;
   private readonly IRealTimeNotificationSender _realTimeNotificationSender;
+  private readonly ILogger<OnNotificationCreatedEventHandler> _logger;
 
   public OnNotificationCreatedEventHandler(
     INotificationRepository notificationRepository,
     IUserQueryService userQueryService,
-    IRealTimeNotificationSender realTimeNotificationSender)
+    IRealTimeNotificationSender realTimeNotificationSender,
+    ILogger<OnNotificationCreatedEventHandler> logger)
   {
     _notificationRepository = notificationRepository;
     _userQueryService = userQueryService;
     _realTimeNotificationSender = realTimeNotificationSender;
+    _logger = logger;
   }
 
   public async Task Handle(NotificationCreatedEvent[] notificationCreatedEvents, CancellationToken ct)
   {
+    // TODO: Cache roles and users
     RoleId[] targetRoleIds = notificationCreatedEvents
       .Where(e => e.Notification.TargetScope == NotificationTargetScopeEnum.Role)
       .Select(e => e.Notification.TargetRoleId)
@@ -59,6 +63,7 @@ public class OnNotificationCreatedEventHandler
       foreach (var userId in userIds)
         notification.AddRecipient(userId);
 
+      _logger.LogDebug("Notification {NotificationId} message: {Message} created with {RecipientCount} recipients.", notification.Id, notification.Message, notification.Recipients.Count);
       notifications.Add(notification);
     }
 

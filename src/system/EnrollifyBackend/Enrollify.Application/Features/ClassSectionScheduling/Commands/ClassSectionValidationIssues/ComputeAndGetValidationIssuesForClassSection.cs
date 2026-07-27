@@ -1,8 +1,9 @@
-using Enrollify.Application.Features.ClassSectionScheduling.DTOs;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
 using Enrollify.Core.Aggregates.ClassSectionSchedulingStatsAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate;
 using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Models;
+using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Core.Authentication;
 using Enrollify.Core.Services.ClassSectionDataIntegrityValidation;
 using Enrollify.Core.Services.ScheduleConflictDetection;
 
@@ -11,7 +12,8 @@ namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSe
 public static class ComputeAndGetValidationIssuesForClassSection
 {
   public sealed record Command(
-    ClassSectionId ClassSectionId) : IRequest<Result<List<ClassSectionValidationIssue>>>;
+    ClassSectionId ClassSectionId,
+    UserId? TriggeredBy = null) : IRequest<Result<List<ClassSectionValidationIssue>>>;
 
   public sealed class Handler : IRequestHandler<Command, Result<List<ClassSectionValidationIssue>>>
   {
@@ -23,6 +25,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IClassSectionValidationIssueRepository _validationIssueRepository;
     private readonly IDomainEventBus _eventBus;
+    private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -34,6 +37,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
       IClassSectionRepository classSectionRepository,
       IClassSectionValidationIssueRepository validationIssueRepository,
       IDomainEventBus eventBus,
+      ICurrentUserAccessor currentUserAccessor,
       ILogger<Handler> logger)
     {
       _offeringReadRepository = offeringReadRepository;
@@ -44,6 +48,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
       _classSectionRepository = classSectionRepository;
       _validationIssueRepository = validationIssueRepository;
       _eventBus = eventBus;
+      _currentUserAccessor = currentUserAccessor;
       _logger = logger;
     }
 
@@ -51,6 +56,10 @@ public static class ComputeAndGetValidationIssuesForClassSection
       CancellationToken cancellationToken)
     {
       ClassSectionId classSectionId = request.ClassSectionId;
+
+      // Resolve the effective user: prefer the propagated TriggeredBy (background path),
+      // fall back to the live HTTP context (direct-call path).
+      UserId? effectiveUserId = request.TriggeredBy ?? _currentUserAccessor.GetCurrentUser()?.Id;
 
       ClassSection? section =
         await _classSectionReadRepository.FirstOrDefaultAsync(new GetClassSectionFullDetailsByIdSpec(classSectionId),
@@ -63,7 +72,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
         return Result.NotFound($"ClassSection with ID {classSectionId.Value} was not found.");
       }
 
-      section.MoveToValidating();
+      section.MoveToValidating(effectiveUserId);
       await _classSectionRepository.Update(section, cancellationToken);
 
       List<ClassSectionSubjectOffering> offerings = await _offeringReadRepository.ListAsync(
@@ -116,13 +125,10 @@ public static class ComputeAndGetValidationIssuesForClassSection
 
       await _validationIssueRepository.ReplaceAllForSectionAsync(section.Id, validationIssues, cancellationToken);
 
-      // Draft only, higher status will not invoke this event handler in any way. Updates to a class with higher status is not allowed
-      section.MoveToDraft();
-      await _classSectionRepository.Update(section, cancellationToken);
 
       await _eventBus.PublishAsync(
         new RefreshClassSectionSchedulingStatsAggregateCountsRequestedEvent(section.AcademicTermId, section.CourseId,
-          section.Id));
+          section.Id, triggeredBy: effectiveUserId));
 
       _logger.LogInformation(
         "Computed {ConflictIssueCount} conflict validation issues and {DataIntegrityIssueCount} data integrity validation issues for class section {ClassSectionId}",

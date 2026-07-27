@@ -28,7 +28,7 @@ public class NotificationDto
       ReferenceType = notification.ReferenceType?.Name,
       ReferenceId = notification.ReferenceId,
       CreatedAt = notification.CreatedAt,
-      IsRead = notification.Recipients.FirstOrDefault()?.IsRead ?? false,
+      IsRead = notification.Recipients.FirstOrDefault()?.IsRead ?? false,// Recipients value is expected to have one item
     };
   }
 }

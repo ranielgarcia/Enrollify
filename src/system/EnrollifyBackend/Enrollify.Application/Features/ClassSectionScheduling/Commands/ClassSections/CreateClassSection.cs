@@ -1,9 +1,13 @@
 using Enrollify.Application.Features.ClassSectionScheduling.Extensions;
+using Enrollify.Application.Features.CourseCurriculumAssignments;
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
+using Enrollify.Application.Features.Notifications;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
 using Enrollify.Core.Aggregates.ClassSectionSubjectOfferingAggregate.Models;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.Aggregates.UserAggregate;
+using Enrollify.Core.Authentication;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services.NotificationServices.Models;
 using Enrollify.Core.ValueObjects;
@@ -27,9 +31,11 @@ public static class CreateClassSection
     private readonly IReadRepository<CourseCurriculumAssignment> _courseCurriculumAssignmentReadRepository;
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
+    private readonly ICourseCurriculumAssignmentRepository _courseCurriculumAssignmentRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDomainEventBus _eventBus;
     private readonly INotificationPublisher _notificationPublisher;
+    private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -38,9 +44,11 @@ public static class CreateClassSection
       IReadRepository<CourseCurriculumAssignment> courseCurriculumAssignmentReadRepository,
       IClassSectionRepository classSectionRepository,
       IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
+      ICourseCurriculumAssignmentRepository courseCurriculumAssignmentRepository,
       IUnitOfWork unitOfWork,
       IDomainEventBus eventBus,
       INotificationPublisher notificationPublisher,
+      ICurrentUserAccessor currentUserAccessor,
       ILogger<Handler> logger)
     {
       _academicYearReadRepository = academicYearReadRepository;
@@ -48,9 +56,11 @@ public static class CreateClassSection
       _courseCurriculumAssignmentReadRepository = courseCurriculumAssignmentReadRepository;
       _classSectionRepository = classSectionRepository;
       _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
+      _courseCurriculumAssignmentRepository = courseCurriculumAssignmentRepository;
       _unitOfWork = unitOfWork;
       _eventBus = eventBus;
       _notificationPublisher = notificationPublisher;
+      _currentUserAccessor = currentUserAccessor;
       _logger = logger;
     }
 
@@ -76,7 +86,7 @@ public static class CreateClassSection
 
       CourseCurriculumAssignment? courseCurriculumAssignment = await _courseCurriculumAssignmentReadRepository
         .FirstOrDefaultAsync(
-          new GetCourseCurriculumAssignmentByCourseAndAcademicYear(courseId, academicYear.Id), ct);
+          new GetCourseCurriculumAssignmentByCourseAndAcademicYearSpec(courseId, academicYear.Id), ct);
 
       if (courseCurriculumAssignment == null)
         return Result.Error("Course-Curriculum assignment for the given cohort not found.");
@@ -87,6 +97,9 @@ public static class CreateClassSection
 
     public async Task<Result<ClassSectionId>> Handle(Command command, CancellationToken cancellationToken)
     {
+      // Capture the initiating user now, while HTTP context is still alive.
+      UserId? triggeredBy = _currentUserAccessor.GetCurrentUser()?.Id;
+
       // Get validated entities (we know they exist because of validation)
       AcademicYear? academicYear = await _academicYearReadRepository
         .FirstOrDefaultAsync(new GetAcademicYearByAcademicTermIdSpec(command.AcademicTermId),
@@ -187,9 +200,21 @@ public static class CreateClassSection
           }
         }
 
+        courseCurriculumAssignment.Lock($"This curriculum is used as reference for class sections in {academicTerm.TermName}, year level {command.YearLevel} for course {course.Name}.");
+        Result lockResult = await _courseCurriculumAssignmentRepository.BulkUpdate([courseCurriculumAssignment], cancellationToken);
+        if (!lockResult.IsSuccess)
+        {
+          _logger.LogError(
+            "Failed to lock course-curriculum assignment for course {CourseId}. Errors: {Errors}",
+            courseCurriculumAssignment.CourseId,
+            string.Join(", ", lockResult.Errors));
+          await transaction.RollbackAsync(cancellationToken);
+          return Result.Error("Unable to lock course-curriculum assignment.");
+        }
+
         // TODO: Use the correct Target Role
         await _notificationPublisher.SuccessTargetRoleNotification(new NotificationForTargetRoleCreation(
-          "CreateClassSection",
+          NotificationTypeConstants.CreateClassSection,
           "Create Class Section",
           $"Successfully created {newClassSection.FullName} for {course.Name} for term {academicTerm.TermName}, year level {command.YearLevel}.",
           NotificationCategoryEnum.Academic,
@@ -200,7 +225,7 @@ public static class CreateClassSection
         // ClassSectionCreatedEvent is routed to a dedicated BufferedInMemory local queue (see
         // ConfigureWolverine in InfrastructureServiceExtensions), so the cascading validation-issue
         // recomputation chain runs asynchronously in the background rather than blocking this call.
-        await _eventBus.PublishAsync(new ClassSectionCreatedEvent(classSectionId));
+        await _eventBus.PublishAsync(new ClassSectionCreatedEvent(classSectionId, triggeredBy));
 
         // Use the unit of work's outbox-aware commit instead of transaction.CommitAsync() directly:
         // it saves pending changes, commits the ambient transaction, and flushes the published

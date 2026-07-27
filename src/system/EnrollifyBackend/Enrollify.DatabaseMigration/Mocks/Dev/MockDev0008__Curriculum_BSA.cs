@@ -14,7 +14,7 @@ public class MockDev0008__Curriculum_BSA : IScript
             // ============================================
             // YEAR 1
             // ============================================
-            
+
             // Year 1, Semester 1
             new("GE-MATH1", 1, 1, []),
             new("GE-ENG1", 1, 1, []),
@@ -98,45 +98,45 @@ public class MockDev0008__Curriculum_BSA : IScript
         scriptBuilder.AppendLine("""
             DECLARE @InitialUserId INT = (SELECT Id FROM Users WHERE Email='system@enrollify.local');
             DECLARE @BSACourseId INT = (SELECT Id FROM Courses WHERE Code='BSA');
-            DECLARE @ActiveStatusId INT = 2; -- Active status for curriculum
+            DECLARE @DraftStatusId INT = 1; -- Draft status for curriculum
             """);
 
         // Create Curriculum for BSA
         scriptBuilder.AppendLine("""
-            
+
             -- ============================================
             -- CREATE CURRICULUM
             -- ============================================
-            
+
             MERGE [Curriculums] AS [Target]
             USING (VALUES
-                (@BSACourseId, 2024, '2024-A', @ActiveStatusId, 'Bachelor of Science in Accountancy Curriculum 2024')
+                (@BSACourseId, 2024, '2024-A', @DraftStatusId, 'Bachelor of Science in Accountancy Curriculum 2024')
             ) AS [Source] ([CourseId], [EffectiveYear], [Version], [StatusId], [Description])
             ON [Target].[CourseId] = [Source].[CourseId] AND [Target].[Version] = [Source].[Version]
             WHEN NOT MATCHED THEN
                 INSERT ([CourseId], [EffectiveYear], [Version], [StatusId], [Description], [ApprovedDate], [CreatedBy], [CreatedAt])
                 VALUES ([Source].[CourseId], [Source].[EffectiveYear], [Source].[Version], [Source].[StatusId], [Source].[Description], GETUTCDATE(), @InitialUserId, GETUTCDATE())
             WHEN MATCHED THEN
-                UPDATE SET 
+                UPDATE SET
                     [Target].[EffectiveYear] = [Source].[EffectiveYear],
                     [Target].[StatusId] = [Source].[StatusId],
                     [Target].[Description] = [Source].[Description],
                     [Target].[UpdatedBy] = @InitialUserId,
                     [Target].[UpdatedAt] = GETUTCDATE();
-            
+
             DECLARE @BSACurriculumId INT = (SELECT Id FROM Curriculums WHERE CourseId = @BSACourseId AND Version = '2024-A');
             """);
 
         // Build CurriculumSubjects MERGE statement
         scriptBuilder.AppendLine("""
-            
+
             -- ============================================
             -- CREATE CURRICULUM SUBJECTS
             -- ============================================
-            
+
             MERGE [CurriculumSubjects] AS [Target]
             USING (
-                SELECT 
+                SELECT
                     c.Id AS CurriculumId,
                     s.Id AS SubjectId,
                     src.YearLevel,
@@ -165,7 +165,7 @@ public class MockDev0008__Curriculum_BSA : IScript
                 INSERT ([CurriculumId], [SubjectId], [YearLevel], [TermNumber], [IsElective], [ElectiveGroupName], [CreatedBy], [CreatedAt])
                 VALUES ([Source].[CurriculumId], [Source].[SubjectId], [Source].[YearLevel], [Source].[TermNumber], [Source].[IsElective], [Source].[ElectiveGroupName], @InitialUserId, GETUTCDATE())
             WHEN MATCHED THEN
-                UPDATE SET 
+                UPDATE SET
                     [Target].[YearLevel] = [Source].[YearLevel],
                     [Target].[TermNumber] = [Source].[TermNumber],
                     [Target].[IsElective] = [Source].[IsElective],
@@ -183,11 +183,11 @@ public class MockDev0008__Curriculum_BSA : IScript
         if (prerequisiteEntries.Count > 0)
         {
             scriptBuilder.AppendLine("""
-            
+
             -- ============================================
             -- CREATE CURRICULUM SUBJECT PREREQUISITES
             -- ============================================
-            
+
             -- First, soft-delete existing prerequisites that are no longer valid
             UPDATE csp
             SET csp.IsActive = 0,
@@ -198,10 +198,10 @@ public class MockDev0008__Curriculum_BSA : IScript
             INNER JOIN Curriculums c ON c.Id = cs.CurriculumId
             WHERE c.Id IN (@BSACurriculumId)
               AND csp.IsActive = 1;
-            
+
             -- Insert prerequisites using a CTE to get CurriculumSubject IDs
             ;WITH PrerequisiteData AS (
-                SELECT 
+                SELECT
                     cs_subject.Id AS CurriculumSubjectId,
                     cs_prereq.Id AS PrerequisiteCurriculumSubjectId,
                     c.Id AS CurriculumId
@@ -227,13 +227,13 @@ public class MockDev0008__Curriculum_BSA : IScript
             )
             MERGE [CurriculumSubjectPrerequisites] AS [Target]
             USING PrerequisiteData AS [Source]
-            ON [Target].[CurriculumSubjectId] = [Source].[CurriculumSubjectId] 
+            ON [Target].[CurriculumSubjectId] = [Source].[CurriculumSubjectId]
                AND [Target].[PrerequisiteCurriculumSubjectId] = [Source].[PrerequisiteCurriculumSubjectId]
             WHEN NOT MATCHED THEN
                 INSERT ([CurriculumSubjectId], [PrerequisiteCurriculumSubjectId], [MinimumGrade], [CreatedBy], [CreatedAt], [IsActive])
                 VALUES ([Source].[CurriculumSubjectId], [Source].[PrerequisiteCurriculumSubjectId], NULL, @InitialUserId, GETUTCDATE(), 1)
             WHEN MATCHED THEN
-                UPDATE SET 
+                UPDATE SET
                     [Target].[IsActive] = 1,
                     [Target].[DeletedBy] = NULL,
                     [Target].[DeletedAt] = NULL,

@@ -8,7 +8,7 @@ public record NotificationForTargetUserCreation(
   string Title,
   string Message,
   NotificationCategoryEnum Category,
-  UserId TargetUserId,
+  UserId? TargetUserId = null,
   int RetentionDays = NotificationSettings.DefaultRetentionDays,
   NotificationReferenceTypeEnum? ReferenceType = null,
   int? ReferenceId = null);

@@ -2,6 +2,7 @@ using Ardalis.Result;
 using Ardalis.Specification;
 using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
 using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
+using Enrollify.Application.Features.CourseCurriculumAssignments;
 using Enrollify.Core.Aggregates.AcademicYearAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Models;
@@ -14,6 +15,7 @@ using Enrollify.Core.Aggregates.CurriculumAggregate.Models;
 using Enrollify.Core.Aggregates.RoomTypeAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using Enrollify.Core.Aggregates.SubjectAggregate.Models;
+using Enrollify.Core.Authentication;
 using Enrollify.Core.Constants;
 using Enrollify.Core.ValueObjects;
 using Enrollify.SharedKernel;
@@ -34,6 +36,8 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
     private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
     private readonly Mock<IDomainEventBus> _eventBusMock = new();
     private readonly Mock<INotificationPublisher> _notificationPublisher = new();
+    private readonly Mock<ICourseCurriculumAssignmentRepository> _courseCurriculumAssignmentRepositoryMock = new();
+    private readonly Mock<ICurrentUserAccessor> _currentUserAccessorMock = new();
     private readonly FakeBulkTransactionScope _fakeTransaction = new();
     private readonly FakeLogger<BulkInitializeClassSectionsForAcademicYear.Handler> _logger;
     private readonly BulkInitializeClassSectionsForAcademicYear.Handler _handler;
@@ -52,6 +56,8 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
             _unitOfWorkMock.Object,
             _eventBusMock.Object,
             _notificationPublisher.Object,
+            _courseCurriculumAssignmentRepositoryMock.Object,
+            _currentUserAccessorMock.Object,
             _logger);
 
         _unitOfWorkMock
@@ -552,6 +558,60 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
             Times.Once);
     }
 
+    [Fact(DisplayName = "Multiple courses - BulkUpdate called once with all locked assignments")]
+    public async Task Handle_MultiplePayloads_AllSucceed_CallsBulkUpdateOnceWithLockedAssignments()
+    {
+        // Arrange
+        var courseId1 = CourseId.From(1);
+        var courseId2 = CourseId.From(2);
+        var academicTermId = AcademicTermId.From(1);
+        var yearLevel = YearLevel.From(1);
+        var command = new BulkInitializeClassSectionsForAcademicYear.Command(
+            academicTermId,
+            yearLevel,
+            [new(courseId1, 1), new(courseId2, 1)]);
+
+        var course1 = CreateCourse(courseId1, "BSCS");
+        var course2 = CreateCourse(courseId2, "BSIT");
+        var curriculum1 = CreateCurriculumWithSubjects(courseId1, yearLevel, TermNumber.From(1), subjectCount: 2);
+        var curriculum2 = CreateCurriculumWithSubjects(courseId2, yearLevel, TermNumber.From(1), subjectCount: 2);
+
+        SetupAcademicYear(academicTermId);
+        SetupCourseCurriculumAssignments(
+            (courseId1, course1, curriculum1),
+            (courseId2, course2, curriculum2));
+        SetupExistingSections();
+        SetupSuccessfulSectionCreation();
+        SetupSuccessfulSubjectOfferingCreation();
+
+        var capturedAssignments = CaptureCourseCurriculumAssignmentsFromBulkUpdate();
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert: BulkUpdate called exactly once
+        _courseCurriculumAssignmentRepositoryMock.Verify(
+            r => r.BulkUpdate(It.IsAny<List<CourseCurriculumAssignment>>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        // Assert: Both assignments are captured
+        Assert.Equal(2, capturedAssignments.Count);
+
+        // Assert: All assignments are locked
+        Assert.All(capturedAssignments, assignment =>
+        {
+            Assert.True(assignment.IsLocked, $"CourseCurriculumAssignment for course {assignment.CourseId} should be locked");
+        });
+
+        // Assert: Lock remarks contain expected information
+        Assert.All(capturedAssignments, assignment =>
+        {
+            Assert.NotNull(assignment.LockRemarks);
+            Assert.Contains("year level", assignment.LockRemarks, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(assignment.Course!.Name, assignment.LockRemarks);
+        });
+    }
+
     #endregion
 
     #region Helper Methods
@@ -582,6 +642,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
         SetupCourseCurriculumAssignments((courseId, course, curriculum));
         SetupSuccessfulSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
     }
 
     private void SetupAcademicYear(AcademicTermId academicTermId, TermNumber? termNumber = null)
@@ -645,6 +706,13 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
             .ReturnsAsync(() => Result.Success(ClassSectionSubjectOfferingId.From(++idCounter)));
     }
 
+    private void SetupSuccessfulCourseCurriculumAssignmentBulkUpdate()
+    {
+        _courseCurriculumAssignmentRepositoryMock
+            .Setup(r => r.BulkUpdate(It.IsAny<List<CourseCurriculumAssignment>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
+    }
+
     /// <summary>
     /// Registers a Moq Callback so all created <see cref="ClassSection"/> objects are collected and returned.
     /// Also configures the <see cref="IClassSectionRepository.Create"/> mock to return success.
@@ -657,6 +725,21 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
             .Setup(r => r.Create(It.IsAny<ClassSection>(), It.IsAny<CancellationToken>()))
             .Callback<ClassSection, CancellationToken>((cs, _) => captured.Add(cs))
             .ReturnsAsync(() => Result.Success(ClassSectionId.From(++idCounter)));
+        return captured;
+    }
+
+    /// <summary>
+    /// Registers a Moq Callback so all <see cref="CourseCurriculumAssignment"/> objects passed to
+    /// <see cref="ICourseCurriculumAssignmentRepository.BulkUpdate"/> are collected and returned.
+    /// Also configures the mock to return success.
+    /// </summary>
+    private List<CourseCurriculumAssignment> CaptureCourseCurriculumAssignmentsFromBulkUpdate()
+    {
+        var captured = new List<CourseCurriculumAssignment>();
+        _courseCurriculumAssignmentRepositoryMock
+            .Setup(r => r.BulkUpdate(It.IsAny<List<CourseCurriculumAssignment>>(), It.IsAny<CancellationToken>()))
+            .Callback<List<CourseCurriculumAssignment>, CancellationToken>((assignments, _) => captured.AddRange(assignments))
+            .ReturnsAsync(Result.Success());
         return captured;
     }
 

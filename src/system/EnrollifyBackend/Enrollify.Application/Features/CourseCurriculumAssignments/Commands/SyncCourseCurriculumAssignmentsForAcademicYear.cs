@@ -1,10 +1,14 @@
 using Enrollify.Application.Features.CourseCurriculumAssignments.Specifications;
+using Enrollify.Application.Features.Notifications;
 using Enrollify.Core.Aggregates.CourseCurriculumAssignmentAggregate;
+using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
+using Enrollify.Core.Services.NotificationServices.Models;
+using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
 
 namespace Enrollify.Application.Features.CourseCurriculumAssignments.Commands;
 
-public static class SyncCourseCurriculumAssignments
+public static class SyncCourseCurriculumAssignmentsForAcademicYear
 {
   public record Command(AcademicYearId AcademicYearId) : IRequest<Result>;
 
@@ -16,6 +20,7 @@ public static class SyncCourseCurriculumAssignments
     private readonly IReadRepository<AcademicYear> _academicYearReadRepository;
     private readonly IApplicableCurriculumQueryService _applicableCurriculumQueryService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificationPublisher _notificationPublisher;
     private readonly ILogger<Handler> _logger;
 
     public Handler(
@@ -25,6 +30,7 @@ public static class SyncCourseCurriculumAssignments
       IReadRepository<AcademicYear> academicYearReadRepository,
       IApplicableCurriculumQueryService applicableCurriculumQueryService,
       IUnitOfWork unitOfWork,
+      INotificationPublisher notificationPublisher,
       ILogger<Handler> logger)
     {
       _repository = repository;
@@ -33,6 +39,7 @@ public static class SyncCourseCurriculumAssignments
       _academicYearReadRepository = academicYearReadRepository;
       _applicableCurriculumQueryService = applicableCurriculumQueryService;
       _unitOfWork = unitOfWork;
+      _notificationPublisher = notificationPublisher;
       _logger = logger;
     }
 
@@ -65,11 +72,27 @@ public static class SyncCourseCurriculumAssignments
       {
         CourseCurriculumAssignment? existing = existingAssignmentByCourseId.GetValueOrDefault(course.Id);
 
+        if (existing != null && existing.IsLocked)
+        {
+          await _notificationPublisher.WarningTargetRoleNotification(new NotificationForTargetRoleCreation(
+            NotificationTypeConstants.SyncCourseCurriculumAssignmentsForAcademicYear,
+            "Sync Course Curriculum Assignments",
+            $"Course {course.Name} already has an active curriculum assigned (CurriculumId: {existing.CurriculumId}), and currently used by an existing class section(s). To replace the curriculum assigned to this course, please remove the existing class section(s) first.",
+            NotificationCategoryEnum.Academic,
+            [RolesEnum.SystemAdmin]
+          ));
+          continue;
+        }
+
         if (existing?.Curriculum?.StatusId == CurriculumStatusEnum.Active)
         {
-          _logger.LogInformation(
-            "Course {CourseName} already has an active curriculum assigned (CurriculumId: {CurriculumId}), skipping assignment.",
-            course.Name, existing.CurriculumId);
+          await _notificationPublisher.WarningTargetRoleNotification(new NotificationForTargetRoleCreation(
+            NotificationTypeConstants.SyncCourseCurriculumAssignmentsForAcademicYear,
+            "Sync Course Curriculum Assignments",
+            $"Course {course.Name} already has an active curriculum assigned (CurriculumId: {existing.CurriculumId}), skipping assignment.",
+            NotificationCategoryEnum.Academic,
+            [RolesEnum.SystemAdmin]
+          ));
           continue;
         }
 
@@ -77,8 +100,16 @@ public static class SyncCourseCurriculumAssignments
 
         if (curriculum == null)
         {
-          _logger.LogError("Unable to find an active curriculum for course {CourseName}", course.Name);
-          return Result.Error($"Unable to find an active curriculum for course {course.Name}");
+          await _notificationPublisher.WarningTargetRoleNotification(new NotificationForTargetRoleCreation(
+            NotificationTypeConstants.SyncCourseCurriculumAssignmentsForAcademicYear,
+            "Sync Course Curriculum Assignments",
+            $"Unable to find an active curriculum for course {course.Name} and academic year {academicYear.AcademicYearTitle}, skipping assignment.",
+            NotificationCategoryEnum.Academic,
+            [RolesEnum.SystemAdmin]
+          ));
+          _logger.LogWarning("Unable to find an active curriculum for course {CourseName} and academic year {AcademicYear}", course.Name, academicYear.AcademicYearTitle);
+          // return Result.Error($"Unable to find an active curriculum for course {course.Name}");
+          continue;
         }
 
         if (existing != null && existing.CurriculumId != curriculum.Id)
@@ -102,27 +133,34 @@ public static class SyncCourseCurriculumAssignments
 
       try
       {
-        Result bulkCreateResult = await _repository.BulkCreate(courseCurriculumAssignmentsToCreate, cancellationToken);
-        Result bulkUpdateResult = await _repository.BulkUpdate(courseCurriculumAssignmentsToUpdate, cancellationToken);
-
-        if (!bulkCreateResult.IsSuccess)
+        if (courseCurriculumAssignmentsToCreate.Any())
         {
-          _logger.LogError("Bulk Create - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}",
-            string.Join(", ", bulkCreateResult.Errors));
-          await transaction.RollbackAsync(cancellationToken);
-          return Result.Error("Failed to sync course-curriculum assignments.");
+          Result bulkCreateResult = await _repository.BulkCreate(courseCurriculumAssignmentsToCreate, cancellationToken);
+          if (!bulkCreateResult.IsSuccess)
+          {
+            _logger.LogError("Bulk Create - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}",
+              string.Join(", ", bulkCreateResult.Errors));
+            await transaction.RollbackAsync(cancellationToken);
+            return Result.Error("Failed to sync course-curriculum assignments.");
+          }
         }
 
-
-        if (!bulkUpdateResult.IsSuccess)
+        if (courseCurriculumAssignmentsToUpdate.Any())
         {
-          _logger.LogError("Bulk Update - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}",
-            string.Join(", ", bulkUpdateResult.Errors));
-          await transaction.RollbackAsync(cancellationToken);
-          return Result.Error("Failed to sync course-curriculum assignments.");
+          Result bulkUpdateResult = await _repository.BulkUpdate(courseCurriculumAssignmentsToUpdate, cancellationToken);
+          if (!bulkUpdateResult.IsSuccess)
+          {
+            _logger.LogError("Bulk Update - Failed to sync course-curriculum assignments. Reasons: {@ErrorMessages}",
+              string.Join(", ", bulkUpdateResult.Errors));
+            await transaction.RollbackAsync(cancellationToken);
+            return Result.Error("Failed to sync course-curriculum assignments.");
+          }
         }
 
-        await transaction.CommitAsync(cancellationToken);
+        if (courseCurriculumAssignmentsToUpdate.Any() || courseCurriculumAssignmentsToCreate.Any())
+        {
+          await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
+        }
 
         return Result.Success();
       }
