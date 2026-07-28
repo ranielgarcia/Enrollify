@@ -115,9 +115,9 @@ function RouteComponent() {
           <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-              <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 bg-sidebar text-sidebar-foreground">
+              <header className="flex h-12 shrink-0 items-center gap-2 bg-sidebar text-sidebar-foreground border-b border-sidebar-border/60">
                 <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
-                  <SidebarTrigger className="-ml-1 hover:bg-sidebar-accent hover:text-sidebar-foreground" />
+                  <SidebarTrigger className="-ml-1 size-8 hover:bg-sidebar-accent hover:text-sidebar-foreground" />
                   <Separator
                     orientation="vertical"
                     className="mr-2 data-[orientation=vertical]:h-4 bg-sidebar-foreground/20"
