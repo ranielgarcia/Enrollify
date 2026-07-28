@@ -12,7 +12,13 @@ interface CurriculumBasicDetailsProps {
   onClose: () => void;
 }
 
-function StatusBadge({ statusValue, statusName }: { statusValue: number; statusName: string }) {
+function StatusBadge({
+  statusValue,
+  statusName,
+}: {
+  statusValue: number;
+  statusName: string;
+}) {
   if (statusValue === CurriculumStatusEnum.Active) {
     return (
       <Badge className="text-[11px] px-2 py-0.5 font-semibold bg-emerald-500/15 text-emerald-600 border border-emerald-500/25 hover:bg-emerald-500/15">
@@ -50,17 +56,15 @@ export default function CurriculumBasicDetails({
   const isReadOnly = curriculum.status.value === CurriculumStatusEnum.Active;
 
   return (
-    <div className="relative overflow-hidden rounded-xl border bg-linear-to-br from-primary/5 via-background to-background p-6 shadow-sm">
-      <div className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-primary/8 blur-2xl" />
-
-      <div className="relative flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
-            <BookOpen className="h-5 w-5 text-primary" />
+    <div className="rounded-lg border border-l-4 border-l-primary bg-card px-5 py-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-sunken text-primary mt-0.5">
+            <BookOpen className="h-4 w-4" />
           </div>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl font-bold tracking-tight">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-lg font-bold tracking-tight leading-none">
                 {curriculum.course.name}
               </h2>
               <StatusBadge
@@ -68,36 +72,38 @@ export default function CurriculumBasicDetails({
                 statusName={curriculum.status.name}
               />
             </div>
-            <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
-              <span>
-                Version{" "}
-                <span className="font-medium text-foreground">
+            <div className="flex items-center gap-2.5 text-xs text-muted-foreground flex-wrap">
+              <span className="flex items-center gap-1">
+                <span>Version</span>
+                <span className="font-semibold text-foreground nums">
                   {curriculum.version}
                 </span>
               </span>
-              <span>·</span>
-              <span>
-                Effective{" "}
-                <span className="font-medium text-foreground">
+              <span className="text-border">·</span>
+              <span className="flex items-center gap-1">
+                <span>Effective</span>
+                <span className="font-semibold text-foreground nums">
                   {curriculum.effectiveYear}
                 </span>
               </span>
               {curriculum.description && (
                 <>
-                  <span>·</span>
-                  <span className="italic">{curriculum.description}</span>
+                  <span className="text-border">·</span>
+                  <span className="italic text-muted-foreground/70">
+                    {curriculum.description}
+                  </span>
                 </>
               )}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           {!isReadOnly && (
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="gap-1.5 shadow-sm"
+              className="h-8 gap-1.5 text-xs"
               onClick={onEditDetails}
             >
               <Edit2 className="size-3.5" />
@@ -105,9 +111,9 @@ export default function CurriculumBasicDetails({
             </Button>
           )}
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="gap-1.5 shadow-sm"
+            className="h-8 gap-1.5 text-xs text-muted-foreground"
             onClick={onClose}
           >
             <X className="size-3.5" />

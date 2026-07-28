@@ -22,20 +22,22 @@ export function ManagementPageLayout({
     <main className="flex min-h-0 min-w-0 flex-1 flex-col px-4 lg:px-6">
       <OverlayLoader isLoading={isLoading} text="Loading" size="sm" />
 
-      <div className="flex items-start justify-between py-2">
+      <div className="flex items-start justify-between py-3">
         <div className="flex items-start gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-sunken text-primary">
             {icon}
           </div>
-          <div className="flex flex-col justify-center">
-            <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
-            <span className="text-sm text-muted-foreground">{description}</span>
+          <div className="flex flex-col justify-center gap-0.5">
+            <h2 className="text-xl font-bold tracking-tight leading-none">
+              {title}
+            </h2>
+            <span className="text-xs text-muted-foreground">{description}</span>
           </div>
         </div>
-        <div className="py-2">{createNewItemButton}</div>
+        <div className="py-1">{createNewItemButton}</div>
       </div>
 
-      <div className="relative my-1">
+      <div className="relative my-2">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-dashed" />
         </div>

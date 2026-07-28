@@ -38,7 +38,11 @@ export function DataTableColumnHeader<TData, TValue>({
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          "-ml-1.5 flex h-8 items-center gap-1.5 rounded-md py-1.5 focus:outline-none focus:ring-1 focus:ring-ring [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground uppercase tracking-wide text-muted-foreground px-0.5 text-xs",
+          "-ml-1.5 flex h-8 items-center gap-1 rounded-md py-1.5 focus:outline-none focus:ring-1 focus:ring-ring uppercase tracking-wide px-0.5 text-[11px] font-semibold transition-colors",
+          column.getIsSorted()
+            ? "text-primary [&_svg]:text-primary"
+            : "text-muted-foreground [&_svg]:text-muted-foreground/60 hover:text-foreground",
+          "[&_svg]:size-3.5 [&_svg]:shrink-0",
           className,
         )}
         {...props}
@@ -50,7 +54,7 @@ export function DataTableColumnHeader<TData, TValue>({
           ) : column.getIsSorted() === "asc" ? (
             <ChevronUp />
           ) : (
-            <ChevronsUpDown />
+            <ChevronsUpDown className="opacity-40" />
           ))}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-28">

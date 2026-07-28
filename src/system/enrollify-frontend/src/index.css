@@ -1,6 +1,13 @@
 @import "tailwindcss";
 :root {
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Code", "Courier New", monospace;
   --radius: 0.65rem;
+  --radius-sm: 0.35rem;
+  /* Surface hierarchy — subtle elevation without shadows */
+  --surface-base: oklch(1 0 0);
+  --surface-raised: oklch(0.986 0.002 286);
+  --surface-sunken: oklch(0.972 0.003 286);
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
@@ -38,6 +45,11 @@
 }
 
 .dark {
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Code", "Courier New", monospace;
+  --surface-base: oklch(0.141 0.005 285.823);
+  --surface-raised: oklch(0.165 0.006 286);
+  --surface-sunken: oklch(0.195 0.006 286);
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.006 285.885);
@@ -74,6 +86,16 @@
 /* Tailwind v4 theme tokens mapped to CSS variables */
 @theme {
   --radius: var(--radius);
+  --radius-sm: var(--radius-sm);
+
+  /* Font families */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  /* Surface hierarchy */
+  --color-surface-base: var(--surface-base);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
 
   /* Core colors */
   --color-background: var(--background);
@@ -122,9 +144,17 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
   }
   button {
     cursor: pointer;
+  }
+}
+
+/* Utility: tabular-nums for data-heavy content */
+@layer utilities {
+  .nums {
+    font-variant-numeric: tabular-nums;
   }
 }
 

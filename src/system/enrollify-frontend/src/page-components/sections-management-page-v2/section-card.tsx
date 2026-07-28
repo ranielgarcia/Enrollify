@@ -94,18 +94,20 @@ export function SectionCard({
     : null;
 
   const accentClass = isProcessing
-    ? "border-l-2 border-l-blue-400 dark:border-l-blue-500"
+    ? "border-t-2 border-t-blue-400 dark:border-t-blue-500"
     : validation?.hasIssues
-      ? "border-l-2 border-l-amber-400 dark:border-l-amber-600"
-      : "border-l-2 border-l-transparent";
+      ? "border-t-2 border-t-amber-400 dark:border-t-amber-500"
+      : isCancelled
+        ? "border-t-2 border-t-muted-foreground/30"
+        : "border-t-2 border-t-primary/20";
 
   return (
     <Card
       className={cn(
-        "group relative transition-shadow hover:shadow-md",
+        "group relative transition-all hover:border-primary/30 hover:shadow-sm",
         accentClass,
-        isSelected && "ring-1 ring-primary",
-        isCancelled && "opacity-75",
+        isSelected && "ring-1 ring-primary/60 border-primary/30",
+        isCancelled && "opacity-70",
         className,
       )}
     >
