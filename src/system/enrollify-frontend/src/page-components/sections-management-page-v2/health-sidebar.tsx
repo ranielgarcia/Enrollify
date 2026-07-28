@@ -173,7 +173,7 @@ export function HealthSidebar({
 }: HealthSidebarProps) {
   return (
     <aside className={cn("flex flex-col gap-2", className)}>
-      <div className="flex items-center gap-2 px-0.5 pb-1">
+      <div className="flex items-center gap-2 border-t border-border/60 px-0.5 pb-1 pt-3">
         <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Health Checks
         </span>

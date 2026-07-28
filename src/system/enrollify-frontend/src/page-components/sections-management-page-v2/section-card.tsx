@@ -101,7 +101,7 @@ export function SectionCard({
   return (
     <Card
       className={cn(
-        "group relative transition-all hover:border-primary/30 hover:shadow-sm",
+        "group relative transition-all duration-200 hover:border-primary/40 hover:shadow-md hover:shadow-primary/5",
         accentClass,
         isSelected && "ring-1 ring-primary/60 border-primary/30",
         isCancelled && "opacity-70",
@@ -150,7 +150,7 @@ export function SectionCard({
                   onClick={() => onViewConflicts(section)}
                 />
                 {isProcessing && (
-                  <Loader2 className="size-3.5 shrink-0 animate-spin text-blue-500 dark:text-blue-400" />
+                  <Loader2 className="size-3.5 shrink-0 animate-spin text-primary" />
                 )}
               </div>
               <div className="mt-1 truncate text-[11px] text-muted-foreground">

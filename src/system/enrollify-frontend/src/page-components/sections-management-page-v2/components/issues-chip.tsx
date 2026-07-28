@@ -26,7 +26,7 @@ export function IssuesChip({ section, onClick, className }: IssuesChipProps) {
       <Badge
         variant="outline"
         className={cn(
-          "gap-1 border-emerald-200 text-emerald-700 dark:border-emerald-800 dark:text-emerald-400",
+          "gap-1 border-primary/30 text-primary dark:border-primary/40 dark:text-primary",
           className,
         )}
       >

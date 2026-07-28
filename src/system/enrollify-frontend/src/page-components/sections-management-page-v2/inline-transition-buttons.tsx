@@ -47,7 +47,7 @@ export function InlineTransitionButtons({
               size={size}
               disabled={isOpenPending}
               onClick={() => onOpenSection(section)}
-              className="gap-1.5 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400 dark:hover:bg-emerald-900/30"
+              className="gap-1.5 border-primary/30 bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary dark:border-primary/40 dark:bg-primary/15 dark:text-primary dark:hover:bg-primary/25"
             >
               <CheckCircle2 className="size-3.5" />
               {size !== "sm" && "Open for Enrollment"}

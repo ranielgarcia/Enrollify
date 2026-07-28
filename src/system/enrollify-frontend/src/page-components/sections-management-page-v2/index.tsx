@@ -234,14 +234,6 @@ function SectionsPageContent({
       <div className="flex items-start gap-6">
         {/* Left column — 80% */}
         <div className="min-w-0 flex-1 flex flex-col gap-4">
-          {!noCollegeSelected && hasTerm && (
-            <SectionStatsStrip
-              stats={stats ?? {}}
-              activeFilter={quickFilter as QuickFilter}
-              onFilterChange={handleQuickFilterChange}
-            />
-          )}
-
           {showContent && (
             <>
               {currentView === "card" && (
@@ -274,9 +266,15 @@ function SectionsPageContent({
           )}
         </div>
 
-        {/* Right column — 20% health sidebar (sticky) */}
+        {/* Right column — 20% sidebar: pipeline stats + health checks (sticky) */}
         {!noCollegeSelected && hasTerm && (
-          <div className="w-56 xl:w-64 shrink-0 sticky top-4">
+          <div className="w-56 xl:w-64 shrink-0 sticky top-4 flex flex-col gap-4">
+            <SectionStatsStrip
+              stats={stats ?? {}}
+              activeFilter={quickFilter as QuickFilter}
+              onFilterChange={handleQuickFilterChange}
+              orientation="vertical"
+            />
             <HealthSidebar stats={stats ?? {}} />
           </div>
         )}
