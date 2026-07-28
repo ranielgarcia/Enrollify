@@ -47,16 +47,16 @@ interface SectionCardProps {
 }
 
 const PROGRESS_BAR_CLASS: Record<SchedulingProgress["tone"], string> = {
-  success: "[&>div]:bg-emerald-500",
-  warn: "[&>div]:bg-amber-500",
-  danger: "[&>div]:bg-rose-500",
-  neutral: "[&>div]:bg-muted-foreground/40",
+  success: "[&>div]:bg-primary/70",
+  warn: "[&>div]:bg-primary/50",
+  danger: "[&>div]:bg-destructive/60",
+  neutral: "[&>div]:bg-muted-foreground/30",
 };
 
 const PROGRESS_TEXT_CLASS: Record<SchedulingProgress["tone"], string> = {
-  success: "text-emerald-600 dark:text-emerald-400",
-  warn: "text-amber-600 dark:text-amber-400",
-  danger: "text-rose-600 dark:text-rose-400",
+  success: "text-foreground",
+  warn: "text-muted-foreground",
+  danger: "text-destructive",
   neutral: "text-muted-foreground",
 };
 
@@ -93,13 +93,10 @@ export function SectionCard({
     ? `${section.adviser.firstName} ${section.adviser.lastName}`.trim()
     : null;
 
-  const accentClass = isProcessing
-    ? "border-t-2 border-t-blue-400 dark:border-t-blue-500"
-    : validation?.hasIssues
-      ? "border-t-2 border-t-amber-400 dark:border-t-amber-500"
-      : isCancelled
-        ? "border-t-2 border-t-muted-foreground/30"
-        : "border-t-2 border-t-primary/20";
+  const accentClass =
+    isProcessing || validation?.hasIssues
+      ? "border-t-2 border-t-amber-400/60 dark:border-t-amber-500/50"
+      : "border-t-2 border-t-border";
 
   return (
     <Card
@@ -111,9 +108,6 @@ export function SectionCard({
         className,
       )}
     >
-      {isProcessing && (
-        <div className="absolute inset-x-0 top-0 h-0.5 animate-pulse rounded-t-xl bg-blue-400 dark:bg-blue-500" />
-      )}
       <CardContent className="space-y-3 p-4">
         {/* Zone A — header */}
         <div className="flex items-start justify-between gap-3">
@@ -254,7 +248,7 @@ export function SectionCard({
                   icon={UserRound}
                   label="No teacher"
                   value={`${validation.missingTeacher} offering${validation.missingTeacher === 1 ? "" : "s"}`}
-                  valueClassName="text-amber-700 dark:text-amber-400"
+                  valueClassName="text-muted-foreground"
                 />
               )}
               {validation.missingSchedule > 0 && (
@@ -262,7 +256,7 @@ export function SectionCard({
                   icon={CalendarDays}
                   label="No schedule"
                   value={`${validation.missingSchedule} offering${validation.missingSchedule === 1 ? "" : "s"}`}
-                  valueClassName="text-amber-700 dark:text-amber-400"
+                  valueClassName="text-muted-foreground"
                 />
               )}
               {validation.missingRoom > 0 && (
@@ -270,7 +264,7 @@ export function SectionCard({
                   icon={MapPin}
                   label="No room"
                   value={`${validation.missingRoom} offering${validation.missingRoom === 1 ? "" : "s"}`}
-                  valueClassName="text-amber-700 dark:text-amber-400"
+                  valueClassName="text-muted-foreground"
                 />
               )}
             </>
