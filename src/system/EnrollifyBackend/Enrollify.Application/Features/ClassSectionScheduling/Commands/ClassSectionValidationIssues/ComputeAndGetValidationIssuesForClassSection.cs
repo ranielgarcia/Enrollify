@@ -13,7 +13,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
 {
   public sealed record Command(
     ClassSectionId ClassSectionId,
-    UserId? TriggeredBy = null) : IRequest<Result<List<ClassSectionValidationIssue>>>;
+    UserId? TriggeredBy = null): IRequest<Result<List<ClassSectionValidationIssue>>>;
 
   public sealed class Handler : IRequestHandler<Command, Result<List<ClassSectionValidationIssue>>>
   {
@@ -125,10 +125,13 @@ public static class ComputeAndGetValidationIssuesForClassSection
 
       await _validationIssueRepository.ReplaceAllForSectionAsync(section.Id, validationIssues, cancellationToken);
 
-
       await _eventBus.PublishAsync(
         new RefreshClassSectionSchedulingStatsAggregateCountsRequestedEvent(section.AcademicTermId, section.CourseId,
           section.Id, triggeredBy: effectiveUserId));
+
+      // Draft only, higher status will not invoke this event handler in any way. Updates to a class with higher status is not allowed
+      section.MoveToDraft(request.TriggeredBy);
+      await _classSectionRepository.Update(section, cancellationToken);
 
       _logger.LogInformation(
         "Computed {ConflictIssueCount} conflict validation issues and {DataIntegrityIssueCount} data integrity validation issues for class section {ClassSectionId}",

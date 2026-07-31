@@ -159,7 +159,7 @@ export function SectionCard({
             </div>
           </div>
 
-          {isDraft && onEdit && (
+          {/* {isDraft && onEdit && (
             <Button
               type="button"
               variant="ghost"
@@ -170,7 +170,7 @@ export function SectionCard({
             >
               <SquarePen className="size-3.5" />
             </Button>
-          )}
+          )} */}
         </div>
 
         {/* Zone B — meta grid */}
