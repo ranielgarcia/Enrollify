@@ -25,6 +25,7 @@ import { SectionsErrorBoundary } from "./components/sections-error-boundary";
 import { ConflictPreviewDrawer } from "@/components/scheduling/conflict-preview-drawer";
 import { EmptyState } from "./empty-state";
 import { EditSectionAdviserFormDrawer } from "./edit-section-adviser-form-drawer";
+import { HealthSidebar } from "./health-sidebar";
 import { SectionsCardView } from "./sections-card-view";
 import { SectionsContextBar } from "./sections-context-bar";
 import { SectionsSkeleton } from "./sections-skeleton";
@@ -229,44 +230,55 @@ function SectionsPageContent({
         />
       )}
 
-      {!noCollegeSelected && hasTerm && (
-        <SectionStatsStrip
-          stats={stats ?? {}}
-          activeFilter={quickFilter as QuickFilter}
-          onFilterChange={handleQuickFilterChange}
-        />
-      )}
+      {/* Two-column layout: 80% main workspace / 20% health sidebar */}
+      <div className="flex items-start gap-6">
+        {/* Left column — 80% */}
+        <div className="min-w-0 flex-1 flex flex-col gap-4">
+          {showContent && (
+            <>
+              {currentView === "card" && (
+                <SectionsCardView
+                  coursesWithSections={coursesWithSections}
+                  collegeName={collegeName}
+                  quickFilter={quickFilter as QuickFilter}
+                  selection={selection}
+                  onClearFilters={handleClearFilters}
+                  onCancelSection={dialogs.openCancelSingle}
+                  onViewDetails={handleViewDetails}
+                  onChangeAdviser={dialogs.openEditAdviser}
+                  onViewConflicts={handleViewConflicts}
+                  onEditDetails={dialogs.openEditSection}
+                />
+              )}
 
-      {showContent && (
-        <>
-          {currentView === "card" && (
-            <SectionsCardView
-              coursesWithSections={coursesWithSections}
-              collegeName={collegeName}
-              quickFilter={quickFilter as QuickFilter}
-              selection={selection}
-              onClearFilters={handleClearFilters}
-              onCancelSection={dialogs.openCancelSingle}
-              onViewDetails={handleViewDetails}
-              onChangeAdviser={dialogs.openEditAdviser}
-              onViewConflicts={handleViewConflicts}
-              onEditDetails={dialogs.openEditSection}
-            />
+              {currentView === "table" && (
+                <SectionsTable
+                  coursesWithSections={coursesWithSections}
+                  quickFilter={quickFilter as QuickFilter}
+                  selection={selection}
+                  onClearFilters={handleClearFilters}
+                  onCancelSection={dialogs.openCancelSingle}
+                  onViewDetails={handleViewDetails}
+                  onViewConflicts={handleViewConflicts}
+                />
+              )}
+            </>
           )}
+        </div>
 
-          {currentView === "table" && (
-            <SectionsTable
-              coursesWithSections={coursesWithSections}
-              quickFilter={quickFilter as QuickFilter}
-              selection={selection}
-              onClearFilters={handleClearFilters}
-              onCancelSection={dialogs.openCancelSingle}
-              onViewDetails={handleViewDetails}
-              onViewConflicts={handleViewConflicts}
+        {/* Right column — 20% sidebar: pipeline stats + health checks (sticky) */}
+        {!noCollegeSelected && hasTerm && (
+          <div className="w-56 xl:w-64 shrink-0 sticky top-4 flex flex-col gap-4">
+            <SectionStatsStrip
+              stats={stats ?? {}}
+              activeFilter={quickFilter as QuickFilter}
+              onFilterChange={handleQuickFilterChange}
+              orientation="vertical"
             />
-          )}
-        </>
-      )}
+            <HealthSidebar stats={stats ?? {}} />
+          </div>
+        )}
+      </div>
 
       <EditSectionAdviserFormDrawer
         key={

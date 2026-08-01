@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/collapsible";
 import {
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -95,8 +94,8 @@ function NavSubItem({
         className={cn(
           "transition-all duration-200 rounded-md",
           isActive
-            ? "bg-sidebar-primary/10 text-sidebar-primary font-medium border-l-4 border-sidebar-primary"
-            : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
+            ? "bg-sidebar-primary/10 text-sidebar-primary font-medium border-l-2 border-sidebar-primary/70"
+            : "text-sidebar-foreground/65 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
         )}
       >
         <Link
@@ -326,9 +325,6 @@ export function NavMain({ items }: NavMainProps) {
 
   return (
     <SidebarGroup className="px-3 py-2">
-      <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-widest text-sidebar-foreground/40 mb-1 px-3">
-        Navigation
-      </SidebarGroupLabel>
       <SidebarMenu className="gap-1.5">
         {items.map((item) => {
           const parentActive = isParentActive(item);
@@ -379,7 +375,7 @@ export function NavMain({ items }: NavMainProps) {
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <SidebarMenuSub className="ml-4 border-l border-sidebar-border/50 pl-3 py-1 mt-0.5">
+                  <SidebarMenuSub className="ml-4 border-l border-sidebar-border/30 pl-3 py-1 mt-0.5">
                     {item.items?.map((subItem) => (
                       <NavSubItem
                         key={subItem.title}

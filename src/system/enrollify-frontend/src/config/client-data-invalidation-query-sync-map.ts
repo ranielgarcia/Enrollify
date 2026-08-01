@@ -22,4 +22,7 @@ export const clientDataInvalidationQuerySyncMap: Partial<
   [ClientDataInvalidationTypes.ClassSectionMovedToValidatingEvent]: [
     classSectionKeys.base(),
   ],
+  [ClientDataInvalidationTypes.ClassSectionSchedulingStatsUpdatedEvent]: [
+    classSectionKeys.base(),
+  ],
 };

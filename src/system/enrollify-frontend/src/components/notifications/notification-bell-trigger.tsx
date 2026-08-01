@@ -16,7 +16,7 @@ export function NotificationBellTrigger() {
       <Button
         variant="ghost"
         size="icon"
-        className="relative"
+        className="relative hover:bg-sidebar-accent hover:text-sidebar-foreground"
         aria-label={
           unreadCount > 0
             ? `Notifications, ${unreadCount} unread`

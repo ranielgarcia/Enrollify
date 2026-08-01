@@ -196,15 +196,15 @@ export function TeachersTable({ pagedTeachers, onEdit }: TeachersTableProps) {
         cell: (info) => {
           const item = info.row.original;
           return (
-            <div className="flex gap-2">
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <PrimitiveButton
                 variant="ghost"
                 size="sm"
                 onClick={() => onEdit(item)}
-                className="hover:bg-blue-500/10 text-blue-600 hover:text-blue-700"
+                className="h-7 w-7 p-0 hover:bg-primary/10 text-primary hover:text-primary"
                 disabled={!canUpdate}
               >
-                <Edit2 className="size-4" />
+                <Edit2 className="size-3.5" />
               </PrimitiveButton>
             </div>
           );

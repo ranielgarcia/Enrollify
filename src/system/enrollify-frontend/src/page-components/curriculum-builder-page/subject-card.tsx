@@ -41,16 +41,16 @@ export function SubjectCard({
   onHoursPerDayChange,
 }: SubjectCardProps) {
   return (
-    <div className="group rounded-lg border border-l-2 border-l-accent/20 bg-card hover:border-accent/50 transition-colors">
+    <div className="group rounded-lg border border-l-2 border-l-primary/30 bg-card hover:border-primary/40 hover:bg-surface-raised transition-colors">
       <div className="p-3 space-y-2.5">
         {/* Header: code, units, override input, delete */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="shrink-0 text-[10px] font-bold text-accent uppercase tracking-wider">
+            <span className="shrink-0 text-[10px] font-bold text-primary uppercase tracking-wider font-mono">
               {subject.code}
             </span>
             <div className="flex items-center gap-1">
-              <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded-full font-medium tabular-nums">
+              <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium tabular-nums">
                 {subject.unitsOverride ?? subject.units} Units
                 {subject.unitsOverride !== null && (
                   <span className="ml-1 line-through text-muted-foreground/60">

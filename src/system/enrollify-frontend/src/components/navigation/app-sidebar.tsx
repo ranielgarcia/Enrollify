@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GalleryVerticalEnd } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 
 import { NavMain } from "@/components/navigation/nav-main";
 import { NavUser } from "@/components/navigation/nav-user";
@@ -28,24 +28,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           size="lg"
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-transparent cursor-default"
         >
-          <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-9 items-center justify-center rounded-xl shadow-sm">
-            <GalleryVerticalEnd className="size-5" />
+          <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-9 items-center justify-center rounded-lg">
+            <GraduationCap className="size-5" />
           </div>
           <div className="grid flex-1 text-left leading-tight">
-            <span className="truncate text-[15px] font-semibold tracking-tight">
+            <span className="truncate text-[15px] font-bold tracking-[-0.01em]">
               Enrollify
-            </span>
-            <span className="truncate text-[11px] text-sidebar-foreground/50 font-medium">
-              Enterprise
             </span>
           </div>
         </SidebarMenuButton>
       </SidebarHeader>
-      <SidebarSeparator className="mx-3 my-2 opacity-50" />
-      <SidebarContent className="overflow-y-auto scrollbar-thin">
+      <SidebarContent className="overflow-y-auto scrollbar-thin pt-1">
         <NavMain items={navMain} />
       </SidebarContent>
-      <SidebarSeparator className="mx-3 opacity-50" />
+      <SidebarSeparator className="mx-4 opacity-40" />
       <SidebarFooter>
         <NavUser
           user={{

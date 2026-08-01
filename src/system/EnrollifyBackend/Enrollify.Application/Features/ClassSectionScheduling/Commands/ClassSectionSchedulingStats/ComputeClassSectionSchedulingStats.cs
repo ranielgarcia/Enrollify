@@ -1,3 +1,4 @@
+using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.Aggregates.UserAggregate;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSectionSchedulingStats;
@@ -8,9 +9,7 @@ public static class ComputeClassSectionSchedulingStats
     CourseId CourseId, ClassSectionId? ClassSectionId = null, UserId? TriggeredBy = null) : IRequest;
 
   public sealed class Handler (
-    IClassSectionSchedulingStatsRepository statsRepository,
-    IReadRepository<ClassSection> classSectionReadRepository,
-    IClassSectionRepository classSectionRepository) : IRequestHandler<Command>
+    IClassSectionSchedulingStatsRepository statsRepository, IPublisher domainEventPublisher) : IRequestHandler<Command>
   {
     public async Task Handle(Command request, CancellationToken cancellationToken)
     {
@@ -99,18 +98,7 @@ public static class ComputeClassSectionSchedulingStats
           refreshOfferingCountWithMissingRoomIssueForClassSectionTask,
           refreshOfferingCountWithNoScheduleIssueForClassSectionTask);
 
-        ClassSection? section =
-          await classSectionReadRepository.FirstOrDefaultAsync(
-            new GetClassSectionFullDetailsByIdSpec((ClassSectionId)request.ClassSectionId),
-            cancellationToken);
-
-        if (section is null)
-          return;
-
-        // Draft only, higher status will not invoke this event handler in any way. Updates to a class with higher status is not allowed
-        section.MoveToDraft(request.TriggeredBy);
-        await classSectionRepository.Update(section, cancellationToken);
-
+        await domainEventPublisher.Publish(new ClassSectionSchedulingStatsUpdatedEvent(), cancellationToken);
       }
     }
   }

@@ -16,15 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useEnrollmentContext } from "@/contexts/enrollment-context/enrollment-context";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import {
-  Check,
-  Cloud,
-  CloudOff,
-  Loader2,
-  Lock,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { Loader2, Lock, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type TermGrid = Record<number, SubjectInCurriculum[]>;
@@ -602,37 +594,37 @@ export default function MultiYearSubjectGridEditor({
 
       {/* Auto-save status indicator */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {!isAutoSaveEnabled ? (
-            <>
-              <CloudOff className="size-4" />
-              <span>Auto-save disabled</span>
-            </>
+            <span className="flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-muted-foreground/40" />
+              Auto-save off
+            </span>
           ) : saveStatus === "idle" && !isDirty ? (
-            <>
-              <Cloud className="size-4" />
-              <span>All changes saved</span>
-            </>
+            <span className="flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
+              All changes saved
+            </span>
           ) : saveStatus === "idle" && isDirty ? (
-            <>
-              <Cloud className="size-4 animate-pulse" />
-              <span>Unsaved changes</span>
-            </>
+            <span className="flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-amber-400 animate-pulse" />
+              Unsaved changes
+            </span>
           ) : saveStatus === "saving" ? (
-            <>
-              <Loader2 className="size-4 animate-spin" />
-              <span>Saving...</span>
-            </>
+            <span className="flex items-center gap-1.5">
+              <Loader2 className="size-3 animate-spin" />
+              Saving...
+            </span>
           ) : saveStatus === "saved" ? (
-            <>
-              <Check className="size-4 text-green-600" />
-              <span className="text-green-600">Saved</span>
-            </>
+            <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
+              Saved
+            </span>
           ) : saveStatus === "error" ? (
-            <>
-              <CloudOff className="size-4 text-destructive" />
-              <span className="text-destructive">Save failed</span>
-            </>
+            <span className="flex items-center gap-1.5 text-destructive">
+              <span className="size-1.5 rounded-full bg-destructive" />
+              Save failed
+            </span>
           ) : null}
         </div>
         <div className="flex items-center gap-2">
@@ -655,107 +647,128 @@ export default function MultiYearSubjectGridEditor({
         </div>
       </div>
 
-      <div className="space-y-12">
-        {activeYears.map((year) => (
-          <div key={year} className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="size-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold">
-                  {year}
-                </div>
-                <h2 className="text-2xl font-bold tracking-tight">
-                  Year {year}
-                </h2>
-              </div>
-              {!isReadOnly && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground hover:text-destructive gap-2"
-                  onClick={() => removeYear(year)}
-                >
-                  <Trash2 className="size-4" />
-                  Remove Year {year}
-                </Button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {Array.from({ length: numberOfTerms }, (_, i) => i + 1).map(
-                (term) => (
-                  <Card
-                    key={term}
-                    className="flex flex-col border-muted hover:border-accent/50 transition-colors"
+      <div className="space-y-10">
+        {activeYears.map((year) => {
+          const yearAccentClasses = [
+            "border-l-primary bg-primary/10 text-primary",
+            "border-l-teal-500 bg-teal-500/10 text-teal-600 dark:text-teal-400",
+            "border-l-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+            "border-l-rose-500 bg-rose-500/10 text-rose-600 dark:text-rose-400",
+          ];
+          const yearCardTopClasses = [
+            "border-t-primary/50",
+            "border-t-teal-400/60",
+            "border-t-amber-400/60",
+            "border-t-rose-400/60",
+          ];
+          const accentIdx = Math.min(year - 1, yearAccentClasses.length - 1);
+          const yearAccent = yearAccentClasses[accentIdx];
+          const yearCardTop = yearCardTopClasses[accentIdx];
+          return (
+            <div key={year} className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className={`flex items-center gap-1.5 rounded-md border-l-4 pl-2.5 pr-3 py-1 ${yearAccent}`}
                   >
-                    <CardHeader className="bg-muted/30 pb-4">
-                      <CardTitle className="text-lg flex items-center justify-between">
-                        Term {term}
-                        <Badge
-                          variant="secondary"
-                          className="font-normal text-[10px] uppercase"
-                        >
-                          {grid[year][term].reduce(
-                            (acc, s) => acc + (s.unitsOverride ?? s.units),
-                            0,
-                          )}{" "}
-                          Units Total
-                        </Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1 pt-4 space-y-4">
-                      <div className="space-y-2">
-                        {grid[year][term].map((subject) => (
-                          <SubjectCard
-                            key={subject.id}
-                            subject={subject}
-                            isReadOnly={isReadOnly}
-                            availablePrerequisiteOptions={getAvailableSubjectForPrerequisitesOptions(
-                              year,
-                              term,
-                              subject.code,
-                            )}
-                            onRemove={() =>
-                              removeSubject(year, term, subject.id)
-                            }
-                            onUnitsOverrideChange={(value) =>
-                              setUnitsOverride(year, term, subject.id, value)
-                            }
-                            onRemovePrerequisite={(pre) =>
-                              removePrerequisite(year, term, subject.id, pre)
-                            }
-                            onAddPrerequisites={(codes) =>
-                              addPrerequisites(year, term, subject.id, codes)
-                            }
-                            onDaysPerWeekChange={(value) =>
-                              setDaysPerWeek(year, term, subject.id, value)
-                            }
-                            onHoursPerDayChange={(value) =>
-                              setHoursPerDay(year, term, subject.id, value)
-                            }
-                          />
-                        ))}
-                      </div>
-                      {!isReadOnly && (
-                        <Button
-                          variant="outline"
-                          className="w-full h-9 border-dashed text-xs text-muted-foreground hover:bg-transparent hover:border-accent hover:text-accent transition-colors"
-                          onClick={() => {
-                            setAddSubjectTargetYear(year);
-                            setAddSubjectTargetTerm(term);
-                            setIsAddSubjectDialogOpen(true);
-                          }}
-                        >
-                          <Plus className="size-3 mr-2" />
-                          Add Subject to Term {term}
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                ),
-              )}
+                    <span className="text-[10px] font-bold uppercase tracking-widest">
+                      Year
+                    </span>
+                    <span className="text-xl font-bold leading-none nums">
+                      {year}
+                    </span>
+                  </div>
+                </div>
+                {!isReadOnly && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-destructive gap-2"
+                    onClick={() => removeYear(year)}
+                  >
+                    <Trash2 className="size-4" />
+                    Remove Year {year}
+                  </Button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {Array.from({ length: numberOfTerms }, (_, i) => i + 1).map(
+                  (term) => (
+                    <Card
+                      key={term}
+                      className={`flex flex-col border-t-2 ${yearCardTop} transition-colors`}
+                    >
+                      <CardHeader className="pb-3 pt-4">
+                        <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+                          <span>Term {term}</span>
+                          <Badge
+                            variant="secondary"
+                            className="font-semibold text-[10px] uppercase tracking-wide nums"
+                          >
+                            {grid[year][term].reduce(
+                              (acc, s) => acc + (s.unitsOverride ?? s.units),
+                              0,
+                            )}{" "}
+                            Units Total
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex-1 pt-4 space-y-4">
+                        <div className="space-y-2">
+                          {grid[year][term].map((subject) => (
+                            <SubjectCard
+                              key={subject.id}
+                              subject={subject}
+                              isReadOnly={isReadOnly}
+                              availablePrerequisiteOptions={getAvailableSubjectForPrerequisitesOptions(
+                                year,
+                                term,
+                                subject.code,
+                              )}
+                              onRemove={() =>
+                                removeSubject(year, term, subject.id)
+                              }
+                              onUnitsOverrideChange={(value) =>
+                                setUnitsOverride(year, term, subject.id, value)
+                              }
+                              onRemovePrerequisite={(pre) =>
+                                removePrerequisite(year, term, subject.id, pre)
+                              }
+                              onAddPrerequisites={(codes) =>
+                                addPrerequisites(year, term, subject.id, codes)
+                              }
+                              onDaysPerWeekChange={(value) =>
+                                setDaysPerWeek(year, term, subject.id, value)
+                              }
+                              onHoursPerDayChange={(value) =>
+                                setHoursPerDay(year, term, subject.id, value)
+                              }
+                            />
+                          ))}
+                        </div>
+                        {!isReadOnly && (
+                          <Button
+                            variant="outline"
+                            className="w-full h-9 border-dashed text-xs text-muted-foreground hover:bg-transparent hover:border-accent hover:text-accent transition-colors"
+                            onClick={() => {
+                              setAddSubjectTargetYear(year);
+                              setAddSubjectTargetTerm(term);
+                              setIsAddSubjectDialogOpen(true);
+                            }}
+                          >
+                            <Plus className="size-3 mr-2" />
+                            Add Subject to Term {term}
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ),
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {!isReadOnly && (
           <Button

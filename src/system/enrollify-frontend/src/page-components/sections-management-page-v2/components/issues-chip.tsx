@@ -1,6 +1,5 @@
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import type { ClassSectionMinimal } from "@/api/models/class-scheduling/class-section";
 import { cn } from "@/lib/utils";
 
@@ -23,16 +22,16 @@ export function IssuesChip({ section, onClick, className }: IssuesChipProps) {
 
   if (!v.hasIssues) {
     return (
-      <Badge
-        variant="outline"
+      <span
         className={cn(
-          "gap-1 border-emerald-200 text-emerald-700 dark:border-emerald-800 dark:text-emerald-400",
+          "inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary",
+          "dark:border-primary/30 dark:bg-primary/15 dark:text-primary",
           className,
         )}
       >
         <CheckCircle2 className="size-3" />
         No issues
-      </Badge>
+      </span>
     );
   }
 
@@ -40,8 +39,8 @@ export function IssuesChip({ section, onClick, className }: IssuesChipProps) {
   const a11yLabel = `View ${v.totalValidationIssues} validation ${v.totalValidationIssues === 1 ? "issue" : "issues"}`;
 
   const chipClasses = cn(
-    "inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700",
-    "dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400",
+    "inline-flex items-center gap-1 rounded-full border border-destructive/20 bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive",
+    "dark:border-destructive/30 dark:bg-destructive/15 dark:text-destructive",
     className,
   );
 
@@ -61,7 +60,7 @@ export function IssuesChip({ section, onClick, className }: IssuesChipProps) {
       aria-label={a11yLabel}
       className={cn(
         chipClasses,
-        "transition-colors hover:bg-amber-100 dark:hover:bg-amber-900/40",
+        "transition-colors hover:bg-destructive/20 dark:hover:bg-destructive/20",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
       )}
     >

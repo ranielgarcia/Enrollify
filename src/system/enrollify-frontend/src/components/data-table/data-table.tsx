@@ -32,18 +32,18 @@ export function DataTable<TData>({
     <div
       ref={ref}
       style={height ? { height } : undefined}
-      className={cn(
-        "flex min-w-0 w-full flex-col gap-2.5",
-        className,
-      )}
+      className={cn("flex min-w-0 w-full flex-col gap-2.5", className)}
       {...props}
     >
       {children}
       <div className="flex-1 overflow-auto rounded-md border">
         <Table>
-          <TableHeader className="bg-muted sticky top-0 z-10">
+          <TableHeader className="bg-(--surface-sunken) sticky top-0 z-10 after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-border">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent">
+              <TableRow
+                key={headerGroup.id}
+                className="hover:bg-transparent border-0"
+              >
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
@@ -69,6 +69,7 @@ export function DataTable<TData>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className="group h-12"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
@@ -76,6 +77,7 @@ export function DataTable<TData>({
                       style={{
                         ...getColumnPinningStyle({ column: cell.column }),
                       }}
+                      className="nums"
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -89,9 +91,9 @@ export function DataTable<TData>({
               <TableRow>
                 <TableCell
                   colSpan={table.getAllColumns().length}
-                  className="h-24 text-center"
+                  className="h-24 text-center text-sm text-muted-foreground"
                 >
-                  No results.
+                  No results found.
                 </TableCell>
               </TableRow>
             )}
