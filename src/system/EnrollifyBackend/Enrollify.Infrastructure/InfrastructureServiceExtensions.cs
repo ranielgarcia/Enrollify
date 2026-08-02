@@ -132,6 +132,9 @@ public static class InfrastructureServiceExtensions
     services
       .AddScoped<IClassSectionSubjectOfferingScheduleConflictRepository,
         ClassSectionSubjectOfferingScheduleConflictRepository>();
+    services
+      .AddScoped<Application.Features.RoomScheduling.Repositories.IRoomScheduleReadRepository,
+        RoomScheduleReadRepository>();
     services.AddScoped<IClassSectionValidationIssueRepository, ClassSectionValidationIssueRepository>();
     services.AddScoped<ICourseCurriculumAssignmentRepository, CourseCurriculumAssignmentRepository>();
     services.AddScoped<IClassSectionSchedulingStatsRepository, ClassSectionSchedulingStatsRepository>();
