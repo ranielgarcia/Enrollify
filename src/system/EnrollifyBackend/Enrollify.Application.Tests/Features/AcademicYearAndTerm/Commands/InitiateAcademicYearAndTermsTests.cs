@@ -1,3 +1,4 @@
+using Enrollify.Application;
 using Ardalis.Result;
 using Ardalis.Specification;
 using Enrollify.Application.Features.AcademicYearAndTerm;
@@ -19,7 +20,7 @@ public class InitiateAcademicYearAndTermsTests
 {
     private readonly Mock<IAcademicYearAndTermRepository> _repositoryMock = new();
     private readonly Mock<IReadRepository<AcademicYear>> _readRepositoryMock = new();
-    private readonly Mock<IMediator> _mediatorMock = new();
+    private readonly Mock<IApplicationEventDispatcher> _eventDispatcherMock = new();
     private readonly FakeLogger<InitiateAcademicYearAndTerms.Handler> _logger;
     private readonly InitiateAcademicYearAndTerms.Handler _handler;
 
@@ -36,7 +37,7 @@ public class InitiateAcademicYearAndTermsTests
         _handler = new InitiateAcademicYearAndTerms.Handler(
             _repositoryMock.Object,
             _readRepositoryMock.Object,
-            _mediatorMock.Object,
+            _eventDispatcherMock.Object,
             _logger);
     }
 
@@ -311,9 +312,9 @@ public class InitiateAcademicYearAndTermsTests
 
         await _handler.Handle(command, CancellationToken.None);
 
-        _mediatorMock.Verify(
-            m => m.Publish(
-                It.Is<AcademicYearCreatedEvent>(e => e.AcademicYear == academicYear),
+        _eventDispatcherMock.Verify(
+            d => d.DispatchAsync(
+                It.Is<IApplicationEvent>(n => n.GetType() == typeof(AcademicYearCreatedEvent) && ((AcademicYearCreatedEvent)n).AcademicYear == academicYear),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -330,8 +331,8 @@ public class InitiateAcademicYearAndTermsTests
 
         await _handler.Handle(command, CancellationToken.None);
 
-        _mediatorMock.Verify(
-            m => m.Publish(It.IsAny<AcademicYearCreatedEvent>(), It.IsAny<CancellationToken>()),
+        _eventDispatcherMock.Verify(
+            d => d.DispatchAsync(It.IsAny<IApplicationEvent>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -342,8 +343,8 @@ public class InitiateAcademicYearAndTermsTests
 
         await _handler.Handle(command, CancellationToken.None);
 
-        _mediatorMock.Verify(
-            m => m.Publish(It.IsAny<AcademicYearCreatedEvent>(), It.IsAny<CancellationToken>()),
+        _eventDispatcherMock.Verify(
+            d => d.DispatchAsync(It.IsAny<IApplicationEvent>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -360,8 +361,8 @@ public class InitiateAcademicYearAndTermsTests
 
         await _handler.Handle(command, CancellationToken.None);
 
-        _mediatorMock.Verify(
-            m => m.Publish(It.IsAny<AcademicYearCreatedEvent>(), It.IsAny<CancellationToken>()),
+        _eventDispatcherMock.Verify(
+            d => d.DispatchAsync(It.IsAny<IApplicationEvent>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 

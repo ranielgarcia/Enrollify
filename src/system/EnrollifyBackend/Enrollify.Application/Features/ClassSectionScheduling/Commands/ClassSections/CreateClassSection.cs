@@ -33,7 +33,7 @@ public static class CreateClassSection
     private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
     private readonly ICourseCurriculumAssignmentRepository _courseCurriculumAssignmentRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IDomainEventBus _eventBus;
+    private readonly IApplicationEventDispatcher _eventDispatcher;
     private readonly INotificationPublisher _notificationPublisher;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly ILogger<Handler> _logger;
@@ -46,7 +46,7 @@ public static class CreateClassSection
       IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
       ICourseCurriculumAssignmentRepository courseCurriculumAssignmentRepository,
       IUnitOfWork unitOfWork,
-      IDomainEventBus eventBus,
+      IApplicationEventDispatcher eventDispatcher,
       INotificationPublisher notificationPublisher,
       ICurrentUserAccessor currentUserAccessor,
       ILogger<Handler> logger)
@@ -58,7 +58,7 @@ public static class CreateClassSection
       _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
       _courseCurriculumAssignmentRepository = courseCurriculumAssignmentRepository;
       _unitOfWork = unitOfWork;
-      _eventBus = eventBus;
+      _eventDispatcher = eventDispatcher;
       _notificationPublisher = notificationPublisher;
       _currentUserAccessor = currentUserAccessor;
       _logger = logger;
@@ -225,7 +225,7 @@ public static class CreateClassSection
         // ClassSectionCreatedEvent is routed to a dedicated BufferedInMemory local queue (see
         // ConfigureWolverine in InfrastructureServiceExtensions), so the cascading validation-issue
         // recomputation chain runs asynchronously in the background rather than blocking this call.
-        await _eventBus.PublishAsync(new ClassSectionCreatedEvent(classSectionId, triggeredBy));
+        await _eventDispatcher.DispatchDeferredAsync(new ClassSectionCreatedEvent(classSectionId, triggeredBy), cancellationToken);
 
         // Use the unit of work's outbox-aware commit instead of transaction.CommitAsync() directly:
         // it saves pending changes, commits the ambient transaction, and flushes the published

@@ -1,3 +1,4 @@
+using Enrollify.Application;
 using Ardalis.Result;
 using Ardalis.Specification;
 using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
@@ -36,7 +37,7 @@ public class CreateClassSectionTests
     private readonly Mock<IClassSectionSubjectOfferingRepository> _mockClassSectionSubjectOfferingRepository = new();
     private readonly Mock<ICourseCurriculumAssignmentRepository> _courseCurriculumAssignmentRepositoryMock = new();
     private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
-    private readonly Mock<IDomainEventBus> _eventBusMock = new();
+    private readonly Mock<IApplicationEventDispatcher> _eventDispatcherMock = new();
     private readonly FakeTransactionScope _fakeTransaction = new();
     private readonly FakeLogger<CreateClassSection.Handler> _logger;
     private readonly CreateClassSection.Handler _handler;
@@ -56,7 +57,7 @@ public class CreateClassSectionTests
             _mockClassSectionSubjectOfferingRepository.Object,
             _courseCurriculumAssignmentRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _eventBusMock.Object,
+            _eventDispatcherMock.Object,
             _notificationPublisher.Object,
             _currentUserAccessorMock.Object,
             _logger);

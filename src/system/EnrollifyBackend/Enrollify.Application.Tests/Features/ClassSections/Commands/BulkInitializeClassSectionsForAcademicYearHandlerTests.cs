@@ -1,3 +1,4 @@
+using Enrollify.Application;
 using Ardalis.Result;
 using Ardalis.Specification;
 using Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSections;
@@ -34,7 +35,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
     private readonly Mock<IClassSectionRepository> _classSectionRepositoryMock = new();
     private readonly Mock<IClassSectionSubjectOfferingRepository> _classSectionSubjectOfferingRepositoryMock = new();
     private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
-    private readonly Mock<IDomainEventBus> _eventBusMock = new();
+    private readonly Mock<IApplicationEventDispatcher> _eventDispatcherMock = new();
     private readonly Mock<INotificationPublisher> _notificationPublisher = new();
     private readonly Mock<ICourseCurriculumAssignmentRepository> _courseCurriculumAssignmentRepositoryMock = new();
     private readonly Mock<ICurrentUserAccessor> _currentUserAccessorMock = new();
@@ -54,7 +55,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
             _classSectionRepositoryMock.Object,
             _classSectionSubjectOfferingRepositoryMock.Object,
             _unitOfWorkMock.Object,
-            _eventBusMock.Object,
+            _eventDispatcherMock.Object,
             _notificationPublisher.Object,
             _courseCurriculumAssignmentRepositoryMock.Object,
             _currentUserAccessorMock.Object,

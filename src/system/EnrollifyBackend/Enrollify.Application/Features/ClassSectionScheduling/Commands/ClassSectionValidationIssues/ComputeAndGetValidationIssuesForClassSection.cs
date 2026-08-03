@@ -24,7 +24,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
     private readonly IReadRepository<ClassSection> _classSectionReadRepository;
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IClassSectionValidationIssueRepository _validationIssueRepository;
-    private readonly IDomainEventBus _eventBus;
+    private readonly IApplicationEventDispatcher _eventDispatcher;
     private readonly ICurrentUserAccessor _currentUserAccessor;
     private readonly ILogger<Handler> _logger;
 
@@ -36,7 +36,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
       IReadRepository<ClassSection> classSectionReadRepository,
       IClassSectionRepository classSectionRepository,
       IClassSectionValidationIssueRepository validationIssueRepository,
-      IDomainEventBus eventBus,
+      IApplicationEventDispatcher eventDispatcher,
       ICurrentUserAccessor currentUserAccessor,
       ILogger<Handler> logger)
     {
@@ -47,7 +47,7 @@ public static class ComputeAndGetValidationIssuesForClassSection
       _classSectionReadRepository = classSectionReadRepository;
       _classSectionRepository = classSectionRepository;
       _validationIssueRepository = validationIssueRepository;
-      _eventBus = eventBus;
+      _eventDispatcher = eventDispatcher;
       _currentUserAccessor = currentUserAccessor;
       _logger = logger;
     }
@@ -125,9 +125,9 @@ public static class ComputeAndGetValidationIssuesForClassSection
 
       await _validationIssueRepository.ReplaceAllForSectionAsync(section.Id, validationIssues, cancellationToken);
 
-      await _eventBus.PublishAsync(
+      await _eventDispatcher.DispatchDeferredAsync(
         new RefreshClassSectionSchedulingStatsAggregateCountsRequestedEvent(section.AcademicTermId, section.CourseId,
-          section.Id, triggeredBy: effectiveUserId));
+          section.Id, triggeredBy: effectiveUserId), cancellationToken);
 
       // Draft only, higher status will not invoke this event handler in any way. Updates to a class with higher status is not allowed
       section.MoveToDraft(request.TriggeredBy);
