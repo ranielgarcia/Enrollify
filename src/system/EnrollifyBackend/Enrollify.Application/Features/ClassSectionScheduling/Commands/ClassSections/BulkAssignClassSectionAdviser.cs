@@ -1,5 +1,5 @@
+using Enrollify.Application.Features.ClassSectionScheduling.Events;
 using Enrollify.Application.Features.Notifications;
-using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services.NotificationServices.Models;
 using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;

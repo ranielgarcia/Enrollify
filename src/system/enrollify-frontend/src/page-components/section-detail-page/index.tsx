@@ -159,7 +159,7 @@ export default function SectionDetailPage({
 
           <TabsTrigger value="conflicts" className="gap-2">
             <AlertCircle className="size-4" />
-            Conflicts
+            Issues
             {allValidationIssues.length > 0 && (
               <Badge
                 className={

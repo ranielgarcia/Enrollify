@@ -1,6 +1,6 @@
 using Enrollify.Core.Aggregates.UserAggregate;
 
-namespace Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
+namespace Enrollify.Application.Features.ClassSectionScheduling.Events;
 
 /// <summary>
 /// Raised whenever a change is made to a ClassSection, ClassSectionSubjectOffering, or ClassSchedule

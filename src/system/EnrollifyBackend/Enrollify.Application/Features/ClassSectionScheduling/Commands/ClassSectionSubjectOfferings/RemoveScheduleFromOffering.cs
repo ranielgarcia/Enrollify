@@ -1,6 +1,5 @@
+using Enrollify.Application.Features.ClassSectionScheduling.Events;
 using Enrollify.Application.Features.ClassSectionScheduling.Specifications.ClassSectionSubjectOfferings;
-using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
-using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.DomainExceptions;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.Commands.ClassSectionSubjectOfferings;

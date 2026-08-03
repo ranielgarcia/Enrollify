@@ -1,6 +1,7 @@
 using Ardalis.SmartEnum;
 using Ardalis.SmartEnum.Dapper;
 using Dapper;
+using Enrollify.Application;
 using Enrollify.Application.Features.AcademicYearAndTerm;
 using Enrollify.Application.Features.Buildings;
 using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
@@ -18,8 +19,6 @@ using Enrollify.Application.Features.SubjectEquivalences;
 using Enrollify.Application.Features.Subjects;
 using Enrollify.Application.Features.Teachers;
 using Enrollify.Application.Features.Teachers.Storage;
-using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
-using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
 using Enrollify.Core.Services.ClassSectionDataIntegrityValidation;
@@ -88,6 +87,8 @@ public static class InfrastructureServiceExtensions
     // This is required because Dapper doesn't have built-in support for converting
     // SQL Server TIME columns (TimeSpan) to .NET TimeOnly type
     SqlMapper.AddTypeHandler(new TimeSpanToTimeOnlyDapperTypeHandler());
+
+    services.AddScoped<IApplicationEventDispatcher, ApplicationEventDispatcher>();
 
     services.AddScoped<EventDispatchInterceptor>();
     services.AddScoped<PreSaveChangesInterceptor>();

@@ -1,5 +1,6 @@
-namespace Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
+namespace Enrollify.Application.Features.ClassSectionScheduling.Events;
 
 public class ClassSectionSchedulingStatsUpdatedEvent : DomainEventBase
 {
 }
+

@@ -1,5 +1,5 @@
+using Enrollify.Application.Features.ClassSectionScheduling.Events;
 using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
-using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 
 namespace Enrollify.Application.Features.ClassSectionScheduling.EventHandlers;
 
