@@ -43,6 +43,7 @@ Enrollify replaces fragmented, manual enrollment processes with a unified role-b
 ### Modules & Functional Coverage
 
 #### Master Data
+
 - **Buildings & Rooms** — room type catalog, physical room management (capacity, type, building)
 - **Colleges & Departments** — academic organizational hierarchy
 - **Courses (Programs)** — degree programs (e.g., BS Computer Science), linked to departments and colleges
@@ -50,21 +51,25 @@ Enrollify replaces fragmented, manual enrollment processes with a unified role-b
 - **Equivalent Subject Mappings** — cross-college or cross-curriculum subject equivalences (used for transferees)
 
 #### Curriculum Management
+
 - Curriculum versioning per course and academic year
 - Subject prerequisites (hard and advisory) with prerequisite chain validation
 - Curriculum-based subject grouping by year level and semester
 
 #### Academic Calendar
+
 - Academic year and semester/term management
 - Enrollment period windows per semester
 
 #### Class Scheduling
+
 - Class section management (e.g., BSCS-2A) linked to courses and year levels
 - Subject offerings per section with teacher and room assignment
 - Class schedule management with **automatic conflict detection** (room and teacher double-booking)
 - Bulk class section initialization
 
 #### Enrollment
+
 Enrollify supports three student enrollment workflows:
 
 - **Regular Students** — select a class section and automatically enroll in all section offerings
@@ -72,6 +77,7 @@ Enrollify supports three student enrollment workflows:
 - **Transferee Students** — credit evaluation using equivalent subject mappings; enroll in remaining required subjects
 
 Enrollment features include:
+
 - Prerequisite completion checks (with registrar/advisor override)
 - Capacity enforcement (with Dean/Registrar override)
 - Outstanding balance validation with assessment clearance flags
@@ -80,6 +86,7 @@ Enrollment features include:
 - Certificate of Registration (CoR) generation per term
 
 #### Finance
+
 - Assessment & fee calculation engine (tuition + miscellaneous fees)
 - Tuition fee package management per course/year level
 - Miscellaneous fee assignment rules (per subject, per course, per semester)
@@ -88,16 +95,19 @@ Enrollment features include:
 - Cashier portal with receipt generation (PDF)
 
 #### Academic Records
+
 - Grade encoding portal for teachers (midterm + final grades)
 - Registrar-level grade management and override
 - Academic standing and GPA computation
 - Transcript of Records (ToR) and CoR generation as PDF documents
 
 #### Portals
+
 - **Student Portal** — view enrolled subjects, class schedules, grades, and payment status; request documents
 - **Parent/Guardian Portal** — read-only view of academic and financial status
 
 #### Platform & Security
+
 - Role-Based Access Control (RBAC) with fine-grained permission flags per role
 - Azure Active Directory (Entra ID) authentication via MSAL
 - System audit logs for all critical operations
