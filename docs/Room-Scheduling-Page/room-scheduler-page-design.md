@@ -194,7 +194,7 @@ Gray background
 │  ☑ North Building        ☑ Conference Rooms   ☑ Arts & Sciences  ☑ BSEE    │
 │  ☑ South Building        ☑ Seminars           ☐ Fine Arts        ☑ BSA     │
 │                                                                  ☑ BSBA    │
-│  [Apply]  [Clear All]    [Export]                               [More ▾]   │
+│  [Apply]  [Clear All]                                           [More ▾]   │
 │                                                                              │
 │  Showing: 187 rooms | 312 offerings | 42 conflicts | 5,243 student capacity│
 └──────────────────────────────────────────────────────────────────────────────┘
@@ -228,7 +228,6 @@ Gray background
 
 1. **Room Double-Booked:** Two offerings assigned to same room at overlapping times
 2. **Time Overlap:** Offerings in same room with overlapping time ranges
-3. **Teacher Double-Booked:** (Optional) Show if a teacher is assigned to two offerings at the same time (cross-room visualization)
 
 ### 5.3 Conflict Resolution Workflow
 
@@ -293,13 +292,6 @@ When user **clicks a conflicted offering card:**
 - Scrolls through room rows
 - Header (Room | Type | Building | Time columns) remains sticky
 
-### 6.4 Export & Analysis
-
-**Export button** → Downloads CSV with columns:
-- Room Number, Building, Type, Capacity
-- Offering Code, Section, Subject, Teacher
-- Time Start, Time End, Conflicts
-
 ---
 
 ## 7. Data Model & Backend
@@ -355,7 +347,6 @@ ClassSection {
 |---|---|---|
 | `GET /api/rooms/schedule` | GET | Fetch all rooms + offerings + schedules + conflicts filtered by criteria |
 | `GET /api/rooms/{id}/schedule` | GET | Fetch single room with all offerings for a day |
-| `POST /api/rooms/schedule/export` | POST | Export filtered schedule as CSV |
 | (Existing) `GET /api/subject-offerings/{id}` | GET | Detail view when clicking an offering |
 
 **Example payload for `GET /api/rooms/schedule`:**
@@ -480,7 +471,6 @@ room-schedule-page/
 ├── room-row.tsx                   # Single room row (header + time cells)
 ├── time-column-header.tsx         # Hour headers (7:00 AM, 8:00 AM, etc.)
 ├── lunch-break-cell.tsx           # Gray "LUNCH BREAK" cells
-├── export-schedule.tsx            # Export as CSV button
 └── schedule-legend.tsx            # Color legend by course/program
 
 src/api/collections/
@@ -598,8 +588,7 @@ The wireframe shows these stacked in the time cells with conflict warning.
 - Conflict details in drawer
 - Quick action buttons
 
-### Phase 5: Export & Polish (1 day)
-- CSV export endpoint
+### Phase 5: Polish & Performance (1 day)
 - Legend component
 - Responsive design
 - Performance optimization (memoization, virtualization)

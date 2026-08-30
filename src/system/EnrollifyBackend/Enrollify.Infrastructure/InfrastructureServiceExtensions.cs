@@ -1,6 +1,7 @@
 using Ardalis.SmartEnum;
 using Ardalis.SmartEnum.Dapper;
 using Dapper;
+using Enrollify.Application;
 using Enrollify.Application.Features.AcademicYearAndTerm;
 using Enrollify.Application.Features.Buildings;
 using Enrollify.Application.Features.ClassSectionScheduling.Repositories;
@@ -18,8 +19,6 @@ using Enrollify.Application.Features.SubjectEquivalences;
 using Enrollify.Application.Features.Subjects;
 using Enrollify.Application.Features.Teachers;
 using Enrollify.Application.Features.Teachers.Storage;
-using Enrollify.Core.Aggregates.ClassSectionAggregate.Events;
-using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services;
 using Enrollify.Core.Services.ClassSectionDataIntegrityValidation;
@@ -89,6 +88,8 @@ public static class InfrastructureServiceExtensions
     // SQL Server TIME columns (TimeSpan) to .NET TimeOnly type
     SqlMapper.AddTypeHandler(new TimeSpanToTimeOnlyDapperTypeHandler());
 
+    services.AddScoped<IApplicationEventDispatcher, ApplicationEventDispatcher>();
+
     services.AddScoped<EventDispatchInterceptor>();
     services.AddScoped<PreSaveChangesInterceptor>();
     services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
@@ -132,6 +133,9 @@ public static class InfrastructureServiceExtensions
     services
       .AddScoped<IClassSectionSubjectOfferingScheduleConflictRepository,
         ClassSectionSubjectOfferingScheduleConflictRepository>();
+    services
+      .AddScoped<Application.Features.RoomScheduling.Repositories.IRoomScheduleReadRepository,
+        RoomScheduleReadRepository>();
     services.AddScoped<IClassSectionValidationIssueRepository, ClassSectionValidationIssueRepository>();
     services.AddScoped<ICourseCurriculumAssignmentRepository, CourseCurriculumAssignmentRepository>();
     services.AddScoped<IClassSectionSchedulingStatsRepository, ClassSectionSchedulingStatsRepository>();

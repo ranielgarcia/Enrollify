@@ -73,7 +73,6 @@ const HEALTH_INDICATORS: HealthIndicatorConfig[] = [
     severity: "neutral",
   },
 ];
-
 const SEVERITY_STYLES: Record<
   HealthSeverity,
   { border: string; iconColor: string; badgeBg: string; badgeText: string }
@@ -81,26 +80,26 @@ const SEVERITY_STYLES: Record<
   error: {
     border: "border-l-rose-400/50 dark:border-l-rose-500/40",
     iconColor: "text-rose-500 dark:text-rose-400",
-    badgeBg: "bg-rose-50 dark:bg-rose-950/40",
-    badgeText: "text-rose-600 dark:text-rose-400",
+    badgeBg: "bg-rose-100 dark:bg-rose-900/40",
+    badgeText: "text-rose-800 dark:text-rose-200",
   },
   warn: {
     border: "border-l-amber-400/50 dark:border-l-amber-500/40",
     iconColor: "text-amber-500 dark:text-amber-400",
-    badgeBg: "bg-amber-50 dark:bg-amber-950/40",
-    badgeText: "text-amber-600 dark:text-amber-400",
+    badgeBg: "bg-amber-100 dark:bg-amber-900/40",
+    badgeText: "text-amber-800 dark:text-amber-200",
   },
   info: {
     border: "border-l-blue-400/50 dark:border-l-blue-500/40",
     iconColor: "text-blue-500 dark:text-blue-400",
-    badgeBg: "bg-blue-50 dark:bg-blue-950/40",
-    badgeText: "text-blue-600 dark:text-blue-400",
+    badgeBg: "bg-blue-100 dark:bg-blue-900/40",
+    badgeText: "text-blue-800 dark:text-blue-200",
   },
   neutral: {
     border: "border-l-slate-300/60 dark:border-l-slate-600/50",
     iconColor: "text-muted-foreground",
-    badgeBg: "bg-muted/60",
-    badgeText: "text-muted-foreground",
+    badgeBg: "bg-slate-100 dark:bg-slate-800",
+    badgeText: "text-slate-800 dark:text-slate-200",
   },
 };
 

@@ -15,6 +15,7 @@ global using Enrollify.Core.Aggregates.RoomTypeAggregate;
 global using Enrollify.Core.Aggregates.SubjectAggregate;
 global using Enrollify.Core.Aggregates.TeacherAggregate;
 global using Enrollify.Core.Constants;
+global using Enrollify.Application;
 global using Enrollify.SharedKernel;
 global using MediatR;
 global using Microsoft.Extensions.Logging;

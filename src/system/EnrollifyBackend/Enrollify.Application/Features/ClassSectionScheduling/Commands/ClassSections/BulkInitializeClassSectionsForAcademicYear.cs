@@ -30,7 +30,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
     private readonly IClassSectionRepository _classSectionRepository;
     private readonly IClassSectionSubjectOfferingRepository _classSectionSubjectOfferingRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IDomainEventBus _eventBus;
+    private readonly IApplicationEventDispatcher _eventDispatcher;
     private readonly INotificationPublisher _notificationPublisher;
     private readonly ICourseCurriculumAssignmentRepository _courseCurriculumAssignmentRepository;
     private readonly ICurrentUserAccessor _currentUserAccessor;
@@ -43,7 +43,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
       IClassSectionRepository classSectionRepository,
       IClassSectionSubjectOfferingRepository classSectionSubjectOfferingRepository,
       IUnitOfWork unitOfWork,
-      IDomainEventBus eventBus,
+      IApplicationEventDispatcher eventDispatcher,
       INotificationPublisher notificationPublisher,
       ICourseCurriculumAssignmentRepository courseCurriculumAssignmentRepository,
       ICurrentUserAccessor currentUserAccessor,
@@ -55,7 +55,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
       _classSectionRepository = classSectionRepository;
       _classSectionSubjectOfferingRepository = classSectionSubjectOfferingRepository;
       _unitOfWork = unitOfWork;
-      _eventBus = eventBus;
+      _eventDispatcher = eventDispatcher;
       _notificationPublisher = notificationPublisher;
       _courseCurriculumAssignmentRepository = courseCurriculumAssignmentRepository;
       _currentUserAccessor = currentUserAccessor;
@@ -241,7 +241,7 @@ public static class BulkInitializeClassSectionsForAcademicYear
 
         foreach (ClassSectionId createdSectionId in createdSectionIds)
         {
-          await _eventBus.PublishAsync(new ClassSectionCreatedEvent(createdSectionId, triggeredBy));
+          await _eventDispatcher.DispatchDeferredAsync(new ClassSectionCreatedEvent(createdSectionId, triggeredBy), cancellationToken);
         }
 
         // ClassSectionCreatedEvent is routed to a dedicated BufferedInMemory local queue (see

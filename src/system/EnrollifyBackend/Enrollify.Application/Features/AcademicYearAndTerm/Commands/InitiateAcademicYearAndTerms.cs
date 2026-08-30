@@ -17,18 +17,18 @@ public static class InitiateAcademicYearAndTerms
     {
         private readonly IAcademicYearAndTermRepository _academicYearAndTermRepository;
         private readonly IReadRepository<AcademicYear> _readRepository;
-        private readonly IMediator _mediator;
+        private readonly IApplicationEventDispatcher _eventDispatcher;
         private readonly ILogger<Handler> _logger;
 
         public Handler(
             IAcademicYearAndTermRepository academicYearAndTermRepository,
             IReadRepository<AcademicYear> readRepository,
-            IMediator mediator,
+            IApplicationEventDispatcher eventDispatcher,
             ILogger<Handler> logger)
         {
             _academicYearAndTermRepository = academicYearAndTermRepository;
             _readRepository = readRepository;
-            _mediator = mediator;
+            _eventDispatcher = eventDispatcher;
             _logger = logger;
         }
 
@@ -68,7 +68,7 @@ public static class InitiateAcademicYearAndTerms
 
                 if (result.IsSuccess)
                 {
-                    await _mediator.Publish(new AcademicYearCreatedEvent(result.Value), cancellationToken);
+                    await _eventDispatcher.DispatchAsync(new AcademicYearCreatedEvent(result.Value), cancellationToken);
                 }
 
                 return result.Map(AcademicYearDto.FromEntity);

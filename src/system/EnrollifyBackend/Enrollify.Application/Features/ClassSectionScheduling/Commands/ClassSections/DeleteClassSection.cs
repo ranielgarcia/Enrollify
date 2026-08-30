@@ -12,19 +12,19 @@ public static class DeleteClassSection
         private readonly IClassSectionRepository _classSectionRepository;
         private readonly IReadRepository<ClassSection> _readRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IDomainEventBus _eventBus;
+        private readonly IApplicationEventDispatcher _eventDispatcher;
         private readonly ILogger<Handler> _logger;
 
         public Handler(IClassSectionRepository classSectionRepository,
             IReadRepository<ClassSection> readRepository,
             IUnitOfWork unitOfWork,
-            IDomainEventBus eventBus,
+            IApplicationEventDispatcher eventDispatcher,
             ILogger<Handler> logger)
         {
             _classSectionRepository = classSectionRepository;
             _readRepository = readRepository;
             _unitOfWork = unitOfWork;
-            _eventBus = eventBus;
+            _eventDispatcher = eventDispatcher;
             _logger = logger;
         }
 
@@ -69,7 +69,7 @@ public static class DeleteClassSection
             }
 
             // TODO: when all class sections are deleted, we should also unlock the course-curriculum assignment for that course and academic year
-            await _eventBus.PublishAsync(new ClassSectionDeletedEvent(classSectionToDelete.Id));
+            await _eventDispatcher.DispatchDeferredAsync(new ClassSectionDeletedEvent(classSectionToDelete.Id), cancellationToken);
 
             await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
             return deleteResult;

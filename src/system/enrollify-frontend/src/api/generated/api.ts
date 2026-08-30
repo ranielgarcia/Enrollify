@@ -372,6 +372,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/rooms/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["EnrollifyWebAPIFeaturesRoomSchedulingGetRoomScheduleEndpoint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/roles": {
         parameters: {
             query?: never;
@@ -1373,6 +1389,7 @@ export interface components {
             /** Format: int32 */
             buildingId: number;
         };
+        EnrollifyWebAPIFeaturesRoomSchedulingGetRoomScheduleRequest: Record<string, never>;
         EnrollifyApplicationFeaturesRolesDTOsRoleDto: components["schemas"]["EnrollifyApplicationBaseDto"] & {
             /**
              * Format: int32
@@ -1427,50 +1444,19 @@ export interface components {
             totalPages?: number;
         };
         EnrollifyApplicationFeaturesNotificationsDTOsNotificationDto: {
+            /** Format: int32 */
+            id?: number;
             type?: string;
             title?: string;
             message?: string;
-            severity?: components["schemas"]["EnrollifyCoreConstantsNotificationSeverityEnum"];
-            category?: components["schemas"]["EnrollifyCoreConstantsNotificationCategoryEnum"];
-            referenceType?: components["schemas"]["EnrollifyCoreConstantsNotificationReferenceTypeEnum"] | null;
+            severity?: string;
+            category?: string;
+            referenceType?: string | null;
             /** Format: int32 */
             referenceId?: number | null;
-        };
-        EnrollifyCoreConstantsNotificationSeverityEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfNotificationSeverityEnum"] & Record<string, never>;
-        ArdalisSmartEnumSmartEnumOfNotificationSeverityEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfNotificationSeverityEnumAndInt32"] & Record<string, never>;
-        /** @description A base type to use for creating smart enums. */
-        ArdalisSmartEnumSmartEnumOfNotificationSeverityEnumAndInt32: {
-            /** @description Gets the name. */
-            name?: string | null;
-            /**
-             * Format: int32
-             * @description Gets the value.
-             */
-            value?: number;
-        };
-        EnrollifyCoreConstantsNotificationCategoryEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfNotificationCategoryEnum"] & Record<string, never>;
-        ArdalisSmartEnumSmartEnumOfNotificationCategoryEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfNotificationCategoryEnumAndInt32"] & Record<string, never>;
-        /** @description A base type to use for creating smart enums. */
-        ArdalisSmartEnumSmartEnumOfNotificationCategoryEnumAndInt32: {
-            /** @description Gets the name. */
-            name?: string | null;
-            /**
-             * Format: int32
-             * @description Gets the value.
-             */
-            value?: number;
-        };
-        EnrollifyCoreConstantsNotificationReferenceTypeEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfNotificationReferenceTypeEnum"] & Record<string, never>;
-        ArdalisSmartEnumSmartEnumOfNotificationReferenceTypeEnum: components["schemas"]["ArdalisSmartEnumSmartEnumOfNotificationReferenceTypeEnumAndInt32"] & Record<string, never>;
-        /** @description A base type to use for creating smart enums. */
-        ArdalisSmartEnumSmartEnumOfNotificationReferenceTypeEnumAndInt32: {
-            /** @description Gets the name. */
-            name?: string | null;
-            /**
-             * Format: int32
-             * @description Gets the value.
-             */
-            value?: number;
+            /** Format: date-time */
+            createdAt?: string;
+            isRead?: boolean;
         };
         EnrollifyWebAPIFeaturesNotificationsFilterNotificationsPaginatedRequest: Record<string, never>;
         EnrollifyWebAPIFeaturesDepartmentsCreateDepartmentRequest: {
@@ -3227,6 +3213,47 @@ export interface operations {
             path: {
                 id: number;
             };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["FastEndpointsProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EnrollifyWebAPIFeaturesRoomSchedulingGetRoomScheduleEndpoint: {
+        parameters: {
+            query: {
+                AcademicTermId: number;
+                DayOfWeek: string;
+                BuildingId?: number | null;
+                RoomTypeId?: number | null;
+                CollegeId?: number | null;
+                CourseId?: number | null;
+            };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;

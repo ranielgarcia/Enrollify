@@ -82,6 +82,12 @@ export const navigationItems: NavMainItemProp[] = [
         viewAuthorizationPolicies: [PolicyNames.canViewClassSections],
         icon: ModuleIcons.sections,
       },
+      {
+        title: "Room Schedule",
+        url: "/portal/curriculum-and-scheduling/scheduling/rooms",
+        viewAuthorizationPolicies: [PolicyNames.canViewRooms],
+        icon: ModuleIcons.rooms,
+      },
     ],
   },
 ];

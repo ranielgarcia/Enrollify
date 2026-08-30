@@ -1,5 +1,5 @@
+using Enrollify.Application.Features.ClassSectionScheduling.Events;
 using Enrollify.Application.Features.Notifications;
-using Enrollify.Core.Aggregates.ClassSectionValidationIssueAggregate.Events;
 using Enrollify.Core.Constants.Authorization;
 using Enrollify.Core.Services.NotificationServices.Models;
 using INotificationPublisher = Enrollify.Core.Services.NotificationServices.INotificationPublisher;
@@ -21,7 +21,7 @@ public static class BulkAssignClassSectionAdviser
   {
     private readonly IReadRepository<ClassSection> _classSectionReadRepository;
     private readonly IClassSectionRepository _classSectionRepository;
-    private readonly IDomainEventBus _eventBus;
+    private readonly IApplicationEventDispatcher _eventDispatcher;
     private readonly IUnitOfWork _unitOfWork;
     private readonly INotificationPublisher _notificationPublisher;
     private readonly ILogger<Handler> _logger;
@@ -29,14 +29,14 @@ public static class BulkAssignClassSectionAdviser
     public Handler(
       IReadRepository<ClassSection> classSectionReadRepository,
       IClassSectionRepository classSectionRepository,
-      IDomainEventBus eventBus,
+      IApplicationEventDispatcher eventDispatcher,
       IUnitOfWork unitOfWork,
       INotificationPublisher notificationPublisher,
       ILogger<Handler> logger)
     {
       _classSectionReadRepository = classSectionReadRepository;
       _classSectionRepository = classSectionRepository;
-      _eventBus = eventBus;
+      _eventDispatcher = eventDispatcher;
       _unitOfWork = unitOfWork;
       _notificationPublisher = notificationPublisher;
       _logger = logger;
@@ -99,7 +99,7 @@ public static class BulkAssignClassSectionAdviser
           [RolesEnum.SystemAdmin]
         ));
 
-        await _eventBus.PublishAsync(new RefreshClassSectionDataQualityValidationIssuesRequestedEvent(classSections.Select(x => x.Id).ToList()));
+        await _eventDispatcher.DispatchDeferredAsync(new RefreshClassSectionDataQualityValidationIssuesRequestedEvent(classSections.Select(x => x.Id).ToList()), cancellationToken);
 
         await _unitOfWork.SaveChangesAndFlushMessagesThenCommitAsync(cancellationToken);
       }
