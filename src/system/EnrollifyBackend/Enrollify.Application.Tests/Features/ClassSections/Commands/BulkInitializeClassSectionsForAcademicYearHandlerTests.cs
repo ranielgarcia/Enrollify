@@ -218,6 +218,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
         SetupExistingSections();
         SetupSuccessfulSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -242,6 +243,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
         SetupExistingSections();
         SetupSuccessfulSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -270,6 +272,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
         SetupExistingSections();
         var capturedSections = CaptureCreatedSections();
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -345,6 +348,7 @@ public class BulkInitializeClassSectionsForAcademicYearHandlerTests
         SetupExistingSections();
         SetupSuccessfulSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);

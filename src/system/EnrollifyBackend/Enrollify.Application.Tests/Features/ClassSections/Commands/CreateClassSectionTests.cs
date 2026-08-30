@@ -122,6 +122,7 @@ public class CreateClassSectionTests
         SetupSuccessfulCurriculumRetrieval(command);
         SetupSuccessfulClassSectionCreation();
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
 
         // Act
         Exception? caughtException = null;
@@ -178,6 +179,7 @@ public class CreateClassSectionTests
             .Setup(r => r.ListAsync(It.IsAny<ISpecification<ClassSection>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ClassSection>());
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
 
         ClassSection? capturedSection = null;
         _classSectionRepositoryMock
@@ -215,6 +217,7 @@ public class CreateClassSectionTests
             .Setup(r => r.ListAsync(It.IsAny<ISpecification<ClassSection>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ClassSection>());
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
 
         ClassSection? capturedSection = null;
         _classSectionRepositoryMock
@@ -252,6 +255,7 @@ public class CreateClassSectionTests
             .Setup(r => r.ListAsync(It.IsAny<ISpecification<ClassSection>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ClassSection>());
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
 
         ClassSection? capturedSection = null;
         _classSectionRepositoryMock
@@ -302,6 +306,7 @@ public class CreateClassSectionTests
             .Setup(r => r.ListAsync(It.IsAny<ISpecification<ClassSection>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ClassSection>());
         SetupSuccessfulSubjectOfferingCreation();
+        SetupSuccessfulCourseCurriculumAssignmentBulkUpdate();
 
         ClassSection? capturedYear1Section = null;
         _classSectionRepositoryMock
