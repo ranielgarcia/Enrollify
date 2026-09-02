@@ -22,7 +22,7 @@ public class Room : EntityBase<Room, RoomId>, IAggregateRoot, IAuditable
         RegisterDomainEvent(new RoomCreatedEvent(this));
     }
 
-    public string RoomNumber { get; private set; }
+    public string RoomNumber { get; private set; } = string.Empty;
     public int Capacity { get; private set; }
     public RoomTypeId RoomTypeId { get; private set; }
     public BuildingId BuildingId { get; private set; }

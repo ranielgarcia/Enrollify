@@ -11,7 +11,7 @@ public class VogenNSwagSchemaProcessor : ISchemaProcessor
 {
     public void Process(SchemaProcessorContext context)
     {
-        var type = context.Type;
+        var type = context.ContextualType.Type;
 
         // Check if this type is a Vogen value object by looking for the ValueObjectAttribute
         var valueObjectAttribute = type.GetCustomAttribute<ValueObjectAttribute>();

@@ -14,11 +14,11 @@ public class Notification : EntityBase<NotificationId>, IAggregateRoot
     public string Type { get; private set; } = default!;
     public string Title { get; private set; } = default!;
     public string Message { get; private set; } = default!;
-    public NotificationSeverityEnum Severity { get; private set; }
-    public NotificationCategoryEnum Category { get; private set; }
+    public NotificationSeverityEnum Severity { get; private set; } = NotificationSeverityEnum.Info;
+    public NotificationCategoryEnum Category { get; private set; } = NotificationCategoryEnum.System;
     public NotificationReferenceTypeEnum? ReferenceType { get; private set; }
     public int? ReferenceId { get; private set; }
-    public NotificationTargetScopeEnum TargetScope{ get; private set; }
+    public NotificationTargetScopeEnum TargetScope{ get; private set; } = NotificationTargetScopeEnum.Broadcast;
     public UserId? TargetUserId { get; private set; }
     public RoleId? TargetRoleId { get; private set; }
     public int RetentionDays { get; private set; } = NotificationSettings.DefaultRetentionDays;
@@ -108,4 +108,3 @@ public class Notification : EntityBase<NotificationId>, IAggregateRoot
         return this;
     }
 }
-

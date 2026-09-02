@@ -31,9 +31,9 @@ public class Teacher : EntityBase<Teacher, TeacherId>, IAggregateRoot, IAuditabl
         DepartmentId = Guard.Against.Null(departmentId, message: "Department ID is required.");
     }
 
-    public string FirstName { get; private set; }
+    public string FirstName { get; private set; } = string.Empty;
     public string? MiddleName { get; private set; }
-    public string LastName { get; private set; }
+    public string LastName { get; private set; } = string.Empty;
 
     public TeacherIdentifier TeacherIdentifier { get; private set; }
     public TeacherEmail Email { get; private set; }

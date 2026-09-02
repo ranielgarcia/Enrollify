@@ -60,7 +60,7 @@ public class ClassSectionSubjectOffering : EntityBase<ClassSectionSubjectOfferin
 
   public CurriculumSubjectId CurriculumSubjectId { get; private set; }
   public SubjectCode SnapshotSubjectCode { get; private set; }
-  public string SnapshotSubjectTitle { get; private set; }
+  public string SnapshotSubjectTitle { get; private set; } = string.Empty;
   public decimal SnapshotUnits { get; private set; }
   public bool SnapshotIsElective { get; private set; }
   public string? SnapshotElectiveGroupName { get; private set; }

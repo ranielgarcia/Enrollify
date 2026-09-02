@@ -11,6 +11,9 @@ namespace Enrollify.IntegrationTests.Infrastructure;
 /// </summary>
 public class TestContainersManager : IAsyncLifetime
 {
+    private const string SqlServerImage = "mcr.microsoft.com/mssql/server:2022-latest";
+    private const string AzuriteImage = "mcr.microsoft.com/azure-storage/azurite:latest";
+
     private static readonly SemaphoreSlim _initLock = new(1, 1);
     private static TestContainersManager? _instance;
     private static bool _isInitialized;
@@ -59,13 +62,11 @@ public class TestContainersManager : IAsyncLifetime
         Console.WriteLine("[TestContainers] Starting MsSQL and Azurite containers...");
 
         // Start MsSQL Container
-        SqlDbContainer = new MsSqlBuilder()
-            .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+        SqlDbContainer = new MsSqlBuilder(SqlServerImage)
             .Build();
 
         // Start Azurite Container for Azure Blob Storage emulation
-        AzuriteContainer = new AzuriteBuilder()
-            .WithImage("mcr.microsoft.com/azure-storage/azurite:latest")
+        AzuriteContainer = new AzuriteBuilder(AzuriteImage)
             .Build();
 
         await Task.WhenAll(

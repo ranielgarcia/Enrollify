@@ -32,7 +32,8 @@ public class ClassSectionSchedulingStats : EntityBase<ClassSectionSchedulingStat
 
   public ClassSectionId? ClassSectionId { get; private set; }
 
-  public ClassSectionSchedulingStatsAggregateTypeEnum AggregateType { get; private set; }
+  public ClassSectionSchedulingStatsAggregateTypeEnum AggregateType { get; private set; } =
+    ClassSectionSchedulingStatsAggregateTypeEnum.DEFAULT_VALUES;
   public int AggregateCount { get; private set; }
   public DateTimeOffset ComputedAt { get; private set; }
 }

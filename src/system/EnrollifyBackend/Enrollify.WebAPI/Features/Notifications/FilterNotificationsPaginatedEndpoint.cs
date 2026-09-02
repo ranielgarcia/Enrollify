@@ -48,7 +48,7 @@ public class FilterNotificationsPaginatedEndpoint (IMediator mediator)
     NotificationCategoryEnum? category = req.Category != null && req.Category.ToLower() != "all" ? NotificationCategoryEnum.FromName(req.Category) : null;
     NotificationSeverityEnum? severity = req.Severity != null && req.Severity.ToLower() != "all" ? NotificationSeverityEnum.FromName(req.Severity) : null;
 
-    var result = await mediator.Send(new FilterNotificationsPaginatedQuery(req.SearchTerm ?? "", req.Page, req.PageSize, category, severity, req.ReadState), ct);
+    var result = await mediator.Send(new FilterNotificationsPaginatedQuery(req.SearchTerm ?? "", req.Page, req.PageSize, category, severity, req.ReadState ?? ""), ct);
     await Send.OkAsync(result, ct);
   }
 }

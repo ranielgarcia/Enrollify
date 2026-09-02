@@ -34,8 +34,8 @@ public class ClassSectionValidationIssueConfiguration : IEntityTypeConfiguration
 
     builder.Property(e => e.DayOfWeek)
       .HasConversion(
-        v => v.Value,
-        v => DayOfWeekEnum.FromValue(v))
+        v => SerializeDayOfWeek(v),
+        v => DeserializeDayOfWeek(v))
       .HasColumnType("char(3)")
       .IsRequired(false);
 
@@ -51,5 +51,25 @@ public class ClassSectionValidationIssueConfiguration : IEntityTypeConfiguration
       .HasColumnName("ConflictingOfferingsJson")
       .HasColumnType("nvarchar(max)")
       .IsRequired(false);
+  }
+
+  private static string? SerializeDayOfWeek(DayOfWeekEnum? dayOfWeek)
+  {
+    return dayOfWeek?.Value;
+  }
+
+  private static DayOfWeekEnum? DeserializeDayOfWeek(string? value)
+  {
+    if (value is null)
+    {
+      return null;
+    }
+
+    if (string.IsNullOrWhiteSpace(value))
+    {
+      throw new InvalidOperationException("Class section validation issue day-of-week metadata cannot be empty when a database value is present.");
+    }
+
+    return DayOfWeekEnum.FromValue(value);
   }
 }

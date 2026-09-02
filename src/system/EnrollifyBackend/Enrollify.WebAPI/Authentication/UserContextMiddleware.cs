@@ -22,16 +22,13 @@ public class UserContextMiddleware
         IUserContextService userContextService)
     {
         var cancellationToken = httpContext.RequestAborted;
-        //var userEmail = httpContext?.User?.Identity?.Name;
         var userEmail = GetEmailClaim(httpContext);
 
-        if (httpContext != null && !string.IsNullOrWhiteSpace(userEmail))
+        if (!string.IsNullOrWhiteSpace(userEmail))
         {
-            var email = GetEmailClaim(httpContext);
-
             try
             {
-                var userContext = await userContextService.GetUserContextByEmail(UserEmail.From(email), cancellationToken);
+                var userContext = await userContextService.GetUserContextByEmail(UserEmail.From(userEmail), cancellationToken);
 
                 if (userContext != null)
                 {
@@ -41,12 +38,12 @@ public class UserContextMiddleware
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 // Request was aborted (client disconnected), skip processing
-                _logger.LogDebug("Request aborted during user context retrieval for {Email}", email);
+                _logger.LogDebug("Request aborted during user context retrieval for {Email}", userEmail);
                 return;
             }
         }
 
-        await _next(httpContext!);
+        await _next(httpContext);
     }
 
     private void SetHttpContext(UserContext currentUserContext, HttpContext httpContext)

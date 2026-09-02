@@ -67,9 +67,22 @@ public class FilterClassSectionsPaginatedQueryHandler
     List<ClassSectionSchedulingStats> schedulingStats =
       await _schedulingStatsReadRepository.ListAsync(schedulingStatsSpec, cancellationToken);
 
-    var schedulingStatsPerClassSection = schedulingStats.Where(x => x.ClassSectionId != null)
-      .GroupBy(x => x.ClassSectionId)
-      .ToDictionary(g => g.Key!, g => g.ToList());
+    var schedulingStatsPerClassSection = new Dictionary<ClassSectionId, List<ClassSectionSchedulingStats>>();
+    foreach (ClassSectionSchedulingStats schedulingStat in schedulingStats)
+    {
+      if (!schedulingStat.ClassSectionId.HasValue)
+        continue;
+
+      ClassSectionId classSectionId = schedulingStat.ClassSectionId.Value;
+      if (!schedulingStatsPerClassSection.TryGetValue(classSectionId,
+            out List<ClassSectionSchedulingStats>? statsForSection))
+      {
+        statsForSection = [];
+        schedulingStatsPerClassSection[classSectionId] = statsForSection;
+      }
+
+      statsForSection.Add(schedulingStat);
+    }
 
     var sectionsToReturn = new List<ClassSectionDto>();
     foreach (ClassSection section in sections)

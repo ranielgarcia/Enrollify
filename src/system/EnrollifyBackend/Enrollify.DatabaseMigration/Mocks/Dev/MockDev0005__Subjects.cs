@@ -1,6 +1,7 @@
 using DbUp.Engine;
 using Enrollify.Core.Aggregates.SubjectAggregate;
 using System.Data;
+using System.Globalization;
 using System.Text;
 
 namespace Enrollify.DatabaseMigration.Mocks.Dev;
@@ -337,7 +338,7 @@ public class MockDev0005__Subjects : IScript
             {
                 var getRoomTypeCommand = dbCommandFactory();
                 getRoomTypeCommand.CommandText = $"SELECT Id FROM RoomTypes WHERE Name='{subject.preferRoomTypeName}'";
-                roomTypeId = (int)getRoomTypeCommand.ExecuteScalar();
+                roomTypeId = ReadRequiredInt32(getRoomTypeCommand, $"room type '{subject.preferRoomTypeName}'");
                 roomTypes.Add(subject.preferRoomTypeName, roomTypeId);
             }
 
@@ -370,6 +371,29 @@ public class MockDev0005__Subjects : IScript
             """);
 
         return scriptBuilder.ToString();
+    }
+
+    private static int ReadRequiredInt32(IDbCommand command, string entityDescription)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        var result = command.ExecuteScalar();
+        if (result is null || result is DBNull)
+        {
+            throw new InvalidOperationException(
+                $"Lookup for {entityDescription} returned no Id. Command: {command.CommandText}");
+        }
+
+        try
+        {
+            return Convert.ToInt32(result, CultureInfo.InvariantCulture);
+        }
+        catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException)
+        {
+            throw new InvalidOperationException(
+                $"Lookup for {entityDescription} returned '{result}' ({result.GetType().FullName}) instead of a valid Int32 Id. Command: {command.CommandText}",
+                ex);
+        }
     }
 
     public record Subject(SubjectCode code, string title, decimal? units, string? description, string preferRoomTypeName);

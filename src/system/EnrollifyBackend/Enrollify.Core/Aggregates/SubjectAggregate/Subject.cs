@@ -21,9 +21,9 @@ public class Subject : EntityBase<Subject, SubjectId>, IAggregateRoot, IAuditabl
     }
 
     public SubjectCode Code { get; private set; }
-    public string Title { get; private set; }
+    public string Title { get; private set; } = string.Empty;
     public decimal Units { get; private set; }
-    public string Description { get; private set; }
+    public string Description { get; private set; } = string.Empty;
 
     public RoomTypeId PreferRoomTypeId { get; private set; }
     public RoomType? PreferRoomType { get; private set; }

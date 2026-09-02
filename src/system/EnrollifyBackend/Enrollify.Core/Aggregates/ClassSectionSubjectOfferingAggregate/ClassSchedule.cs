@@ -26,7 +26,7 @@ public class ClassSchedule : EntityBase<ClassSchedule, ClassScheduleId>, IAudita
 
   public ClassSectionSubjectOfferingId ClassSectionSubjectOfferingId { get; private set; }
 
-  public DayOfWeekEnum DayOfWeek { get; private set; }
+  public DayOfWeekEnum DayOfWeek { get; private set; } = DayOfWeekEnum.Monday;
 
   public TimeOnly StartTime { get; private set; }
   public TimeOnly EndTime { get; private set; }

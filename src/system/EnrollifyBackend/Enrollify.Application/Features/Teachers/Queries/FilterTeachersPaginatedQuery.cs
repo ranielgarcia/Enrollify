@@ -29,14 +29,20 @@ public class FilterTeachersPaginatedQueryHandler : IRequestHandler<FilterTeacher
                 ? parsed : JoinOperator.Or;
 
         var spec = new FilterTeachersPaginatedSpec(request.page, request.pageSize, request.filters, request.sorts, joinOperator);
-        var teachers = await _readRepository.ListAsync(spec, cancellationToken);
+        List<Teacher> teachers = await _readRepository.ListAsync(spec, cancellationToken) ?? [];
         var totalCount = await _readRepository.CountAsync(spec, cancellationToken);
 
-        var allSubjectIds = teachers?.SelectMany(t => t.Subjects).Select(s => s.SubjectId).Distinct().ToList();
-        var getSubjectsSpec = new ListSubjectsByIdsSpec(allSubjectIds ?? new List<SubjectId>());
-        var allSubjects = allSubjectIds?.Count > 0
-                        ? await _subjectReadRepository.ListAsync(getSubjectsSpec, cancellationToken)
-                        : [];
+        List<SubjectId> allSubjectIds = teachers
+            .SelectMany(t => t.Subjects)
+            .Select(s => s.SubjectId)
+            .Distinct()
+            .ToList();
+        List<Subject> allSubjects = [];
+        if (allSubjectIds.Count > 0)
+        {
+            var getSubjectsSpec = new ListSubjectsByIdsSpec(allSubjectIds);
+            allSubjects = await _subjectReadRepository.ListAsync(getSubjectsSpec, cancellationToken) ?? [];
+        }
         var subjectLookup = allSubjects.ToDictionary(s => s.Id);
 
         var items = teachers
@@ -49,7 +55,7 @@ public class FilterTeachersPaginatedQueryHandler : IRequestHandler<FilterTeacher
             .ToList();
 
         return new PagedResult<TeacherDto>(
-            items?.AsReadOnly() ?? Array.Empty<TeacherDto>().AsReadOnly(),
+            items.AsReadOnly(),
             request.page,
             request.pageSize,
             totalCount);
