@@ -7,9 +7,9 @@
 #   docker compose down   (keeps volumes/data intact)
 #
 # SQL Server connection (SSMS / Azure Data Studio / appsettings):
-#   Server=localhost,59480; User Id=sa; Password=Password!; TrustServerCertificate=True
+#   Server=localhost,51433; User Id=sa; Password=Password!; TrustServerCertificate=True
 #
-# NOTE: Do NOT run this alongside Aspire — both use port 59480.
+# NOTE: Do NOT run this alongside Aspire — both use port 51433.
 #       Volumes are declared as external because Aspire creates them on first run.
 #       On a fresh machine, run Aspire once first, OR remove "external: true" below
 #       so docker compose creates the volumes itself.
@@ -23,7 +23,7 @@ services:
       ACCEPT_EULA: "Y"
       MSSQL_PID: "Developer"
     ports:
-      - "59480:1433"
+      - "51433:1433"
     volumes:
       - enrollify-sql-data-01:/var/opt/mssql
     restart: unless-stopped

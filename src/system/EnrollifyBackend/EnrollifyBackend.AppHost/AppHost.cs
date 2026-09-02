@@ -4,7 +4,7 @@ var sqlPassword = builder.AddParameter("sql-password", value: "Password!", secre
 
 // WithDataVolume() = a convenience method provided by Aspire for resources that have a well-known data directory (e.g., SQL Server, PostgreSQL).
 // WithVolume() = a generic Docker volume mount that you can use with any container.
-var sql = builder.AddSqlServer("sql", port: 59480, password: sqlPassword)
+var sql = builder.AddSqlServer("sql", port: 51433, password: sqlPassword)
   .WithContainerName("enrollify-sql")
   .WithDataVolume(name: "enrollify-sql-data-01")
   .WithLifetime(ContainerLifetime.Persistent);
@@ -52,5 +52,4 @@ builder.AddNpmApp(
     name: "http");
 
 builder.Build().Run();
-
 
