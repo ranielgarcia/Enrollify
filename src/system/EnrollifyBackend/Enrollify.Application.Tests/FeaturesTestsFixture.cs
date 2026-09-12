@@ -7,6 +7,8 @@ namespace Enrollify.Application.Tests;
 
 public class FeaturesTestsFixture : IAsyncLifetime
 {
+    private const string SqlServerImage = "mcr.microsoft.com/mssql/server:2022-latest";
+
     private string DatabaseName { get; set; } = $"EnrollifyTest_{Guid.NewGuid():N}";
     public MsSqlContainer SqlDbContainer { get; private set; } = null!;
     public EnrollifyDbContext DbContext { get; private set; } = null!;
@@ -14,8 +16,7 @@ public class FeaturesTestsFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        SqlDbContainer = new MsSqlBuilder()
-            .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+        SqlDbContainer = new MsSqlBuilder(SqlServerImage)
             .Build();
 
         await SqlDbContainer.StartAsync();

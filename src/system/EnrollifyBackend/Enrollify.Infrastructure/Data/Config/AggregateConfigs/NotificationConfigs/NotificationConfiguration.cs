@@ -34,8 +34,8 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
 
     builder.Property(e => e.ReferenceType)
       .HasConversion(
-        v => v.Name,
-        v => NotificationReferenceTypeEnum.FromName(v))
+        v => SerializeReferenceType(v),
+        v => DeserializeReferenceType(v))
       .HasColumnType("NVARCHAR(100)")
       .IsRequired(false);
 
@@ -87,5 +87,25 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
       a.Property(e => e.IsDismissed).IsRequired().HasDefaultValue(false);
       a.Property(e => e.DismissedAt).IsRequired(false);
     });
+  }
+
+  private static string? SerializeReferenceType(NotificationReferenceTypeEnum? referenceType)
+  {
+    return referenceType?.Name;
+  }
+
+  private static NotificationReferenceTypeEnum? DeserializeReferenceType(string? value)
+  {
+    if (value is null)
+    {
+      return null;
+    }
+
+    if (string.IsNullOrWhiteSpace(value))
+    {
+      throw new InvalidOperationException("Notification reference type metadata cannot be empty when a database value is present.");
+    }
+
+    return NotificationReferenceTypeEnum.FromName(value);
   }
 }

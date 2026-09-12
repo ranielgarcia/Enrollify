@@ -54,7 +54,7 @@ public class ClassSection : EntityBase<ClassSection, ClassSectionId>, IAggregate
 
     public SectionCode SectionCode { get; private set; }
 
-    public ClassSectionStatusEnum StatusId { get; private set; }
+    public ClassSectionStatusEnum StatusId { get; private set; } = ClassSectionStatusEnum.Draft;
 
     public DateTimeOffset CreatedAt { get; private set; }
     public UserId CreatedBy { get; private set; }

@@ -19,9 +19,9 @@ public class Course : EntityBase<Course, CourseId>, IAggregateRoot, IAuditable
     }
 
     public CourseCode Code { get; private set; }
-    public string Name { get; private set; }
+    public string Name { get; private set; } = string.Empty;
     public int DurationYears { get; private set; }
-    public string Description { get; private set; }
+    public string Description { get; private set; } = string.Empty;
     public CollegeId CollegeId { get; private set; }
 
     public College? College { get; private set; }

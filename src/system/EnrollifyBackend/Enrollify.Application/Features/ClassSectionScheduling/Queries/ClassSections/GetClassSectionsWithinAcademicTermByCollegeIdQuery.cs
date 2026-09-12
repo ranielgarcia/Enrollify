@@ -58,9 +58,22 @@ public class GetClassSectionsWithinAcademicTermByCollegeIdQueryHandler :
     List<ClassSectionSchedulingStats> schedulingStatsList =
       await _schedulingStatsReadRepository.ListAsync(schedulingStatsSpec, cancellationToken);
 
-    var schedulingStatsPerClassSection = schedulingStatsList.Where(x => x.ClassSectionId != null)
-      .GroupBy(x => x.ClassSectionId)
-      .ToDictionary(g => g.Key!, g => g.ToList());
+    var schedulingStatsPerClassSection = new Dictionary<ClassSectionId, List<ClassSectionSchedulingStats>>();
+    foreach (ClassSectionSchedulingStats schedulingStat in schedulingStatsList)
+    {
+      if (!schedulingStat.ClassSectionId.HasValue)
+        continue;
+
+      ClassSectionId classSectionId = schedulingStat.ClassSectionId.Value;
+      if (!schedulingStatsPerClassSection.TryGetValue(classSectionId,
+            out List<ClassSectionSchedulingStats>? statsForSection))
+      {
+        statsForSection = [];
+        schedulingStatsPerClassSection[classSectionId] = statsForSection;
+      }
+
+      statsForSection.Add(schedulingStat);
+    }
 
     // ### Class Sections for courses
     List<ClassSection> allClassSectionsForCourses = await _classSectionReadRepository

@@ -43,9 +43,9 @@ public class Curriculum : EntityBase<Curriculum, CurriculumId>, IAggregateRoot, 
     /// <summary>
     /// Version identifier (e.g., '2024-A', '2024-REV1')
     /// </summary>
-    public string Version { get; private set; }
+    public string Version { get; private set; } = string.Empty;
 
-    public CurriculumStatusEnum StatusId { get; private set; }
+    public CurriculumStatusEnum StatusId { get; private set; } = CurriculumStatusEnum.Draft;
     public string? Description { get; private set; }
 
     /// <summary>

@@ -52,7 +52,14 @@ public static class UpdateClassSectionSubjectOffering
         await _classSectionReadRepository.FirstOrDefaultAsync(new GetClassSectionByIdSpec(offering.ClassSectionId),
           cancellationToken);
 
-      if (section is not null && section.StatusId != ClassSectionStatusEnum.Draft)
+      if (section is null)
+      {
+        _logger.LogWarning("Parent class section {SectionId} not found for offering {OfferingId} during update",
+          offering.ClassSectionId.Value, command.Id.Value);
+        return Result.NotFound($"Parent class section with ID {offering.ClassSectionId.Value} was not found.");
+      }
+
+      if (section.StatusId != ClassSectionStatusEnum.Draft)
       {
         _logger.LogWarning(
           "Attempting to update a subject offering {OfferingId} for a class section that is not in Draft status anymore.",

@@ -2,6 +2,7 @@
 using Enrollify.Core.Aggregates.CollegeAggregate;
 using Enrollify.Core.Aggregates.CourseAggregate;
 using System.Data;
+using System.Globalization;
 using System.Text;
 
 namespace Enrollify.DatabaseMigration.Mocks.Dev;
@@ -44,7 +45,7 @@ public class MockDev0003__Courses : IScript
             {
                 var getCollegeCommand = dbCommandFactory();
                 getCollegeCommand.CommandText = $"SELECT Id FROM Colleges WHERE Code='{course.collegeCode}'";
-                collegeId = (int)getCollegeCommand.ExecuteScalar();
+                collegeId = ReadRequiredInt32(getCollegeCommand, $"college '{course.collegeCode}'");
                 colleges.Add(course.collegeCode, collegeId);
             }
 
@@ -70,6 +71,29 @@ public class MockDev0003__Courses : IScript
             """);
 
         return scriptBuilder.ToString();
+    }
+
+    private static int ReadRequiredInt32(IDbCommand command, string entityDescription)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        var result = command.ExecuteScalar();
+        if (result is null || result is DBNull)
+        {
+            throw new InvalidOperationException(
+                $"Lookup for {entityDescription} returned no Id. Command: {command.CommandText}");
+        }
+
+        try
+        {
+            return Convert.ToInt32(result, CultureInfo.InvariantCulture);
+        }
+        catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException)
+        {
+            throw new InvalidOperationException(
+                $"Lookup for {entityDescription} returned '{result}' ({result.GetType().FullName}) instead of a valid Int32 Id. Command: {command.CommandText}",
+                ex);
+        }
     }
 
     public record Course(CollegeCode collegeCode, CourseCode code, string name, int durationYears, string description);

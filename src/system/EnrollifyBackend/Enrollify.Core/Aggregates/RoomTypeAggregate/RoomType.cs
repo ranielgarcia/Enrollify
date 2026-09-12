@@ -14,8 +14,8 @@ public class RoomType : EntityBase<RoomType, RoomTypeId>, IAggregateRoot, IAudit
         Description = Guard.Against.Null(description);
     }
 
-    public string Name { get; private set; }
-    public string Description { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
 
 
     public DateTimeOffset CreatedAt { get; private set; }

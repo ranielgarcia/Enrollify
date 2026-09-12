@@ -15,7 +15,7 @@ public class SubjectEquivalenceGroup : EntityBase<SubjectEquivalenceGroup, Subje
         Name = Guard.Against.NullOrWhiteSpace(name);
     }
 
-    public string Name { get; private set; }
+    public string Name { get; private set; } = string.Empty;
 
     public IReadOnlyCollection<SubjectEquivalence> SubjectEquivalences => _subjectEquivalences.AsReadOnly();
 

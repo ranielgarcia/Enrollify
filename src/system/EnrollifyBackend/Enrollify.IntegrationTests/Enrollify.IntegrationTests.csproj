@@ -17,6 +17,8 @@
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="SSH.NET" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
     <PackageReference Include="Testcontainers.Azurite" />
     <PackageReference Include="Testcontainers.MsSql" />
     <PackageReference Include="xunit" />

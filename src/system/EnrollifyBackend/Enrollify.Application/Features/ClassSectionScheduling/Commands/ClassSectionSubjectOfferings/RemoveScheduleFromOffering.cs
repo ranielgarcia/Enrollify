@@ -48,7 +48,14 @@ public static class RemoveScheduleFromOffering
         await _classSectionReadRepository.FirstOrDefaultAsync(new GetClassSectionByIdSpec(offering.ClassSectionId),
           cancellationToken);
 
-      if (section is not null && section.StatusId != ClassSectionStatusEnum.Draft)
+      if (section is null)
+      {
+        _logger.LogWarning("Parent class section {SectionId} not found for offering {OfferingId} when removing schedule {ScheduleId}",
+          offering.ClassSectionId.Value, command.OfferingId.Value, command.ScheduleId.Value);
+        return Result.NotFound($"Parent class section with ID {offering.ClassSectionId.Value} was not found.");
+      }
+
+      if (section.StatusId != ClassSectionStatusEnum.Draft)
       {
         _logger.LogWarning(
           "Attempting to delete a schedule from subject offering {OfferingId} for a class section that is not in Draft status anymore."

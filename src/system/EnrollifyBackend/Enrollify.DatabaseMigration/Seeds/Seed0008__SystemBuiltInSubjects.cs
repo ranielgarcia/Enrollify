@@ -1,5 +1,6 @@
 using DbUp.Engine;
 using System.Data;
+using System.Globalization;
 using System.Text;
 
 namespace Enrollify.DatabaseMigration.Seeds;
@@ -17,7 +18,7 @@ internal class Seed0008__SystemBuiltInSubjects : IScript
 
         var getRoomTypeCommand = dbCommandFactory();
         getRoomTypeCommand.CommandText = "SELECT Id FROM RoomTypes WHERE Name='Placeholder Room Type - Do not delete'";
-        var roomTypeId = (int)getRoomTypeCommand.ExecuteScalar();
+        var roomTypeId = ReadRequiredInt32(getRoomTypeCommand, "room type 'Placeholder Room Type - Do not delete'");
 
         scriptBuilder.Append(@"MERGE [Subjects] AS [Target]
             USING (");
@@ -47,5 +48,28 @@ internal class Seed0008__SystemBuiltInSubjects : IScript
         scriptBuilder.Append(" WHEN NOT MATCHED THEN INSERT ([Code], [Title], [Units], [Description], [PreferRoomTypeId], [CreatedBy], [CreatedAt]) VALUES ([Source].[Code], [Source].[Title], [Source].[Units], [Source].[Description], [Source].[PreferRoomTypeId], @InitialUserId, GETUTCDATE());");
 
         return scriptBuilder.ToString();
+    }
+
+    private static int ReadRequiredInt32(IDbCommand command, string entityDescription)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        var result = command.ExecuteScalar();
+        if (result is null || result is DBNull)
+        {
+            throw new InvalidOperationException(
+                $"Lookup for {entityDescription} returned no Id. Command: {command.CommandText}");
+        }
+
+        try
+        {
+            return Convert.ToInt32(result, CultureInfo.InvariantCulture);
+        }
+        catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException)
+        {
+            throw new InvalidOperationException(
+                $"Lookup for {entityDescription} returned '{result}' ({result.GetType().FullName}) instead of a valid Int32 Id. Command: {command.CommandText}",
+                ex);
+        }
     }
 }

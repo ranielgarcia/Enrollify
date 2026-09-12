@@ -64,7 +64,8 @@ public class ClassSectionValidationIssue : EntityBase<ClassSectionValidationIssu
   public ClassSectionId ClassSectionId { get; private set; }
   public ClassSectionSubjectOfferingId? OfferingId { get; private set; }
 
-  public ClassSectionValidationIssueTypeEnum Type { get; private set; }
+  public ClassSectionValidationIssueTypeEnum Type { get; private set; } =
+    ClassSectionValidationIssueTypeEnum.NO_OFFERINGS;
 
   public string Message { get; private set; } = null!;
   public DayOfWeekEnum? DayOfWeek { get; private set; }
@@ -74,5 +75,5 @@ public class ClassSectionValidationIssue : EntityBase<ClassSectionValidationIssu
 
   public DateTimeOffset ComputedAt { get; private set; }
 
-  public List<ClassScheduleConflictingOffering> ConflictingOfferings { get; private set; }
+  public List<ClassScheduleConflictingOffering> ConflictingOfferings { get; private set; } = [];
 }
